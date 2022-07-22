@@ -278,7 +278,7 @@ public class PerformanceDebugUtil {
         //RandomString(10,abcdefghigklmnopqrstuvwxyz,)
 
         //new PerformanceDebugUtil().generateJavaPattern("${__eval(name=${id}&column=age)},age=${age}");
-        new PerformanceDebugUtil().generateJavaPattern("name=${id}&column=age)},age=${age}");
+        //new PerformanceDebugUtil().generateJavaPattern("name=${id}&column=age)},age=${age}");
         new PerformanceDebugUtil().generateFunPattern("");
 
         Map<String, Map<String, List<Object>>> fileIdDataMap = new HashMap<>();

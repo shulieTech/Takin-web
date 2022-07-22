@@ -272,7 +272,7 @@ public class SceneServiceImpl implements SceneService {
         }
         String businessFlowName = null;
         if (businessFlowParseRequest.getId() == null) {
-            SceneCreateParam createParam = saveBusinessFlow(testPlan.get(0).getTestName(), data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
+            SceneCreateParam createParam = saveBusinessFlow(businessFlowParseRequest.getSource(), testPlan.get(0).getTestName(), data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
             businessFlowParseRequest.setId(createParam.getId());
             businessFlowName = createParam.getSceneName();
         } else {
@@ -287,7 +287,7 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public SceneCreateParam saveBusinessFlow(String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
+    public SceneCreateParam saveBusinessFlow(Integer source, String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
                                              List<PluginConfigCreateRequest> pluginList) {
         SceneQueryParam sceneQueryParam = new SceneQueryParam();
         sceneQueryParam.setSceneName(testName);
@@ -301,7 +301,11 @@ public class SceneServiceImpl implements SceneService {
         sceneCreateParam.setLinkRelateNum(0);
         sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
         sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
-        sceneCreateParam.setType(SceneTypeEnum.PERFORMANCE_AUTO_SCENE.getType());
+        if (source != null) {
+            sceneCreateParam.setType(source);
+        } else {
+            sceneCreateParam.setType(SceneTypeEnum.JMETER_UPLOAD_SCENE.getType());
+        }
         WebPluginUtils.fillCloudUserData(sceneCreateParam);
         sceneDao.insert(sceneCreateParam);
 

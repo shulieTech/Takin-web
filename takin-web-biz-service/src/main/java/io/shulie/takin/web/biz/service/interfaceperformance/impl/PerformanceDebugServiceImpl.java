@@ -562,7 +562,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
     private void refreshDebugErrorMessage(PerformanceDebugErrorEnum errorEnum, PerformanceResultCreateInput insertResult,
                                           Object message) {
         Map<String, String> map = Maps.newHashMap();
-        String error = String.format(errorEnum.getErrorName(), message.toString());
+        String error = String.format(errorEnum.getErrorName(), message);
         if (StringUtils.isNotBlank(insertResult.getErrorMessage())) {
             map = JsonHelper.string2Obj(insertResult.getErrorMessage(), new TypeReference<Map<String, String>>() {
             });

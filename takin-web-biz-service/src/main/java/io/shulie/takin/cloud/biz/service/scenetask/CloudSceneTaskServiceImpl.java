@@ -136,6 +136,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -197,6 +198,9 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
     private static final Long TB = GB * 1024;
 
     private static final String SCRIPT_NAME_SUFFIX = "jmx";
+
+    @Value("${script.path}")
+    private String pathPrefix;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -1350,7 +1354,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
 
     private boolean checkOutJmx(SceneScriptRefOutput uploadFile) {
         if (Objects.nonNull(uploadFile) && StringUtils.isNotBlank(uploadFile.getUploadPath())) {
-            String fileMd5 = MD5Utils.getInstance().getMD5(new File(uploadFile.getUploadPath()));
+            String fileMd5 = MD5Utils.getInstance().getMD5(new File(pathPrefix, uploadFile.getUploadPath()));
             if (StringUtils.isNotBlank(uploadFile.getFileMd5())) {
                 return uploadFile.getFileMd5().equals(fileMd5);
             } else {

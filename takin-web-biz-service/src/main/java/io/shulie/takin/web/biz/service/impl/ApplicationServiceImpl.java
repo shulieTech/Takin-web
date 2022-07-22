@@ -713,7 +713,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 // 正常的应用
                 Set<Long> normalApplicationIdSet = new HashSet<>(20);
 
-                Map<Long, String> errorInfo = Maps.newHashMap();
                 // 遍历比对
                 for (ApplicationListResult application : applicationList) {
                     String applicationName = application.getApplicationName();
@@ -730,8 +729,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                             || !Objects.equals(amdbApplication.getInstanceInfo().getInstanceOnlineAmount(), nodeNum)) {
                         // amdbApplicationMap 不存在, map.get 不存在, 或者节点数不一致
                         errorApplicationIdSet.add(applicationId);
-                        errorInfo.put(applicationId, "节点数不一致");
-
 
                     } else if (!amdbApplicationMap.isEmpty()
                             && (amdbApplication = amdbApplicationMap.get(applicationName)) != null
@@ -754,7 +751,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 }
 
 
-                this.syncApplicationAccessStatus(applicationList, errorApplicationIdSet, errorInfo);
+                this.syncApplicationAccessStatus(applicationList, errorApplicationIdSet);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
@@ -764,24 +761,19 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList
-            , Set<Long> errorApplicationIdSet
-            , Map<Long, String> errorInfo) {
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList, Set<Long> errorApplicationIdSet) {
         if (CollectionUtils.isNotEmpty(applicationList)) {
             for (ApplicationListResult app : applicationList) {
                 Map result = applicationDAO.getStatus(app.getApplicationName());
                 long n = (long) result.get("n");
                 if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
                     String e = (String) result.get("e");
-                    if (io.shulie.takin.utils.string.StringUtil.isEmpty(e)) {
-                        e = errorInfo.get(app.getApplicationId());
-                    }
-                    //不知道异常和Ip就别展示出来误导了
+
                     if (StringUtils.isBlank(e)) {
                         String a = (String) result.get("a");
-                        if (StringUtils.isEmpty(a)) {
-                            continue;
-                        }
+//                        if (StringUtils.isEmpty(a)) {
+//                            continue;
+//                        }
                         e = "探针接入异常";
                         if (StringUtils.isNotEmpty(a)) {
                             e += "，agentId为" + a;

@@ -509,6 +509,8 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         businessLinkManageTableEntity.setLinkName(businessLinkManageTableEntity.getLinkName() + "_COPY");
         businessLinkManageTableEntity.setCreateTime(new Date());
         businessLinkManageTableEntity.setUpdateTime(new Date());
+        //复制出来的业务活动可以删除
+        businessLinkManageTableEntity.setCanDelete(0);
         businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
     }
 }

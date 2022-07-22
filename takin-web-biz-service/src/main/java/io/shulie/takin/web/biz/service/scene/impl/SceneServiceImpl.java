@@ -843,6 +843,12 @@ public class SceneServiceImpl implements SceneService {
             for (ScriptJmxNode scriptJmxNode : scriptJmxNodes) {
                 //默认不匹配
                 scriptJmxNode.setStatus(0);
+                // 支持beanshell,默认匹配
+                if (scriptJmxNode.getName() == "BeanShellSampler") {
+                    scriptJmxNode.setStatus(1);
+                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+                    continue;
+                }
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {
                     ActivityListResult activityListResult = activityMap.get(xpathMd5Map.get(scriptJmxNode.getXpathMd5()));
                     if (activityListResult != null) {

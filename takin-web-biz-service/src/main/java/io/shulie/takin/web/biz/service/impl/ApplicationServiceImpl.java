@@ -499,14 +499,13 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (tApplicationMnt == null) {
             return Response.success(new ApplicationVo());
         }
-        //状态取amdb的，t_application_mnt中的不准
+        //判断是否有异常信息来获取状态，t_application_mnt中的不准
         ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
         queryInput.setApplicationId(tApplicationMnt.getApplicationId());
 
-        ApplicationErrorOutput nodeErrorResponse =
-                applicationErrorService
-                        .getNodeErrorResponse(tApplicationMnt.getApplicationName(), tApplicationMnt.getNodeNum());
-        if (nodeErrorResponse != null) {
+        List<ApplicationErrorOutput> errors =
+                applicationErrorService.list(queryInput);
+        if (CollectionUtil.isNotEmpty(errors)) {
             tApplicationMnt.setAccessStatus(3);
         } else {
             tApplicationMnt.setAccessStatus(0);
@@ -1356,14 +1355,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
             response.setId(result.getApplicationId().toString());
 
+
             ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
             queryInput.setApplicationId(result.getApplicationId());
-            ApplicationDetailResult tApplicationMnt =
-                    applicationErrorService.ensureApplicationExist(queryInput);
-            ApplicationErrorOutput nodeErrorResponse =
-                    applicationErrorService
-                            .getNodeErrorResponse(tApplicationMnt.getApplicationName(), tApplicationMnt.getNodeNum());
-            if (nodeErrorResponse != null) {
+            List<ApplicationErrorOutput> errors =
+                    applicationErrorService.list(queryInput);
+            if (CollectionUtil.isNotEmpty(errors)) {
                 response.setAccessStatus(3);
             } else {
                 response.setAccessStatus(0);

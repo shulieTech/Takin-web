@@ -132,7 +132,7 @@ public class ScriptChecker implements StartConditionChecker {
 
     private boolean checkOutJmx(SceneScriptRefOutput uploadFile) {
         if (Objects.nonNull(uploadFile) && StringUtils.isNotBlank(uploadFile.getUploadPath())) {
-            String fileMd5 = MD5Utils.getInstance().getMD5(new File(pathPrefix + uploadFile.getUploadPath()));
+            String fileMd5 = MD5Utils.getInstance().getMD5(new File(pathPrefix, uploadFile.getUploadPath()));
             return StringUtils.isBlank(uploadFile.getFileMd5()) || uploadFile.getFileMd5().equals(fileMd5);
         }
         return false;

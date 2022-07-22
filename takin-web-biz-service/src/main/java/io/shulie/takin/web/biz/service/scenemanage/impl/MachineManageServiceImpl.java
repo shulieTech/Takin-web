@@ -179,6 +179,12 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         if (manageDAOById == null) {
             return "没有找到对应机器数据，请刷新页面再试";
         }
+        if (manageDAOById.getUserName() == null) {
+            return "当前机器没有用户名，请先补充用户名";
+        }
+        if (manageDAOById.getPassword() == null) {
+            return "当前机器没有密码，请先补充密码";
+        }
         MachineAddReq machineAddReq = new MachineAddReq();
         machineAddReq.setNodeIp(manageDAOById.getMachineIp());
         machineAddReq.setPassword(des.decryptStr(manageDAOById.getPassword()));

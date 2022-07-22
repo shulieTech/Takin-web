@@ -919,10 +919,10 @@ public class SceneServiceImpl implements SceneService {
             return;
         }
         String content = stringStringMap.get("xmlContent");
-
-        //重新匹配业务流程和节点的关联关系
-        if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)){
-            //查询已有的匹配关系,删除现在所有的关联关系
+        stringStringMap.remove("xmlContent");
+        //重新匹配业务流程和节点的关联关系;
+        if (CollectionUtils.isNotEmpty(sceneLinkRelateResults) && stringStringMap.size() < 1){
+            //查询已有的匹配关系,删除没有的关联关系
             List<SceneLinkRelateResult> needDel = sceneLinkRelateResults.stream().filter(o -> !stringStringMap.containsKey(o.getScriptXpathMd5())).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(needDel)){
                 List<Long> oldIds = needDel.stream().map(SceneLinkRelateResult::getId).collect(Collectors.toList());

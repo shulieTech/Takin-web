@@ -448,12 +448,11 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             // 请求条数大于文件条数,则用请求条数
             requestCount = requestCount > relateFileMaxCount ? relateFileMaxCount : requestCount;
         }
+        ContentTypeVO contentTypeVO = Optional.ofNullable(JsonHelper.json2Bean(
+                configEntity.getContentType(), ContentTypeVO.class)).orElse(new ContentTypeVO());
         try {
             // 这里处理个状态标记，确认请求是否发送完成,获取结果的时候前端不需要轮训
             redisClientUtil.setString(performanceDebugUtil.formatResultKey(request.getResultId()), "1", 120, TimeUnit.SECONDS);
-
-            ContentTypeVO contentTypeVO = Optional.ofNullable(JsonHelper.json2Bean(
-                    configEntity.getContentType(), ContentTypeVO.class)).orElse(new ContentTypeVO());
             // 构建restTemplate
             RestTemplate restTemplate = performanceDebugUtil.createResultTemplate(
                     configEntity.getIsRedirect(),
@@ -525,6 +524,25 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                 performanceResultService.add(insertResult);
             }
         } catch (Throwable e) {
+            // 1、请求参数
+            PerformanceResultCreateInput insertResult = new PerformanceResultCreateInput();
+            insertResult.setConfigId(configEntity.getId());
+            insertResult.setRequestUrl(configEntity.getRequestUrl());
+            insertResult.setHttpMethod(configEntity.getHttpMethod());
+            ResponseEntity responseEntity = new ResponseEntity(HttpStatus.BAD_REQUEST);
+            // 请求头
+            HttpHeaders headers = performanceDebugUtil.buildHeader(
+                    configEntity.getHeaders(),
+                    configEntity.getCookies(),
+                    contentTypeVO);
+            HttpEntity<?> requeryEntity = new HttpEntity<>(configEntity.getBody(), headers);
+            insertResult.setRequest(JsonHelper.bean2Json(requeryEntity));
+            insertResult.setResponse(JsonHelper.bean2Json(responseEntity));
+            insertResult.setStatus(400);
+            refreshDebugErrorMessage(PerformanceDebugErrorEnum.REQUEST_FAILED, insertResult, e.getLocalizedMessage());
+            insertResult.setResultId(request.getResultId());
+            // 保存请求结果
+            performanceResultService.add(insertResult);
             log.error("单接口压测场景异常{}", ExceptionUtils.getStackTrace(e));
         } finally {
             redisClientUtil.del(performanceDebugUtil.formatResultKey(request.getResultId()));

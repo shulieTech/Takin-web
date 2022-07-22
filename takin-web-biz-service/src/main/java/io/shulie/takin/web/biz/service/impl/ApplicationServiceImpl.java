@@ -43,6 +43,7 @@ import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.application.*;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
+import io.shulie.takin.web.biz.pojo.output.application.ApplicationErrorOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationListByUpgradeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
@@ -55,7 +56,9 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoRe
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
 import io.shulie.takin.web.biz.pojo.vo.application.ApplicationDsManageExportVO;
 import io.shulie.takin.web.biz.service.*;
+import io.shulie.takin.web.biz.service.application.ApplicationErrorService;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
+import io.shulie.takin.web.biz.service.application.impl.ApplicationErrorServiceImpl;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
 import io.shulie.takin.web.biz.service.linkmanage.WhiteListService;
@@ -119,6 +122,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
@@ -1311,6 +1315,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return applicationDAO.getAllTenantApp(commonExtList);
     }
 
+    @Resource
+    ApplicationErrorServiceImpl applicationErrorService;
+
     @Override
     public PagingList<ApplicationListResponseV2> pageApplication(ApplicationQueryRequestV2 request) {
         QueryApplicationParam queryApplicationParam = BeanUtil.copyProperties(request, QueryApplicationParam.class);
@@ -1328,6 +1335,18 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<ApplicationListResponseV2> responseList = records.stream().map(result -> {
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
             response.setId(result.getApplicationId().toString());
+
+            ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
+            queryInput.setApplicationId(result.getApplicationId());
+            ApplicationDetailResult tApplicationMnt =
+                    applicationErrorService.ensureApplicationExist(queryInput);
+            ApplicationErrorOutput nodeErrorResponse =
+                    applicationErrorService
+                            .getNodeErrorResponse(tApplicationMnt.getApplicationName(), tApplicationMnt.getNodeNum());
+            if (nodeErrorResponse != null) {
+                response.setAccessStatus(3);
+            }
+
             return response;
         }).collect(Collectors.toList());
         return PagingList.of(responseList, applicationListResultPage.getTotal());

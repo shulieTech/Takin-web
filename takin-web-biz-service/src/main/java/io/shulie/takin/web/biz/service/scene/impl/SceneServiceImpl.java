@@ -844,7 +844,7 @@ public class SceneServiceImpl implements SceneService {
                 //默认不匹配
                 scriptJmxNode.setStatus(0);
                 // 支持beanshell,默认匹配
-                if (scriptJmxNode.getName() == "BeanShellSampler") {
+                if (scriptJmxNode.getName().equals("BeanShellSampler")) {
                     scriptJmxNode.setStatus(1);
                     scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
                     continue;

@@ -847,6 +847,8 @@ public class SceneServiceImpl implements SceneService {
                 if (scriptJmxNode.getName().equals("BeanShellSampler")) {
                     scriptJmxNode.setEntrace("|beanshell");
                     scriptJmxNode.setRequestPath("|beanshell");
+                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+
                     scriptJmxNode.setStatus(1);
                     continue;
                 }

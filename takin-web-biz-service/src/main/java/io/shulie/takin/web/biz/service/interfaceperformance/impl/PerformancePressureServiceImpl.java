@@ -33,6 +33,7 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailRespon
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
+import io.shulie.takin.web.common.enums.scene.SceneTypeEnum;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
@@ -149,7 +150,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
 
         request.setPluginList(Collections.emptyList());
         request.setScriptFile(fileManageUpdateRequest);
-
+        request.setSource(SceneTypeEnum.PERFORMANCE_AUTO_SCENE.getType());
         return sceneService.parseScriptAndSave(request);
     }
 

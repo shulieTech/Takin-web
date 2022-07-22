@@ -14,6 +14,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>takin-web-ext-api</module>
+        <module>takin-web-ext-jmeter</module>
     </modules>
 
     <properties>

@@ -1,5 +1,10 @@
 package io.shulie.takin.web.amdb.api.impl;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.google.common.collect.Sets;
@@ -34,9 +39,6 @@ import org.springframework.boot.autoconfigure.takin.properties.AmdbClientPropert
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -112,8 +114,12 @@ public class TraceClientImpl implements TraceClient {
             dto.setQueryType(query.getQueryType());
             //压测流量明细查询，去掉固定查压测流量
             //dto.setClusterTest(1);
-            dto.setTraceIdList(query.getTraceId());
-            AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.builder().url(url)
+            String traceId = query.getTraceId();
+            if (StringUtils.isNotBlank(traceId)) {
+                dto.setTraceIdList(Arrays.asList(traceId.split(",")));
+            }
+            dto.setEntranceRuleDTOS(null);
+            AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
                     .param(dto)
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
                     .eventName("查询链路列表")
@@ -154,9 +160,13 @@ public class TraceClientImpl implements TraceClient {
             dto.setQueryType(query.getQueryType());
             //压测流量明细查询，去掉固定查压测流量
             //dto.setClusterTest(1);
-            dto.setTraceIdList(query.getTraceId());
+            dto.setEntranceRuleDTOS(null);
+            String traceId = query.getTraceId();
+            if (StringUtils.isNotBlank(traceId)) {
+                dto.setTraceIdList(Arrays.asList(traceId.split(",")));
+            }
             dto.setPageSize(1);
-            AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.builder().url(url)
+            AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
                     .param(dto)
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
                     .eventName("查询链路列表")

@@ -31,7 +31,7 @@ public class FileManageSignCache extends AbstractAgentConfigCache<Object> {
     }
 
     @PostConstruct
-    private void reset() {
+    public void reset() {
         queryValue(null);
     }
 

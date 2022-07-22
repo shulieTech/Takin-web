@@ -23,6 +23,7 @@ import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
 import io.shulie.takin.web.biz.cache.DictionaryCache;
 import io.shulie.takin.web.biz.cache.agentimpl.ApplicationApiManageAmdbCache;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.common.Response;
@@ -40,10 +41,10 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.AntPathMatcher;
 
 /**
  * @author vernon
@@ -54,6 +55,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ApplicationApiServiceImpl implements ApplicationApiService {
     private static final String EMPTY = " ";
     private static final String HTTP_METHOD_TYPE = "HTTP_METHOD_TYPE";
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     @Resource
     private ApplicationDAO applicationDAO;
@@ -61,17 +63,23 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
     private ApplicationApiDAO applicationApiDAO;
     @Resource
     private ApplicationApiManageAmdbCache applicationApiManageAmdbCache;
+    @Resource
+    private DistributedLock distributedLock;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Response registerApi(Map<String, List<String>> register) {
-        List<ApplicationApiCreateParam> batch = Lists.newArrayList();
-        try {
-            for (Map.Entry entry : register.entrySet()) {
-
-                String appName = String.valueOf(entry.getKey());
-
-                List<String> apis = (List<String>) entry.getValue();
+        List<ApplicationApiCreateParam> exceptions = Lists.newArrayList();
+        for (Map.Entry<String, List<String>> entry : register.entrySet()) {
+            String appName = String.valueOf(entry.getKey());
+            String lockKey = lockKey(appName);
+            if (!distributedLock.tryLockZeroWait(lockKey)) {
+                log.error("未获取到锁[{}]，退出注册api", lockKey);
+                continue;
+            }
+            List<ApplicationApiCreateParam> batch = Lists.newArrayList();
+            try {
+                List<String> apis = entry.getValue();
 
                 if (StringUtils.isBlank(appName) || CollectionUtils.isEmpty(apis)) {
                     continue;
@@ -83,7 +91,7 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
                             String.format("应用不存在, 应用名称: %s", appName));
                 }
 
-                apis.forEach(api -> {
+                apis.stream().filter(PATH_MATCHER::isPattern).forEach(api -> {
 
                     String[] str = api.split("#");
                     String requestMethod = str[1];
@@ -134,33 +142,39 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
                 applicationApiDAO.deleteByAppName(appName);
 
                 applicationApiDAO.insertBatch(batch);
-            }
-        } catch (Exception e) {
-            log.error(ExceptionUtils.getStackTrace(e));
-            batch.forEach(single -> {
-                try {
-                    ApplicationApiCreateParam manage = new ApplicationApiCreateParam();
-                    manage.setMethod(single.getMethod());
-                    manage.setApi(single.getApi());
-                    manage.setApplicationName(single.getApplicationName());
-                    manage.setIsDeleted(single.getIsDeleted());
-                    manage.setUpdateTime(single.getUpdateTime());
-                    manage.setCreateTime(single.getCreateTime());
-                    manage.setApplicationId(single.getApplicationId());
-                    manage.setTenantId(single.getTenantId());
-                    manage.setUserId(single.getUserId());
-                    manage.setIsAgentRegiste(single.getIsAgentRegiste());
-                    applicationApiDAO.insertSelective(manage);
-                } catch (TakinWebException e1) {
-                    log.error(e1.getMessage(), e1);
-                    throw new TakinWebException(e1.getEx(), e1.getMessage(), e1);
-                } catch (Exception e3) {
-                    log.error(e3.getMessage(), e3);
-                    throw new TakinWebException(TakinWebExceptionEnum.AGENT_REGISTER_API_ERROR,
-                            "agent 注册 api 异常, 联系技术人员定位", e3);
+
+            } catch (Exception e) {
+                log.error("agent 注册 api 异常, lockKey=[{}]", lockKey, e);
+                if (CollectionUtils.isNotEmpty(batch)) {
+                    exceptions.addAll(batch);
                 }
-            });
+            } finally {
+                distributedLock.unLock(lockKey);
+            }
         }
+        exceptions.forEach(single -> {
+            try {
+                ApplicationApiCreateParam manage = new ApplicationApiCreateParam();
+                manage.setMethod(single.getMethod());
+                manage.setApi(single.getApi());
+                manage.setApplicationName(single.getApplicationName());
+                manage.setIsDeleted(single.getIsDeleted());
+                manage.setUpdateTime(single.getUpdateTime());
+                manage.setCreateTime(single.getCreateTime());
+                manage.setApplicationId(single.getApplicationId());
+                manage.setTenantId(single.getTenantId());
+                manage.setUserId(single.getUserId());
+                manage.setIsAgentRegiste(single.getIsAgentRegiste());
+                applicationApiDAO.insertSelective(manage);
+            } catch (TakinWebException e1) {
+                log.error(e1.getMessage(), e1);
+                throw new TakinWebException(e1.getEx(), e1.getMessage(), e1);
+            } catch (Exception e3) {
+                log.error(e3.getMessage(), e3);
+                throw new TakinWebException(TakinWebExceptionEnum.AGENT_REGISTER_API_ERROR,
+                    "agent 注册 api 异常, 联系技术人员定位", e3);
+            }
+        });
         return Response.success();
     }
 
@@ -342,4 +356,7 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
         applicationApiManageAmdbCache.evict(applicationName);
     }
 
+    private String lockKey(String appName) {
+        return appName + "_" + WebPluginUtils.traceTenantId() + "_" + WebPluginUtils.traceEnvCode();
+    }
 }

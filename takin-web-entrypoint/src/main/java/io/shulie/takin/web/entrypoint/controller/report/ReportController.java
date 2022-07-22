@@ -170,7 +170,7 @@ public class ReportController {
     @GetMapping("/report/export")
     @ApiOperation("导出压测报告pdf")
     @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
             needAuth = ActionTypeEnum.DOWNLOAD
     )
     public ResponseResult<String> getExportDownLoadUrl(Long reportId) {

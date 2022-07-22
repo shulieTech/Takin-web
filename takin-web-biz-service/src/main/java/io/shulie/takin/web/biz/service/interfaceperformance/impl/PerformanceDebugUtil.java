@@ -261,6 +261,9 @@ public class PerformanceDebugUtil {
      */
     public List<String> generateJavaPattern(String inputStr) {
         List<String> groups = Lists.newArrayList();
+        if (StringUtils.isBlank(inputStr)) {
+            return groups;
+        }
         try {
             Matcher matcher = java_Pattern.matcher(inputStr);
             while (matcher.find()) {
@@ -307,6 +310,9 @@ public class PerformanceDebugUtil {
      */
     public List<String> generateFunPattern(String inputStr) {
         List<String> groups = Lists.newArrayList();
+        if (StringUtils.isBlank(inputStr)) {
+            return groups;
+        }
         try {
             Matcher matcher = fun_Pattern.matcher(inputStr);
             while (matcher.find()) {

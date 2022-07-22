@@ -499,6 +499,18 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (tApplicationMnt == null) {
             return Response.success(new ApplicationVo());
         }
+        //状态取amdb的，t_application_mnt中的不准
+        ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
+        queryInput.setApplicationId(tApplicationMnt.getApplicationId());
+
+        ApplicationErrorOutput nodeErrorResponse =
+                applicationErrorService
+                        .getNodeErrorResponse(tApplicationMnt.getApplicationName(), tApplicationMnt.getNodeNum());
+        if (nodeErrorResponse != null) {
+            tApplicationMnt.setAccessStatus(3);
+        } else {
+            tApplicationMnt.setAccessStatus(0);
+        }
 
         // 取应用节点数信息
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(
@@ -1353,6 +1365,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                             .getNodeErrorResponse(tApplicationMnt.getApplicationName(), tApplicationMnt.getNodeNum());
             if (nodeErrorResponse != null) {
                 response.setAccessStatus(3);
+            } else {
+                response.setAccessStatus(0);
             }
 
             return response;

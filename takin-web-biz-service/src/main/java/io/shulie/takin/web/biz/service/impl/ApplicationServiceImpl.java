@@ -1344,16 +1344,16 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
             response.setId(result.getApplicationId().toString());
 
-//            ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
-//            queryInput.setApplicationId(result.getApplicationId());
-//            ApplicationDetailResult tApplicationMnt =
-//                    applicationErrorService.ensureApplicationExist(queryInput);
-//            ApplicationErrorOutput nodeErrorResponse =
-//                    applicationErrorService
-//                            .getNodeErrorResponse(tApplicationMnt.getApplicationName(), tApplicationMnt.getNodeNum());
-//            if (nodeErrorResponse != null) {
-//                response.setAccessStatus(3);
-//            }
+            ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
+            queryInput.setApplicationId(result.getApplicationId());
+            ApplicationDetailResult tApplicationMnt =
+                    applicationErrorService.ensureApplicationExist(queryInput);
+            ApplicationErrorOutput nodeErrorResponse =
+                    applicationErrorService
+                            .getNodeErrorResponse(tApplicationMnt.getApplicationName(), tApplicationMnt.getNodeNum());
+            if (nodeErrorResponse != null) {
+                response.setAccessStatus(3);
+            }
 
             return response;
         }).collect(Collectors.toList());

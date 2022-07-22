@@ -771,9 +771,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
                     if (StringUtils.isBlank(e)) {
                         String a = (String) result.get("a");
-//                        if (StringUtils.isEmpty(a)) {
-//                            continue;
-//                        }
+                        if (StringUtils.isEmpty(a)) {
+                            //只更新数据库状态为异常，不更新异常信息了，因为异常信息不知道为啥。
+                            applicationDAO.updateStatus(app.getApplicationId(), e);
+                            continue;
+                        }
                         e = "探针接入异常";
                         if (StringUtils.isNotEmpty(a)) {
                             e += "，agentId为" + a;

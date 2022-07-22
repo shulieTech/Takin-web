@@ -847,10 +847,8 @@ public class SceneServiceImpl implements SceneService {
                 if (scriptJmxNode.getName().equals("BeanShellSampler")) {
                     scriptJmxNode.setEntrace("|beanshell");
                     scriptJmxNode.setRequestPath("|beanshell");
+                    scriptJmxNode.setIdentification("takin|beanshell");
                     scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
-
-                    scriptJmxNode.setStatus(1);
-                    continue;
                 }
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {
                     ActivityListResult activityListResult = activityMap.get(xpathMd5Map.get(scriptJmxNode.getXpathMd5()));

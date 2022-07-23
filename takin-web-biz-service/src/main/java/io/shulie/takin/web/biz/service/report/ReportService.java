@@ -167,4 +167,5 @@ public interface ReportService {
 
     String downloadPDFPath(Long reportId);
 
+    Long getReportId(Long sceneId);
 }

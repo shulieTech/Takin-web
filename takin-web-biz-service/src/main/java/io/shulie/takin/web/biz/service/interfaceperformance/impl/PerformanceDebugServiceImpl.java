@@ -2,11 +2,9 @@ package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.jmeter.JmeterFunctionFactory;
 import io.shulie.takin.jmeter.adapter.JmeterFunctionAdapter;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.*;
@@ -37,8 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.jmeter.functions.AbstractFunction;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -278,7 +274,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             } else if (takin_debug_type == 2) {
                 debug_type = 2; // 走脚本调试
             } else {
-                log.warn("UnKnow_Type", takin_debug_type);
+                log.warn("UNKNOW_TYPE", takin_debug_type);
             }
         }
         if (debug_type == 1) {

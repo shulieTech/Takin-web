@@ -194,100 +194,104 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
         //启动调试
         if (initData && scriptDeploys.size() > 0) {
+            if (scriptDeploys.size() > 1) {
+                //目前一次请求仅发起一次调试，多了不处理
+                return;
+            }
+            Long debugId = 0L;
+            boolean debugFlag = false;
+            String errorMsg = "";
+            try {
+                ScriptDebugResponse debug = scriptDebugService.debug(scriptDeploys.get(0));
+                if (debug.getScriptDebugId() != null) {
+                    entity.setScriptDebugId(debug.getScriptDebugId());
+                    debugId = debug.getScriptDebugId();
+                    debugFlag = true;
+                } else {
+                    log.error("[启动调试失败] workRecordId:{},error:{}", workRecordId, debug.getErrorMessages().get(0));
+                    entity.setErrorMsg(debug.getErrorMessages().get(0));
+                    entity.setErrorStage("启动调试异常");
+                    errorMsg = entity.getErrorMsg();
+                }
 
-            List<Long> debugIds = new ArrayList<>();
-            scriptDeploys.forEach(item -> {
-                boolean debugFlag = false;
-                String errorMsg = "";
+
+            } catch (Exception e) {
+                log.error("[启动调试失败] workRecordId:{},e", workRecordId, e);
+                entity.setErrorMsg(e.toString());
+                entity.setErrorStage("启动调试异常");
+                errorMsg = e.getMessage();
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+
+            } finally {
+                String msg = debugFlag ? "启动调试成功" : "启动调试失败, 失败原因:{" + errorMsg + "}";
+                log.info("[启动调试回调] workRecordId,:{},状态 :{}", workRecordId, msg);
+                String level = debugFlag ? "INFO" : "FATAL";
+                callback(url, msg, workRecordId, level);
+                if (!debugFlag) {
+                    delScene(entity.getBusinessFlowId());
+                }
+            }
+
+
+            boolean loop = true;
+            List<Integer> status = new ArrayList<>();
+            do {
                 try {
-                    ScriptDebugResponse debug = scriptDebugService.debug(item);
-                    if (debug.getScriptDebugId() != null) {
-                        entity.setScriptDebugId(debug.getScriptDebugId());
-                        debugIds.add(debug.getScriptDebugId());
-                        debugFlag = true;
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
+                log.info("[debug状态回调] workRecordId:{},debugId:{}", workRecordId, debugId);
+                if (Objects.isNull(debugDetail)) {
+                    break;
+                }
+                String level = "INFO";
+                String msg = ScriptDebugStatusEnum.getDesc(debugDetail.getStatus());
+
+                if(status.contains(debugDetail.getStatus())){
+                    //如果已经记录了当前状态,就不往下走了，不再触发callback
+                    continue;
+                }
+                status.add(debugDetail.getStatus());
+
+                if (debugDetail.getStatus() == 4 || debugDetail.getStatus() == 5) {
+                    loop = false;
+                    if (debugDetail.getStatus() == 5) {
+                        level = "ERROR";
+                        //发送报告错误日志
+                        Long cloudReportId = debugDetail.getCloudReportId();
+                        ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
+                        if (Objects.nonNull(report)) {
+                            String resourceId = report.getResourceId();
+                            Long jobId = report.getJobId();
+                            String errorFilePath = tmpFilePath + "/ptl/" + resourceId + "/" + jobId;
+                            if (FileUtil.exist(errorFilePath)) {
+                                String errorContext = FileUtil.readUtf8String(errorFilePath);
+                                log.info("[发送报告错误日志] workRecordId:{},resourceId:{},jobId:{}", workRecordId, resourceId, jobId);
+                                callback(url, errorContext, workRecordId, level);
+                            }
+                        }
+                        msg += "，调试失败";
                     } else {
-                        log.error("[启动调试失败] workRecordId:{},error:{}", workRecordId, debug.getErrorMessages().get(0));
-                        entity.setErrorMsg(debug.getErrorMessages().get(0));
-                        entity.setErrorStage("启动调试异常");
-                        errorMsg = entity.getErrorMsg();
+                        msg += ", 调试成功";
                     }
 
-
-                } catch (Exception e) {
-                    log.error("[启动调试失败] workRecordId:{},e", workRecordId, e);
-                    entity.setErrorMsg(e.toString());
-                    entity.setErrorStage("启动调试异常");
-                    errorMsg = e.getMessage();
-                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-
-                } finally {
-                    String msg = debugFlag ? "启动调试成功" : "启动调试失败, 失败原因:{" + errorMsg + "}";
-                    log.info("[启动调试回调] workRecordId,:{},状态 :{}", workRecordId, msg);
-                    String level = debugFlag ? "INFO" : "FATAL";
-                    callback(url, msg, workRecordId, level);
-                    if(!debugFlag){
-                        delScene(entity.getBusinessFlowId());
+                    //获取调试详情
+                    PageScriptDebugRequestRequest req = new PageScriptDebugRequestRequest();
+                    req.setScriptDebugId(debugId);
+                    req.setCurrent(0);
+                    req.setPageSize(10);
+                    PagingList<ScriptDebugRequestListResponse> pageDetail = scriptDebugService.pageScriptDebugRequest(req);
+                    if (pageDetail != null) {
+                        List<ScriptDebugRequestListResponse> list = pageDetail.getList();
+                        msg += ": {" + JSON.toJSONString(list) + "}";
                     }
                 }
-            });
 
-
-            debugIds.forEach(debugId -> {
-                webIDESyncThreadPool.execute(() -> {
-                    boolean loop = true;
-                    do {
-                        try {
-                            Thread.sleep(200);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
-                        log.info("[debug状态回调] workRecordId:{},debugId:{}", workRecordId, debugId);
-                        if (Objects.isNull(debugDetail)) {
-                            break;
-                        }
-                        String level = "INFO";
-                        String msg = ScriptDebugStatusEnum.getDesc(debugDetail.getStatus());
-
-                        if(debugDetail.getStatus() == 4 || debugDetail.getStatus() ==5){
-                            loop = false;
-                            if(debugDetail.getStatus() ==5){
-                                level = "ERROR";
-                                //发送报告错误日志
-                                Long cloudReportId = debugDetail.getCloudReportId();
-                                ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
-                                if (Objects.nonNull(report)) {
-                                    String resourceId = report.getResourceId();
-                                    Long jobId = report.getJobId();
-                                    String errorFilePath = tmpFilePath + "/ptl/" + resourceId + "/" + jobId;
-                                    if (FileUtil.exist(errorFilePath)) {
-                                        String errorContext = FileUtil.readUtf8String(errorFilePath);
-                                        log.info("[发送报告错误日志] workRecordId:{},resourceId:{},jobId:{}", workRecordId, resourceId, jobId);
-                                        callback(url, errorContext, workRecordId, level);
-                                    }
-                                }
-                                msg += "，调试失败";
-                            }else{
-                                msg +=", 调试成功";
-                            }
-
-                            //获取调试详情
-                            PageScriptDebugRequestRequest req = new PageScriptDebugRequestRequest();
-                            req.setScriptDebugId(debugId);
-                            req.setCurrent(0);
-                            req.setPageSize(10);
-                            PagingList<ScriptDebugRequestListResponse> pageDetail = scriptDebugService.pageScriptDebugRequest(req);
-                            if (pageDetail != null) {
-                                List<ScriptDebugRequestListResponse> list = pageDetail.getList();
-                                msg += ": {" + JSON.toJSONString(list) + "}";
-                            }
-                        }
-
-                        callback(url, msg, workRecordId, level);
-                    } while (loop);
-                    delScene(entity.getBusinessFlowId());
-                });
-            });
+                callback(url, msg, workRecordId, level);
+            } while (loop);
+            delScene(entity.getBusinessFlowId());
         }
 
 
@@ -350,9 +354,9 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                 .body();
     }
 
-    private void delScene(Long businessFlowId){
+    private void delScene(Long businessFlowId) {
         SceneResult sceneDetail = sceneDAO.getSceneDetail(businessFlowId);
-        if(Objects.isNull(sceneDetail)){
+        if (Objects.isNull(sceneDetail)) {
             return;
         }
         SceneUpdateParam update = new SceneUpdateParam();
@@ -397,7 +401,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     @Override
     public List<BusinessActivityInfoResponse> activityList(Long businessFlowId) {
         List<BusinessActivityNameResponse> activesByFlowId = linkManageService.getBusinessActiveByFlowId(businessFlowId);
-        if(CollectionUtils.isEmpty(activesByFlowId)){
+        if (CollectionUtils.isEmpty(activesByFlowId)) {
             return new ArrayList<>();
         }
 
@@ -405,10 +409,10 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             BusinessActivityInfoResponse convert = Convert.convert(BusinessActivityInfoResponse.class, item);
             convert.setActivityId(item.getBusinessActivityId());
             convert.setActivityName(item.getBusinessActivityName());
-            if(Objects.nonNull(item.getApplicationId()) && StringUtils.isBlank(item.getApplicationName())){
+            if (Objects.nonNull(item.getApplicationId()) && StringUtils.isBlank(item.getApplicationName())) {
                 convert.setApplicationName(mntMapper.selectApplicationName(String.valueOf(item.getApplicationId())));
             }
-            if(StringUtils.isBlank(convert.getEntrace())){
+            if (StringUtils.isBlank(convert.getEntrace())) {
                 return convert;
             }
             ActivityUtil.EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(convert.getEntrace());

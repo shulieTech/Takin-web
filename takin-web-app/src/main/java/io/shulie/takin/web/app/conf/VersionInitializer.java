@@ -39,5 +39,6 @@ public class VersionInitializer implements ApplicationListener<ApplicationStarte
             entity.setCreateTime(new Date());
             versionService.publish(entity);
         }
+        versionService.initGitVersion();
     }
 }

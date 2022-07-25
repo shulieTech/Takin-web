@@ -6,6 +6,7 @@
         <artifactId>takin-web</artifactId>
         <groupId>io.shulie.takin</groupId>
         <version>takin-web-5.8.2</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

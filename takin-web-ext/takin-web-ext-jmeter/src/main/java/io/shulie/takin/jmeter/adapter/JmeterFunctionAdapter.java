@@ -27,7 +27,6 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jmeter.threads.JMeterVariables;
 import org.apache.jmeter.util.JMeterUtils;
 
-import java.io.File;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,8 +42,15 @@ import static io.shulie.takin.jmeter.FunctionHelper.makeParams;
 public class JmeterFunctionAdapter {
     private static JmeterFunctionAdapter jmeterFunctionAdapter = new JmeterFunctionAdapter();
 
+    private static boolean loadSuccess = true;
+
     static {
-        JMeterUtils.loadJMeterProperties(JmeterFunctionAdapter.class.getClassLoader().getResource("").getPath() + "jmeter.properties");
+        try {
+            JMeterUtils.loadJMeterProperties(JmeterFunctionAdapter.class.getClassLoader().getResource("").getPath() + "jmeter.properties");
+        } catch (Throwable e) {
+            loadSuccess = false;
+            e.printStackTrace();
+        }
     }
 
     public static JmeterFunctionAdapter getInstance() {
@@ -88,12 +94,13 @@ public class JmeterFunctionAdapter {
         context.setThreadGroup(takinThreadGroup);
 
         // 初始化Jmeter变量
-        Instant now = Instant.now();
-        JMeterUtils.setProperty("START.MS", Long.toString(now.toEpochMilli()));// $NON-NLS-1$
-        JMeterUtils.setProperty("START.YMD", getFormatter("yyyyMMdd").format(now));// $NON-NLS-1$ $NON-NLS-2$
-        JMeterUtils.setProperty("START.HMS", getFormatter("HHmmss").format(now));// $NON-NLS-1$ $NON-NLS-2$
-        JMeterUtils.setProperty("TESTSTART.MS", Long.toString(System.currentTimeMillis()));
-
+        if (loadSuccess) {
+            Instant now = Instant.now();
+            JMeterUtils.setProperty("START.MS", Long.toString(now.toEpochMilli()));// $NON-NLS-1$
+            JMeterUtils.setProperty("START.YMD", getFormatter("yyyyMMdd").format(now));// $NON-NLS-1$ $NON-NLS-2$
+            JMeterUtils.setProperty("START.HMS", getFormatter("HHmmss").format(now));// $NON-NLS-1$ $NON-NLS-2$
+            JMeterUtils.setProperty("TESTSTART.MS", Long.toString(System.currentTimeMillis()));
+        }
         return function.execute();
     }
 

@@ -18,6 +18,7 @@
 package io.shulie.takin.jmeter.adapter;
 
 import io.shulie.takin.jmeter.JmeterFunctionFactory;
+import org.apache.commons.io.FileUtils;
 import org.apache.jmeter.engine.util.CompoundVariable;
 import org.apache.jmeter.functions.AbstractFunction;
 import org.apache.jmeter.functions.InvalidVariableException;
@@ -49,7 +50,6 @@ public class JmeterFunctionAdapter {
             JMeterUtils.loadJMeterProperties("/config/jmeter.properties");
         } catch (Throwable e) {
             loadSuccess = false;
-            e.printStackTrace();
         }
     }
 

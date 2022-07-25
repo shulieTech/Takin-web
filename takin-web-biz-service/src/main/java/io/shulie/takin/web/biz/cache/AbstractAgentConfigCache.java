@@ -70,9 +70,9 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
      */
     public T getLock(String namespace, int count) {
         // 增加一个计数器,防止线程一直读取不到,递归退出,1s就退出，等待下次处理
-        if (count > 20) {
+        if (count > 100) {
             log.warn("已超过递归次数,但还是未获取到值,namespace:", namespace);
-            return null;
+            return get(namespace);
         }
         String cacheKey = getCacheKey(namespace);
         T result = (T) redisTemplate.opsForValue().get(cacheKey);
@@ -130,7 +130,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
      */
     protected String getCacheKey(String namespace) {
         return CommonUtil.generateRedisKey(cacheName,
-            WebPluginUtils.traceTenantCode(), WebPluginUtils.traceEnvCode(), namespace);
+                WebPluginUtils.traceTenantCode(), WebPluginUtils.traceEnvCode(), namespace);
 
     }
 
@@ -149,7 +149,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
 
     /**
      * 新版本貌似用上面的方法替代了
-     *
+     * <p>
      *  TODO 具体实现 - 张天赐修改,为了编译通过
      *
      * @param namespace -

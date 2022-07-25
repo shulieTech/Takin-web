@@ -13,4 +13,6 @@ public class PerformanceDebugRequest extends PerformanceConfigDebugInput {
      * 关联文件的最大条数
      */
     private Integer relateFileMaxCount = 0;
+
+    private String resultId;
 }

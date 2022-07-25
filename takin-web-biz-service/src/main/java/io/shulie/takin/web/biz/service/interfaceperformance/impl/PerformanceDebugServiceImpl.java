@@ -184,8 +184,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
     public String simple_debug_ext(PerformanceDebugRequest request) {
         // 找到业务流程
         Long configId = request.getId();
-        // 生成一个临时的配置ID,给前端查询使用,config表Id
-        String uuId = UUID.randomUUID().toString();
+        String uuId = request.getResultId();
         try {
             InterfacePerformanceConfigEntity configEntity = interfacePerformanceConfigMapper.selectById(configId);
             InterfacePerformanceConfigSceneRelateShipEntity shipEntity = performanceRelateshipDAO.relationShipEntityById(configId);
@@ -198,6 +197,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             debugDoDebugRequest.setRequestNum(request.getRequestCount());
             debugDoDebugRequest.setConcurrencyNum(1);
             debugDoDebugRequest.setScriptDeployId(detailResponse.getScriptDeployId());
+
             ScriptDebugResponse scriptDebugResponse = scriptDebugService.debug(debugDoDebugRequest);
 
             // 是否存在错误信息
@@ -284,8 +284,19 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                 //
                 throw new RuntimeException("当前场景消息体存在Jmeter函数,请先保存再继续调试!");
             }
-            // 保存最新脚本
-            return this.simple_debug_ext(request);
+            // 生成一个临时的配置ID,给前端查询使用,config表Id
+            String uuId = UUID.randomUUID().toString();
+            request.setResultId(uuId);
+            String startDebugKey = performanceDebugUtil.formatStratDebugKey(String.valueOf(request.getId()));
+            if (StringUtils.isNotBlank(startDebugKey)) {
+                throw new RuntimeException("当前场景存在未完成的调试任务，请等待调试结果输出！！！");
+            }
+            // 空的,开启调试
+            redisClientUtil.setString(performanceDebugUtil.formatStratDebugKey(String.valueOf(request.getId())),
+                    "", 10, TimeUnit.SECONDS);
+            // 异步处理，这里处理比较慢
+            CompletableFuture.runAsync(() -> this.simple_debug_ext(request), performanceDebugThreadPool);
+            return uuId;
         }
     }
 
@@ -308,7 +319,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     request.setScriptDebugId(scriptDebugId);
                     request.setCurrent(0);
                     // 全部查出来
-                    request.setPageSize(10000);
+                    request.setPageSize(1000);
                     PagingList<ScriptDebugRequestListResponse> pageList = scriptDebugService.pageScriptDebugRequest(request);
                     if (pageList != null && !pageList.isEmpty()) {
                         List<ScriptDebugRequestListResponse> responseList = pageList.getList();
@@ -375,6 +386,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             log.error("获取结果失败" + ExceptionUtils.getStackTrace(e));
         } finally {
             redisClientUtil.delete(performanceDebugUtil.formatResultKey(resultId));
+            redisClientUtil.delete(performanceDebugUtil.formatStratDebugKey(String.valueOf(configEntity.getId())));
         }
     }
 

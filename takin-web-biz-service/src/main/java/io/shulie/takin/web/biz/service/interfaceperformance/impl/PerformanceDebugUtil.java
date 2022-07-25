@@ -410,4 +410,8 @@ public class PerformanceDebugUtil {
     public String formatResultKey(String resultId) {
         return String.format("debug:%s", resultId);
     }
+
+    public String formatStratDebugKey(String configId) {
+        return String.format("startDebug:%s", configId);
+    }
 }

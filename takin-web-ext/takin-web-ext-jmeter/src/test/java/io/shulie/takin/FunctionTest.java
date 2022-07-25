@@ -31,11 +31,13 @@ public class FunctionTest {
     @Test
     public void FunctionTest() throws InvalidVariableException {
         // UUID
+        System.out.println(new JmeterFunctionAdapter().execute("${__dateTimeConvert(09102020011034,MMddyyyyHHmmss,yyyyMMdd HH:mm:ss,)}"));
+
+
         System.out.println(new JmeterFunctionAdapter().execute("${__time(,)}"));
         System.out.println(new JmeterFunctionAdapter().execute("${__UUID}"));
 
         // 随机数
-        System.out.println(new JmeterFunctionAdapter().execute("${__dateTimeConvert(09102020011034,MMddyyyyHHmmss,yyyyMMdd HH:mm:ss,)}"));
         System.out.println(new JmeterFunctionAdapter().execute("${__timeShift(yyyy/MM/dd,,P-1D,,)}"));
 
         System.out.println(new JmeterFunctionAdapter().execute("${__RandomDate(,,2023-05-09,en_EN,)}"));

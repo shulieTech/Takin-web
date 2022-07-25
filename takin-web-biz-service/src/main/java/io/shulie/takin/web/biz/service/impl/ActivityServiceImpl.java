@@ -1101,5 +1101,10 @@ public class ActivityServiceImpl implements ActivityService {
             businessLinkManageTableMapper.clearCategory(categoryIds);
         }
     }
+
+    @Override
+    public void copyActivity(Long activityId) {
+        activityDAO.copyActivity(activityId);
+    }
 }
 

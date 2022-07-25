@@ -141,4 +141,6 @@ public interface ActivityService {
     PagingList<BusinessApplicationListResponse> listApplicationByBusinessFlowIds(ListApplicationRequest listApplicationRequest);
 
     void clearCategory(List<Long> categoryIds);
+
+    void copyActivity(Long activityId);
 }

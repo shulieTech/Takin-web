@@ -26,6 +26,9 @@ import org.apache.jmeter.threads.JMeterContext;
 import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jmeter.threads.JMeterVariables;
 import org.apache.jmeter.util.JMeterUtils;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -46,7 +49,7 @@ public class JmeterFunctionAdapter {
 
     static {
         try {
-            JMeterUtils.loadJMeterProperties(JmeterFunctionAdapter.class.getClassLoader().getResource("").getPath() + "jmeter.properties");
+            JMeterUtils.loadJMeterProperties(JmeterFunctionAdapter.class.getResource("/jmeter.properties").getPath());
         } catch (Throwable e) {
             loadSuccess = false;
             e.printStackTrace();

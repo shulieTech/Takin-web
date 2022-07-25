@@ -70,8 +70,8 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
      */
     public T getLock(String namespace, int count) {
         // 增加一个计数器,防止线程一直读取不到,递归退出,1s就退出，等待下次处理
-        if (count > 20) {
-            log.warn("已超过递归次数,但还是未获取到值,namespace:", namespace);
+        if (count > 200) {
+            log.warn("已超过递归次数,但还是未获取到值,namespace:" + namespace);
             return null;
         }
         String cacheKey = getCacheKey(namespace);

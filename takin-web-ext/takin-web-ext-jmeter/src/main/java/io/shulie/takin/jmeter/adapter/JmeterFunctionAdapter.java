@@ -46,7 +46,7 @@ public class JmeterFunctionAdapter {
 
     static {
         try {
-            JMeterUtils.loadJMeterProperties(JmeterFunctionAdapter.class.getResource("/jmeter.properties").getPath());
+            JMeterUtils.loadJMeterProperties("/config/jmeter.properties");
         } catch (Throwable e) {
             loadSuccess = false;
             e.printStackTrace();

@@ -248,26 +248,30 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                         }
                         String level = "INFO";
                         String msg = ScriptDebugStatusEnum.getDesc(debugDetail.getStatus());
-                        if (debugDetail.getStatus() == 5) {
-                            level = "ERROR";
-                            msg = msg + ", 调试失败原因:{" + debugDetail.getRemark() + "}";
-                            //发送报告错误日志
-                            Long cloudReportId = debugDetail.getCloudReportId();
-                            ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
-                            if (Objects.nonNull(report)) {
-                                String resourceId = report.getResourceId();
-                                Long jobId = report.getJobId();
-                                String errorFilePath = tmpFilePath + "/ptl/" + resourceId + "/" + jobId;
-                                if (FileUtil.exist(errorFilePath)) {
-                                    String errorContext = FileUtil.readUtf8String(errorFilePath);
-                                    log.info("[发送报告错误日志] workRecordId:{},resourceId:{},jobId:{}", workRecordId, resourceId, jobId);
-                                    callback(url, errorContext, workRecordId, level);
+
+                        if(debugDetail.getStatus() == 4 || debugDetail.getStatus() ==5){
+                            loop = false;
+                            if(debugDetail.getStatus() ==5){
+                                level = "ERROR";
+                                //发送报告错误日志
+                                Long cloudReportId = debugDetail.getCloudReportId();
+                                ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
+                                if (Objects.nonNull(report)) {
+                                    String resourceId = report.getResourceId();
+                                    Long jobId = report.getJobId();
+                                    String errorFilePath = tmpFilePath + "/ptl/" + resourceId + "/" + jobId;
+                                    if (FileUtil.exist(errorFilePath)) {
+                                        String errorContext = FileUtil.readUtf8String(errorFilePath);
+                                        log.info("[发送报告错误日志] workRecordId:{},resourceId:{},jobId:{}", workRecordId, resourceId, jobId);
+                                        callback(url, errorContext, workRecordId, level);
+                                    }
                                 }
+                                msg += "，调试失败";
+                            }else{
+                                msg +=", 调试成功";
                             }
-                            loop = false;
-                        }
-                        if (debugDetail.getStatus() == 4) {
-                            loop = false;
+
+                            //获取调试详情
                             PageScriptDebugRequestRequest req = new PageScriptDebugRequestRequest();
                             req.setScriptDebugId(debugId);
                             req.setCurrent(0);
@@ -275,10 +279,10 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                             PagingList<ScriptDebugRequestListResponse> pageDetail = scriptDebugService.pageScriptDebugRequest(req);
                             if (pageDetail != null) {
                                 List<ScriptDebugRequestListResponse> list = pageDetail.getList();
-                                msg += ", 调试成功: {" + JSON.toJSONString(list) + "}";
+                                msg += ": {" + JSON.toJSONString(list) + "}";
                             }
-
                         }
+
                         callback(url, msg, workRecordId, level);
                     } while (loop);
                     delScene(entity.getBusinessFlowId());

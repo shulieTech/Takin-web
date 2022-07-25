@@ -27,6 +27,7 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jmeter.threads.JMeterVariables;
 import org.apache.jmeter.util.JMeterUtils;
 
+import java.io.File;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,7 +44,7 @@ public class JmeterFunctionAdapter {
     private static JmeterFunctionAdapter jmeterFunctionAdapter = new JmeterFunctionAdapter();
 
     static {
-        JMeterUtils.loadJMeterProperties("src/main/resources/jmeter.properties");
+        JMeterUtils.loadJMeterProperties(JmeterFunctionAdapter.class.getClassLoader().getResource("").getPath() + "jmeter.properties");
     }
 
     public static JmeterFunctionAdapter getInstance() {

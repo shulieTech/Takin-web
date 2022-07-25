@@ -54,7 +54,7 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
         final Boolean openVersion = WebPluginUtils.isOpenVersion();
         List<SceneTaskDto> taskDtoList = getTaskFromRedis();
         if (taskDtoList == null) {
-            log.warn("current task is null ");
+            log.warn("current not running pressure task!!!");
             return;
         }
 

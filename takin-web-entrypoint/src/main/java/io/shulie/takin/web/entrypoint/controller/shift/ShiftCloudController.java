@@ -525,14 +525,16 @@ public class ShiftCloudController {
             if (StringUtils.isNotBlank(responseJson)) {
                 PressureTask pressureTask = JSON.parseObject(responseJson, PressureTask.class);
                 r = pressureTask.getRunTime();
+                int percentage = pressureTask.getPercentage();
                 data.put("tool_task_id", BENCH + pressureTask.getSceneId());
                 result.put("sceneId", pressureTask.getSceneId());
                 int status = pressureTask.getStatus();
                 int runStatus = pressureTask.getRunStatus();
-                data.put("task_progress", "50%");
-                if (runStatus != 2) {
-                    data.put("task_progress", "100%");
-                }
+                int pe = percentage > 100 ? 100 : percentage;
+                data.put("task_progress", pe + "%");
+//                if (runStatus != 2) {
+//                    data.put("task_progress", "100%");
+//                }
                 if (c3 > 0) status = 3;
                 else status = 1;
                 data.put("task_status", runStatus);
@@ -785,6 +787,8 @@ public class ShiftCloudController {
         private LocalDateTime updateTime;
 
         private int runStatus;
+
+        private int percentage;
     }
 
 

@@ -164,6 +164,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         Map<String, Map<String, List<Object>>> fileIdDataMap = buildFileIdDataMap(request, detailResponse);
         // 4、发起请求
         PerformanceParamDetailResponse finalDetailResponse = detailResponse;
+        // 这里处理个状态标记，确认请求是否发送完成,获取结果的时候前端不需要轮训
+        redisClientUtil.setString(performanceDebugUtil.formatResultKey(request.getResultId()), "1", 120, TimeUnit.SECONDS);
         CompletableFuture.runAsync(() -> processRequest(
                         fileIdDataMap,
                         request,
@@ -225,8 +227,6 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                 // 保存请求结果
                 performanceResultService.add(insertResult);
             } else {
-                // 这个结果获取比较慢,稍微等待时间长一点
-                redisClientUtil.setString(performanceDebugUtil.formatResultKey(uuId), "1", 480, TimeUnit.SECONDS);
                 // 异步转换下脚本调试结果和原来的takin压测结果
                 CompletableFuture.runAsync(() -> convertDebugResult(
                         uuId,
@@ -296,6 +296,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             if (StringUtils.isNotBlank(startDebugValue)) {
                 throw new RuntimeException("当前场景存在未完成的调试任务，请等待调试结果输出！！！");
             }
+            // 这个结果获取比较慢,稍微等待时间长一点
+            redisClientUtil.setString(performanceDebugUtil.formatResultKey(uuId), "1", 480, TimeUnit.SECONDS);
             // 空的,开启调试
             redisClientUtil.setString(startDebugKey, "1", 120, TimeUnit.SECONDS);
             // 异步处理，这里校验逻辑比较多,处理比较慢
@@ -463,8 +465,6 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         ContentTypeVO contentTypeVO = Optional.ofNullable(JsonHelper.json2Bean(
                 configEntity.getContentType(), ContentTypeVO.class)).orElse(new ContentTypeVO());
         try {
-            // 这里处理个状态标记，确认请求是否发送完成,获取结果的时候前端不需要轮训
-            redisClientUtil.setString(performanceDebugUtil.formatResultKey(request.getResultId()), "1", 120, TimeUnit.SECONDS);
             // 构建restTemplate
             RestTemplate restTemplate = performanceDebugUtil.createResultTemplate(
                     configEntity.getIsRedirect(),

@@ -188,7 +188,10 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             String msg = initData ? "创建业务场景成功" : "创建业务场景失败";
             entity.setIsError(initData ? 0 : 1);
             String level = initData ? "INFO" : "FATAL";
-            callback(url, msg, workRecordId, level);
+            if(StringUtils.isNotBlank(entity.getErrorMsg())){
+                msg+=",{"+entity.getErrorMsg()+"}";
+            }
+            callback(url, msg+entity.getErrorMsg(), workRecordId, level);
         }
 
 

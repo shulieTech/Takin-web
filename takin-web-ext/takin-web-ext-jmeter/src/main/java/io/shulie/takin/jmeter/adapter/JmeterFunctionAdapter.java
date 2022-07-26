@@ -28,6 +28,8 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jmeter.threads.JMeterVariables;
 import org.apache.jmeter.util.JMeterUtils;
 
+import java.io.File;
+import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,7 +49,10 @@ public class JmeterFunctionAdapter {
 
     static {
         try {
-            JMeterUtils.loadJMeterProperties("/config/jmeter.properties");
+            String tmpDir = System.getProperty("java.io.tmpdir");
+            String path = tmpDir + "jmeter.properties";
+            FileUtils.writeStringToFile(new File(path), "", Charset.defaultCharset());
+            JMeterUtils.loadJMeterProperties(path);
         } catch (Throwable e) {
             loadSuccess = false;
         }

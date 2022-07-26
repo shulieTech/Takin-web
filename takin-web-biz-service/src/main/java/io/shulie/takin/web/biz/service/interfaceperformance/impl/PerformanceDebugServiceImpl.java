@@ -290,8 +290,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             // 生成一个临时的配置ID,给前端查询使用,config表Id
             String uuId = UUID.randomUUID().toString();
             request.setResultId(uuId);
-            String startDebugKey = performanceDebugUtil.formatStratDebugKey(String.valueOf(request.getId()));
-            String startDebugValue = redisClientUtil.getString(startDebugKey);
+            // 获取调试启动标识
+            String startDebugValue = redisClientUtil.getString(performanceDebugUtil.formatStratDebugKey(String.valueOf(request.getId())));
             if (StringUtils.isNotBlank(startDebugValue)) {
                 throw new RuntimeException("当前场景存在未完成的调试任务，请等待调试结果输出！！！");
             }

@@ -291,7 +291,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             String uuId = UUID.randomUUID().toString();
             request.setResultId(uuId);
             String startDebugKey = performanceDebugUtil.formatStratDebugKey(String.valueOf(request.getId()));
-            if (StringUtils.isNotBlank(startDebugKey)) {
+            String startDebugValue = redisClientUtil.getString(startDebugKey);
+            if (StringUtils.isNotBlank(startDebugValue)) {
                 throw new RuntimeException("当前场景存在未完成的调试任务，请等待调试结果输出！！！");
             }
             // 空的,开启调试

@@ -297,7 +297,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             }
             // 空的,开启调试
             redisClientUtil.setString(performanceDebugUtil.formatStratDebugKey(String.valueOf(request.getId())),
-                    "", 120, TimeUnit.SECONDS);
+                    "1", 120, TimeUnit.SECONDS);
             // 异步处理，这里校验逻辑比较多,处理比较慢
             CompletableFuture.runAsync(() -> this.simple_debug_ext(request), performanceDebugThreadPool);
             return uuId;

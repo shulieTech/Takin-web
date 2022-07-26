@@ -225,6 +225,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                 // 保存请求结果
                 performanceResultService.add(insertResult);
             } else {
+                // 这个结果获取比较慢,稍微等待时间长一点
                 redisClientUtil.setString(performanceDebugUtil.formatResultKey(uuId), "1", 480, TimeUnit.SECONDS);
                 // 异步转换下脚本调试结果和原来的takin压测结果
                 CompletableFuture.runAsync(() -> convertDebugResult(
@@ -234,6 +235,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             }
         } catch (Throwable e) {
             log.error("调试异常" + ExceptionUtils.getStackTrace(e));
+            // 异常了，把key失效掉
+            redisClientUtil.delete(performanceDebugUtil.formatStratDebugKey(String.valueOf(configId)));
             throw new RuntimeException("调试异常,当前场景或保存失败,请重新保存后调试!!!");
         }
         return uuId;
@@ -293,8 +296,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             }
             // 空的,开启调试
             redisClientUtil.setString(performanceDebugUtil.formatStratDebugKey(String.valueOf(request.getId())),
-                    "", 10, TimeUnit.SECONDS);
-            // 异步处理，这里处理比较慢
+                    "", 120, TimeUnit.SECONDS);
+            // 异步处理，这里校验逻辑比较多,处理比较慢
             CompletableFuture.runAsync(() -> this.simple_debug_ext(request), performanceDebugThreadPool);
             return uuId;
         }
@@ -379,8 +382,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     // 结束循环
                     break;
                 }
-                // 1s循环一次
-                TimeUnit.SECONDS.toSeconds(1);
+                // 2s循环一次
+                TimeUnit.SECONDS.toSeconds(2);
             }
         } catch (Throwable e) {
             log.error("获取结果失败" + ExceptionUtils.getStackTrace(e));

@@ -76,11 +76,13 @@ public class NewSceneRequest {
         @ApiModelProperty(value = "业务流程主键")
         private Long businessFlowId;
         @ApiModelProperty(value = "是否定时执行")
-        @NotNull(message = "是否定时执行配置不能为空")
-        private Boolean isScheduler;
+        @NotNull(message = "是否定时执行配置不能为空,0-手动 1-指定时间 2-周期执行")
+        private int isScheduler;
         @ApiModelProperty(name = "executeTime", value = "定时执行时间")
         @JsonFormat(pattern = "yyyy-MM-dd hh:mm", timezone = "GMT+8")
         private Date executeTime;
+        @ApiModelProperty(value = "定时执行表达式")
+        private String executeCorn;
     }
 
     @Data

@@ -78,6 +78,7 @@ public class SceneSchedulerTaskDaoImpl implements SceneSchedulerTaskDao {
         );
         wrapper.in(SceneSchedulerTaskEntity::getSceneId, sceneIds);
         wrapper.eq(SceneSchedulerTaskEntity::getIsDeleted,false);
+        wrapper.orderBy(true, false, SceneSchedulerTaskEntity::getExecuteTime);
         List<SceneSchedulerTaskEntity> sceneSchedulerTaskEntities = sceneSchedulerTaskMapper.selectList(wrapper);
         return entrys2ResultList(sceneSchedulerTaskEntities);
     }

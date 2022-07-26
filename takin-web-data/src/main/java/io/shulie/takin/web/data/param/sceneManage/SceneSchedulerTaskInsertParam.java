@@ -22,4 +22,6 @@ public class SceneSchedulerTaskInsertParam {
 
     private Date executeTime ;
 
+    private String executeCron ;
+
 }

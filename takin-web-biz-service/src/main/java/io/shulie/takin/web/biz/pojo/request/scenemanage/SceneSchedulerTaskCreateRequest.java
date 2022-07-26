@@ -22,6 +22,8 @@ public class SceneSchedulerTaskCreateRequest extends UserCommonExt {
     @NotNull(message = "执行时间不能为空")
     private Date executeTime;
 
+    private String executeCron;
+
     private Integer isExecuted;
 
 }

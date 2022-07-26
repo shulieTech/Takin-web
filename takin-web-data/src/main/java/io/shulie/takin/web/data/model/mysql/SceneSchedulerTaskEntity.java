@@ -40,6 +40,9 @@ public class SceneSchedulerTaskEntity extends TenantBaseEntity {
     @TableField(value = "execute_time")
     private Date executeTime ;
 
+    @TableField(value = "execute_cron")
+    private String executeCron ;
+
     @TableField(value = "is_deleted")
     private Boolean isDeleted ;
 

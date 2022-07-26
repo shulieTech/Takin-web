@@ -235,66 +235,69 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                 }
             }
 
+            Long finalDebugId = debugId;
+            webIDESyncThreadPool.execute(() ->{
+                boolean loop = true;
+                List<Integer> status = new ArrayList<>();
+                do {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(finalDebugId);
+                    log.info("[debug状态回调] workRecordId:{},debugId:{}", workRecordId, finalDebugId);
+                    if (Objects.isNull(debugDetail)) {
+                        break;
+                    }
+                    String level = "INFO";
+                    String msg = ScriptDebugStatusEnum.getDesc(debugDetail.getStatus());
 
-            boolean loop = true;
-            List<Integer> status = new ArrayList<>();
-            do {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
-                log.info("[debug状态回调] workRecordId:{},debugId:{}", workRecordId, debugId);
-                if (Objects.isNull(debugDetail)) {
-                    break;
-                }
-                String level = "INFO";
-                String msg = ScriptDebugStatusEnum.getDesc(debugDetail.getStatus());
+                    if(status.contains(debugDetail.getStatus())){
+                        //如果已经记录了当前状态,就不往下走了，不再触发callback
+                        continue;
+                    }
+                    status.add(debugDetail.getStatus());
 
-                if(status.contains(debugDetail.getStatus())){
-                    //如果已经记录了当前状态,就不往下走了，不再触发callback
-                    continue;
-                }
-                status.add(debugDetail.getStatus());
-
-                if (debugDetail.getStatus() == 4 || debugDetail.getStatus() == 5) {
-                    loop = false;
-                    if (debugDetail.getStatus() == 5) {
-                        level = "ERROR";
-                        //发送报告错误日志
-                        Long cloudReportId = debugDetail.getCloudReportId();
-                        ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
-                        if (Objects.nonNull(report)) {
-                            String resourceId = report.getResourceId();
-                            Long jobId = report.getJobId();
-                            String errorFilePath = tmpFilePath + "/ptl/" + resourceId + "/" + jobId;
-                            if (FileUtil.exist(errorFilePath)) {
-                                String errorContext = FileUtil.readUtf8String(errorFilePath);
-                                log.info("[发送报告错误日志] workRecordId:{},resourceId:{},jobId:{}", workRecordId, resourceId, jobId);
-                                callback(url, errorContext, workRecordId, level);
+                    if (debugDetail.getStatus() == 4 || debugDetail.getStatus() == 5) {
+                        loop = false;
+                        if (debugDetail.getStatus() == 5) {
+                            level = "ERROR";
+                            //发送报告错误日志
+                            Long cloudReportId = debugDetail.getCloudReportId();
+                            ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
+                            if (Objects.nonNull(report)) {
+                                String resourceId = report.getResourceId();
+                                Long jobId = report.getJobId();
+                                String errorFilePath = tmpFilePath + "/ptl/" + resourceId + "/" + jobId;
+                                if (FileUtil.exist(errorFilePath)) {
+                                    String errorContext = FileUtil.readUtf8String(errorFilePath);
+                                    log.info("[发送报告错误日志] workRecordId:{},resourceId:{},jobId:{}", workRecordId, resourceId, jobId);
+                                    callback(url, errorContext, workRecordId, level);
+                                }
                             }
+                            msg += "，调试失败";
+                        } else {
+                            msg += ", 调试成功";
                         }
-                        msg += "，调试失败";
-                    } else {
-                        msg += ", 调试成功";
+
+                        //获取调试详情
+                        PageScriptDebugRequestRequest req = new PageScriptDebugRequestRequest();
+                        req.setScriptDebugId(finalDebugId);
+                        req.setCurrent(0);
+                        req.setPageSize(10);
+                        PagingList<ScriptDebugRequestListResponse> pageDetail = scriptDebugService.pageScriptDebugRequest(req);
+                        if (pageDetail != null) {
+                            List<ScriptDebugRequestListResponse> list = pageDetail.getList();
+                            msg += ": {" + JSON.toJSONString(list) + "}";
+                        }
                     }
 
-                    //获取调试详情
-                    PageScriptDebugRequestRequest req = new PageScriptDebugRequestRequest();
-                    req.setScriptDebugId(debugId);
-                    req.setCurrent(0);
-                    req.setPageSize(10);
-                    PagingList<ScriptDebugRequestListResponse> pageDetail = scriptDebugService.pageScriptDebugRequest(req);
-                    if (pageDetail != null) {
-                        List<ScriptDebugRequestListResponse> list = pageDetail.getList();
-                        msg += ": {" + JSON.toJSONString(list) + "}";
-                    }
-                }
+                    callback(url, msg, workRecordId, level);
+                } while (loop);
+                delScene(entity.getBusinessFlowId());
+            });
 
-                callback(url, msg, workRecordId, level);
-            } while (loop);
-            delScene(entity.getBusinessFlowId());
         }
 
 

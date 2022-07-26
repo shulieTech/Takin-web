@@ -191,7 +191,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             if(StringUtils.isNotBlank(entity.getErrorMsg())){
                 msg+=",{"+entity.getErrorMsg()+"}";
             }
-            callback(url, msg+entity.getErrorMsg(), workRecordId, level);
+            callback(url, msg, workRecordId, level);
         }
 
 
@@ -236,6 +236,8 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             }
 
             Long finalDebugId = debugId;
+
+            // 虽然就一条数据，线程池不能去掉！！！去掉了上面172行会数据库死锁，不要问为什么
             webIDESyncThreadPool.execute(() ->{
                 boolean loop = true;
                 List<Integer> status = new ArrayList<>();

@@ -291,13 +291,13 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             String uuId = UUID.randomUUID().toString();
             request.setResultId(uuId);
             // 获取调试启动标识
-            String startDebugValue = redisClientUtil.getString(performanceDebugUtil.formatStratDebugKey(String.valueOf(request.getId())));
+            String startDebugKey = performanceDebugUtil.formatStratDebugKey(String.valueOf(request.getId()));
+            String startDebugValue = redisClientUtil.getString(startDebugKey);
             if (StringUtils.isNotBlank(startDebugValue)) {
                 throw new RuntimeException("当前场景存在未完成的调试任务，请等待调试结果输出！！！");
             }
             // 空的,开启调试
-            redisClientUtil.setString(performanceDebugUtil.formatStratDebugKey(String.valueOf(request.getId())),
-                    "1", 120, TimeUnit.SECONDS);
+            redisClientUtil.setString(startDebugKey, "1", 120, TimeUnit.SECONDS);
             // 异步处理，这里校验逻辑比较多,处理比较慢
             CompletableFuture.runAsync(() -> this.simple_debug_ext(request), performanceDebugThreadPool);
             return uuId;

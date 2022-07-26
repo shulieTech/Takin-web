@@ -132,7 +132,7 @@ public class SceneController {
                 break;
             case 2:
                 //计算执行时间集合
-                executeTimeList = getTaskPlan(request.getBasicInfo().getExecuteCorn());
+                executeTimeList = getTaskPlan(request.getBasicInfo().getExecuteCron());
                 break;
         }
         executeTimeList.forEach(s->{
@@ -226,14 +226,14 @@ public class SceneController {
                 break;
             case 2:
                 //计算执行时间集合
-                executeTimeList = getTaskPlan(request.getBasicInfo().getExecuteCorn());
+                executeTimeList = getTaskPlan(request.getBasicInfo().getExecuteCron());
                 break;
         }
         executeTimeList.forEach(s->{
             sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
                 setSceneId(request.getBasicInfo().getSceneId());
                 setExecuteTime(s);
-                setExecuteCron(request.getBasicInfo().getExecuteCorn());
+                setExecuteCron(request.getBasicInfo().getExecuteCron());
             }});
         });
 

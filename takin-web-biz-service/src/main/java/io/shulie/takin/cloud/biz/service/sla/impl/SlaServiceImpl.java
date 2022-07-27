@@ -11,7 +11,6 @@ import com.pamirs.takin.cloud.entity.domain.entity.report.Report;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneBusinessActivityRef;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneSlaRef;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.WarnDetail;
-import io.shulie.takin.adapter.api.entrypoint.pressure.PressureTaskApi;
 import io.shulie.takin.adapter.api.model.common.SlaBean;
 import io.shulie.takin.cloud.biz.cloudserver.SceneManageDTOConvert;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
@@ -57,8 +56,6 @@ public class SlaServiceImpl extends AbstractIndicators implements SlaService {
     private TWarnDetailMapper tWarnDetailMapper;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
-    @Resource
-    private PressureTaskApi pressureTaskApi;
     @Resource
     private SceneSlaRefMapper sceneSlaRefMapper;
     @Resource

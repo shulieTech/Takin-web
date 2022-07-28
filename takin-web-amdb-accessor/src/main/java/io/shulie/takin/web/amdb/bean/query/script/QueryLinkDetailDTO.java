@@ -83,7 +83,7 @@ public class QueryLinkDetailDTO extends PagingDevice {
      */
     private String envCode;
 
-    private String traceIdList;
+    private List<String> traceIdList;
 
     /**
      * 耗时ms，比较规则 大于

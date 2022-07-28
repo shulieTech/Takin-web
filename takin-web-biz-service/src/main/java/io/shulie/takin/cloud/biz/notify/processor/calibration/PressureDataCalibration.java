@@ -5,7 +5,6 @@ import java.util.Objects;
 
 import javax.annotation.Resource;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import io.shulie.takin.adapter.api.entrypoint.excess.ExcessTaskApi;
@@ -106,9 +105,10 @@ public class PressureDataCalibration {
                 }));
             }
             message.forEach((key, value) -> map.put(String.valueOf(key), String.valueOf(value)));
-            report.setCalibrationMessage(GsonUtil.gsonToString(map));
-            report.setCalibrationStatus(getStatus(jobId));
-            ReportUpdateParam param = BeanUtil.copyProperties(report, ReportUpdateParam.class);
+            ReportUpdateParam param = new ReportUpdateParam();
+            param.setId(report.getId());
+            param.setCalibrationMessage(GsonUtil.gsonToString(map));
+            param.setCalibrationStatus(getStatus(jobId));
             reportDao.updateReport(param);
         }
     }

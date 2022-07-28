@@ -91,7 +91,7 @@ public class MavenNewVersionPullJob implements SimpleJob {
                             return new Object[] {middlewareSummaryEntity, collect};
                         }
                     } else {
-                        log.error("请求数量为0，url:" + url);
+                        log.warn("请求数量为0，url:" + url);
                     }
                 } catch (Exception e) {
                     log.error(String.format("请求出错，耗时：%d 秒,url:%s", (System.currentTimeMillis() - start) / 1000, url), e);

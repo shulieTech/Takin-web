@@ -109,6 +109,9 @@ public class ShiftCloudController {
     @Value("${benchmark.path}")
     private String path;
 
+    @Value("${yidongyun.path:http://devops.testcloud.com}")
+    private String yPath;
+
     @Autowired
     private PDFUtil pdfUtil;
 
@@ -386,7 +389,7 @@ public class ShiftCloudController {
             }
         }
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        HttpPost httpPost = new HttpPost("http://devops.testcloud.com/ms/testcloudplatform/api/service/test/plan/task/status");
+        HttpPost httpPost = new HttpPost(yPath + "/ms/testcloudplatform/api/service/test/plan/task/status");
         CloseableHttpResponse response = null;
         try {
             StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
@@ -646,7 +649,7 @@ public class ShiftCloudController {
         Map data = new HashMap();
         data.put("userId", "admin");
         data.put("projectId", envCode);
-        String responseJson = HttpUtil.get("http://devops.testcloud.com/ms/vteam/api/service/issue_version/" + envCode + "/flat", data, 10000);
+        String responseJson = HttpUtil.get(yPath + "/ms/vteam/api/service/issue_version/" + envCode + "/flat", data, 10000);
         return ResponseResult.success(JSON.parseObject(responseJson).getJSONObject("data"));
     }
 
@@ -660,7 +663,7 @@ public class ShiftCloudController {
         String resultString = "";
         try {
             // 创建Http Post请求
-            HttpPost httpPost = new HttpPost("http://devops.testcloud.com/ms/vteam/api/service/issue/custom/" + envCode + "/version_iteration/VERSION/" + versionId);
+            HttpPost httpPost = new HttpPost(yPath + "/ms/vteam/api/service/issue/custom/" + envCode + "/version_iteration/VERSION/" + versionId);
             httpPost.addHeader("X-DEVOPS-UID", "admin");
             // 创建请求内容
             StringEntity entity = new StringEntity("[]", ContentType.APPLICATION_JSON);

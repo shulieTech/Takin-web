@@ -123,14 +123,14 @@ public class ActivityCategoryServiceImpl implements ActivityCategoryService {
 
     @Override
     public void move(Long fromCategoryId, Long toCategoryId) {
-        if (Objects.equals(fromCategoryId, toCategoryId)) {
+        if (Objects.equals(fromCategoryId, toCategoryId) || isRoot(fromCategoryId)) {
             return;
         }
         ActivityCategoryEntity sourceCategory = activityCategoryDAO.findById(fromCategoryId);
         if (Objects.isNull(sourceCategory)) {
             throw new RuntimeException("源业务活动分类不存在");
         }
-        ActivityCategoryEntity destCategory = activityCategoryDAO.findById(toCategoryId);
+        ActivityCategoryEntity destCategory = isRoot(toCategoryId)? ROOT : activityCategoryDAO.findById(toCategoryId);
         if (Objects.isNull(destCategory)) {
             throw new RuntimeException("目标业务活动分类不存在");
         }

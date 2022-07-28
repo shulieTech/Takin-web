@@ -82,7 +82,7 @@ public class NewSceneRequest {
         @JsonFormat(pattern = "yyyy-MM-dd hh:mm", timezone = "GMT+8")
         private Date executeTime;
         @ApiModelProperty(value = "定时执行表达式")
-        private String executeCorn;
+        private String executeCron;
     }
 
     @Data

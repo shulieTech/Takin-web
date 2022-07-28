@@ -762,12 +762,16 @@ public class DsServiceImpl implements DsService {
                 String context = "";
                 JSONObject dataObj = JSONObject.parseObject(shadowPwdStr);
                 String tag = dataObj.getString("tag");
-                if ("2".equals(tag)) {
-                    context = dataObj.getString("context");
-                }
-                extObj.put("shadowPwd", context);
                 // 打一个标记字段,是否处理为新版本，解析使用
                 extObj.put(EXT_FLAG, "true");
+                if ("2".equals(tag) || "3".equals(tag)) {
+                    context = dataObj.getString("context");
+                    if("3".equals(tag)){
+                        extObj.put(EXT_FLAG, "3");
+                    }
+                }
+                extObj.put("shadowPwd", context);
+
             }
         }
         // 重新设置下extObj

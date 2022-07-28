@@ -53,6 +53,8 @@ public interface StyleTemplate {
 
     String key8 = "PT_业务连接密码";
 
+    String key9 = "三方key";
+
 
     @AllArgsConstructor
     @Getter

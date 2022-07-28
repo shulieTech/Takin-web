@@ -3,6 +3,9 @@ package io.shulie.takin.web.ext.entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author by: hezhongqi
  * @date 2021/8/2 21:07
@@ -42,4 +45,12 @@ public class SsoUserExt {
      * 登录状态
      */
     private boolean loginStatus;
+
+    private List<String> permissionUrl;
+
+    private Map<String, Boolean> permissionMenu;
+
+    private Map<String, Boolean> permissionAction;
+
+    private Map<String, List<Integer>> permissionData;
 }

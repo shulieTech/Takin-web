@@ -14,7 +14,6 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailRespon
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
-import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceDebugService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceParamService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceResultService;
@@ -58,9 +57,6 @@ import java.util.stream.Collectors;
 public class PerformanceDebugServiceImpl implements PerformanceDebugService {
     @Resource
     private PerformanceConfigDAO performanceConfigDAO;
-
-    @Resource
-    private PerformanceConfigService performanceConfigService;
 
     @Resource
     private InterfacePerformanceConfigMapper interfacePerformanceConfigMapper;

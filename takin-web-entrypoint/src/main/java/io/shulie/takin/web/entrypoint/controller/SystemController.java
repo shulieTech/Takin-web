@@ -24,6 +24,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
 import io.shulie.takin.web.biz.service.BaseConfigService;
+import io.shulie.takin.web.biz.service.sys.VersionService;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.constant.BaseConfigConstant;
 import io.shulie.takin.web.data.result.system.SystemInfoItemVo;
@@ -79,6 +80,9 @@ public class SystemController {
     @Resource
     private AppConfig appConfig;
 
+    @Resource
+    private VersionService versionService;
+
     /**
      * 前端样式存储
      * @return
@@ -103,9 +107,11 @@ public class SystemController {
         SystemInfoItemVo confInfo = buildProductConfInfo();
         //个人信息
         SystemInfoItemVo selfInfo = buildSelfInfo();
+        // git版本信息
+        SystemInfoItemVo gitVersions = buildGitVersion();
 
         SystemInfoVo resultVo = new SystemInfoVo();
-        resultVo.setItemVos(Lists.newArrayList(versionInfo, confInfo, selfInfo));
+        resultVo.setItemVos(Lists.newArrayList(versionInfo, confInfo, selfInfo, gitVersions));
         return resultVo;
     }
 
@@ -227,6 +233,13 @@ public class SystemController {
         }
 
         return "";
+    }
+
+    private SystemInfoItemVo buildGitVersion() {
+        SystemInfoItemVo gitVersions = new SystemInfoItemVo();
+        gitVersions.setTitle("git版本信息");
+        gitVersions.setDataMap(versionService.queryZkVersionData());
+        return gitVersions;
     }
 
 }

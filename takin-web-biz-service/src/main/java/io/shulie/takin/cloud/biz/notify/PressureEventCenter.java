@@ -221,7 +221,7 @@ public class PressureEventCenter extends AbstractIndicators {
             try {
                 stopJob(context.getResourceId(), context.getJobId());
             } catch (Exception ignore) {}
-            updateSceneFailed(context.getSceneId(), SceneManageStatusEnum.STOP);
+            updateSceneFailed(context, SceneManageStatusEnum.STOP);
             if (!redisClientUtil.hasKey(PressureStartCache.getReportCachedKey(reportId))) {
                 sceneTaskService.cacheReportKey(reportId);
             }
@@ -241,7 +241,7 @@ public class PressureEventCenter extends AbstractIndicators {
             unLockFlow(reportId, context.getTenantId());
             releaseResource(resourceId);
             deleteReport(reportId, message);
-            updateSceneFailed(context.getSceneId(), SceneManageStatusEnum.FAILED);
+            updateSceneFailed(context, SceneManageStatusEnum.FAILED);
             checkFailed(context, message);
             pressureTaskDAO.updateStatus(context.getTaskId(), PressureTaskStateEnum.INACTIVE, null);
         }
@@ -401,13 +401,23 @@ public class PressureEventCenter extends AbstractIndicators {
     /**
      * 标记场景为失败状态
      *
-     * @param sceneId 场景Id
+     * @param context 资源
      */
-    private void updateSceneFailed(Long sceneId, SceneManageStatusEnum statusEnum) {
+    private void updateSceneFailed(ResourceContext context, SceneManageStatusEnum statusEnum) {
+        String resourceId = context.getResourceId();
+        // 没有资源Id时，触发的失败是并发启动的问题或者前置校验问题
+        if (StringUtils.isBlank(resourceId)) {
+            Long reportId = context.getReportId();
+            String sceneResourceKey = PressureStartCache.getSceneResourceKey(context.getSceneId());
+            Object sceneReport = redisClientUtil.hmget(sceneResourceKey, PressureStartCache.REPORT_ID);
+            if (Objects.nonNull(sceneReport) && !Objects.equals(reportId, sceneReport)) {
+                return;
+            }
+        }
         sceneManageDAO.getBaseMapper().update(null,
             Wrappers.lambdaUpdate(SceneManageEntity.class)
                 .set(SceneManageEntity::getStatus, statusEnum.getValue())
-                .eq(SceneManageEntity::getId, sceneId));
+                .eq(SceneManageEntity::getId, context.getSceneId()));
     }
 
     private void fillFeatures(ReportResult report, String message) {

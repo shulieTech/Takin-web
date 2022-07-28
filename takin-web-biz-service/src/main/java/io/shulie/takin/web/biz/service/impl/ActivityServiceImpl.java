@@ -390,10 +390,12 @@ public class ActivityServiceImpl implements ActivityService {
         List<String> exists = activityDAO.exists(param);
         if (CollectionUtils.isNotEmpty(exists)) {
             Optional<String> any = exists.stream().filter(item -> !item.equals(request.getActivityName())).findAny();
-            if (any.isPresent()) {
-                throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
-                        String.format("保存失败，虚拟入口已[业务活动：%s：入口：%s]已被使用，对应的虚拟业务活动名为：%s", request.getActivityName(),
-                                request.getVirtualEntrance(), any.get()));
+            if(!"move".equals(request.getOptType())){
+                if (any.isPresent()) {
+                    throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
+                            String.format("保存失败，虚拟入口已[业务活动：%s：入口：%s]已被使用，对应的虚拟业务活动名为：%s", request.getActivityName(),
+                                    request.getVirtualEntrance(), any.get()));
+                }
             }
         }
         return oldActivity;
@@ -490,16 +492,20 @@ public class ActivityServiceImpl implements ActivityService {
             param.setRpcType(request.getRpcType());
             param.setServiceName(request.getServiceName());
             param.setActivityType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
+
             List<String> exists = activityDAO.exists(param);
             if (CollectionUtils.isNotEmpty(exists)) {
                 Optional<String> any = exists.stream()
                         .filter(item -> !item.equals(request.getActivityName()))
                         .findAny();
-                if (any.isPresent()) {
-                    throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, String
-                            .format("保存失败，入口已[应用名称：%s，类型：%s，入口：%s]已被使用，对应的虚拟业务活动为：%s", request.getActivityName(),
-                                    request.getType().getType(), request.getServiceName(), any.get()));
+                if(!"move".equals(request.getOptType())) {
+                    if (any.isPresent()) {
+                        throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, String
+                                .format("保存失败，入口已[应用名称：%s，类型：%s，入口：%s]已被使用，对应的虚拟业务活动为：%s", request.getActivityName(),
+                                        request.getType().getType(), request.getServiceName(), any.get()));
+                    }
                 }
+
             }
         }
         return oldActivity;

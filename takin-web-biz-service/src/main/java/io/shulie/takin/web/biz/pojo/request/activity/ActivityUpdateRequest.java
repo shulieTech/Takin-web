@@ -16,6 +16,9 @@ import lombok.Data;
 @ApiModel("业务活动修改对象")
 public class ActivityUpdateRequest {
 
+    @ApiModelProperty("optType")
+    private String optType;
+
     @NotNull
     @ApiModelProperty("业务活动ID")
     private Long activityId;

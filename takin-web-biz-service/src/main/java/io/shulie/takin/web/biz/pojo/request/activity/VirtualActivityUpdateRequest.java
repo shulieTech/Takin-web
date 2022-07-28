@@ -17,6 +17,9 @@ import lombok.Data;
 @ApiModel("业务活动修改对象")
 public class VirtualActivityUpdateRequest {
 
+    @ApiModelProperty("optType")
+    private String optType;
+
     @NotNull(message = "业务活动ID不能为空")
     @ApiModelProperty("业务活动ID")
     private Long activityId;

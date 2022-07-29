@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.webide.impl;
 
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpGlobalConfig;
 import cn.hutool.http.HttpRequest;
@@ -107,6 +108,10 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void syncScript(WebIDESyncScriptRequest request) {
+
+        long startTime = System.currentTimeMillis();
+        long createDebugTime =  System.currentTimeMillis();
+
         List<ScriptDebugDoDebugRequest> scriptDeploys = new ArrayList<>();
 
         String url = request.getCallbackAddr();
@@ -193,7 +198,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             }
             callback(url, msg, workRecordId, level);
         }
-
+        long  initializationTime = System.currentTimeMillis();
 
         //启动调试
         if (initData && scriptDeploys.size() > 0) {
@@ -234,7 +239,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     delScene(entity.getBusinessFlowId());
                 }
             }
-
+            createDebugTime =System.currentTimeMillis();
             Long finalDebugId = debugId;
 
             // 虽然就一条数据，线程池不能去掉！！！去掉了上面172行会数据库死锁，不要问为什么
@@ -302,7 +307,25 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
         }
 
+        long debugTime = System.currentTimeMillis();
+        long endTime = System.currentTimeMillis();
 
+        //数据初始化耗时
+        long initTime = initializationTime - startTime;
+        //启动调试耗时
+        long runTime = createDebugTime - initializationTime;
+        //调试耗时
+        long debugEndTime = debugTime - createDebugTime;
+        //总耗时
+        long time = endTime - startTime;
+
+        log.info("[webIDE同步时间] startTime:{} ms,endTime:{} ms,总耗时:{} ms, 数据初始化耗时: {} ms，启动调试耗时:{} ms, 调试耗时:{} ms"
+                ,startTime,endTime,time,initTime,runTime,debugEndTime);
+        entity.setStartTime(startTime);
+        entity.setInitTime(initTime);
+        entity.setPrepareDebugTime(runTime);
+        entity.setDebugTime(debugEndTime);
+        entity.setTotalTime(time);
         webIDESyncThreadPool.execute(() -> saveSyncDetail(entity));
     }
 

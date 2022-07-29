@@ -21,7 +21,10 @@ import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.BusinessActivitySummaryBean;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.DistributedLock;
@@ -59,6 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.math.BigDecimal;
@@ -153,7 +157,14 @@ public class ShiftCloudController {
 
     //2.2
     @PostMapping("/api/c/self-service-api/Performance/task_api/task_list")
-    public BaseResult getSceneManagers(@RequestBody ShiftCloudVO shiftCloudVO) {
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.YI_DONG_YUN_TASK_LIST,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public BaseResult getSceneManagers(@RequestBody ShiftCloudVO shiftCloudVO, HttpServletRequest request) {
+        String token = request.getAttribute("token").toString();
+        String pid = request.getAttribute("pid").toString();
+
         BaseResult result = new BaseResult<>();
         try {
             SceneManageQueryVO queryVO = new SceneManageQueryVO();
@@ -201,7 +212,7 @@ public class ShiftCloudController {
                 }
                 //TODO 数据不足是拿基准测试补齐
                 Map data = new HashMap();
-                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?ignore=true&userId=" + id + "&current=" + current + "&pageSize=" + pageSize + "&status=", data, 10000);
+                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?token="+token+"&envCode="+pid+"&userId=" + id + "&current=" + current + "&pageSize=" + pageSize + "&status=", data, 10000);
                 if (StringUtils.isNotBlank(responseJson)) {
                     Long finalId = id;
                     JSONArray ja = JSON.parseObject(responseJson).getJSONObject("data").getJSONArray("records");
@@ -231,7 +242,15 @@ public class ShiftCloudController {
 
     //2.4
     @PostMapping("/api/c/self-service-api/Performance/task_api/execute_task")
-    public BaseResult executeTask(@RequestBody ShiftCloudVO shiftCloudVO) {
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.YI_DONG_YUN_EXECUTE_TASK,
+            needAuth = ActionTypeEnum.START_STOP
+    )
+    public BaseResult executeTask(@RequestBody ShiftCloudVO shiftCloudVO, HttpServletRequest request) {
+
+        String token = request.getAttribute("token").toString();
+        String pid = request.getAttribute("pid").toString();
+
         BaseResult baseResult = new BaseResult();
         try {
             String taskId = shiftCloudVO.getTool_task_id();
@@ -250,7 +269,7 @@ public class ShiftCloudController {
                             data.put("tool_execute_id", WEB + toolExecuteId);
                             ScheduledExecutorService pool = Executors.newScheduledThreadPool(4);
                             pool.scheduleWithFixedDelay(() -> {
-                                boolean status = this.pushStatus(WEB + toolExecuteId);
+                                boolean status = this.pushStatus(WEB + toolExecuteId,token,pid);
                                 if (status) {
                                     pool.shutdown();
                                 }
@@ -266,15 +285,15 @@ public class ShiftCloudController {
                 int type;
                 String suites = null;
 
-                String rj = HttpUtil.get(path + "/api/benchmark/scene/detail?ignore=true&id=" + taskId.replaceFirst(BENCH, ""), 10000);
+                String rj = HttpUtil.get(path + "/api/benchmark/scene/detail?token="+token+"&envCode="+pid+"&id=" + taskId.replaceFirst(BENCH, ""), 10000);
                 if (StringUtils.isNotBlank(rj)) {
                     BenchmarkSceneDetailVO b = JSON.parseObject(rj).getObject("data", BenchmarkSceneDetailVO.class);
                     suites = b.getSuites();
                 }
-                getId(flag, id, type = 1, suites);
-                if (!flag[0]) getId(flag, id, type = 2, suites);
-                if (!flag[0]) getId(flag, id, type = 1, null);
-                if (!flag[0]) getId(flag, id, type = 2, null);
+                getId(flag, id, type = 1, suites,token,pid);
+                if (!flag[0]) getId(flag, id, type = 2, suites, token, pid);
+                if (!flag[0]) getId(flag, id, type = 1, null, token, pid);
+                if (!flag[0]) getId(flag, id, type = 2, null, token, pid);
                 if (!flag[0]) baseResult.fail("压力机繁忙");
                 else {
                     Map data = new HashMap();
@@ -285,7 +304,7 @@ public class ShiftCloudController {
 
 
                     CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-                    HttpPost httpPost = new HttpPost(path + "api/pressure/start?ignore=true");
+                    HttpPost httpPost = new HttpPost(path + "api/pressure/start?token="+token+"&envCode="+pid);
                     CloseableHttpResponse response = null;
                     String responseJson = null;
                     try {
@@ -321,7 +340,7 @@ public class ShiftCloudController {
                             ScheduledExecutorService pool = Executors.newScheduledThreadPool(4);
                             String finalResponseJson = responseJson;
                             pool.scheduleWithFixedDelay(() -> {
-                                boolean status = this.pushStatus(BENCH + JSON.parseObject(finalResponseJson).getLong("data"));
+                                boolean status = this.pushStatus(BENCH + JSON.parseObject(finalResponseJson).getLong("data"),token,pid);
                                 if (status) {
                                     pool.shutdown();
                                 }
@@ -338,9 +357,9 @@ public class ShiftCloudController {
         }
     }
 
-    private void getId(final boolean[] flag, final AtomicLong id, int i, String suite) {
+    private void getId(final boolean[] flag, final AtomicLong id, int i, String suite, String token, String pid) {
         Map data = new HashMap();
-        String responseJson = HttpUtil.get(path + "/api/machine/list?ignore=true&type=" + i, data, 10000);
+        String responseJson = HttpUtil.get(path + "/api/machine/list?token="+token+"&envCode="+pid+"&type=" + i, data, 10000);
         if (StringUtils.isNotBlank(responseJson)) {
             JSON.parseObject(responseJson).getJSONArray("data").forEach(o -> {
                 if (!flag[0]) {
@@ -371,19 +390,19 @@ public class ShiftCloudController {
     }
 
     //2.5
-    public boolean pushStatus(String rd) {
+    public boolean pushStatus(String rd, String token, String pid) {
         Map data = new HashMap();
         if (isWeb(rd)) {
             long reportId = Long.parseLong(rd.replaceFirst(WEB, ""));
             try {
-                data = this.getData(reportId, true);
+                data = this.getData(reportId, true, token, pid);
             } catch (Exception e) {
                 log.error(e.getStackTrace().toString());
             }
         } else {
             long reportId = Long.parseLong(rd.replaceFirst(BENCH, ""));
             try {
-                data = this.getData(reportId, false);
+                data = this.getData(reportId, false, token, pid);
             } catch (Exception e) {
                 log.error(e.getStackTrace().toString());
             }
@@ -415,21 +434,29 @@ public class ShiftCloudController {
 
     //2.6
     @PostMapping("/ms/task/api/service/task/sdk/log")
-    public BaseResult log(@RequestBody ShiftCloudVO shiftCloudVO) throws Exception {
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.YI_DONG_YUN_TASK_LOG,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public BaseResult log(@RequestBody ShiftCloudVO shiftCloudVO,HttpServletRequest request) throws Exception {
+
+        String token = request.getAttribute("token").toString();
+        String pid = request.getAttribute("pid").toString();
+
         BaseResult baseResult = new BaseResult();
         Map data = new HashMap();
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
             if (isWeb(shiftCloudVO.getTool_execute_id())) {
-                data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")), true);
+                data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")), true,token,pid);
             } else {
-                data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")), false);
+                data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")), false, token, pid);
             }
         }
         baseResult.setData(data);
         return baseResult;
     }
 
-    private Map getData(long reportId, boolean isWeb) throws ParseException {
+    private Map getData(long reportId, boolean isWeb, String token, String pid) throws ParseException {
         HashMap data = new HashMap();
         if (isWeb) {
             ResponseResult<ReportDetailOutput> responseResult = reportController.getReportByReportId(reportId);
@@ -519,7 +546,7 @@ public class ShiftCloudController {
             data.put("tool_execute_id", BENCH + reportId);
             Map result = new HashMap();
             result.put("id", reportId);
-            String responseJson = HttpUtil.get(path + "/api/task?ignore=true", result, 10000);
+            String responseJson = HttpUtil.get(path + "/api/task?token="+token+"&envCode="+pid, result, 10000);
             int s = 0;
             int c1 = 0;
             int c3 = 0;
@@ -547,7 +574,7 @@ public class ShiftCloudController {
                 }
             }
             data.put("tool_code", "Performance");
-            String taskResponseJson = HttpUtil.get(path + "/api/task/n?ignore=true", result, 10000);
+            String taskResponseJson = HttpUtil.get(path + "/api/task/n?token="+token+"&envCode="+pid, result, 10000);
             Map analysis = new HashMap();
             if (StringUtils.isNotBlank(taskResponseJson))
                 analysis.put("coverDemand", Integer.parseInt(taskResponseJson));
@@ -565,7 +592,15 @@ public class ShiftCloudController {
 
     //2.7
     @GetMapping("/api/c/report/export")
-    public void export(ShiftCloudVO shiftCloudVO, HttpServletResponse response) throws Exception {
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.YI_DONG_YUN_TASK_REPORT,
+            needAuth = ActionTypeEnum.REPORT
+    )
+    public void export(ShiftCloudVO shiftCloudVO, HttpServletResponse response,HttpServletRequest request) throws Exception {
+
+        String token = request.getAttribute("token").toString();
+        String pid = request.getAttribute("pid").toString();
+
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
             if (isWeb(shiftCloudVO.getTool_execute_id())) {
                 ResponseResult<String> url = reportController.getExportDownLoadUrl(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")));
@@ -573,7 +608,7 @@ public class ShiftCloudController {
                     this.export(url.getData(), response);
                 }
             } else {
-                List<String> paths = benchExport(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")));
+                List<String> paths = benchExport(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")),token,pid);
                 paths.forEach(p -> export(p, response));
             }
 
@@ -604,7 +639,7 @@ public class ShiftCloudController {
         }
     }
 
-    private List<String> benchExport(long reportId) {
+    private List<String> benchExport(long reportId, String token, String pid) {
         String lockKey = String.format(LockKeyConstants.LOCK_REPORT_EXPORT, reportId);
         if (!distributedLock.tryLockSecondsTimeUnit(lockKey, 0L, 30L)) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, "操作太频繁!");
@@ -612,14 +647,14 @@ public class ShiftCloudController {
         List paths = new ArrayList();
         Map result = new HashMap();
         result.put("id", reportId);
-        String taskResponseJson = HttpUtil.get(path + "/api/task/task?ignore=true", result, 10000);
+        String taskResponseJson = HttpUtil.get(path + "/api/task/task?token="+token+"&envCode="+pid, result, 10000);
         if (StringUtils.isNotBlank(taskResponseJson)) {
             Map<String, Object> dataModel = new HashMap<>();
             List<PressureTaskResult> t = JSON.parseArray(taskResponseJson, PressureTaskResult.class);
             if (CollectionUtils.isNotEmpty(t)) {
                 for (PressureTaskResult p : t) {
                     result.put("reportId", p.getId());
-                    String d = HttpUtil.get(path + "/api/benchmark/result/detail?ignore=true", result, 10000);
+                    String d = HttpUtil.get(path + "/api/benchmark/result/detail?token="+token+"&envCode="+pid, result, 10000);
                     if (StringUtils.isNotBlank(d)) {
                         dataModel.put("data", JSON.parseObject(d).getObject("data", PressureTaskResultVO.class));
                         String content = pdfUtil.parseFreemarker("report/tpl.html", dataModel);

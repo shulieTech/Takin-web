@@ -122,6 +122,12 @@ public final class BizOpConstants {
         public static final String DASHBOARD_APPMANAGE = "dashboard_"+ APPLICATION_MANAGE ;
         public static final String DASHBOARD_SCENE = "dashboard_" + PRESSURE_TEST_SCENE;
         public static final String DASHBOARD_REPORT = "dashboard_" + PRESSURE_TEST_REPORT;
+
+
+        public static final String YI_DONG_YUN_TASK_LIST = "yidongyun_task_list";
+        public static final String YI_DONG_YUN_EXECUTE_TASK = "yidongyun_execute_task";
+        public static final String YI_DONG_YUN_TASK_LOG = "yidongyun_task_log";
+        public static final String YI_DONG_YUN_TASK_REPORT = "yidongyun_task_report";
     }
 
     public static class OpTypes {

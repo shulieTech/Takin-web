@@ -2,7 +2,6 @@ package io.shulie.takin.web.biz.service.webide.impl;
 
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpGlobalConfig;
 import cn.hutool.http.HttpRequest;
@@ -326,6 +325,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
         entity.setPrepareDebugTime(runTime);
         entity.setDebugTime(debugEndTime);
         entity.setTotalTime(time);
+        entity.setEndTime(endTime);
         webIDESyncThreadPool.execute(() -> saveSyncDetail(entity));
     }
 

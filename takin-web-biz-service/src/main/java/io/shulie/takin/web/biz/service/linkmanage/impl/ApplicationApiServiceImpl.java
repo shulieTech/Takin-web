@@ -140,9 +140,9 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
 
                 // 把旧的记录删除了，新的再添加
                 applicationApiDAO.deleteByAppName(appName);
-
-                applicationApiDAO.insertBatch(batch);
-
+                if (CollectionUtils.isNotEmpty(batch)) {
+                    applicationApiDAO.insertBatch(batch);
+                }
             } catch (Exception e) {
                 log.error("agent 注册 api 异常, lockKey=[{}]", lockKey, e);
                 if (CollectionUtils.isNotEmpty(batch)) {
@@ -172,7 +172,7 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
             } catch (Exception e3) {
                 log.error(e3.getMessage(), e3);
                 throw new TakinWebException(TakinWebExceptionEnum.AGENT_REGISTER_API_ERROR,
-                    "agent 注册 api 异常, 联系技术人员定位", e3);
+                        "agent 注册 api 异常, 联系技术人员定位", e3);
             }
         });
         return Response.success();

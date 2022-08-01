@@ -37,7 +37,9 @@ import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.mapper.mysql.YReleationTaskMapper;
 import io.shulie.takin.web.data.mapper.mysql.YVersionMapper;
+import io.shulie.takin.web.data.model.mysql.YReleationTaskEntity;
 import io.shulie.takin.web.data.model.mysql.YVersionEntity;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.entrypoint.controller.report.ReportController;
@@ -109,6 +111,9 @@ public class ShiftCloudController {
 
     @Autowired
     private YVersionMapper yVersionMapper;
+
+    @Autowired
+    private YReleationTaskMapper mapper;
 
     @Value("${benchmark.path}")
     private String path;
@@ -354,6 +359,16 @@ public class ShiftCloudController {
         } catch (Exception e) {
             baseResult.fail(e.getMessage());
             return baseResult;
+        } finally {
+            Object data = baseResult.getData();
+            if (null != data) {
+                String taskId = JSON.parseObject(data.toString()).getString("tool_execute_id");
+                YReleationTaskEntity entity = new YReleationTaskEntity();
+                entity.setTaskId(taskId);
+                entity.setEnvCode(pid);
+                entity.setUserId(WebPluginUtils.traceUserId());
+                mapper.insert(entity);
+            }
         }
     }
 

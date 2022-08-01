@@ -17,7 +17,7 @@ public class YReleationTaskEntity extends TenantBaseEntity {
      * 文件id
      */
     @TableField(value = "task_id")
-    private Long taskId;
+    private String taskId;
 
     /**
      * 脚本id
@@ -26,5 +26,5 @@ public class YReleationTaskEntity extends TenantBaseEntity {
     private String envCode;
 
     @TableField(value = "user_id")
-    private String userId;
+    private Long userId;
 }

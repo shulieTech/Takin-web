@@ -179,8 +179,10 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
 
     @Override
     public Map<String, List<String>> pullApiV1(String appName) {
+        ApplicationDetailResult application = applicationDAO.getApplicationByTenantIdAndName(appName);
         ApplicationApiParam apiParam = new ApplicationApiParam();
         apiParam.setAppName(appName);
+        apiParam.setAppId(application.getApplicationId());
         List<ApplicationApiManageResult> all = applicationApiDAO.querySimpleWithTenant(apiParam);
         if (CollectionUtils.isEmpty(all)) {
             return null;

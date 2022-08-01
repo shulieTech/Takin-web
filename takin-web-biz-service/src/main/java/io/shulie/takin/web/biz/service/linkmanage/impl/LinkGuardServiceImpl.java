@@ -184,7 +184,8 @@ public class LinkGuardServiceImpl implements LinkGuardService {
 
     @Override
     public List<LinkGuardVo> agentSelect(String appName) {
-        List<LinkGuardResult> results = linkGuardDAO.selectByAppNameUnderCurrentUser(appName);
+        ApplicationDetailResult application = applicationDAO.getApplicationByTenantIdAndName(appName);
+        List<LinkGuardResult> results = linkGuardDAO.selectByAppNameUnderCurrentUser(application.getApplicationId());
         return results.stream().map(item -> {
             LinkGuardVo target = new LinkGuardVo();
             BeanUtils.copyProperties(item, target);

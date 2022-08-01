@@ -480,10 +480,12 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
 
     @Override
     public List<ShadowConsumerVO> agentSelect(String appName) {
+        ApplicationDetailResult application = applicationDAO.getApplicationByTenantIdAndName(appName);
         LambdaQueryWrapper<ShadowMqConsumerEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getDeleted, ShadowConsumerConstants.LIVED);
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getStatus, ShadowConsumerConstants.ENABLE);
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getApplicationName, appName);
+        lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getApplicationId, application.getApplicationId());
         List<ShadowMqConsumerEntity> entities = shadowMqConsumerMapper.selectList(lambdaQueryWrapper);
         if (CollectionUtils.isEmpty(entities)) {
             return Lists.newArrayList();

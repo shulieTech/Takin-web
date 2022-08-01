@@ -93,4 +93,25 @@ public class LinkGuardDAOImpl extends ServiceImpl<LinkGuardMapper, LinkGuardEnti
         this.update(wrapper);
     }
 
+    @Override
+    public List<LinkGuardResult> selectByAppNameUnderCurrentUser(Long appId) {
+        List<LinkGuardResult> results = new ArrayList<>();
+        LambdaQueryWrapper<LinkGuardEntity> wrapper = new LambdaQueryWrapper<>();
+        if (WebPluginUtils.checkUserPlugin()) {
+            wrapper.eq(LinkGuardEntity::getTenantId, WebPluginUtils.traceTenantId());
+        }
+        wrapper.eq(LinkGuardEntity::getApplicationId, appId);
+        List<LinkGuardEntity> linkGuardEntities = this.getBaseMapper().selectList(wrapper);
+        if (CollectionUtils.isEmpty(linkGuardEntities)) {
+            return results;
+        }
+        return linkGuardEntities.stream().map(item -> {
+            LinkGuardResult target = new LinkGuardResult();
+            BeanUtils.copyProperties(item, target);
+            // 启动
+            target.setIsEnable(item.getIsEnable() == GuardEnableConstants.GUARD_ENABLE);
+            return target;
+        }).collect(Collectors.toList());
+    }
+
 }

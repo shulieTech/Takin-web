@@ -216,6 +216,8 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         if (Objects.isNull(param.getConfigKey())) {
             throw new TakinWebException(ExceptionCode.POD_NUM_EMPTY, "configKey为空");
         }
+        ApplicationDetailResult application = applicationDAO.getApplicationByTenantIdAndName(param.getApplicationName());
+        param.setApplicationId(application.getApplicationId());
         List<ApplicationPluginsConfigEntity> list = applicationPluginsConfigDAO.findList(param);
         if (list != null && !list.isEmpty()) {
             return CopyUtils.copyFieldsList(list, ApplicationPluginsConfigVO.class);

@@ -10,4 +10,6 @@ import lombok.Data;
 public class ApplicationApiParam extends BaseTenantBean {
 
     private String appName;
+
+    private Long appId;
 }

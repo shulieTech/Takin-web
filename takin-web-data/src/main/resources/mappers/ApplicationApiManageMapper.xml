@@ -170,6 +170,9 @@
         <if test="appName != null">
             and APPLICATION_NAME = #{appName}
         </if>
+        <if test="appId != null">
+            and APPLICATION_ID = #{appId}
+        </if>
     </select>
 
     <select id="selectBySelective" parameterType="io.shulie.takin.web.data.model.mysql.ApplicationApiManageEntity"

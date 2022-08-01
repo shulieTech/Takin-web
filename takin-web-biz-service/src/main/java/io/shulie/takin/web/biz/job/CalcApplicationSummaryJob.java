@@ -30,11 +30,11 @@ import org.springframework.util.CollectionUtils;
  */
 @Component
 @ElasticSchedulerJob(jobName = "calcApplicationSummaryJob",
-    // 分片序列号和参数用等号分隔 不需要参数可以不加
-    isSharding = true,
-    //shardingItemParameters = "0=0,1=1,2=2",
-    cron = "*/10 * * * * ?",
-    description = "汇总应用 机器数 风险机器数")
+        // 分片序列号和参数用等号分隔 不需要参数可以不加
+        isSharding = true,
+        //shardingItemParameters = "0=0,1=1,2=2",
+        cron = "*/10 * * * * ?",
+        description = "汇总应用 机器数 风险机器数")
 @Slf4j
 public class CalcApplicationSummaryJob extends AbstractSceneTask implements SimpleJob {
 
@@ -59,6 +59,7 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
         final Boolean openVersion = WebPluginUtils.isOpenVersion();
         List<SceneTaskDto> taskDtoList = getTaskFromRedis();
         if (taskDtoList == null) {
+            log.warn("current not running pressure task!!!");
             return;
         }
         if (openVersion) {

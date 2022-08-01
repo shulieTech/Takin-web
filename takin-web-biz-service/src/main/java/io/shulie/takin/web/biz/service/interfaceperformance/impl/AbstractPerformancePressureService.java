@@ -75,6 +75,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.Assert;
@@ -88,6 +89,7 @@ import java.util.stream.Collectors;
  * @Date: 2022/5/20 10:51
  * @Description:
  */
+@Slf4j
 public abstract class AbstractPerformancePressureService
         extends PerformancePressureAdaptor implements PerformancePressureService {
     @Autowired
@@ -136,14 +138,18 @@ public abstract class AbstractPerformancePressureService
     public ResponseResult delete(Long apiId) {
         Long sceneId = fetchSceneId(apiId);
         if (!Objects.isNull(sceneId)) {
-            ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(sceneId);
-            if (Objects.isNull(webResponse.getData())) {
-                OperationLogContextHolder.ignoreLog();
-                throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "该压测场景不存在");
+            try {
+                ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(sceneId);
+                if (Objects.isNull(webResponse.getData())) {
+                    OperationLogContextHolder.ignoreLog();
+                    throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "该压测场景不存在");
+                }
+                SceneManageDeleteReq deleteReq = new SceneManageDeleteReq();
+                deleteReq.setId(sceneId);
+                sceneManageService.deleteScene(deleteReq);
+            } catch (Throwable e) {
+                log.error(ExceptionUtils.getStackTrace(e));
             }
-            SceneManageDeleteReq deleteReq = new SceneManageDeleteReq();
-            deleteReq.setId(sceneId);
-            sceneManageService.deleteScene(deleteReq);
         }
         doAfterDelete(apiId);
         return ResponseResult.success();
@@ -504,7 +510,7 @@ public abstract class AbstractPerformancePressureService
     @Override
     public ResponseResult<SceneDetailResponse> query(Long apiId) throws Throwable {
         Long sceneId = fetchSceneId(apiId);
-        if(sceneId == null){
+        if (sceneId == null) {
             return null;
         }
         SceneManageQueryReq request = new SceneManageQueryReq() {

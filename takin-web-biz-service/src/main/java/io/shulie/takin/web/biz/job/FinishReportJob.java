@@ -54,7 +54,7 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
         //任务开始
         List<SceneTaskDto> taskDtoList = getTaskFromRedis();
         if (taskDtoList == null) {
-            log.warn("TaskList is null");
+            log.warn("current not running pressure task!!!");
             return;
         }
         if (openVersion) {

@@ -25,19 +25,16 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ElasticSchedulerJob(jobName = "calcTpsTargetJob",
-    // 分片序列号和参数用等号分隔 不需要参数可以不加
-    //shardingItemParameters = "0=0,1=1,2=2",
-    isSharding = true,
-    cron = "*/10 * * * * ?",
-    description = "获取tps指标图")
+        // 分片序列号和参数用等号分隔 不需要参数可以不加
+        //shardingItemParameters = "0=0,1=1,2=2",
+        isSharding = true,
+        cron = "*/10 * * * * ?",
+        description = "获取tps指标图")
 @Slf4j
 public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
 
     @Autowired
     private ReportTaskService reportTaskService;
-
-    @Autowired
-    private ThreadPoolUtil threadPoolUtil;
 
     private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
     private static AtomicInteger EMPTY = new AtomicInteger();
@@ -57,7 +54,7 @@ public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
         final Boolean openVersion = WebPluginUtils.isOpenVersion();
         List<SceneTaskDto> taskDtoList = getTaskFromRedis();
         if (taskDtoList == null) {
-            log.warn("current task is null ");
+            log.warn("current not running pressure task!!!");
             return;
         }
         if (openVersion) {
@@ -88,7 +85,7 @@ public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
     @Override
     protected void runTaskInTenantIfNecessary(SceneTaskDto tenantTask, Long reportId) {
         //将任务放入线程池
-        threadPoolUtil.getReportTpsThreadPool().execute(() -> {
+        ThreadPoolUtil.getReportTpsThreadPool().execute(() -> {
             try {
                 tenantTask.setSource(ContextSourceEnum.JOB.getCode());
                 WebPluginUtils.setTraceTenantContext(tenantTask);

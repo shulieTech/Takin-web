@@ -69,9 +69,9 @@ public class ScriptChecker implements StartConditionChecker {
 
     private void checkScriptComplete(SceneManageWrapperOutput sceneData) {
         List<FileInfo> fileInfos = sceneData.getUploadFile().stream()
-            .filter(file -> FileTypeBusinessUtil.isScriptOrData(file.getFileType())
-                || FileTypeBusinessUtil.isAttachment(file.getFileType()))
-            .map(this::getFilePath).collect(Collectors.toList());
+                .filter(file -> FileTypeBusinessUtil.isScriptOrData(file.getFileType())
+                        || FileTypeBusinessUtil.isAttachment(file.getFileType()))
+                .map(this::getFilePath).collect(Collectors.toList());
         checkExists(fileInfos);
     }
 
@@ -92,7 +92,7 @@ public class ScriptChecker implements StartConditionChecker {
         });
         if (!CollectionUtils.isEmpty(errorMessage)) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_JMX_FILE_CHECK_ERROR,
-                StringUtils.join(errorMessage, ", "));
+                    StringUtils.join(errorMessage, ", "));
         }
     }
 
@@ -111,28 +111,29 @@ public class ScriptChecker implements StartConditionChecker {
         String disabledKey = "DISABLED";
         String featureString = sceneData.getFeatures();
         Map<String, Object> feature = JSONObject.parseObject(featureString,
-            new TypeReference<Map<String, Object>>() {});
+                new TypeReference<Map<String, Object>>() {
+                });
         if (feature.containsKey(disabledKey)) {
             throw new TakinCloudException(TakinCloudExceptionEnum.TASK_START_VERIFY_ERROR,
-                "场景【" + sceneData.getId() + "】对应的业务流程发生变更，未能自动匹配，请手动编辑后启动压测");
+                    "场景【" + sceneData.getId() + "】对应的业务流程发生变更，未能自动匹配，请手动编辑后启动压测");
         }
     }
 
     private void checkModify(SceneManageWrapperOutput sceneData) {
         SceneScriptRefOutput scriptRefOutput = sceneData.getUploadFile().stream().filter(Objects::nonNull)
-            .filter(fileRef -> fileRef.getFileType() == 0 && fileRef.getFileName().endsWith(SCRIPT_NAME_SUFFIX))
-            .findFirst()
-            .orElse(null);
+                .filter(fileRef -> fileRef.getFileType() == 0 && fileRef.getFileName().endsWith(SCRIPT_NAME_SUFFIX))
+                .findFirst()
+                .orElse(null);
         boolean jmxCheckResult = checkOutJmx(scriptRefOutput);
         if (!jmxCheckResult) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_JMX_FILE_CHECK_ERROR,
-                "启动压测场景--场景ID:" + sceneData.getId() + ",脚本文件校验失败！");
+                    "启动压测场景--场景ID:" + sceneData.getId() + ",脚本文件校验失败！");
         }
     }
 
     private boolean checkOutJmx(SceneScriptRefOutput uploadFile) {
         if (Objects.nonNull(uploadFile) && StringUtils.isNotBlank(uploadFile.getUploadPath())) {
-            String fileMd5 = MD5Utils.getInstance().getMD5(new File(pathPrefix + uploadFile.getUploadPath()));
+            String fileMd5 = MD5Utils.getInstance().getMD5(new File(pathPrefix ,uploadFile.getUploadPath()));
             return StringUtils.isBlank(uploadFile.getFileMd5()) || uploadFile.getFileMd5().equals(fileMd5);
         }
         return false;

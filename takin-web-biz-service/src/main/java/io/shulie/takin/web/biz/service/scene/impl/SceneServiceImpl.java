@@ -272,7 +272,7 @@ public class SceneServiceImpl implements SceneService {
         }
         String businessFlowName = null;
         if (businessFlowParseRequest.getId() == null) {
-            SceneCreateParam createParam = saveBusinessFlow(testPlan.get(0).getTestName(), data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
+            SceneCreateParam createParam = saveBusinessFlow(businessFlowParseRequest.getSource(), testPlan.get(0).getTestName(), data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
             businessFlowParseRequest.setId(createParam.getId());
             businessFlowName = createParam.getSceneName();
         } else {
@@ -287,7 +287,7 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public SceneCreateParam saveBusinessFlow(String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
+    public SceneCreateParam saveBusinessFlow(Integer source, String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
                                              List<PluginConfigCreateRequest> pluginList) {
         SceneQueryParam sceneQueryParam = new SceneQueryParam();
         sceneQueryParam.setSceneName(testName);
@@ -301,7 +301,11 @@ public class SceneServiceImpl implements SceneService {
         sceneCreateParam.setLinkRelateNum(0);
         sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
         sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
-        sceneCreateParam.setType(SceneTypeEnum.JMETER_UPLOAD_SCENE.getType());
+        if (source != null) {
+            sceneCreateParam.setType(source);
+        } else {
+            sceneCreateParam.setType(SceneTypeEnum.JMETER_UPLOAD_SCENE.getType());
+        }
         WebPluginUtils.fillCloudUserData(sceneCreateParam);
         sceneDao.insert(sceneCreateParam);
 
@@ -625,6 +629,8 @@ public class SceneServiceImpl implements SceneService {
         queryParam.setCurrent(queryRequest.getCurrent());
         queryParam.setPageSize(queryRequest.getPageSize());
         WebPluginUtils.fillQueryParam(queryParam);
+        queryParam.setIgnoreType(SceneTypeEnum.PERFORMANCE_AUTO_SCENE.getType());
+
         PagingList<SceneResult> pageList = sceneDao.selectPageList(queryParam);
         List<BusinessFlowListResponse> responses = LinkManageConvert.INSTANCE.ofSceneResultList(pageList.getList());
         List<Long> userIds = CommonUtil.getList(responses, BusinessFlowListResponse::getUserId);
@@ -837,6 +843,13 @@ public class SceneServiceImpl implements SceneService {
             for (ScriptJmxNode scriptJmxNode : scriptJmxNodes) {
                 //默认不匹配
                 scriptJmxNode.setStatus(0);
+                // 支持beanshell,默认匹配
+                if (scriptJmxNode.getName().equals("BeanShellSampler")) {
+                    scriptJmxNode.setEntrace("|beanshell");
+                    scriptJmxNode.setRequestPath("|beanshell");
+                    scriptJmxNode.setIdentification("takin|beanshell");
+                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+                }
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {
                     ActivityListResult activityListResult = activityMap.get(xpathMd5Map.get(scriptJmxNode.getXpathMd5()));
                     if (activityListResult != null) {

@@ -188,69 +188,83 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             String msg = initData ? "创建业务场景成功" : "创建业务场景失败";
             entity.setIsError(initData ? 0 : 1);
             String level = initData ? "INFO" : "FATAL";
+            if(StringUtils.isNotBlank(entity.getErrorMsg())){
+                msg+=",{"+entity.getErrorMsg()+"}";
+            }
             callback(url, msg, workRecordId, level);
         }
 
 
         //启动调试
         if (initData && scriptDeploys.size() > 0) {
-
-            List<Long> debugIds = new ArrayList<>();
-            scriptDeploys.forEach(item -> {
-                boolean debugFlag = false;
-                String errorMsg = "";
-                try {
-                    ScriptDebugResponse debug = scriptDebugService.debug(item);
-                    if (debug.getScriptDebugId() != null) {
-                        entity.setScriptDebugId(debug.getScriptDebugId());
-                        debugIds.add(debug.getScriptDebugId());
-                        debugFlag = true;
-                    } else {
-                        log.error("[启动调试失败] workRecordId:{},error:{}", workRecordId, debug.getErrorMessages().get(0));
-                        entity.setErrorMsg(debug.getErrorMessages().get(0));
-                        entity.setErrorStage("启动调试异常");
-                        errorMsg = entity.getErrorMsg();
-                    }
-
-
-                } catch (Exception e) {
-                    log.error("[启动调试失败] workRecordId:{},e", workRecordId, e);
-                    entity.setErrorMsg(e.toString());
+            if (scriptDeploys.size() > 1) {
+                //目前一次请求仅发起一次调试，多了不处理
+                return;
+            }
+            Long debugId = 0L;
+            boolean debugFlag = false;
+            String errorMsg = "";
+            try {
+                ScriptDebugResponse debug = scriptDebugService.debug(scriptDeploys.get(0));
+                if (debug.getScriptDebugId() != null) {
+                    entity.setScriptDebugId(debug.getScriptDebugId());
+                    debugId = debug.getScriptDebugId();
+                    debugFlag = true;
+                } else {
+                    log.error("[启动调试失败] workRecordId:{},error:{}", workRecordId, debug.getErrorMessages().get(0));
+                    entity.setErrorMsg(debug.getErrorMessages().get(0));
                     entity.setErrorStage("启动调试异常");
-                    errorMsg = e.getMessage();
-                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-
-                } finally {
-                    String msg = debugFlag ? "启动调试成功" : "启动调试失败, 失败原因:{" + errorMsg + "}";
-                    log.info("[启动调试回调] workRecordId,:{},状态 :{}", workRecordId, msg);
-                    String level = debugFlag ? "INFO" : "FATAL";
-                    callback(url, msg, workRecordId, level);
-                    if(!debugFlag){
-                        delScene(entity.getBusinessFlowId());
-                    }
+                    errorMsg = entity.getErrorMsg();
                 }
-            });
 
 
-            debugIds.forEach(debugId -> {
-                webIDESyncThreadPool.execute(() -> {
-                    boolean loop = true;
-                    do {
-                        try {
-                            Thread.sleep(200);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
-                        log.info("[debug状态回调] workRecordId:{},debugId:{}", workRecordId, debugId);
-                        if (Objects.isNull(debugDetail)) {
-                            break;
-                        }
-                        String level = "INFO";
-                        String msg = ScriptDebugStatusEnum.getDesc(debugDetail.getStatus());
+            } catch (Exception e) {
+                log.error("[启动调试失败] workRecordId:{},e", workRecordId, e);
+                entity.setErrorMsg(e.toString());
+                entity.setErrorStage("启动调试异常");
+                errorMsg = e.getMessage();
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+
+            } finally {
+                String msg = debugFlag ? "启动调试成功" : "启动调试失败, 失败原因:{" + errorMsg + "}";
+                log.info("[启动调试回调] workRecordId,:{},状态 :{}", workRecordId, msg);
+                String level = debugFlag ? "INFO" : "FATAL";
+                callback(url, msg, workRecordId, level);
+                if (!debugFlag) {
+                    delScene(entity.getBusinessFlowId());
+                }
+            }
+
+            Long finalDebugId = debugId;
+
+            // 虽然就一条数据，线程池不能去掉！！！去掉了上面172行会数据库死锁，不要问为什么
+            webIDESyncThreadPool.execute(() ->{
+                boolean loop = true;
+                List<Integer> status = new ArrayList<>();
+                do {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(finalDebugId);
+                    log.info("[debug状态回调] workRecordId:{},debugId:{}", workRecordId, finalDebugId);
+                    if (Objects.isNull(debugDetail)) {
+                        break;
+                    }
+                    String level = "INFO";
+                    String msg = ScriptDebugStatusEnum.getDesc(debugDetail.getStatus());
+
+                    if(status.contains(debugDetail.getStatus())){
+                        //如果已经记录了当前状态,就不往下走了，不再触发callback
+                        continue;
+                    }
+                    status.add(debugDetail.getStatus());
+
+                    if (debugDetail.getStatus() == 4 || debugDetail.getStatus() == 5) {
+                        loop = false;
                         if (debugDetail.getStatus() == 5) {
                             level = "ERROR";
-                            msg = msg + ", 调试失败原因:{" + debugDetail.getRemark() + "}";
                             //发送报告错误日志
                             Long cloudReportId = debugDetail.getCloudReportId();
                             ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
@@ -264,26 +278,28 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                                     callback(url, errorContext, workRecordId, level);
                                 }
                             }
-                            loop = false;
+                            msg += "，调试失败";
+                        } else {
+                            msg += ", 调试成功";
                         }
-                        if (debugDetail.getStatus() == 4) {
-                            loop = false;
-                            PageScriptDebugRequestRequest req = new PageScriptDebugRequestRequest();
-                            req.setScriptDebugId(debugId);
-                            req.setCurrent(0);
-                            req.setPageSize(10);
-                            PagingList<ScriptDebugRequestListResponse> pageDetail = scriptDebugService.pageScriptDebugRequest(req);
-                            if (pageDetail != null) {
-                                List<ScriptDebugRequestListResponse> list = pageDetail.getList();
-                                msg += ", 调试成功: {" + JSON.toJSONString(list) + "}";
-                            }
 
+                        //获取调试详情
+                        PageScriptDebugRequestRequest req = new PageScriptDebugRequestRequest();
+                        req.setScriptDebugId(finalDebugId);
+                        req.setCurrent(0);
+                        req.setPageSize(10);
+                        PagingList<ScriptDebugRequestListResponse> pageDetail = scriptDebugService.pageScriptDebugRequest(req);
+                        if (pageDetail != null) {
+                            List<ScriptDebugRequestListResponse> list = pageDetail.getList();
+                            msg += ": {" + JSON.toJSONString(list) + "}";
                         }
-                        callback(url, msg, workRecordId, level);
-                    } while (loop);
-                    delScene(entity.getBusinessFlowId());
-                });
+                    }
+
+                    callback(url, msg, workRecordId, level);
+                } while (loop);
+                delScene(entity.getBusinessFlowId());
             });
+
         }
 
 
@@ -346,9 +362,9 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                 .body();
     }
 
-    private void delScene(Long businessFlowId){
+    private void delScene(Long businessFlowId) {
         SceneResult sceneDetail = sceneDAO.getSceneDetail(businessFlowId);
-        if(Objects.isNull(sceneDetail)){
+        if (Objects.isNull(sceneDetail)) {
             return;
         }
         SceneUpdateParam update = new SceneUpdateParam();
@@ -393,7 +409,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     @Override
     public List<BusinessActivityInfoResponse> activityList(Long businessFlowId) {
         List<BusinessActivityNameResponse> activesByFlowId = linkManageService.getBusinessActiveByFlowId(businessFlowId);
-        if(CollectionUtils.isEmpty(activesByFlowId)){
+        if (CollectionUtils.isEmpty(activesByFlowId)) {
             return new ArrayList<>();
         }
 
@@ -401,10 +417,10 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             BusinessActivityInfoResponse convert = Convert.convert(BusinessActivityInfoResponse.class, item);
             convert.setActivityId(item.getBusinessActivityId());
             convert.setActivityName(item.getBusinessActivityName());
-            if(Objects.nonNull(item.getApplicationId()) && StringUtils.isBlank(item.getApplicationName())){
+            if (Objects.nonNull(item.getApplicationId()) && StringUtils.isBlank(item.getApplicationName())) {
                 convert.setApplicationName(mntMapper.selectApplicationName(String.valueOf(item.getApplicationId())));
             }
-            if(StringUtils.isBlank(convert.getEntrace())){
+            if (StringUtils.isBlank(convert.getEntrace())) {
                 return convert;
             }
             ActivityUtil.EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(convert.getEntrace());

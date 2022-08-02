@@ -249,7 +249,9 @@ public class SceneManageController {
         @ApiParam(name = "tagId", value = "标签id") Long tagId,
         @ApiParam(name = "lastPtStartTime", value = "压测结束时间") String lastPtStartTime,
         @ApiParam(name = "lastPtEndTime", value = "压测结束时间") String lastPtEndTime,
-        @ApiParam(name = "recovery", value = "是否是回收站") Boolean recovery
+        @ApiParam(name = "recovery", value = "是否是回收站") Boolean recovery,
+        @ApiParam(name = "source", value = "来源") Integer source,
+        @ApiParam(name = "configId", value = "单压测主键") Long configId
     ) {
         SceneManageQueryVO queryVO = new SceneManageQueryVO();
 
@@ -265,6 +267,12 @@ public class SceneManageController {
             recovery = false;
         }
         queryVO.setIsArchive(recovery?1:0);
+        if(Objects.nonNull(source)){
+            queryVO.setSource(source);
+        }
+        if(Objects.nonNull(configId)){
+            queryVO.setConfigId(configId);
+        }
         ResponseResult<List<SceneManageListOutput>> responseResult = sceneManageService.getPageList(queryVO);
         return Response.success(responseResult.getData(), responseResult.getTotalNum());
     }

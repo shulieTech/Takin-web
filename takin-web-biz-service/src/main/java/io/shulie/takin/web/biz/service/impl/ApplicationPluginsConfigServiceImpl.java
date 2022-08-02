@@ -83,7 +83,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
             if ("-1".equals(configVO.getConfigValue())) {
                 configVO.setConfigValueName("与业务key一致");
             } else {
-                configVO.setConfigValueName(record.getConfigValue() + "小时");
+                configVO.setConfigValueName(record.getConfigValue() + "分钟");
             }
             //精度丢失问题
             configVO.setApplicationId(record.getApplicationId() + "");

@@ -43,6 +43,7 @@ import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.application.*;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
+import io.shulie.takin.web.biz.pojo.output.application.ApplicationErrorOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationListByUpgradeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
@@ -55,7 +56,9 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoRe
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
 import io.shulie.takin.web.biz.pojo.vo.application.ApplicationDsManageExportVO;
 import io.shulie.takin.web.biz.service.*;
+import io.shulie.takin.web.biz.service.application.ApplicationErrorService;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
+import io.shulie.takin.web.biz.service.application.impl.ApplicationErrorServiceImpl;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
 import io.shulie.takin.web.biz.service.linkmanage.WhiteListService;
@@ -119,6 +122,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
@@ -367,7 +371,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Long getAccessErrorNum() {
         ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
         requestV2.setAccessStatus(3);
-     return this.pageApplication(requestV2).getTotal();
+        return this.pageApplication(requestV2).getTotal();
     }
 
 //    @Override
@@ -494,6 +498,17 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         ApplicationDetailResult tApplicationMnt = confCenterService.queryApplicationInfoById(Long.parseLong(id));
         if (tApplicationMnt == null) {
             return Response.success(new ApplicationVo());
+        }
+        //判断是否有异常信息来获取状态，t_application_mnt中的不准
+        ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
+        queryInput.setApplicationId(tApplicationMnt.getApplicationId());
+
+        List<ApplicationErrorOutput> errors =
+                applicationErrorService.list(queryInput);
+        if (CollectionUtil.isNotEmpty(errors)) {
+            tApplicationMnt.setAccessStatus(3);
+        } else {
+            tApplicationMnt.setAccessStatus(0);
         }
 
         // 取应用节点数信息
@@ -713,6 +728,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 // 正常的应用
                 Set<Long> normalApplicationIdSet = new HashSet<>(20);
 
+                Map<Long, String> errorInfo = Maps.newHashMap();
                 // 遍历比对
                 for (ApplicationListResult application : applicationList) {
                     String applicationName = application.getApplicationName();
@@ -729,6 +745,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                             || !Objects.equals(amdbApplication.getInstanceInfo().getInstanceOnlineAmount(), nodeNum)) {
                         // amdbApplicationMap 不存在, map.get 不存在, 或者节点数不一致
                         errorApplicationIdSet.add(applicationId);
+                        errorInfo.put(applicationId, "节点数不一致");
+
 
                     } else if (!amdbApplicationMap.isEmpty()
                             && (amdbApplication = amdbApplicationMap.get(applicationName)) != null
@@ -751,7 +769,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 }
 
 
-                this.syncApplicationAccessStatus(applicationList, errorApplicationIdSet);
+                this.syncApplicationAccessStatus(applicationList, errorApplicationIdSet, errorInfo);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
@@ -761,17 +779,24 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList, Set<Long> errorApplicationIdSet) {
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList
+            , Set<Long> errorApplicationIdSet
+            , Map<Long, String> errorInfo) {
         if (CollectionUtils.isNotEmpty(applicationList)) {
             for (ApplicationListResult app : applicationList) {
                 Map result = applicationDAO.getStatus(app.getApplicationName());
                 long n = (long) result.get("n");
                 if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
                     String e = (String) result.get("e");
-                    //不知道异常和Ip就别展示出来误导了
+
                     if (StringUtils.isBlank(e)) {
                         String a = (String) result.get("a");
                         if (StringUtils.isEmpty(a)) {
+                            if (!io.shulie.takin.utils.string.StringUtil
+                                    .isEmpty(errorInfo.get(app.getApplicationId()))) {
+                                //节点不一致
+                                applicationDAO.updateStatus(app.getApplicationId(), e);
+                            }
                             continue;
                         }
                         e = "探针接入异常";
@@ -1309,6 +1334,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return applicationDAO.getAllTenantApp(commonExtList);
     }
 
+    @Resource
+    ApplicationErrorServiceImpl applicationErrorService;
+
     @Override
     public PagingList<ApplicationListResponseV2> pageApplication(ApplicationQueryRequestV2 request) {
         QueryApplicationParam queryApplicationParam = BeanUtil.copyProperties(request, QueryApplicationParam.class);
@@ -1326,6 +1354,18 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<ApplicationListResponseV2> responseList = records.stream().map(result -> {
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
             response.setId(result.getApplicationId().toString());
+
+
+            ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
+            queryInput.setApplicationId(result.getApplicationId());
+            List<ApplicationErrorOutput> errors =
+                    applicationErrorService.list(queryInput);
+            if (CollectionUtil.isNotEmpty(errors)) {
+                response.setAccessStatus(3);
+            } else {
+                response.setAccessStatus(0);
+            }
+
             return response;
         }).collect(Collectors.toList());
         return PagingList.of(responseList, applicationListResultPage.getTotal());

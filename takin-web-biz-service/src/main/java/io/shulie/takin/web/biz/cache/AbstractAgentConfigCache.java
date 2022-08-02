@@ -70,9 +70,10 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
      */
     public T getLock(String namespace, int count) {
         // 增加一个计数器,防止线程一直读取不到,递归退出,1s就退出，等待下次处理
-        if (count > 20) {
-            log.warn("已超过递归次数,但还是未获取到值,namespace:", namespace);
-            return null;
+        if (count > 100) {
+            log.warn("已超过递归次数,但还是未获取到值,namespace:{}", namespace);
+            // 返回失败,agent不会认为是失效的情况
+            throw new RuntimeException("数据获取超时,等待下次拉取！");
         }
         String cacheKey = getCacheKey(namespace);
         T result = (T) redisTemplate.opsForValue().get(cacheKey);

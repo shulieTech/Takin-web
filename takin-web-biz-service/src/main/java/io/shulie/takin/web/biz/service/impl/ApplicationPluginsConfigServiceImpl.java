@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.util.NumberUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -204,7 +205,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         OperationLogContextHolder.operationType(OpTypes.UPDATE);
         OperationLogContextHolder.addVars(Vars.APPLICATION_ID,oldEntity.getApplicationId().toString());
         OperationLogContextHolder.addVars(Vars.APP_PLUGIN_KEY,oldEntity.getConfigItem());
-        OperationLogContextHolder.addVars(Vars.APP_PLUGIN_VALUE,oldEntity.getConfigValue().equals("-1")?"与业务key一致":oldEntity.getConfigValue()+" h");
+        OperationLogContextHolder.addVars(Vars.APP_PLUGIN_VALUE,oldEntity.getConfigValue().equals("-1")?"与业务key一致":oldEntity.getConfigValue()+" min");
         return true;
     }
 
@@ -220,6 +221,8 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         param.setApplicationId(application.getApplicationId());
         List<ApplicationPluginsConfigEntity> list = applicationPluginsConfigDAO.findList(param);
         if (list != null && !list.isEmpty()) {
+            List<ApplicationPluginsConfigVO> vos = CopyUtils.copyFieldsList(list, ApplicationPluginsConfigVO.class);
+            vos.forEach(x -> x.setConfigValue(NumberUtil.div(x.getConfigValue(),"60",3).toString()));
             return CopyUtils.copyFieldsList(list, ApplicationPluginsConfigVO.class);
         }
         return null;

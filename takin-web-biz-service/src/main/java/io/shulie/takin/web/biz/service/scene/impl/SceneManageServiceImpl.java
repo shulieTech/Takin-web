@@ -337,6 +337,9 @@ public class SceneManageServiceImpl implements SceneManageService {
             listData = listData.stream().filter(t -> Objects.nonNull(t.getConfigId()) && vo.getConfigId().equals(t.getConfigId()))
                     .collect(Collectors.toList());
         }
+        if (Objects.nonNull(vo.getSource()) && vo.getSource() == 1 && Objects.nonNull(vo.getConfigId())) {
+            listData = new ArrayList<>();
+        }
         return ResponseResult.success(listData, sceneList.getTotalNum());
     }
 

@@ -21,7 +21,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.8.2</version>
+        <version>takin-web-5.8.3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-data</artifactId>

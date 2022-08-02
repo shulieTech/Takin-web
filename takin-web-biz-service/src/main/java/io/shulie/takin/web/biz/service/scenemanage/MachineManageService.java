@@ -1,17 +1,13 @@
 package io.shulie.takin.web.biz.service.scenemanage;
 
-import io.shulie.takin.common.beans.page.PagingDevice;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineBaseRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineResponse;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.*;
 
 public interface MachineManageService {
 
     String create(PressureMachineCreateRequest request);
 
-    PagingList<PressureMachineResponse> list(PagingDevice pagingDevice);
+    PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request);
 
     void update(PressureMachineUpdateRequest request);
 

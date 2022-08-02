@@ -6,6 +6,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.enums.SqlLike;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.cloud.entrypoint.machine.CloudMachineApi;
@@ -19,10 +20,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineBaseRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineResponse;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.*;
 import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
 import io.shulie.takin.web.common.util.BeanCopyUtils;
 import io.shulie.takin.web.data.dao.scenemanage.MachineManageDAO;
@@ -32,6 +30,7 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -105,9 +104,13 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public PagingList<PressureMachineResponse> list(PagingDevice request) {
+    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request) {
         Page<MachineManageEntity> page = new Page<>(request.getCurrent() + 1, request.getPageSize());
-        Page<MachineManageEntity> manageEntityPage = machineManageDAO.page(page);
+        QueryWrapper<MachineManageEntity> queryWrapper = new QueryWrapper();
+        if (StringUtils.isNotBlank(request.getName())) {
+            queryWrapper.like("machine_name", request.getName());
+        }
+        Page<MachineManageEntity> manageEntityPage = machineManageDAO.page(page, queryWrapper);
         List<PressureMachineResponse> pressureMachineResponses = BeanCopyUtils.copyList(manageEntityPage.getRecords(), PressureMachineResponse.class);
         //查询引擎数据
         if (CollectionUtils.isNotEmpty(pressureMachineResponses)) {

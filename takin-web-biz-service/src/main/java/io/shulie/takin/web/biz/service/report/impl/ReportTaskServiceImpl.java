@@ -1,13 +1,6 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.fastjson.JSON;
-
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
@@ -18,6 +11,7 @@ import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
+import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
@@ -28,10 +22,16 @@ import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 1、查询生成中状态的报告（只取一条）
@@ -78,10 +78,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     private SceneTaskApi sceneTaskApi;
 
     @Autowired
-    @Qualifier("collectDataThreadPool")
-    private ThreadPoolExecutor collectDataThreadPool;
-
-    @Autowired
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
@@ -100,14 +96,20 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             // 查询报告状态
             final ReportDetailOutput report = reportService.getReportById(reportId);
             if (report == null) {
+                log.warn("未获取到报告信息,reportId=" + reportId);
                 return false;
             }
             // 加锁
             // 分布式锁
-            String lockKey = JobRedisUtils.getRedisJobReport(WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),reportId);
+            String lockKey = JobRedisUtils.getRedisJobReport(WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), reportId);
             if (!distributedLock.checkLock(lockKey)) {
-                // 收集数据 单独线程收集
-                collectDataThreadPool.execute(collectData(reportId,commonExt,lockKey));
+                try {
+                    // 收集数据 单独线程收集
+                    ThreadPoolUtil.getCollectDataThreadPool().execute(() -> collectData(reportId, commonExt, lockKey));
+                } catch (Throwable e) {
+                    // TODO 如果线程池满了，继续走下面的逻辑,否则任务有问题
+                    log.error("提交线程池任务异常," + ExceptionUtils.getStackTrace(e));
+                }
             }
             // 压测结束才锁报告
             Integer status = report.getTaskStatus();
@@ -116,12 +118,14 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             }
             ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
             if (reportDetailDTO == null) {
-                log.error("未查到报告明细！reportId={}",reportId);
+                log.error("未查到报告明细！reportId={}", reportId);
                 return false;
             }
             Date endTime = reportDetailDTO.getEndTime();
             //更新任务的结束时间
-            if (!this.updateTaskEndTime(reportId, commonExt, endTime)) { return false; }
+            if (!this.updateTaskEndTime(reportId, commonExt, endTime)) {
+                return false;
+            }
 
             // 解除 场景锁
             redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(reportDetailDTO.getSceneId()));
@@ -161,7 +165,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 
                 reportDataCache.clearDataCache(reportId);
                 log.info("报告id={}汇总成功，花费时间={}", reportId, (System.currentTimeMillis() - startTime));
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // log.error("客户端生成报告id={}数据异常:{}", reportId, e.getMessage(), e);
                 //生成报告异常，清空本轮生成表数据
                 reportClearService.clearReportData(reportId);
@@ -215,10 +219,11 @@ public class ReportTaskServiceImpl implements ReportTaskService {
      * @param reportId 报告 id
      * @return 可运行
      */
-    private synchronized Runnable collectData(Long reportId, TenantCommonExt commonExt,String lockKey) {
-        return () -> {
-            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
-            if(!tryLock) {
+    private void collectData(Long reportId, TenantCommonExt commonExt, String lockKey) {
+        // 有锁,证明任务在处理,不需要等太久,后续会有任务继续处理
+        boolean tryLock = distributedLock.tryLock(lockKey, 5L, 60L, TimeUnit.SECONDS);
+        try {
+            if (!tryLock) {
                 return;
             }
             WebPluginUtils.setTraceTenantContext(commonExt);
@@ -241,8 +246,12 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             } catch (Exception e) {
                 log.error("reportId = {}: total report ,errorMsg= {}", reportId, e.getMessage());
             }
+        } catch (Throwable e) {
+            log.error("collectData is fail " + ExceptionUtils.getStackTrace(e));
+        } finally {
             distributedLock.unLockSafely(lockKey);
-        };
+        }
+
     }
 
     @Override

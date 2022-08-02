@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.fastjson.JSON;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
+import io.shulie.takin.cloud.common.constants.ReportConstants;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -31,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -79,14 +81,14 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     private SceneTaskApi sceneTaskApi;
 
     @Autowired
-    private ThreadPoolUtil threadPoolUtil;
-
-    @Autowired
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
     @Autowired
     private DistributedLock distributedLock;
+
+    @Value("takin.web.finishjob.needCheck:false")
+    private boolean needCheck;
 
     @Override
     public Boolean finishReport(Long reportId, TenantCommonExt commonExt) {
@@ -109,7 +111,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             if (!distributedLock.checkLock(lockKey)) {
                 try {
                     // 收集数据 单独线程收集
-                    threadPoolUtil.getCollectDataThreadPool().execute(() -> collectData(reportId, commonExt, lockKey));
+                    ThreadPoolUtil.getCollectDataThreadPool().execute(() -> collectData(reportId, commonExt, lockKey));
                 } catch (Throwable e) {
                     // TODO 如果线程池满了，继续走下面的逻辑,否则任务有问题
                     log.error("提交线程池任务异常," + ExceptionUtils.getStackTrace(e));
@@ -120,6 +122,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             if (status == null || status != 1) {
                 return false;
             }
+            log.info("开始处理报告完成,reportId={},报告状态{}", reportId, status);
             ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
             if (reportDetailDTO == null) {
                 log.error("未查到报告明细！reportId={}", reportId);
@@ -166,7 +169,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                     ResponseResult<String> responseResult = sceneTaskApi.updateReportStatus(conclusionReq);
                     log.info("修改压测报告的结果:[{}]", JSON.toJSONString(responseResult));
                 }
-
                 reportDataCache.clearDataCache(reportId);
                 log.info("报告id={}汇总成功，花费时间={}", reportId, (System.currentTimeMillis() - startTime));
             } catch (Throwable e) {
@@ -178,10 +180,17 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 log.error("Unlock Report Success, reportId={} ,unLockReportResult= {}...", reportId, unLockReportResult,
                         e);
             } finally {
-                removeReportKey(reportId, commonExt);
+                log.info("报告完成,移除报告缓存,reportId={},报告状态{}", reportId, status);
+                if (needCheck) {
+                    ReportDetailOutput output = reportService.getReportById(reportId);
+                    if (output != null && output.getTaskStatus() == ReportConstants.RUN_STATUS) {
+                        removeReportKey(reportId, commonExt);
+                    }
+                } else {
+                    removeReportKey(reportId, commonExt);
+                }
             }
-
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());
         }
         return true;

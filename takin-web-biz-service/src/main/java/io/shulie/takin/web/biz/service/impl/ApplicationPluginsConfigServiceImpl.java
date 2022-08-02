@@ -223,7 +223,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         if (list != null && !list.isEmpty()) {
             List<ApplicationPluginsConfigVO> vos = CopyUtils.copyFieldsList(list, ApplicationPluginsConfigVO.class);
             vos.forEach(x -> x.setConfigValue(NumberUtil.div(x.getConfigValue(),"60",3).toString()));
-            return CopyUtils.copyFieldsList(list, ApplicationPluginsConfigVO.class);
+            return vos;
         }
         return null;
     }

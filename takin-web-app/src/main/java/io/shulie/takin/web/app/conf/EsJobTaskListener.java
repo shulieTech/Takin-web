@@ -31,7 +31,7 @@ import java.util.concurrent.*;
 @Component
 public class EsJobTaskListener implements ApplicationListener<ApplicationStartedEvent> {
     // 需要监听的任务信息,按逗号分割
-    @Value("${takin.listener.jobtask}")
+    @Value("${takin.listener.jobtask:}")
     private String jobTask;
 
     @Value("${takin.listener.jobtask.initialDelay:600}")

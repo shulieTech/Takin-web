@@ -166,6 +166,10 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     @Value("${takin.inner.pre:0}")
     private int isInnerPre;
 
+    // 场景任务延迟时间,多补偿300s
+    @Value("${takin.task.delayTime:300}")
+    private Long taskDelayTime;
+
     @Override
     public void preStop(Long sceneId) {
         SceneManageIdReq request = new SceneManageIdReq();
@@ -308,10 +312,12 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             //计算结束时间
             if (sceneData.getPressureTestSecond() == null) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR,
-                    "获取压测时长失败！压测时长为" + sceneData.getPressureTestSecond());
+                        "获取压测时长失败！压测时长为" + sceneData.getPressureTestSecond());
             }
-            //兜底时长 2小时
-            final LocalDateTime dateTime = LocalDateTime.now().plusHours(2);
+            // 整体延迟时间,在压测任务结束的时候,增加个5分钟时间,已防止finishjob未跑完，导致任务存在问题(任务停止不了，报告未生成)
+            Long endTime = sceneData.getPressureTestSecond() + taskDelayTime;
+            // 兜底时长 2小时
+            final LocalDateTime dateTime = LocalDateTime.now().plusSeconds(endTime);
             //组装
             SceneTaskDto taskDto = new SceneTaskDto(reportId, ContextSourceEnum.JOB_SCENE, dateTime);
             //任务添加到redis队列

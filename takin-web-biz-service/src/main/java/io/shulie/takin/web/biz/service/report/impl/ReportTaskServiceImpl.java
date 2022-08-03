@@ -183,7 +183,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 log.info("报告完成,移除报告缓存,reportId={},报告状态{}", reportId, status);
                 if (needCheck) {
                     ReportDetailOutput output = reportService.getReportById(reportId);
-                    if (output != null && output.getTaskStatus() == ReportConstants.RUN_STATUS) {
+                    if (output != null && output.getTaskStatus() == ReportConstants.FINISH_STATUS) {
                         removeReportKey(reportId, commonExt);
                     }
                 } else {

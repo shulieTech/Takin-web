@@ -53,6 +53,7 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
         final Boolean openVersion = WebPluginUtils.isOpenVersion();
         List<SceneTaskDto> taskDtoList = getTaskFromRedis();
         if (taskDtoList == null) {
+            log.warn("current not running pressure task!!!");
             return;
         }
         if (openVersion) {

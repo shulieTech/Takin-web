@@ -1,5 +1,6 @@
 package io.shulie.takin.cloud.biz.notify.processor.calibration;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
@@ -14,6 +15,7 @@ import io.shulie.takin.cloud.biz.notify.PressureEventCenter.AmdbCalibrationExcep
 import io.shulie.takin.cloud.biz.notify.PressureEventCenter.CloudCalibrationException;
 import io.shulie.takin.cloud.common.bean.task.TaskResult;
 import io.shulie.takin.cloud.common.utils.GsonUtil;
+import io.shulie.takin.cloud.constant.enums.ExcessJobType;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.param.report.ReportUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
@@ -28,11 +30,14 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.connection.BitFieldSubCommands.BitFieldType;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +55,18 @@ public class PressureDataCalibration {
     private RedisClientUtil redisClientUtil;
     @Resource
     private ReportDao reportDao;
+    @Resource
+    @Lazy
+    private DataCalibrationProcessor dataCalibrationProcessor;
+    @Resource(name = "schedulerPool")
+    private TaskScheduler taskScheduler;
+    @Value("${takin.data.calibration.time-out: 5}")
+    private Integer dataCalibrationTimeOut;
+
+    private static final String AMDB = "amdb";
+    public static final String CLOUD = "cloud";
+    private static final int AMDB_OFFSET = 0;
+    private static final int CLOUD_OFFSET = 2;
 
     // 数据校准事件
     @Async("dataCalibration")
@@ -58,7 +75,7 @@ public class PressureDataCalibration {
         fillContext(result);
         try {
             callAmdb(result);
-            dataCalibration_ing(result.getTaskId(), false);
+            dataCalibration(result, false);
         } catch (Exception e) {
             throw new AmdbCalibrationException(e.getMessage());
         }
@@ -70,7 +87,7 @@ public class PressureDataCalibration {
         fillContext(result);
         try {
             callCloud(result);
-            dataCalibration_ing(result.getTaskId(), true);
+            dataCalibration(result, true);
         } catch (Exception e) {
             throw new CloudCalibrationException(e.getMessage());
         }
@@ -87,10 +104,26 @@ public class PressureDataCalibration {
     }
 
     // 设置数据校准中
-    private void dataCalibration_ing(Long jobId, boolean cloud) {
-        int offset = cloud ? 2 : 0;
-        redisClientUtil.setBit(PressureStartCache.getDataCalibrationStatusKey(jobId), offset + 1, true);
-        updateReport(jobId);
+    private void dataCalibration(TaskResult result, boolean cloud) {
+        updateReport(result.getTaskId());
+        registerFailOfTimeout(result, cloud);
+    }
+
+    // 校准超时失败
+    private void registerFailOfTimeout(TaskResult result, boolean cloud) {
+        Runnable r = () -> {
+            fillContext(result);
+            DataCalibrationNotifyParam param = new DataCalibrationNotifyParam();
+            param.setCompleted(false);
+            param.setJobId(result.getTaskId());
+            param.setResourceId(result.getResourceId());
+            param.setSource(ofType(cloud));
+            param.setJobType(ExcessJobType.DATA_CALIBRATION);
+            param.setContent("校准超时失败");
+            dataCalibrationProcessor.process(param);
+        };
+        // 校准超时失败
+        taskScheduler.schedule(r, new Date(System.currentTimeMillis() + dataCalibrationTimeOut * 60 * 1000));
     }
 
     private void updateReport(Long jobId) {
@@ -129,13 +162,12 @@ public class PressureDataCalibration {
      */
     // 设置数据校准成功/失败
     protected void processCalibrationStatus(Long jobId, boolean success, String message, boolean cloud) {
-        String type = cloud ? "cloud" : "amdb";
-        int offset = cloud ? 2 : 0;
+        int offset = offset(cloud);
         String statusKey = PressureStartCache.getDataCalibrationStatusKey(jobId);
         redisClientUtil.setBit(statusKey, offset, true);
         redisClientUtil.setBit(statusKey, offset + 1, success);
         if (!success) {
-            redisClientUtil.hmset(PressureStartCache.getDataCalibrationMessageKey(jobId), type, message);
+            redisClientUtil.hmset(PressureStartCache.getDataCalibrationMessageKey(jobId), ofType(cloud), message);
         }
         updateReport(jobId);
         /**
@@ -174,5 +206,17 @@ public class PressureDataCalibration {
         context.setTenantCode(result.getTenantCode());
         context.setSource(ContextSourceEnum.JOB_SCENE.getCode());
         WebPluginUtils.setTraceTenantContext(context);
+    }
+
+    private static String ofType(boolean cloud) {
+        return cloud ? CLOUD : AMDB;
+    }
+
+    public static boolean isCloud(String source) {
+        return CLOUD.equalsIgnoreCase(source);
+    }
+
+    public static int offset(boolean cloud) {
+        return cloud ? CLOUD_OFFSET : AMDB_OFFSET;
     }
 }

@@ -76,20 +76,19 @@ public class DataCalibrationProcessor extends AbstractIndicators
         if (!redisClientUtil.hasKey(statusKey)) {
             return param.getResourceId();
         }
-        String source = param.getSource();
-        if (StringUtils.isBlank(source)) {
-            source = "cloud";
-        }
+        String source = StringUtils.defaultIfBlank(param.getSource(), PressureDataCalibration.CLOUD);
         String callbackKey = PressureStartCache.getDataCalibrationCallbackKey(jobId, source);
         if (redisClientUtil.lockNoExpire(callbackKey, String.valueOf(System.currentTimeMillis()))) {
+            boolean cloud = PressureDataCalibration.isCloud(source);
             boolean execute = false;
             Runnable action = () -> redisClientUtil.del(RedisClientUtil.getLockKey(callbackKey));
-            if ("amdb".equalsIgnoreCase(source) && !redisClientUtil.isSet(statusKey, 0)) {
+            if (!redisClientUtil.isSet(statusKey, PressureDataCalibration.offset(cloud))) {
                 execute = true;
-                processAmdb(param, action);
-            } else if ("cloud".equalsIgnoreCase(source) && !redisClientUtil.isSet(statusKey, 2)) {
-                execute = true;
-                processCloud(param, action);
+                if (cloud) {
+                    processCloud(param, action);
+                } else {
+                    processAmdb(param, action);
+                }
             }
             if (!execute) {
                 action.run();
@@ -99,14 +98,12 @@ public class DataCalibrationProcessor extends AbstractIndicators
     }
 
     private void processAmdb(DataCalibrationNotifyParam param, Runnable finalAction) {
-        log.info("amdb数据订正[{}]", param.getJobId());
         pressureDataCalibration.processCalibrationStatus(param.getJobId(),
             Boolean.TRUE.equals(param.getCompleted()), param.getContent(), false);
         finalAction.run();
     }
 
     private void processCloud(DataCalibrationNotifyParam param, Runnable finalAction) {
-        log.info("cloud数据订正[{}]", param.getJobId());
         boolean success = Boolean.TRUE.equals(param.getCompleted());
         long jobId = param.getJobId();
         if (success) {

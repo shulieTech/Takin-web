@@ -87,7 +87,7 @@ public class PressureEventCenter extends AbstractIndicators {
      */
     @IntrestFor(event = PressureStartCache.CHECK_SUCCESS_EVENT, order = 0)
     public void callCheckSuccess(Event event) {
-        ResourceContext ext = (ResourceContext)event.getExt();
+        ResourceContext ext = (ResourceContext) event.getExt();
         String resourceId = ext.getResourceId();
         String resourceKey = PressureStartCache.getResourceKey(resourceId);
         redisClientUtil.hmset(resourceKey, PressureStartCache.CHECK_STATUS, CheckStatus.SUCCESS.ordinal());
@@ -107,7 +107,7 @@ public class PressureEventCenter extends AbstractIndicators {
      */
     @IntrestFor(event = PressureStartCache.CHECK_FAIL_EVENT)
     public void callCheckFailed(Event event) {
-        dealCheckFail((ResourceContext)event.getExt());
+        dealCheckFail((ResourceContext) event.getExt());
     }
 
     /**
@@ -125,7 +125,7 @@ public class PressureEventCenter extends AbstractIndicators {
      */
     @IntrestFor(event = PressureStartCache.START_FAILED)
     public void callStartFail(Event event) {
-        StartFailEventSource source = (StartFailEventSource)event.getExt();
+        StartFailEventSource source = (StartFailEventSource) event.getExt();
         ResourceContext context = source.getContext();
         if (context != null) {
             dealStartFail(context, source.getMessage());
@@ -141,7 +141,7 @@ public class PressureEventCenter extends AbstractIndicators {
      */
     @IntrestFor(event = PressureStartCache.RUNNING_FAILED)
     public void callRunningFail(Event event) {
-        StopEventSource source = (StopEventSource)event.getExt();
+        StopEventSource source = (StopEventSource) event.getExt();
         ResourceContext context = source.getContext();
         String message = source.getMessage();
         Long taskId = context.getTaskId();
@@ -168,7 +168,7 @@ public class PressureEventCenter extends AbstractIndicators {
 
     @IntrestFor(event = PressureStartCache.PRE_STOP_EVENT)
     public void callPreStop(Event event) {
-        ResourceContext context = (ResourceContext)event.getExt();
+        ResourceContext context = (ResourceContext) event.getExt();
         String resourceKey = PressureStartCache.getSceneResourceKey(context.getSceneId());
         if (!redisClientUtil.hExists(resourceKey, PressureStartCache.START_FLAG)) {
             dealCheckFail(context);
@@ -192,20 +192,20 @@ public class PressureEventCenter extends AbstractIndicators {
 
     @IntrestFor(event = PressureStartCache.PRESSURE_END)
     public void pressureEnd(Event event) {
-        ResourceContext context = (ResourceContext)event.getExt();
+        ResourceContext context = (ResourceContext) event.getExt();
         Long sceneId = context.getSceneId();
         Long reportId = context.getReportId();
         clearAllCache(sceneId, context.getResourceId());
         clearOthersPressureModelCache(sceneId);
         taskStatusCache.cacheStatus(sceneId, reportId, SceneRunTaskStatusEnum.ENDED);
         redisClientUtil.del(RedisClientUtil.getLockKey(PressureStartCache.getLockFlowKey(reportId)),
-            RedisClientUtil.getLockKey(PressureStartCache.getReleaseFlowKey(reportId)));
+                RedisClientUtil.getLockKey(PressureStartCache.getReleaseFlowKey(reportId)));
         removeReportKey(reportId);
     }
 
     @IntrestFor(event = PressureStartCache.UNLOCK_FLOW)
     public void unLockFlow(Event event) {
-        TaskResult ext = (TaskResult)event.getExt();
+        TaskResult ext = (TaskResult) event.getExt();
         unLockFlow(ext.getTaskId(), ext.getTenantId());
     }
 
@@ -220,10 +220,11 @@ public class PressureEventCenter extends AbstractIndicators {
             unLockFlow(reportId, context.getTenantId());
             try {
                 stopJob(context.getResourceId(), context.getJobId());
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
             updateSceneFailed(context, SceneManageStatusEnum.STOP);
             if (!redisClientUtil.hasKey(PressureStartCache.getReportCachedKey(reportId))) {
-                sceneTaskService.cacheReportKey(reportId);
+                sceneTaskService.cacheReportKey(reportId, -1L);
             }
             notifyFinish(context);
             endDefaultPressureIfNecessary(context);
@@ -234,9 +235,9 @@ public class PressureEventCenter extends AbstractIndicators {
         String resourceId = context.getResourceId();
         String message = context.getMessage();
         if (StringUtils.isBlank(resourceId) ||
-            (redisClientUtil.lockStopFlagExpire(PressureStartCache.getStopFlag(context.getResourceId()), message)
-                && redisClientUtil.lockExpire(PressureStartCache.getResourceCheckFailKey(resourceId),
-                String.valueOf(System.currentTimeMillis()), 1, TimeUnit.MINUTES))) {
+                (redisClientUtil.lockStopFlagExpire(PressureStartCache.getStopFlag(context.getResourceId()), message)
+                        && redisClientUtil.lockExpire(PressureStartCache.getResourceCheckFailKey(resourceId),
+                        String.valueOf(System.currentTimeMillis()), 1, TimeUnit.MINUTES))) {
             Long reportId = context.getReportId();
             unLockFlow(reportId, context.getTenantId());
             releaseResource(resourceId);
@@ -249,7 +250,8 @@ public class PressureEventCenter extends AbstractIndicators {
 
     /**
      * 启动失败时更新报告信息
-     *  @param reportId 报告Id
+     *
+     * @param reportId 报告Id
      * @param message  错误信息
      */
     private void deleteReport(Long reportId, String message) {
@@ -269,7 +271,7 @@ public class PressureEventCenter extends AbstractIndicators {
         Long sceneId = context.getSceneId();
         if (StringUtils.isNotBlank(resourceId)) {
             redisClientUtil.del(PressureStartCache.getResourcePodSuccessKey(resourceId),
-                PressureStartCache.getPodStartFirstKey(resourceId), PressureStartCache.getPodHeartbeatKey(resourceId));
+                    PressureStartCache.getPodStartFirstKey(resourceId), PressureStartCache.getPodHeartbeatKey(resourceId));
             String resourceKey = PressureStartCache.getResourceKey(resourceId);
             Map<String, Object> param = new HashMap<>(4);
             param.put(PressureStartCache.ERROR_MESSAGE, message);
@@ -288,7 +290,7 @@ public class PressureEventCenter extends AbstractIndicators {
         entity.setGmtUpdate(new Date());
         pressureTaskDAO.updateById(entity);
         pressureTaskVarietyDAO.save(
-            PressureTaskVarietyEntity.of(taskId, PressureTaskStateEnum.RESOURCE_LOCK_FAILED, message));
+                PressureTaskVarietyEntity.of(taskId, PressureTaskStateEnum.RESOURCE_LOCK_FAILED, message));
         if (redisClientUtil.unlock(PressureStartCache.getSceneResourceLockingKey(sceneId), context.getUniqueKey())) {
             redisClientUtil.delete(PressureStartCache.getSceneResourceKey(sceneId));
         }
@@ -334,10 +336,10 @@ public class PressureEventCenter extends AbstractIndicators {
      */
     protected void setTryRunTaskFailInfo(Long sceneId, Long reportId, Long tenantId, String errorMsg) {
         log.info("压测启动失败--sceneId:【{}】,reportId:【{}】,tenantId:【{}】,errorMsg:【{}】",
-            sceneId, reportId, tenantId, errorMsg);
+                sceneId, reportId, tenantId, errorMsg);
         String tryRunTaskKey = String.format(SceneTaskRedisConstants.SCENE_TASK_RUN_KEY + "%s_%s", sceneId, reportId);
         stringRedisTemplate.opsForHash().put(tryRunTaskKey,
-            SceneTaskRedisConstants.SCENE_RUN_TASK_STATUS_KEY, SceneRunTaskStatusEnum.FAILED.getText());
+                SceneTaskRedisConstants.SCENE_RUN_TASK_STATUS_KEY, SceneRunTaskStatusEnum.FAILED.getText());
         if (StringUtils.isNotBlank(errorMsg)) {
             stringRedisTemplate.opsForHash().put(tryRunTaskKey, SceneTaskRedisConstants.SCENE_RUN_TASK_ERROR, errorMsg);
         }
@@ -391,7 +393,7 @@ public class PressureEventCenter extends AbstractIndicators {
         String lockFlowKey = RedisClientUtil.getLockKey(PressureStartCache.getLockFlowKey(reportId));
         boolean locked = redisClientUtil.hasKey(lockFlowKey);
         if (locked && redisClientUtil.lockExpire(PressureStartCache.getReleaseFlowKey(reportId),
-            String.valueOf(System.currentTimeMillis()), 5, TimeUnit.MINUTES)) {
+                String.valueOf(System.currentTimeMillis()), 5, TimeUnit.MINUTES)) {
             redisClientUtil.del(lockFlowKey);
             return true;
         }
@@ -415,9 +417,9 @@ public class PressureEventCenter extends AbstractIndicators {
             }
         }
         sceneManageDAO.getBaseMapper().update(null,
-            Wrappers.lambdaUpdate(SceneManageEntity.class)
-                .set(SceneManageEntity::getStatus, statusEnum.getValue())
-                .eq(SceneManageEntity::getId, context.getSceneId()));
+                Wrappers.lambdaUpdate(SceneManageEntity.class)
+                        .set(SceneManageEntity::getStatus, statusEnum.getValue())
+                        .eq(SceneManageEntity::getId, context.getSceneId()));
     }
 
     private void fillFeatures(ReportResult report, String message) {
@@ -450,7 +452,7 @@ public class PressureEventCenter extends AbstractIndicators {
             Long tenantId = context.getTenantId();
             cloudReportService.updateReportFeatures(reportId, ReportConstants.FINISH_STATUS, null, null);
             cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(sceneId, reportId, tenantId)
-                .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.WAIT).build());
+                    .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.WAIT).build());
             pressureTaskDAO.updateStatus(context.getTaskId(), PressureTaskStateEnum.INACTIVE, null);
             Event event = new Event();
             event.setExt(context);

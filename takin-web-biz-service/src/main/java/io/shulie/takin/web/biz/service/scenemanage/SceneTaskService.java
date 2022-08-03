@@ -84,7 +84,7 @@ public interface SceneTaskService {
 
     CheckResultVo preCheck(SceneActionParam param);
 
-    void cacheReportKey(Long reportId);
+    void cacheReportKey(Long reportId, Long pressureTestSecond);
 
     void forceStop(String resourceId);
 }

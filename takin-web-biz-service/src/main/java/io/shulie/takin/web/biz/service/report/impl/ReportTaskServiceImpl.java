@@ -87,9 +87,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     @Autowired
     private DistributedLock distributedLock;
 
-    @Value("takin.web.finishjob.needCheck:false")
-    private boolean needCheck;
-
     @Override
     public Boolean finishReport(Long reportId, TenantCommonExt commonExt) {
         try {
@@ -181,14 +178,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                         e);
             } finally {
                 log.info("报告完成,移除报告缓存,reportId={},报告状态{}", reportId, status);
-                if (needCheck) {
-                    ReportDetailOutput output = reportService.getReportById(reportId);
-                    if (output != null && output.getTaskStatus() == ReportConstants.FINISH_STATUS) {
-                        removeReportKey(reportId, commonExt);
-                    }
-                } else {
-                    removeReportKey(reportId, commonExt);
-                }
+                removeReportKey(reportId, commonExt);
             }
         } catch (Throwable e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());

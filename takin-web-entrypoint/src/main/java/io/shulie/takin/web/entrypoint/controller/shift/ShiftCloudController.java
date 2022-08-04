@@ -362,7 +362,7 @@ public class ShiftCloudController {
         } finally {
             Object data = baseResult.getData();
             if (null != data) {
-                String taskId = JSON.parseObject(data.toString()).getString("tool_execute_id");
+                String taskId = JSON.parseObject(JSON.toJSONString(data)).getString("tool_execute_id");
                 YReleationTaskEntity entity = new YReleationTaskEntity();
                 entity.setTaskId(taskId);
                 entity.setEnvCode(pid);

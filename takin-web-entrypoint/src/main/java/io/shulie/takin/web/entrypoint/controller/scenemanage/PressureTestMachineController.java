@@ -43,8 +43,8 @@ public class PressureTestMachineController {
     @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<String> create(@RequestBody @Valid PressureMachineCreateRequest request) {
         String failContent = machineManageService.create(request);
-        if (failContent != null){
-            return ResponseResult.fail("添加失败",failContent);
+        if (failContent != null) {
+            return ResponseResult.fail("添加失败", failContent);
         }
         return ResponseResult.success("添加成功");
     }
@@ -53,8 +53,8 @@ public class PressureTestMachineController {
     @GetMapping("/list")
     @ApiOperation("压力机列表")
     @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public PagingList<PressureMachineResponse> list(PagingDevice pagingDevice) {
-        return machineManageService.list(pagingDevice);
+    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request) {
+        return machineManageService.list(request);
     }
 
 
@@ -79,8 +79,8 @@ public class PressureTestMachineController {
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<String> enable(@RequestBody @Valid PressureMachineBaseRequest request) {
         String failContent = machineManageService.enable(request);
-        if (failContent != null){
-            return ResponseResult.fail("部署失败",failContent);
+        if (failContent != null) {
+            return ResponseResult.fail("部署失败", failContent);
         }
         return ResponseResult.success("部署成功");
     }
@@ -90,8 +90,8 @@ public class PressureTestMachineController {
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<String> disable(@RequestBody @Valid PressureMachineBaseRequest request) {
         String failContent = machineManageService.disable(request);
-        if (failContent != null){
-            return ResponseResult.fail("卸载失败",failContent);
+        if (failContent != null) {
+            return ResponseResult.fail("卸载失败", failContent);
         }
         return ResponseResult.success("卸载成功");
     }

@@ -217,7 +217,7 @@ public class ShiftCloudController {
                 }
                 //TODO 数据不足是拿基准测试补齐
                 Map data = new HashMap();
-                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?token="+token+"&envCode="+pid+"&userId=" + id + "&current=" + current + "&pageSize=" + pageSize + "&status=", data, 10000);
+                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?tenantCode=yidongyun&token="+token+"&envCode="+pid+"&userId=" + id + "&current=" + current + "&pageSize=" + pageSize + "&status=", data, 10000);
                 if (StringUtils.isNotBlank(responseJson)) {
                     Long finalId = id;
                     JSONArray ja = JSON.parseObject(responseJson).getJSONObject("data").getJSONArray("records");

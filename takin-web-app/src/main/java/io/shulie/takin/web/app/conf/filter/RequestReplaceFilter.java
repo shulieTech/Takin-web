@@ -49,7 +49,7 @@ public class RequestReplaceFilter implements Filter {
      */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (!(request instanceof MyServletRequestWrapper)) {
+        if (!(request instanceof MyServletRequestWrapper) && !((HttpServletRequest) request).getRequestURI().endsWith("/file/upload")) {
             request = new MyServletRequestWrapper((HttpServletRequest) request);
         }
         chain.doFilter(request, response);

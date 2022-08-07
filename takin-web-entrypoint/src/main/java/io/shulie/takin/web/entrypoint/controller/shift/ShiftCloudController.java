@@ -575,7 +575,7 @@ public class ShiftCloudController {
                 result.put("sceneId", pressureTask.getSceneId());
                 int status = pressureTask.getStatus();
                 int runStatus = pressureTask.getRunStatus();
-                int pe = percentage > 100 ? (runStatus == 2 ? 99 :100) : percentage;
+                int pe = percentage >= 100 ? (runStatus == 2 ? 99 :100) : percentage;
                 data.put("task_progress", pe + "%");
 //                if (runStatus != 2) {
 //                    data.put("task_progress", "100%");

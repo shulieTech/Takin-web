@@ -2,8 +2,11 @@ package io.shulie.takin.cloud.biz.service.strategy.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -22,7 +25,7 @@ import com.pamirs.takin.cloud.entity.domain.vo.strategy.StrategyConfigAddVO;
 import com.pamirs.takin.cloud.entity.domain.vo.strategy.StrategyConfigQueryVO;
 import com.pamirs.takin.cloud.entity.domain.vo.strategy.StrategyConfigUpdateVO;
 import io.shulie.takin.adapter.api.entrypoint.watchman.CloudWatchmanApi;
-import io.shulie.takin.adapter.api.model.request.watchman.WatchmanResourceRequest;
+import io.shulie.takin.adapter.api.model.request.watchman.WatchmanBatchRequest;
 import io.shulie.takin.adapter.api.model.response.watchman.WatchmanNode;
 import io.shulie.takin.cloud.biz.config.AppConfig;
 import io.shulie.takin.cloud.biz.service.strategy.StrategyConfigService;
@@ -31,6 +34,10 @@ import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.ext.content.enginecall.StrategyConfigExt;
 import io.shulie.takin.cloud.ext.content.enginecall.StrategyOutputExt;
+import io.shulie.takin.plugin.framework.core.PluginManager;
+import io.shulie.takin.web.ext.api.tenant.WebTenantExtApi;
+import io.shulie.takin.web.ext.entity.tenant.TenantEngineExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +58,8 @@ public class StrategyConfigServiceImpl implements StrategyConfigService {
     private AppConfig appConfig;
     @Resource
     private CloudWatchmanApi cloudWatchmanApi;
+    @Resource
+    private PluginManager pluginManager;
 
     @Override
     public Boolean add(StrategyConfigAddVO addVO) {
@@ -183,12 +192,24 @@ public class StrategyConfigServiceImpl implements StrategyConfigService {
         BigDecimal max = BigDecimal.ONE;
         Integer tpsNum = strategyConfigExt.getTpsNum();
         Integer threadNum = strategyConfigExt.getThreadNum();
+        List<TenantEngineExt> engineList = pluginManager.getExtension(WebTenantExtApi.class)
+            .getTenantEngineList(WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), true);
+        if (CollectionUtils.isEmpty(engineList)) {
+            throw new TakinCloudException(TakinCloudExceptionEnum.K8S_NODE_EMPTY, "未注册压力机集群");
+        }
         // 获取k8s的机器
-        List<WatchmanNode> nodes = cloudWatchmanApi.resource(new WatchmanResourceRequest());
+        WatchmanBatchRequest request = new WatchmanBatchRequest();
+        request.setWatchmanIdList(engineList.stream().map(TenantEngineExt::getEngineId).collect(Collectors.toList()));
+        Map<String, List<WatchmanNode>> nodesMap = cloudWatchmanApi.resourceBatch(request);
+        if (CollectionUtils.isEmpty(engineList)) {
+            throw new TakinCloudException(TakinCloudExceptionEnum.K8S_NODE_EMPTY, "未获取到有效压力机集群");
+        }
+        List<WatchmanNode> nodes = nodesMap.values().stream().flatMap(Collection::stream)
+            .filter(node -> Objects.nonNull(node.getCpu())).collect(Collectors.toList());
         if (DeploymentMethodEnum.PRIVATE == appConfig.getDeploymentMethod()) {
             // nodes
             if (CollectionUtils.isEmpty(nodes)) {
-                throw new TakinCloudException(TakinCloudExceptionEnum.K8S_NODE_EMPTY, "未找到k8s节点");
+                throw new TakinCloudException(TakinCloudExceptionEnum.K8S_NODE_EMPTY, "未获取到有效压力机节点");
             }
         }
         // 获取分配策略

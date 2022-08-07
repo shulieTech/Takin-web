@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-5.8.3</version>
+    <version>takin-web-5.9.0</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -41,7 +41,7 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
-        <takin.web.version>takin-web-5.8.3</takin.web.version>
+        <takin.web.version>takin-web-5.9.0</takin.web.version>
         <takin.common.version>common-2.0.2-SNAPSHOT</takin.common.version>
         <command.channel>common-2.0.0-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.6.2</pardar.log.protocol.version>
@@ -77,6 +77,7 @@
         <easypoi-annotation.version>4.3.0</easypoi-annotation.version>
         <openpdf.version>9.1.22</openpdf.version>
         <transmittable-thread-local>2.12.4</transmittable-thread-local>
+        <cloud.version>5.4.0.12</cloud.version>
     </properties>
 
     <modules>

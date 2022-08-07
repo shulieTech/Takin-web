@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -57,7 +57,9 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageListRes
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
+import io.shulie.takin.adapter.api.model.response.watchman.WatchmanNode;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
+import io.shulie.takin.cloud.ext.content.script.ScriptVerityExt.FileVerifyItem;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneListForSelectOutput;
@@ -69,14 +71,18 @@ import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreate
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse.SceneMachineCluster;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneTagRefResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.WatchmanClusterResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.web.biz.service.scenemanage.EngineClusterService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTagService;
@@ -105,6 +111,7 @@ import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.entity.tenant.EngineType;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -149,6 +156,9 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     @Autowired
     private SceneExcludedApplicationDAO excludedApplicationDAO;
+
+    @Resource
+    private EngineClusterService engineClusterService;
 
     @Override
     public SceneDetailResponse getById(Long sceneId) {
@@ -454,7 +464,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         if (ScriptTypeEnum.JMETER.getCode().equals(dto.getScriptType())) {
             ScriptAndActivityVerifyRequest param = ScriptAndActivityVerifyRequest.builder()
                     .isPressure(dto.isPressure()).sceneId(dto.getId()).sceneName(dto.getPressureTestSceneName())
-                    .scriptType(dto.getScriptType()).scriptList(execList)
+                    .scriptType(dto.getScriptType()).scriptList(execList).watchmanIdList(dto.getWatchmanIdList())
                     .absolutePath(true).businessActivityList(businessActivityList)
                     .deployDetail(scriptManageDeployDetail).version(scriptManageDeployDetail.getScriptVersion()).build();
             ScriptCheckDTO checkDTO = this.checkScriptAndActivity(param);
@@ -612,7 +622,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                         .isPressure(true).scriptType(scriptType).scriptList(execList)
                         .sceneId(sceneData.getId()).sceneName(sceneData.getPressureTestSceneName())
                         .absolutePath(sceneData.getIsAbsoluteScriptPath())
-                        .businessActivityList(businessActivityList)
+                        .businessActivityList(businessActivityList).watchmanIdList(sceneData.getWatchmanIdList())
                         .deployDetail(scriptManageService.getScriptManageDeployDetail(sceneData.getScriptId())).build();
                 dto = checkScriptAndActivity(param);
             }
@@ -725,7 +735,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             }
 
             String convertUrl = UrlUtil.convertUrl(entranceJoinEntity);
-            data.setBindRef(convertUrl);
+            data.setBindRef(businessLinkResult.getLinkName());
             requestUrl.add(convertUrl);
         });
         ResponseResult<ScriptCheckResp> scriptCheckResp = sceneManageApi.checkAndUpdateScript(request);
@@ -849,6 +859,12 @@ public class SceneManageServiceImpl implements SceneManageService {
     @Override
     public WebResponse<List<SceneScriptRefOpen>> buildSceneForFlowVerify(SceneManageWrapperVO vo, SceneManageWrapperReq req, Long userId) {
         vo.setPressure(true);
+        // 流量验证和巡检会调用此处，在此处默认选择一个集群
+        WatchmanClusterResponse engine = engineClusterService.selectOne();
+        String machineId = engine.getId();
+        vo.setWatchmanIdList(Collections.singletonList(machineId));
+        req.setMachineId(machineId);
+        req.setEngineType(engine.getType());
         return sceneManageVo2Req(vo, req);
     }
 
@@ -1002,6 +1018,26 @@ public class SceneManageServiceImpl implements SceneManageService {
                 .limit(10).collect(Collectors.toList());
     }
 
+    // 获取集群信息
+    @Override
+    public SceneMachineResponse machineClusters(String id, Integer type) {
+        List<WatchmanClusterResponse> clusters = engineClusterService.clusters();
+        List<SceneMachineCluster> machines = clusters.stream().map(cluster -> {
+            WatchmanNode node = cluster.getResource();
+            return SceneMachineCluster.builder()
+                .id(cluster.getId()).name(node.getName())
+                .type(String.valueOf(cluster.getType().getType())).disabled(cluster.isDisable())
+                .cpu(node.getCpu()).memory(node.getMemory()).build();
+        }).collect(Collectors.toList());
+
+        WatchmanClusterResponse lastExecExtract = engineClusterService.extractLastExecExtract(Long.valueOf(id), type);
+        EngineType engineType = lastExecExtract.getType();
+        return SceneMachineResponse.builder()
+            .lastStartMachineId(lastExecExtract.getId())
+            .lastStartMachineType(Objects.isNull(engineType) ? null : engineType.getType())
+            .list(machines).build();
+    }
+
     /**
      * 根据场景ids获取查询tps的参数
      *
@@ -1070,6 +1106,7 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     private void parseDeployIfNecessary(ScriptAndActivityVerifyRequest verifyParam, ScriptCheckAndUpdateReq req) {
         if (req.isPressure()) {
+            req.getWatchmanIdList().addAll(verifyParam.getWatchmanIdList()); // 设置集群
             ScriptManageDeployDetailResponse deployDetail = verifyParam.getDeployDetail();
             if (Objects.nonNull(deployDetail)) {
                 List<PluginConfigDetailResponse> pluginFiles = deployDetail.getPluginConfigDetailResponseList();
@@ -1086,18 +1123,21 @@ public class SceneManageServiceImpl implements SceneManageService {
                                 .collect(Collectors.groupingBy(FileManageResponse::getFileType, Collectors.toList()));
                         List<FileManageResponse> scriptFile = dataFilesMap.get(FileTypeEnum.SCRIPT.getCode());
                         if (CollectionUtils.isNotEmpty(scriptFile)) {
-                            req.setScriptPath(scriptFile.get(0).getUploadPath());
+                            FileManageResponse script = scriptFile.get(0);
+                            req.setScriptPath(new FileVerifyItem(script.getUploadPath(), script.getMd5()));
                         }
                         List<FileManageResponse> csvFiles = dataFilesMap.get(FileTypeEnum.DATA.getCode());
                         if (CollectionUtils.isNotEmpty(csvFiles)) {
                             req.setCsvPaths(csvFiles.stream()
-                                    .map(FileManageResponse::getUploadPath).collect(Collectors.toList()));
+                                .map(csv -> new FileVerifyItem(csv.getUploadPath(), csv.getMd5(), Objects.equals(csv.getIsBigFile(), 1)))
+                                .collect(Collectors.toList()));
                         }
                     }
                     List<FileManageResponse> attachmentFiles = deployDetail.getAttachmentManageResponseList();
                     if (CollectionUtils.isNotEmpty(attachmentFiles)) {
                         req.setAttachments(attachmentFiles.stream()
-                                .map(FileManageResponse::getUploadPath).collect(Collectors.toList()));
+                            .map(attachment -> new FileVerifyItem(attachment.getUploadPath(), attachment.getMd5()))
+                            .collect(Collectors.toList()));
                     }
                 }
             }

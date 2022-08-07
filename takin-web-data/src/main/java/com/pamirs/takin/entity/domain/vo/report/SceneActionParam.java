@@ -34,4 +34,9 @@ public class SceneActionParam extends ContextExt {
      * 资源id
      */
     private String resourceId;
+
+    /**
+     * 选择的压力机集群
+     */
+    private String machineId;
 }

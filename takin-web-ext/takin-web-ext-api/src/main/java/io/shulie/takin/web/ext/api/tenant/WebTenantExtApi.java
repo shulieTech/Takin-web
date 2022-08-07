@@ -2,6 +2,7 @@ package io.shulie.takin.web.ext.api.tenant;
 
 import java.util.List;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantEngineExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantKeyExt;
 import org.pf4j.ExtensionPoint;
@@ -75,4 +76,10 @@ public interface WebTenantExtApi extends ExtensionPoint {
      *                 PUBLIC("PUBLIC", "公用秘钥");
      */
     List<TenantKeyExt> getTenantKey(Long tenantId, String envCode, String type);
+
+    List<TenantEngineExt> getTenantEngineList(Long tenantId, String envCode, boolean containsCommon);
+
+    List<TenantEngineExt> getAllTenantEngineList();
+
+    TenantEngineExt getTenantEngine(String engineId);
 }

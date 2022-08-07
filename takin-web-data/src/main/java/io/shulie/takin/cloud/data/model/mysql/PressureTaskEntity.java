@@ -86,4 +86,7 @@ public class PressureTaskEntity {
      */
     @TableField(value = "exception_msg")
     private String exceptionMsg;
+
+    @TableField(value = "features")
+    private String features;
 }

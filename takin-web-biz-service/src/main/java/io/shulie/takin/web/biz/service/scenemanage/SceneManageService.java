@@ -19,6 +19,7 @@ import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
 import io.shulie.takin.web.biz.pojo.request.scene.ListSceneForSelectRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.ListSceneReportRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
 import io.shulie.takin.web.common.domain.WebResponse;
 
@@ -117,4 +118,7 @@ public interface SceneManageService {
      * @return 报告排名
      */
     List<SceneReportListOutput> rankReport(ListSceneReportRequest request);
+
+    SceneMachineResponse machineClusters(String id, Integer type);
+
 }

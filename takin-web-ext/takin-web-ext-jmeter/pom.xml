@@ -5,13 +5,13 @@
     <parent>
         <artifactId>takin-web-ext</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.8.3</version>
+        <version>takin-web-5.9.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>takin-web-ext-jmeter</artifactId>
-    <version>takin-web-5.8.3</version>
+    <version>takin-web-5.9.0</version>
 
     <properties>
         <app.encoding>UTF-8</app.encoding>
@@ -59,6 +59,10 @@
                 <exclusion>
                     <artifactId>xml-apis</artifactId>
                     <groupId>xml-apis</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j-impl</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

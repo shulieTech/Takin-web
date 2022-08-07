@@ -9,7 +9,7 @@ import io.shulie.takin.adapter.api.constant.FormulaTarget;
 import io.shulie.takin.adapter.api.constant.JobType;
 import io.shulie.takin.adapter.api.constant.ThreadGroupType;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
-import io.shulie.takin.cloud.model.request.StartRequest;
+import io.shulie.takin.cloud.model.request.job.pressure.StartRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -81,6 +81,10 @@ public class PressureTaskStartReq extends ContextExt {
         private Integer tps;
         private Integer growthTime;
         private Integer growthStep;
+
+        public Integer getGrowthStep() {
+            return type == ThreadGroupType.LINEAR_GROWTH ? null : growthStep;
+        }
     }
 
     @Data

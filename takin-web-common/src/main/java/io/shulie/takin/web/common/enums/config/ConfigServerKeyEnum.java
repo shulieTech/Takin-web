@@ -287,6 +287,11 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 升级文档地址
      */
     TAKIN_UPGRADE_DOCUMENT_URL("", "takin.upgrade.document.url", NO),
+
+    /**
+     * 租户集群选择策略
+     */
+    TAKIN_ENGINE_SELECTOR_STRATEGY("", "takin.engine.selector.strategy", YES),
     ;
 
     /**

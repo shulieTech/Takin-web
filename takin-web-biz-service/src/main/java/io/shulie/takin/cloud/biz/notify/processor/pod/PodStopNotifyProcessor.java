@@ -43,7 +43,7 @@ public class PodStopNotifyProcessor extends AbstractIndicators implements CloudN
         if (redisClientUtil.lockStopFlagExpire(PressureStartCache.getStopFlag(resourceId), "pod停止")) {
             notifyStop(context);
         }
-        Long jmeterId = data.getJobExampleId();
+        Long jmeterId = data.getPressureExampleId();
         removeSuccessKey(resourceId, String.valueOf(data.getResourceExampleId()),
             Objects.isNull(jmeterId) ? "" : String.valueOf(jmeterId), param.getTime());
     }

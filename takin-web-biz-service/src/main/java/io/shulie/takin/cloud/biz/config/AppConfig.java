@@ -1,5 +1,9 @@
 package io.shulie.takin.cloud.biz.config;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
+import cn.hutool.core.net.url.UrlBuilder;
 import io.shulie.takin.adapter.api.constant.EntrypointUrl;
 import io.shulie.takin.adapter.api.service.CloudApiSenderServiceImpl;
 import io.shulie.takin.cloud.biz.service.schedule.impl.FileSplitService;
@@ -13,6 +17,7 @@ import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.CollectionUtils;
 
 import static io.shulie.takin.cloud.common.constants.SceneManageConstant.FILE_SPLIT;
 
@@ -45,14 +50,29 @@ public class AppConfig {
     }
 
     public String getCallbackUrl() {
-        String url = DataUtils.mergeUrl(webUrl, EntrypointUrl.CALL_BACK_PATH);
-        StringBuilder builder = new StringBuilder();
+        return getCallbackUrl(EntrypointUrl.CALL_BACK_PATH);
+    }
+
+    public String getEngineFileDownloadUrl(Map<String, String> param) {
+        String url = getCallbackUrl(EntrypointUrl.ENGINE_FILE_DOWNLOAD);
+        UrlBuilder builder = UrlBuilder.of(url, StandardCharsets.UTF_8);
+        if (!CollectionUtils.isEmpty(param)) {
+            param.forEach(builder::addQuery);
+        }
+        return builder.build();
+    }
+
+    public String getClusterRegisterUrl() {
+        return UrlBuilder.of(DataUtils.mergeUrl(webUrl, EntrypointUrl.CLUSTER_REGISTER), StandardCharsets.UTF_8).build();
+    }
+
+    private String getCallbackUrl(String path) {
         ContextExt context = CloudPluginUtils.getContext();
-        builder.append("?").append(CloudApiSenderServiceImpl.ENV_CODE).append("=").append(context.getEnvCode());
-        builder.append("&").append(CloudApiSenderServiceImpl.TENANT_APP_KEY).append("=").append(context.getUserAppKey());
-        builder.append("&").append(CloudApiSenderServiceImpl.USER_APP_KEY).append("=").append(context.getUserAppKey());
-        url += builder.toString();
-        return url;
+        return UrlBuilder.of(DataUtils.mergeUrl(webUrl, path), StandardCharsets.UTF_8)
+            .addQuery(CloudApiSenderServiceImpl.ENV_CODE, context.getEnvCode())
+            .addQuery(CloudApiSenderServiceImpl.TENANT_APP_KEY, context.getUserAppKey())
+            .addQuery(CloudApiSenderServiceImpl.USER_APP_KEY, context.getUserAppKey())
+            .build();
     }
 
     public String reWritePathByNfsRelative(String filePath, Integer fileType, boolean absolutePath) {

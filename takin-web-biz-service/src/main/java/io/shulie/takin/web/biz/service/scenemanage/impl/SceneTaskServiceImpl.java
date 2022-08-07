@@ -16,14 +16,13 @@ import javax.annotation.Resource;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.bean.BeanUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
-import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.common.exception.ApiException;
@@ -31,7 +30,6 @@ import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
-import com.pamirs.takin.entity.domain.entity.TBaseConfig;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParamNew;
 import com.pamirs.takin.entity.domain.vo.report.ScenePluginParam;
@@ -50,16 +48,18 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapper
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneJobStateResp;
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneTaskAdjustTpsResp;
+import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
 import io.shulie.takin.cloud.common.bean.scenemanage.SceneManageQueryOptions;
 import io.shulie.takin.cloud.common.constants.ReportConstants;
 import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
+import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
 import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
-import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.checker.CompositeStartConditionChecker;
 import io.shulie.takin.web.biz.checker.StartConditionChecker.CheckResult;
@@ -75,7 +75,6 @@ import io.shulie.takin.web.biz.pojo.request.scriptmanage.UpdateTpsRequest;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.biz.service.BaseConfigService;
 import io.shulie.takin.web.biz.service.DataSourceService;
 import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
@@ -91,22 +90,22 @@ import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
-import io.shulie.takin.web.common.vo.scene.BaffleAppVO;
 import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.api.tenant.WebTenantExtApi;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantEngineExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -125,7 +124,7 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
-public class SceneTaskServiceImpl implements SceneTaskService {
+public class SceneTaskServiceImpl extends AbstractIndicators implements SceneTaskService {
 
     public static final String PRESSURE_REPORT_ID_SCENE_PREFIX = "pressure:reportId:scene:";
 
@@ -159,8 +158,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private RedisTemplate redisTemplate;
     @Resource
     private ApplicationDAO applicationDAO;
-    @Resource
-    private BaseConfigService baseConfigService;
 
     @Autowired
     private ScriptDebugService scriptDebugService;
@@ -181,6 +178,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private CloudSceneManageService cloudSceneManageService;
     @Resource
     private PressureTaskDAO pressureTaskDAO;
+    @Resource
+    private SceneManageDAO sceneManageDAO;
 
     /**
      * 是否是预发环境
@@ -191,6 +190,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     // 场景任务延迟时间,多补偿300s
     @Value("${takin.task.delayTime:300}")
     private Long taskDelayTime;
+    @Resource
+    private PluginManager pluginManager;
 
     @Override
     public void preStop(Long sceneId) {
@@ -689,6 +690,11 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     @Override
     public CheckResultVo preCheck(SceneActionParam param) {
+        String machineId = param.getMachineId();
+        TenantEngineExt tenantEngine = pluginManager.getExtension(WebTenantExtApi.class).getTenantEngine(machineId);
+        if (Objects.isNull(tenantEngine)) {
+            throw new RuntimeException("选择集群[" + machineId + "]不存在");
+        }
         Long sceneId = param.getSceneId();
         String resourceId = param.getResourceId();
         StartConditionCheckerContext context = new StartConditionCheckerContext();
@@ -696,6 +702,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         context.setSceneId(sceneId);
         context.setResourceId(resourceId);
         context.setTenantId(WebPluginUtils.traceTenantId());
+        context.setMachineId(machineId);
+        context.setMachineType(tenantEngine.getType().getType());
 
         SceneManageQueryOptions options = new SceneManageQueryOptions();
         options.setIncludeBusinessActivity(true);
@@ -721,6 +729,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             }
         }
         if (existsFail) {
+            updateSceneMachineId(context.getSceneId(), context.getMachineId(), context.getMachineType());
             return CheckResultVo.builder().sceneName(sceneManage.getPressureTestSceneName())
                     .podNumber(sceneManage.getIpNum()).status(CheckStatus.FAIL.ordinal())
                     .reportId(reportId).checkList(webResultList).build();
@@ -761,6 +770,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         if (Objects.nonNull(report)) {
             if (report.getTaskStatus() == ReportConstants.FINISH_STATUS) {
                 pressureTaskDAO.updateStatus(report.getTaskId(), PressureTaskStateEnum.REPORT_DONE, "强制停止");
+                sceneManageDAO.updateStatus(report.getSceneId(), SceneManageStatusEnum.WAIT.getValue());
                 return;
             }
             TaskStopReq req = new TaskStopReq();
@@ -769,4 +779,5 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             cloudTaskApi.forceStopInspectTask(req);
         }
     }
+
 }

@@ -8,6 +8,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class DataCalibrationRequest extends ContextExt {
 
-    private Long jobId;
+    private Long pressureId;
     private String resourceId;
 }

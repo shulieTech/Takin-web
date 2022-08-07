@@ -21,4 +21,5 @@ public class ScriptAndActivityVerifyRequest {
     private List<SceneScriptRefOpen> scriptList;
     private Integer version;
     private ScriptManageDeployDetailResponse deployDetail;
+    private List<String> watchmanIdList;
 }

@@ -7,6 +7,7 @@ import javax.annotation.Resource;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.shulie.takin.adapter.api.constant.EntrypointUrl;
 import io.shulie.takin.adapter.api.entrypoint.pressure.PressureTaskApi;
+import io.shulie.takin.adapter.api.model.request.excess.DataCalibrationRequest;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureParamModifyReq;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureParamsReq;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStartReq;
@@ -33,6 +34,13 @@ public class PressureTaskApiImpl implements PressureTaskApi {
         return cloudApiSenderService.get(
             EntrypointUrl.join(EntrypointUrl.MODULE_RRESSURE, EntrypointUrl.METHOD_RRESSURE_STOP),
             req, new TypeReference<ApiResult<String>>() {}).getData();
+    }
+
+    @Override
+    public Long dataCalibration(DataCalibrationRequest request) {
+        return cloudApiSenderService.get(
+            EntrypointUrl.join(EntrypointUrl.MODULE_RRESSURE, EntrypointUrl.METHOD_DATA_CALIBRATION),
+            request, new TypeReference<ApiResult<Long>>() {}).getData();
     }
 
     @Override

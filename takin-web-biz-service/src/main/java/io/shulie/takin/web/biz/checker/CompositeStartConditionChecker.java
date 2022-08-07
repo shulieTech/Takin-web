@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.checker;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -90,6 +91,9 @@ public class CompositeStartConditionChecker implements InitializingBean {
             options.setIncludeScript(true);
             context.setSceneData(cloudSceneManageService.getSceneManage(sceneId, options));
         }
+        SceneManageWrapperOutput sceneData = context.getSceneData();
+        sceneData.setMachineId(context.getMachineId());
+        sceneData.setMachineType(context.getMachineType());
 
         SceneTaskStartInput input = new SceneTaskStartInput();
         input.setOperateId(WebPluginUtils.traceUserId());
@@ -131,6 +135,12 @@ public class CompositeStartConditionChecker implements InitializingBean {
         if (Objects.nonNull(uniqueKey)) {
             context.setUniqueKey(String.valueOf(uniqueKey));
         }
+        String machineId = (String) redisClientUtil.hmget(PressureStartCache.getResourceKey(resourceId), PressureStartCache.MACHINE_ID);
+        context.setMachineId(machineId);
+        Integer machineType = (Integer) redisClientUtil.hmget(PressureStartCache.getResourceKey(resourceId), PressureStartCache.MACHINE_TYPE);
+        context.setMachineType(machineType);
+        String attachId = (String) redisClientUtil.hmget(PressureStartCache.getResourceKey(resourceId), PressureStartCache.FILE_ATTACH_ID);
+        context.setAttachId(attachId);
     }
 
     private void callCheckFailEvent(StartConditionCheckerContext context) {
@@ -149,13 +159,6 @@ public class CompositeStartConditionChecker implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        if (checkerList == null) {
-            checkerList = new ArrayList<>(0);
-        }
-        checkerList.sort((it1, it2) -> {
-            int i1 = it1.getOrder();
-            int i2 = it2.getOrder();
-            return Integer.compare(i1, i2);
-        });
+        checkerList.sort(Comparator.comparing(StartConditionChecker::getOrder));
     }
 }

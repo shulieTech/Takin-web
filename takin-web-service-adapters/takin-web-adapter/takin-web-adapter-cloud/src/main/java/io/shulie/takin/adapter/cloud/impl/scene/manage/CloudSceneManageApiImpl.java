@@ -285,7 +285,6 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         response.setStopCondition(SceneSlaRefRespConvertor.INSTANCE.ofList(sceneManage.getStopCondition()));
         response.setWarningCondition(SceneSlaRefRespConvertor.INSTANCE.ofList(sceneManage.getWarningCondition()));
         response.setUploadFile(SceneScriptRefRespConvertor.INSTANCE.ofList(sceneManage.getUploadFile()));
-        response.setScheduleInterval(sceneManage.getScheduleInterval());
 
         if (CollectionUtils.isEmpty(response.getBusinessActivityConfig())) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, "场景不存在或者没有业务活动配置");

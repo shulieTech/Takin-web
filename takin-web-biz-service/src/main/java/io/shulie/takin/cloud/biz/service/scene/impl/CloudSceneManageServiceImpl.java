@@ -104,6 +104,7 @@ import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
 import io.shulie.takin.cloud.ext.content.response.Response;
 import io.shulie.takin.cloud.ext.content.script.ScriptParseExt;
 import io.shulie.takin.cloud.ext.content.script.ScriptVerityExt;
+import io.shulie.takin.cloud.ext.content.script.ScriptVerityExt.FileVerifyItem;
 import io.shulie.takin.cloud.ext.content.script.ScriptVerityRespExt;
 import io.shulie.takin.eventcenter.Event;
 import io.shulie.takin.eventcenter.EventCenterTemplate;
@@ -112,6 +113,7 @@ import io.shulie.takin.utils.PathFormatForTest;
 import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.biz.utils.FileEncoder;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -308,13 +310,16 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
                 return;
             }
             SceneScriptRef sceneScriptRef = sceneScriptRefList.get(0);
+            if (FileEncoder.fileEncoded(sceneScriptRef.getUploadPath())) {
+                return;
+            }
             ScriptParseExt scriptParseExt = scriptAnalyzeService.parseScriptFile(sceneScriptRef.getUploadPath());
             if (scriptParseExt == null || CollectionUtils.isEmpty(scriptParseExt.getRequestUrl())
                 || CollectionUtils.isEmpty(businessActivityList)) {
                 return;
             }
             businessActivityList.forEach(businessActivity -> scriptParseExt.getRequestUrl().forEach(scriptUrlExt -> {
-                if (UrlUtil.checkEqual(businessActivity.getBindRef(), scriptUrlExt.getPath())) {
+                if (UrlUtil.checkEqual(businessActivity.getBindRef(), scriptUrlExt.getPath())) { // 此处应该不会成立
                     businessActivity.setBindRef(scriptUrlExt.getName());
                 }
             }));
@@ -1425,6 +1430,7 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
 
     private void completedByNewVerify(ScriptVerityExt scriptVerityExt, ScriptCheckAndUpdateReq updateReq) {
         scriptVerityExt.setUseNewVerify(updateReq.isPressure());
+        scriptVerityExt.setWatchmanIdList(updateReq.getWatchmanIdList());
         completedScriptVerityIfNecessary(scriptVerityExt, updateReq);
         dealJarsIfNecessary(scriptVerityExt);
     }
@@ -1436,8 +1442,11 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
                 List<EnginePluginRefOutput> refOutputs = plugins.stream()
                     .map(plugin -> EnginePluginRefOutput.create(plugin.getPluginId(), plugin.getPluginVersion()))
                     .collect(Collectors.toList());
-                List<String> pluginPaths = enginePluginFilesService.findPluginFilesPathByPluginIdAndVersion(refOutputs)
-                    .stream().filter(Objects::nonNull).collect(Collectors.toList());
+                // 插件文件(没有md5)
+                List<FileVerifyItem> pluginPaths = enginePluginFilesService.findPluginFilesPathByPluginIdAndVersion(refOutputs)
+                    .stream().filter(Objects::nonNull)
+                    .map(path -> new FileVerifyItem(true, path, null))
+                    .collect(Collectors.toList());
                 scriptVerityExt.getPluginPaths().addAll(pluginPaths);
             }
             Long sceneId = updateReq.getSceneId();
@@ -1458,25 +1467,29 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
                 completedScriptVerityBySceneId(scriptVerityExt, updateReq);
                 return;
             }
-            String scriptPath = updateReq.getScriptPath();
-            if (StringUtils.isNotBlank(scriptPath)) {
-                scriptVerityExt.setScriptPaths(
-                    reWritePathIfNecessary(Collections.singletonList(scriptPath), FileTypeEnum.SCRIPT.getCode(), true));
-            }
-            List<String> csvPaths = updateReq.getCsvPaths();
+            // 数据文件
+            FileVerifyItem scriptPath = updateReq.getScriptPath();
+            reWritePathIfNecessary(scriptPath, FileTypeEnum.SCRIPT.getCode(), true);
+            scriptVerityExt.setScriptPaths(Collections.singletonList(scriptPath));
+
+            // 脚本文件
+            List<FileVerifyItem> csvPaths = updateReq.getCsvPaths();
             if (CollectionUtils.isNotEmpty(csvPaths)) {
-                scriptVerityExt.setCsvPaths(
-                    reWritePathIfNecessary(csvPaths, FileTypeEnum.DATA.getCode(), true));
+                reWritePathIfNecessary(csvPaths, FileTypeEnum.DATA.getCode(), true);
+                scriptVerityExt.setCsvPaths(csvPaths);
             }
-            List<String> attachmentPaths = updateReq.getAttachments();
+
+            // 附件文件
+            List<FileVerifyItem> attachmentPaths = updateReq.getAttachments();
             if (CollectionUtils.isNotEmpty(attachmentPaths)) {
-                scriptVerityExt.setAttachments(
-                    reWritePathIfNecessary(attachmentPaths, FileTypeEnum.ATTACHMENT.getCode(), true));
+                reWritePathIfNecessary(attachmentPaths, FileTypeEnum.ATTACHMENT.getCode(), true);
+                scriptVerityExt.setAttachments(attachmentPaths);
             }
         }
     }
 
     private void completedScriptVerityBySceneId(ScriptVerityExt scriptVerityExt, ScriptCheckAndUpdateReq updateReq) {
+        scriptVerityExt.setFromScene(true);
         SceneManageQueryOptions options = new SceneManageQueryOptions();
         options.setIncludeScript(true);
         SceneManageWrapperOutput sceneManage = getSceneManage(updateReq.getSceneId(), options);
@@ -1487,38 +1500,61 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
                 Collectors.groupingBy(SceneScriptRefOutput::getFileType, Collectors.toList()));
             Integer scriptCode = FileTypeEnum.SCRIPT.getCode();
             List<SceneScriptRefOutput> scriptFiles = filesMap.get(scriptCode);
-            List<String> scriptPaths = Collections.singletonList(scriptFiles.get(0).getUploadPath());
-            scriptVerityExt.getScriptPaths().addAll(reWritePathIfNecessary(scriptPaths, scriptCode, false));
+            SceneScriptRefOutput scriptPath = scriptFiles.get(0);
+
+            // 脚本文件
+            FileVerifyItem scriptItem = new FileVerifyItem(scriptPath.getUploadPath(), scriptPath.getFileMd5());
+            reWritePathIfNecessary(scriptItem, scriptCode, false);
+            scriptVerityExt.getScriptPaths().add(scriptItem);
+
+            // 数据文件
             Integer dataCode = FileTypeEnum.DATA.getCode();
             List<SceneScriptRefOutput> csvFiles = filesMap.get(dataCode);
             if (CollectionUtils.isNotEmpty(csvFiles)) {
-                List<String> csvPaths = csvFiles.stream().map(SceneScriptRefOutput::getUploadPath)
-                    .filter(Objects::nonNull).collect(Collectors.toList());
-                scriptVerityExt.getCsvPaths().addAll(reWritePathIfNecessary(csvPaths, dataCode, false));
+                List<FileVerifyItem> csvPaths = csvFiles.stream()
+                    .filter(csv -> StringUtils.isNotBlank(csv.getUploadPath()))
+                    .map(csv -> new FileVerifyItem(csv.getUploadPath(), csv.getFileMd5(), Objects.equals(csv.getIsBigFile(), 1)))
+                    .collect(Collectors.toList());
+                reWritePathIfNecessary(csvPaths, dataCode, false);
+                scriptVerityExt.getCsvPaths().addAll(csvPaths);
             }
+
+            // 附件文件
             Integer attachmentCode = FileTypeEnum.ATTACHMENT.getCode();
             List<SceneScriptRefOutput> attachmentFiles = filesMap.get(attachmentCode);
             if (CollectionUtils.isNotEmpty(attachmentFiles)) {
-                List<String> attachmentPaths = attachmentFiles.stream().map(SceneScriptRefOutput::getUploadPath)
-                    .filter(Objects::nonNull).collect(Collectors.toList());
-                scriptVerityExt.getAttachments().addAll(reWritePathIfNecessary(attachmentPaths, attachmentCode, false));
+                List<FileVerifyItem> attachmentPaths = attachmentFiles.stream()
+                    .filter(attachment -> StringUtils.isNotBlank(attachment.getUploadPath()))
+                    .map(attachment -> new FileVerifyItem(attachment.getUploadPath(), attachment.getFileMd5()))
+                    .collect(Collectors.toList());
+                reWritePathIfNecessary(attachmentPaths, attachmentCode, false);
+                scriptVerityExt.getAttachments().addAll(attachmentPaths);
             }
         }
     }
 
-    private List<String> reWritePathIfNecessary(List<String> paths, Integer fileType, boolean absolutePath) {
-        return paths.stream().map(path -> appConfig.reWritePathByNfsRelative(path, fileType, absolutePath))
-            .collect(Collectors.toList());
+    private void reWritePathIfNecessary(FileVerifyItem path, Integer fileType, boolean absolutePath) {
+        path.setPath(appConfig.reWritePathByNfsRelative(path.getPath(), fileType, absolutePath));
+        path.setCalcFullPath(true);
+        path.setRootPath(appConfig.getNfsDir());
+    }
+
+    private void reWritePathIfNecessary(List<FileVerifyItem> paths, Integer fileType, boolean absolutePath) {
+        paths.forEach(path -> {
+            path.setPath(appConfig.reWritePathByNfsRelative(path.getPath(), fileType, absolutePath));
+            path.setCalcFullPath(true);
+            path.setRootPath(appConfig.getNfsDir());
+        });
     }
 
     private void dealJarsIfNecessary(ScriptVerityExt scriptVerityExt) {
         if (scriptVerityExt.isUseNewVerify()) {
-            List<String> pluginPaths = scriptVerityExt.getPluginPaths();
-            List<String> csvPaths = scriptVerityExt.getCsvPaths();
-            Iterator<String> csvIterator = csvPaths.iterator();
+            List<FileVerifyItem> pluginPaths = scriptVerityExt.getPluginPaths();
+            List<FileVerifyItem> csvPaths = scriptVerityExt.getCsvPaths();
+            Iterator<FileVerifyItem> csvIterator = csvPaths.iterator();
             while (csvIterator.hasNext()) {
-                String csv = csvIterator.next();
-                if (StringUtils.endsWith(csv, JAR_SUFFIX)) {
+                FileVerifyItem csv = csvIterator.next();
+                if (StringUtils.endsWith(csv.getPath(), JAR_SUFFIX)) {
                     pluginPaths.add(csv);
                     csvIterator.remove();
                 }

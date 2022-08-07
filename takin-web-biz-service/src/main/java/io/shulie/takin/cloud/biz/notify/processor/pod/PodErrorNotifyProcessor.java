@@ -39,7 +39,7 @@ public class PodErrorNotifyProcessor extends AbstractIndicators implements Cloud
         if (redisClientUtil.lockNoExpire(PressureStartCache.getPodErrorFirstKey(resourceId), podId)) {
             callRunningFailedEvent(resourceId, data.getErrorMessage());
         }
-        Long jmeterId = data.getJobExampleId();
+        Long jmeterId = data.getPressureExampleId();
         removeSuccessKey(resourceId, podId, Objects.isNull(jmeterId) ? "" : String.valueOf(jmeterId), param.getTime());
     }
 }

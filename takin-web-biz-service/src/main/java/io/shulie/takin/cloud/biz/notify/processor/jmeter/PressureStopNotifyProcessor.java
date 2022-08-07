@@ -7,7 +7,7 @@ import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.notify.CloudNotifyProcessor;
 import io.shulie.takin.cloud.constant.enums.CallbackType;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
-import io.shulie.takin.cloud.model.callback.basic.JobExample;
+import io.shulie.takin.cloud.model.callback.basic.PressureExample;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -27,13 +27,13 @@ public class PressureStopNotifyProcessor extends AbstractIndicators
     }
 
     private void processStopped(PressureStopNotifyParam param) {
-        JobExample data = param.getData();
+        PressureExample data = param.getData();
         String resourceId = String.valueOf(data.getResourceId());
         if (!redisClientUtil.hasKey(PressureStartCache.getResourceKey(resourceId))) {
             return;
         }
         String podId = String.valueOf(data.getResourceExampleId());
-        String jmeterId = String.valueOf(data.getJobExampleId());
+        String jmeterId = String.valueOf(data.getPressureExampleId());
         ResourceContext context = getResourceContext(resourceId);
         if (redisClientUtil.lockStopFlagExpire(PressureStartCache.getStopFlag(resourceId), "jmeter停止")) {
             notifyStop(context);
@@ -43,6 +43,6 @@ public class PressureStopNotifyProcessor extends AbstractIndicators
 
     @Override
     public CallbackType type() {
-        return CallbackType.JOB_EXAMPLE_STOP;
+        return CallbackType.PRESSURE_EXAMPLE_STOP;
     }
 }

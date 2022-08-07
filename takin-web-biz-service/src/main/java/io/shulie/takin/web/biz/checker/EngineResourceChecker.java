@@ -73,9 +73,10 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
             initTaskAndReportIfNecessary(context);
             SceneManageWrapperOutput sceneData = context.getSceneData();
             sceneData.setStrategy(getStrategy(context));
-            Boolean checkResult = cloudResourceApi.check(buildCheckRequest(sceneData));
-            if (!Boolean.TRUE.equals(checkResult)) {
-                return CheckResult.fail(type(), "压力机资源不足");
+            try {
+                cloudResourceApi.check(buildCheckRequest(context, sceneData));
+            } catch (Exception e) {
+                return CheckResult.fail(type(), e.getMessage());
             }
             pressureTaskDAO.updateStatus(context.getTaskId(), PressureTaskStateEnum.CHECKED, null);
             // 锁定资源：异步接口，每个pod启动成功都会回调一次回调接口
@@ -105,7 +106,7 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
     }
 
     private String lockResource(StartConditionCheckerContext context) {
-        return cloudResourceApi.lock(buildLockRequest(context.getSceneData()));
+        return cloudResourceApi.lock(buildLockRequest(context));
     }
 
     private void afterLocking(StartConditionCheckerContext context) {
@@ -124,6 +125,7 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
     private void initCache(StartConditionCheckerContext context) {
         SceneManageWrapperOutput sceneData = context.getSceneData();
         String resourceId = context.getResourceId();
+        String attach = PressureStartCache.removeFileAttachId();
         Map<String, Object> param = new HashMap<>(32);
         param.put(PressureStartCache.CHECK_STATUS, CheckStatus.PENDING.ordinal());
         param.put(PressureStartCache.POD_NUM, sceneData.getIpNum());
@@ -135,6 +137,9 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
         param.put(PressureStartCache.UNIQUE_KEY, context.getUniqueKey());
         param.put(PressureStartCache.PT_TEST_TIME, sceneData.getPressureTestSecond());
         param.put(PressureStartCache.PRESSURE_TYPE, sceneData.getPressureType());
+        param.put(PressureStartCache.MACHINE_ID, context.getMachineId());
+        param.put(PressureStartCache.MACHINE_TYPE, context.getMachineType());
+        param.put(PressureStartCache.FILE_ATTACH_ID, attach);
         redisClientUtil.hmset(PressureStartCache.getResourceKey(resourceId), param);
 
         // 巡检等需要设置
@@ -144,6 +149,9 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
         sceneParam.put(PressureStartCache.RESOURCE_ID, context.getResourceId());
         sceneParam.put(PressureStartCache.UNIQUE_KEY, context.getUniqueKey());
         redisClientUtil.hmset(PressureStartCache.getSceneResourceKey(sceneData.getId()), sceneParam);
+
+        String pressureFileKey = PressureStartCache.getPressureFileKey(attach);
+        redisClientUtil.hmset(pressureFileKey, PressureStartCache.RESOURCE_ID, resourceId);
     }
 
     private StrategyConfigExt getStrategy(StartConditionCheckerContext context) {
@@ -170,6 +178,8 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
             context.setSceneData(sceneManage);
             context.setSceneId(sceneManage.getId());
             context.setTenantId(sceneManage.getTenantId());
+            sceneManage.setMachineId(context.getMachineId());
+            sceneManage.setMachineType(context.getMachineType());
         }
         if (Objects.isNull(context.getInput())) {
             SceneTaskStartInput input = new SceneTaskStartInput();
@@ -213,7 +223,7 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
         return 4;
     }
 
-    private ResourceCheckRequest buildCheckRequest(SceneManageWrapperOutput sceneData) {
+    private ResourceCheckRequest buildCheckRequest(StartConditionCheckerContext context, SceneManageWrapperOutput sceneData) {
         StrategyConfigExt strategy = sceneData.getStrategy();
         ResourceCheckRequest request = new ResourceCheckRequest();
         request.setCpu(strategy.getCpuNum().toPlainString());
@@ -221,10 +231,12 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
         request.setNumber(sceneData.getIpNum());
         request.setLimitCpu(strategy.getLimitCpuNum().toPlainString());
         request.setLimitMemory(strategy.getLimitMemorySize().toPlainString());
+        request.setWatchmanId(context.getMachineId());
         return request;
     }
 
-    private ResourceLockRequest buildLockRequest(SceneManageWrapperOutput sceneData) {
+    private ResourceLockRequest buildLockRequest(StartConditionCheckerContext context) {
+        SceneManageWrapperOutput sceneData = context.getSceneData();
         StrategyConfigExt strategy = sceneData.getStrategy();
         ResourceLockRequest request = new ResourceLockRequest();
         request.setCpu(strategy.getCpuNum().toPlainString());
@@ -234,6 +246,7 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
         request.setNumber(sceneData.getIpNum());
         request.setImage(strategy.getPressureEngineImage());
         request.setCallbackUrl(appConfig.getCallbackUrl());
+        request.setWatchmanId(context.getMachineId());
         return request;
     }
 

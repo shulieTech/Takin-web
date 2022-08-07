@@ -4,10 +4,10 @@ import javax.annotation.Resource;
 
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.notify.CloudNotifyProcessor;
+import io.shulie.takin.cloud.model.callback.basic.PressureExample;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.constant.enums.CallbackType;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
-import io.shulie.takin.cloud.model.callback.basic.JobExample;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,18 +19,18 @@ public class PressureHeartbeatNotifyProcessor extends AbstractIndicators
 
     @Override
     public String process(PressureHeartbeatNotifyParam param) {
-        JobExample data = param.getData();
+        PressureExample data = param.getData();
         String resourceId = String.valueOf(data.getResourceId());
         ResourceContext resourceContext = getResourceContext(resourceId);
         if (resourceContext != null) {
             redisClientUtil.hmset(PressureStartCache.getJmeterHeartbeatKey(resourceId),
-                String.valueOf(data.getJobExampleId()), System.currentTimeMillis());
+                String.valueOf(data.getPressureExampleId()), System.currentTimeMillis());
         }
         return resourceId;
     }
 
     @Override
     public CallbackType type() {
-        return CallbackType.JOB_EXAMPLE_HEARTBEAT;
+        return CallbackType.PRESSURE_EXAMPLE_HEARTBEAT;
     }
 }

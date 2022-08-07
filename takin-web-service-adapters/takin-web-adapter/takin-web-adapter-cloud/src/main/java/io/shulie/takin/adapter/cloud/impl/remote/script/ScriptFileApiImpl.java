@@ -5,6 +5,7 @@ import javax.annotation.Resource;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.shulie.takin.adapter.api.constant.EntrypointUrl;
 import io.shulie.takin.adapter.api.entrypoint.script.ScriptFileApi;
+import io.shulie.takin.adapter.api.model.request.pressure.ScriptAnnounceRequest;
 import io.shulie.takin.adapter.api.model.request.script.ScriptVerifyRequest;
 import io.shulie.takin.adapter.api.service.CloudApiSenderService;
 import io.shulie.takin.cloud.model.response.ApiResult;
@@ -20,9 +21,15 @@ public class ScriptFileApiImpl implements ScriptFileApi {
 
     @Override
     public void verify(ScriptVerifyRequest request) {
-        String data = cloudApiSenderService.post(
-            EntrypointUrl.join(EntrypointUrl.MODULE_SCRIPT, EntrypointUrl.METHOD_SCRIPT_CHECK),
+        cloudApiSenderService.post(
+            EntrypointUrl.join(EntrypointUrl.MODULE_RRESSURE, EntrypointUrl.METHOD_FILE_CHECK),
             request, new TypeReference<ApiResult<String>>() {}).getData();
-        log.error("脚本文件校验结果: {}", data);
+    }
+
+    @Override
+    public void fileAnnounce(ScriptAnnounceRequest request) {
+        cloudApiSenderService.post(
+            EntrypointUrl.join(EntrypointUrl.MODULE_RRESSURE, EntrypointUrl.METHOD_FILE_ANNOUNCE),
+            request, new TypeReference<ApiResult<Void>>() {}).getData();
     }
 }

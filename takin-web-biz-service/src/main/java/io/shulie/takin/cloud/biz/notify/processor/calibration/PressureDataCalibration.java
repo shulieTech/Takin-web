@@ -8,18 +8,18 @@ import javax.annotation.Resource;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
-import io.shulie.takin.adapter.api.entrypoint.excess.ExcessTaskApi;
+import io.shulie.takin.adapter.api.entrypoint.pressure.PressureTaskApi;
 import io.shulie.takin.adapter.api.model.request.excess.DataCalibrationRequest;
 import io.shulie.takin.cloud.biz.config.AppConfig;
 import io.shulie.takin.cloud.biz.notify.PressureEventCenter.AmdbCalibrationException;
 import io.shulie.takin.cloud.biz.notify.PressureEventCenter.CloudCalibrationException;
 import io.shulie.takin.cloud.common.bean.task.TaskResult;
 import io.shulie.takin.cloud.common.utils.GsonUtil;
-import io.shulie.takin.cloud.constant.enums.ExcessJobType;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.param.report.ReportUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
+import io.shulie.takin.cloud.model.callback.Calibration.Data;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.trace.DataCalibrationDTO;
@@ -50,7 +50,7 @@ public class PressureDataCalibration {
     @Resource
     private TraceClient traceClient;
     @Resource
-    private ExcessTaskApi excessTaskApi;
+    private PressureTaskApi pressureTaskApi;
     @Resource
     private RedisClientUtil redisClientUtil;
     @Resource
@@ -114,12 +114,12 @@ public class PressureDataCalibration {
         Runnable r = () -> {
             fillContext(result);
             DataCalibrationNotifyParam param = new DataCalibrationNotifyParam();
-            param.setCompleted(false);
-            param.setJobId(result.getTaskId());
-            param.setResourceId(result.getResourceId());
+            Data data = new Data();
+            data.setCompleted(false);
+            data.setPressureId(result.getTaskId());
+            data.setResourceId(Long.parseLong(result.getResourceId()));
             param.setSource(ofType(cloud));
-            param.setJobType(ExcessJobType.DATA_CALIBRATION);
-            param.setContent("校准超时失败");
+            data.setContent("校准超时失败");
             dataCalibrationProcessor.process(param);
         };
         // 校准超时失败
@@ -193,9 +193,9 @@ public class PressureDataCalibration {
 
     private void callCloud(TaskResult result) {
         DataCalibrationRequest request = new DataCalibrationRequest();
-        request.setJobId(result.getTaskId());
+        request.setPressureId(result.getTaskId());
         request.setResourceId(result.getResourceId());
-        excessTaskApi.dataCalibration(request);
+        pressureTaskApi.dataCalibration(request);
     }
 
     private void fillContext(TaskResult result) {

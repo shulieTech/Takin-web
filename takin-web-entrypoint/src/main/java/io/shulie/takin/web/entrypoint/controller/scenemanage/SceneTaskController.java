@@ -258,6 +258,9 @@ public class SceneTaskController extends AbstractIndicators {
     @GetMapping("preCheck")
     @ApiOperation("前置校验")
     public ResponseResult<Object> preCheck(SceneActionParam param) {
+        if (Objects.isNull(param.getMachineId())) {
+            return ResponseResult.fail("未选择压力机集群", null);
+        }
         return ResponseResult.success(sceneTaskService.preCheck(param));
     }
 

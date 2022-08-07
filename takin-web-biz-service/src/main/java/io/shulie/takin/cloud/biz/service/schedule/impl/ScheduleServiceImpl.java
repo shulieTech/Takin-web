@@ -2,11 +2,13 @@ package io.shulie.takin.cloud.biz.service.schedule.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -42,8 +44,10 @@ import io.shulie.takin.cloud.biz.service.strategy.StrategyConfigService;
 import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
 import io.shulie.takin.cloud.common.constants.FileSplitConstants;
 import io.shulie.takin.cloud.common.constants.ReportConstants;
+import io.shulie.takin.cloud.common.constants.SceneManageConstant;
 import io.shulie.takin.cloud.common.constants.ScheduleConstants;
 import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
+import io.shulie.takin.cloud.common.enums.scenemanage.FileTypeEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneRunTaskStatusEnum;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
@@ -61,9 +65,9 @@ import io.shulie.takin.cloud.ext.content.enginecall.ScheduleStartRequestExt.Star
 import io.shulie.takin.cloud.ext.content.enginecall.ScheduleStopRequestExt;
 import io.shulie.takin.cloud.ext.content.enginecall.StrategyConfigExt;
 import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
-import io.shulie.takin.cloud.model.request.StartRequest;
-import io.shulie.takin.cloud.model.request.StartRequest.FileInfo;
-import io.shulie.takin.cloud.model.request.StartRequest.FileInfo.SplitInfo;
+import io.shulie.takin.cloud.model.request.job.pressure.StartRequest;
+import io.shulie.takin.cloud.model.request.job.pressure.StartRequest.FileInfo;
+import io.shulie.takin.cloud.model.request.job.pressure.StartRequest.FileInfo.SplitInfo;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -226,8 +230,13 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
                 .build());
 
         request.setCallbackUrl(appConfig.getCallbackUrl());
+        ResourceContext context = getResourceContext(request.getRequest().getResourceId());
+        String attachId = context.getAttachId();
+        request.getRequest().setAttachId(attachId);
+        request.getRequest().setFileMapping(redisClientUtil.hasKey(PressureStartCache.getScriptMappingKey(attachId)));
+
         try {
-            PressureTaskStartReq req = buildStartReq(request);
+            PressureTaskStartReq req = buildStartReq(request, context);
             notifyTaskResult(request);
             String resourceId = String.valueOf(req.getResourceId());
             if (!redisClientUtil.hasLockKey(PressureStartCache.getStopFlag(resourceId))) {
@@ -235,14 +244,17 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
                 redisClientUtil.lockNoExpire(PressureStartCache.getStartFlag(resourceId), String.valueOf(jobId));
                 log.info("场景{},任务{},顾客{}开始启动压测， 压测启动成功", sceneId, taskId, customerId);
                 updateReportAssociation(startRequest, jobId);
-                cloudAsyncService.checkJmeterStartedTask(getResourceContext(resourceId));
+                ResourceContext resourceContext = getResourceContext(resourceId);
+                updateReportPtlLocation(resourceContext);
+                cloudAsyncService.checkJmeterStartedTask(resourceContext);
             }
         } catch (Exception e) {
             // 创建失败
             log.info("场景{},任务{},顾客{}开始启动压测，压测启动失败", sceneId, taskId, customerId);
             cloudSceneManageService.reportRecord(SceneManageStartRecordVO.build(sceneId, taskId, customerId).success(false)
                 .errorMsg("压测启动创建失败，失败原因：" + e.getMessage()).build());
-
+        } finally {
+            redisClientUtil.del(PressureStartCache.getScriptMappingKey(startRequest.getAttachId()));
         }
     }
 
@@ -266,14 +278,14 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         stringRedisTemplate.opsForList().leftPushAll(key, numList);
     }
 
-    public static PressureTaskStartReq buildStartReq(ScheduleRunRequest runRequest) {
+    public PressureTaskStartReq buildStartReq(ScheduleRunRequest runRequest, ResourceContext context) {
         ScheduleStartRequestExt request = runRequest.getRequest();
         PressureTaskStartReq req = new PressureTaskStartReq();
         req.setCallbackUrl(runRequest.getCallbackUrl());
         req.setResourceId(Long.valueOf(request.getResourceId()));
         req.setJvmOptions(runRequest.getMemSetting());
         req.setType(JobType.of(request.getPressureScene()));
-        req.setName(String.valueOf(request.getSceneId()));
+        req.setName(String.format("%s-%s-%s-%s", request.getSceneId(), context.getReportId(), context.getTenantId(), context.getEnvCode()));
         req.setSampling(runRequest.getTraceSampling());
         req.setBindByXpathMd5(request.getBindByXpathMd5());
         req.setThreadConfig(buildThreadGroup(request));
@@ -342,7 +354,7 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         }).collect(Collectors.toList()));
     }
 
-    private static void completedFile(PressureTaskStartReq req, ScheduleStartRequestExt requestExt) {
+    private void completedFile(PressureTaskStartReq req, ScheduleStartRequestExt requestExt) {
         FileInfo script = new FileInfo();
         script.setUri(requestExt.getScriptPath());
         req.setScriptFile(script);
@@ -362,7 +374,10 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
                     req.getDependencyFile().addAll(dependencies);
                 }
             }
+            fileMappingIfNecessary(requestExt, req.getDataFile(), FileTypeEnum.DATA);
+            fileMappingIfNecessary(requestExt, req.getDependencyFile(), FileTypeEnum.ATTACHMENT);
         }
+        fileMappingIfNecessary(requestExt, Collections.singletonList(script), FileTypeEnum.SCRIPT);
         List<String> enginePluginsFilePath = requestExt.getEnginePluginsFilePath();
         if (!CollectionUtils.isEmpty(enginePluginsFilePath)) {
             List<FileInfo> dependencies = enginePluginsFilePath.stream().map(path -> {
@@ -419,6 +434,7 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         redisClientUtil.hmset(PressureStartCache.getSceneResourceKey(startRequest.getSceneId()),
             PressureStartCache.JOB_ID, jobId);
     }
+
     private void notifyTaskResult(ScheduleRunRequest request) {
         SceneTaskNotifyParam notify = new SceneTaskNotifyParam();
         notify.setSceneId(request.getRequest().getSceneId());
@@ -426,5 +442,19 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         notify.setTenantId(request.getRequest().getTenantId());
         notify.setStatus("started");
         cloudSceneTaskService.taskResultNotify(notify);
+    }
+
+    // 处理文件路径映射
+    private void fileMappingIfNecessary(ScheduleStartRequestExt requestExt, List<FileInfo> dataFile, FileTypeEnum data) {
+        if (requestExt.isFileMapping() && !CollectionUtils.isEmpty(dataFile)) {
+            String mappingKey = PressureStartCache.getScriptMappingKey(requestExt.getAttachId());
+            List<String> filePath = (List<String>)redisClientUtil.hmget(mappingKey, String.valueOf(data.getCode()));
+            Map<String, String> fileMap = filePath.stream().collect(
+                Collectors.toMap(path -> path.substring(path.lastIndexOf(SceneManageConstant.FILE_SPLIT)), Function.identity()));
+            dataFile.forEach(file -> {
+                String uri = file.getUri();
+                file.setUri(fileMap.get(uri.substring(uri.lastIndexOf(SceneManageConstant.FILE_SPLIT))));
+            });
+        }
     }
 }

@@ -76,4 +76,6 @@ public class SceneResult {
      * 脚本总节点数
      */
     private Integer totalNodeNum;
+
+    private String features;
 }

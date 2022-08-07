@@ -49,19 +49,19 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
     /**
      * 压力节点 启动时间超时
      */
-    @Value("${pressure.pod.start.expireTime: 30}")
+    @Value("${pressure.pod.start.expireTime: 60}")
     private Integer pressurePodStartExpireTime;
 
     /**
      * 压力引擎 启动时间超时
      */
-    @Value("${pressure.node.start.expireTime: 30}")
+    @Value("${pressure.node.start.expireTime: 60}")
     private Integer pressureNodeStartExpireTime;
 
     /**
      * 压力引擎 心跳时间超时
      */
-    @Value("${pressure.node.heartbeat.expireTime: 30}")
+    @Value("${pressure.node.heartbeat.expireTime: 60}")
     private Integer pressureNodeHeartbeatExpireTime;
 
     /**
@@ -233,13 +233,37 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
         pressureStopExecutor.schedule(() -> stopJob(resourceId, jobId), delay, TimeUnit.SECONDS);
     }
 
+    @Override
+    @Async("fileFailedPool")
+    public void checkFileFailed(String attach, String message) {
+        // 文件相关错误产生时，等待资源完成
+        String resourceId = "";
+        String pressureFileKey = PressureStartCache.getPressureFileKey(attach);
+        while (StringUtils.isBlank(resourceId)) {
+            resourceId = (String)redisClientUtil.hmget(pressureFileKey, PressureStartCache.RESOURCE_ID);
+            if (StringUtils.isNotBlank(resourceId)) {
+                ResourceContext context = getResourceContext(resourceId);
+                context.setMessage(message);
+                context.setFileFailed(true);
+                Event event = new Event();
+                event.setExt(context);
+                event.setEventName(PressureStartCache.CHECK_FAIL_EVENT);
+                eventCenterTemplate.doEvents(event);
+                return;
+            }
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (Exception ignore) {}
+        }
+    }
+
     private void markResourceStatus(boolean success, StartConditionCheckerContext context) {
         String resourceId = context.getResourceId();
         ResourceContext resourceContext = getResourceContext(resourceId);
         resourceContext.setUniqueKey(context.getUniqueKey());
         if (success) {
             Event event = new Event();
-            event.setEventName(PressureStartCache.CHECK_SUCCESS_EVENT);
+            event.setEventName(PressureStartCache.RESOURCE_LOCK_SUCCESS_EVENT);
             event.setExt(resourceContext);
             eventCenterTemplate.doEvents(event);
         } else {

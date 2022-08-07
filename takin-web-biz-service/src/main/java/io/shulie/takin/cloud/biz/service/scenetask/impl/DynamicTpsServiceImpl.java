@@ -59,7 +59,7 @@ public class DynamicTpsServiceImpl implements DynamicTpsService {
         Long sceneId = input.getSceneId();
         ReportOutput report = cloudReportService.selectById(input.getReportId());
         PressureParamsReq req = new PressureParamsReq();
-        req.setJobId(report.getJobId());
+        req.setPressureId(report.getJobId());
         req.setRef(getThreadGroupMd5ByXpathMd5(sceneId, input.getXpathMd5()));
         try {
             List<JobConfig> params = pressureTaskApi.params(req);
@@ -119,7 +119,7 @@ public class DynamicTpsServiceImpl implements DynamicTpsService {
         Long sceneId = input.getSceneId();
         ReportOutput report = cloudReportService.selectById(input.getReportId());
         PressureParamModifyReq req = new PressureParamModifyReq();
-        req.setJobId(report.getJobId());
+        req.setPressureId(report.getJobId());
         String md5 = getThreadGroupMd5ByXpathMd5(sceneId, input.getXpathMd5());
         req.setRef(md5);
         SceneManageWrapperOutput sceneManage = cloudSceneManageService.getSceneManage(sceneId, null);

@@ -1,34 +1,39 @@
 package io.shulie.takin.cloud.biz.service.script.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Resource;
 
 import io.shulie.takin.adapter.api.entrypoint.script.ScriptFileApi;
+import io.shulie.takin.adapter.api.model.request.pressure.ScriptAnnounceRequest;
+import io.shulie.takin.adapter.api.model.request.pressure.ScriptAnnounceRequest.FileItem;
 import io.shulie.takin.adapter.api.model.request.script.ScriptVerifyRequest;
+import io.shulie.takin.cloud.biz.config.AppConfig;
 import io.shulie.takin.cloud.biz.service.script.ScriptAnalyzeService;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.common.script.util.SaxUtil;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.cloud.common.utils.UrlUtil;
-import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.ext.content.script.ScriptParseExt;
-import io.shulie.takin.cloud.ext.content.script.ScriptUrlExt;
 import io.shulie.takin.cloud.ext.content.script.ScriptVerityExt;
+import io.shulie.takin.cloud.ext.content.script.ScriptVerityExt.FileVerifyItem;
 import io.shulie.takin.cloud.ext.content.script.ScriptVerityRespExt;
+import io.shulie.takin.web.biz.checker.StartConditionChecker.CheckStatus;
+import io.shulie.takin.web.common.enums.script.FileTypeEnum;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -37,6 +42,12 @@ public class ScriptAnalyzeServiceImpl implements ScriptAnalyzeService {
 
     @Resource
     private ScriptFileApi scriptFileApi;
+
+    @Resource
+    private AppConfig appConfig;
+
+    @Resource
+    private RedisClientUtil redisClientUtil;
 
     @Override
     public ScriptVerityRespExt verityScript(ScriptVerityExt scriptVerityExt) {
@@ -47,35 +58,14 @@ public class ScriptAnalyzeServiceImpl implements ScriptAnalyzeService {
         if (CollectionUtils.isEmpty(scriptVerityExt.getRequest())) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCRIPT_VERITY_ERROR, "脚本校验业务活动不能为空");
         }
-        List<String> requestList;
-        try {
-            requestList = getRequestUrls(scriptVerityExt.getScriptPath());
-        } catch (Exception e) {
-            errorMsgList.add("脚本解析失败:" + e.getMessage());
-            return scriptVerityRespExt;
-        }
-
-        if (CollectionUtils.isEmpty(requestList)) {
-            errorMsgList.add("脚本中没有获取到请求链接！");
-            return scriptVerityRespExt;
-        }
-        // 混合压测前的业务逻辑
-        if (Integer.valueOf(0).equals(scriptVerityExt.getVersion())) {
-            List<String> oldErrorMsgList = checkScriptFileContainsRequestUrl(scriptVerityExt.getScriptPath(),
-                scriptVerityExt.getRequest());
-            if (oldErrorMsgList.size() > 0) {errorMsgList.addAll(oldErrorMsgList);}
-        }
         // 增加新版压测校验
         if (scriptVerityExt.isUseNewVerify()) {
             try {
-                ScriptVerifyRequest request = new ScriptVerifyRequest();
-                request.setScriptPath(StringUtils.join(scriptVerityExt.getScriptPaths(), ","));
-                request.setCsvPaths(StringUtils.join(scriptVerityExt.getCsvPaths(), ","));
-                request.setAttachments(StringUtils.join(scriptVerityExt.getAttachments(), ","));
-                request.setPluginPaths(StringUtils.join(scriptVerityExt.getPluginPaths(), ","));
-                scriptFileApi.verify(request);
+                ScriptAnnounceRequest request = toAnnounceRequest(scriptVerityExt);
+                scriptFileApi.fileAnnounce(request);
+                cacheInfo(scriptVerityExt, request);
             } catch (Exception e) {
-                log.error("jmx校验异常", e);
+                log.error("文件下载异常", e);
                 errorMsgList.add(e.getMessage());
             }
         }
@@ -97,67 +87,91 @@ public class ScriptAnalyzeServiceImpl implements ScriptAnalyzeService {
         return JmxUtil.buildNodeTree(scriptFile);
     }
 
-    private List<String> getRequestUrls(String filePath) {
-        List<ScriptNode> scriptNodes = JmxUtil.buildNodeTree(filePath);
-        List<ScriptNode> samplerScriptNodes = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, scriptNodes);
-        if (CollectionUtils.isNotEmpty(samplerScriptNodes)) {
-            return samplerScriptNodes.stream().map(ScriptNode::getRequestPath).filter(Objects::nonNull).collect(
-                Collectors.toList());
-        }
-        return null;
+    private ScriptAnnounceRequest toAnnounceRequest(ScriptVerityExt scriptVerityExt) {
+        ScriptAnnounceRequest request = new ScriptAnnounceRequest();
+        request.setCallbackUrl(appConfig.getCallbackUrl());
+        request.setWatchmanIdList(scriptVerityExt.getWatchmanIdList()); // 压力机集群
+        convertAndAdd(scriptVerityExt.getScriptPaths(), request);
+        convertAndAdd(scriptVerityExt.getCsvPaths(), request);
+        convertAndAdd(scriptVerityExt.getAttachments(), request);
+        convertAndAdd(scriptVerityExt.getPluginPaths(), request, true);
+        return request;
     }
 
-    /**
-     * 检查脚本文件中包含请求路径的逻辑
-     * <p>不包含则抛出异常</p>
-     *
-     * @param scriptFilePath 脚本文件路径
-     * @param requestUrlList 请求路径集合
-     * @return 错误描述集合
-     */
-    private List<String> checkScriptFileContainsRequestUrl(String scriptFilePath, List<String> requestUrlList) {
-        List<String> errorMsgList = new LinkedList<>();
-        try {
-            ScriptParseExt scriptParseExt = SaxUtil.parseJmx(scriptFilePath);
-            List<ScriptUrlExt> requestUrl = scriptParseExt.getRequestUrl();
-            Set<String> errorSet = new HashSet<>();
-            int unbindCount = 0;
-            Map<String, Integer> urlMap = new HashMap<>(requestUrl.size());
-            for (String request : requestUrlList) {
-                Set<String> tempErrorSet = new HashSet<>();
-                for (ScriptUrlExt url : requestUrl) {
-                    if (UrlUtil.checkEqual(request, url.getPath()) && url.getEnable()) {
-                        unbindCount = unbindCount + 1;
-                        tempErrorSet.clear();
-                        if (!urlMap.containsKey(url.getName())) {
-                            urlMap.put(url.getName(), 1);
-                        } else {
-                            urlMap.put(url.getName(), urlMap.get(url.getName()) + 1);
-                        }
-                        break;
-                    } else {
-                        tempErrorSet.add(request);
-                    }
-                }
-                errorSet.addAll(tempErrorSet);
-            }
+    private void convertAndAdd(List<FileVerifyItem> scriptPaths, ScriptAnnounceRequest request) {
+        convertAndAdd(scriptPaths, request, false);
+    }
 
-            Set<String> urlErrorSet = new HashSet<>();
-            urlMap.forEach((k, v) -> {
-                if (v > 1) {
-                    urlErrorSet.add("脚本中[" + k + "]重复" + v + "次");
-                }
-            });
-            if (urlErrorSet.size() > 0) {
-                errorMsgList.add("脚本文件配置不正确:" + urlErrorSet);
-            }
-            //存在业务活动都关联不上脚本中的请求连接
-            if (requestUrl.size() > unbindCount) {
-                errorMsgList.add("业务活动与脚本文件不匹配:" + errorSet);
-            }
-        } catch (Exception e) {
-            errorMsgList.add(e.getMessage());
+    private void convertAndAdd(List<FileVerifyItem> scriptPaths, ScriptAnnounceRequest request, boolean filterInner) {
+        if (!CollectionUtils.isEmpty(scriptPaths)) {
+            List<FileItem> fileList = request.getFileList();
+            scriptPaths.stream()
+                .filter(item -> !filterInner || !item.isInner())
+                .map(item -> {
+                    Map<String, String> param = new HashMap<>(4);
+                    param.put("bigFile", String.valueOf(item.isBigFile()));
+                    param.put("filePath", item.getFullPath());
+                    return FileItem.builder()
+                        .path(item.getPath()).sign(item.getMd5())
+                        .downloadUrl(appConfig.getEngineFileDownloadUrl(param))
+                        .build();
+                }).forEach(fileList::add);
         }
-        return errorMsgList;
+    }
+
+    private ScriptVerifyRequest toVerifyRequest(ScriptVerityExt scriptVerityExt, ScriptAnnounceRequest announceRequest) {
+        List<String> watchmanIdList = scriptVerityExt.getWatchmanIdList();
+        ScriptVerifyRequest request = new ScriptVerifyRequest();
+        request.setAttach(announceRequest.getAttach());
+        request.setCallbackUrl(appConfig.getCallbackUrl());
+        request.setWatchmanId(watchmanIdList.get(0));
+        request.setWatchmanIdList(watchmanIdList); // 压力机集群
+        request.setScriptPath(scriptVerityExt.getScriptPaths().get(0).getPath());
+        request.setDataFilePath(mergePaths(scriptVerityExt.getCsvPaths()));
+        request.setAttachmentsPath(mergePaths(scriptVerityExt.getAttachments()));
+        request.setPluginPath(mergePaths(scriptVerityExt.getPluginPaths()));
+        return request;
+    }
+
+    private List<String> mergePaths(List<FileVerifyItem> verifyItems) {
+        return verifyItems.stream().map(FileVerifyItem::getPath).collect(Collectors.toList());
+    }
+
+    private void cacheInfo(ScriptVerityExt scriptVerityExt, ScriptAnnounceRequest request) {
+        String attach = request.getAttach();
+        PressureStartCache.setFileAttachId(attach);
+        // 缓存校验请求
+        ScriptVerifyRequest verifyRequest = toVerifyRequest(scriptVerityExt, request);
+        String scriptVerifyKey = PressureStartCache.getScriptVerifyKey(attach);
+        redisClientUtil.set(scriptVerifyKey, verifyRequest, TimeUnit.DAYS.toSeconds(1L));
+
+        // 缓存使用文件，回调使用
+        String downloadFilesKey = PressureStartCache.getScriptDownloadFilesKey(attach);
+        redisClientUtil.addSetValue(downloadFilesKey, allFiles(scriptVerityExt).toArray(new String[0]));
+        redisClientUtil.expire(downloadFilesKey, 1, TimeUnit.DAYS);
+
+        // 文件相关信息缓存
+        String pressureFileKey = PressureStartCache.getPressureFileKey(attach);
+        redisClientUtil.hmset(pressureFileKey, PressureStartCache.FILE_DOWNLOAD_STATUS, CheckStatus.PENDING.ordinal());
+        redisClientUtil.expire(pressureFileKey, 1, TimeUnit.DAYS);
+
+        // 第一次发压时，存在文件下发路径与启动路径不一致的情况，特殊处理
+        if (!scriptVerityExt.isFromScene()) {
+            String mappingKey = PressureStartCache.getScriptMappingKey(attach);
+            Map<String, Object> fileMapping = new HashMap<>(8);
+            fileMapping.put(String.valueOf(FileTypeEnum.SCRIPT.getCode()), Collections.singletonList(verifyRequest.getScriptPath()));
+            fileMapping.put(String.valueOf(FileTypeEnum.DATA.getCode()), verifyRequest.getDataFilePath());
+            fileMapping.put(String.valueOf(FileTypeEnum.ATTACHMENT.getCode()), verifyRequest.getAttachmentsPath());
+            redisClientUtil.hmset(mappingKey, fileMapping);
+            redisClientUtil.expire(mappingKey, 1, TimeUnit.DAYS);
+        }
+    }
+
+    // 操作的文件集合
+    private Set<String> allFiles(ScriptVerityExt verityExt) {
+        return Stream.of(verityExt.getScriptPaths(), verityExt.getCsvPaths(),
+                verityExt.getAttachments(), verityExt.getPluginPaths()).filter(CollectionUtils::isNotEmpty)
+            .flatMap(Collection::stream).filter(item -> !item.isInner())
+            .map(FileVerifyItem::getPath).collect(Collectors.toSet());
     }
 }

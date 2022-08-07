@@ -15,6 +15,10 @@ public class StartConditionCheckerContext {
     private Long taskId;
     private Long reportId;
     private Long tenantId;
+    // 压力机集群
+    private String machineId;
+    private Integer machineType;
+    private String attachId;
     private SceneManageWrapperOutput sceneData;
     private SceneTaskStartInput input;
     private SceneManageWrapperDTO sceneDataDTO;

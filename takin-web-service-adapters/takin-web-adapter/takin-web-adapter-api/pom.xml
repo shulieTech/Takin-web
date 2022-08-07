@@ -5,7 +5,7 @@
     <parent>
         <artifactId>takin-web-adapter</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.8.3</version>
+        <version>takin-web-5.9.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -64,9 +64,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>io.shulie.takin.cloud.gradle</groupId>
+            <groupId>io.shulie.takin.cloud</groupId>
             <artifactId>model</artifactId>
-            <version>5.3.2</version>
+            <version>${cloud.version}</version>
         </dependency>
     </dependencies>
 

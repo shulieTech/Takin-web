@@ -119,6 +119,9 @@ public class ScheduleStartRequestExt extends ScheduleEventRequestExt {
 
     private List<SlaConfig> warningCondition;
 
+    private String attachId;
+    private boolean fileMapping;
+
     /**
      * 添加引擎插件路径
      *

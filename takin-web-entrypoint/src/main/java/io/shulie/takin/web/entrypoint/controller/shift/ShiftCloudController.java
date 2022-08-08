@@ -426,7 +426,7 @@ public class ShiftCloudController {
         HttpPost httpPost = new HttpPost(yPath + "/ms/testcloudplatform/api/service/test/plan/task/status");
         CloseableHttpResponse response = null;
         try {
-            log.info("开始推送数据 report id = "+rd+"data="+JSON.toJSONString(data));
+            log.info("开始推送数据 report id = "+rd+" data="+JSON.toJSONString(data));
             StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
             httpPost.setEntity(stringEntity);
             httpPost.setHeader("Content-Type", "application/json");

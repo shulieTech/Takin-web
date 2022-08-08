@@ -15,9 +15,9 @@ import javax.annotation.Resource;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import com.github.pagehelper.PageInfo;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
-import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
-import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
+import com.pamirs.takin.entity.domain.dto.report.*;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
@@ -46,12 +46,14 @@ import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
+import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.utils.PDFUtil;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -87,6 +89,12 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private DistributedLock distributedLock;
+
+    @Autowired
+    private ReportLocalService reportLocalService;
+
+    @Resource
+    private ReportService reportService;
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -314,6 +322,21 @@ public class ReportServiceImpl implements ReportService {
         ReportDetailOutput detailOutput = this.getReportByReportId(reportId);
         NodeTreeSummaryResp nodeTreeSummaryResp = this.querySummaryList(reportId);
         ReportDownLoadOutput downLoadOutput = new ReportDownLoadOutput(detailOutput, nodeTreeSummaryResp);
+
+        ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
+        queryParam.setReportId(reportId);
+        queryParam.setCurrent(0);
+        queryParam.setPageSize(200);
+        PageInfo<BottleneckInterfaceDTO> info = reportLocalService.listBottleneckInterface(queryParam);
+        downLoadOutput.setInfo(info.getList());
+
+        PageInfo<RiskMacheineDTO> info1 = reportLocalService.listRiskMachine(queryParam);
+        downLoadOutput.setRiskApplicationCountDTO(info1.getList());
+
+        WarnQueryReq param = new WarnQueryReq();
+        param.setReportId(reportId);
+        ResponseResult<List<WarnDetailResponse>> result = reportService.listWarn(param);
+        downLoadOutput.setResponses(result.getData());
 
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("data", downLoadOutput);

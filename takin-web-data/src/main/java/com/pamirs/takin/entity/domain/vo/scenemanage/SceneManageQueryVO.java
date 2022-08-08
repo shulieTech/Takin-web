@@ -36,4 +36,9 @@ public class SceneManageQueryVO extends PagingContextExt {
 
     private Integer isArchive;
 
+    //来源 1=jmeter，2=takin
+    private Integer source;
+
+    private Long configId;
+
 }

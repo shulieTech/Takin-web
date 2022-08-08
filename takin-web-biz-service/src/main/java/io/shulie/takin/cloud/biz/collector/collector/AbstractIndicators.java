@@ -407,6 +407,7 @@ public abstract class AbstractIndicators {
             result.setTaskId(jobId);
             result.setResourceId(resourceId);
             WebPluginUtils.fillCloudUserData(result);
+            dataCalibration(result);
             pressureDataCalibration.dataCalibrationAmdb(result);
             pressureDataCalibration.dataCalibrationCloud(result);
         }
@@ -451,6 +452,12 @@ public abstract class AbstractIndicators {
 
     protected void updatePressureTaskMessageByResourceId(String resourceId, String message) {
         pressureTaskDAO.updatePressureTaskMessageByResourceId(resourceId, message);
+    }
+
+    private void dataCalibration(TaskResult result) {
+        String statusKey = PressureStartCache.getDataCalibrationStatusKey(result.getTaskId());
+        redisClientUtil.setBit(statusKey, PressureDataCalibration.offset(false) + 1, true);
+        redisClientUtil.setBit(statusKey, PressureDataCalibration.offset(true) + 1, true);
     }
 
     @Data

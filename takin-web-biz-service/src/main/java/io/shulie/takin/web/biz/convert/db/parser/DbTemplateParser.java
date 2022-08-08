@@ -92,6 +92,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
                 List<InputWithSelectStyle.NodeDetail> dataSource_pwd = new ArrayList<>();
                 dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key8, "1"));
                 dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
+                dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key9, "3"));
 
                 List<String> keys_pwd = Arrays.asList(key3, key4);
                 InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
@@ -193,8 +194,11 @@ public class DbTemplateParser extends AbstractTemplateParser {
         String shadowPwdStr = extObj.getString("shadowPwd");
         if (StringUtils.isBlank(shadowPwdStr)) {
             pwdMap.put("tag", "1");
-        } else {
+        } else if("true".equals(extFlag)){
             pwdMap.put("tag", "2");
+            pwdMap.put("context", shadowPwdStr);
+        } else if("3".equals(extFlag)){
+            pwdMap.put("tag", "3");
             pwdMap.put("context", shadowPwdStr);
         }
         extObj.put("shadowPwd", pwdMap);

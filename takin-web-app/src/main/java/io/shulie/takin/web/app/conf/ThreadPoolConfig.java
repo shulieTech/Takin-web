@@ -265,7 +265,7 @@ public class ThreadPoolConfig {
     @Bean(name = "schedulerPool")
     public TaskScheduler scheduler() {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-        taskScheduler.setPoolSize(5);
+        taskScheduler.setPoolSize(20);
         ThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("pradar-scheduler-thread-%d")
             .daemon(true).build();
         taskScheduler.setThreadFactory(threadFactory);

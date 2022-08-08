@@ -326,6 +326,20 @@ public class SceneManageServiceImpl implements SceneManageService {
             }
 
         });
+
+        if (Objects.nonNull(vo.getSource()) && vo.getSource() == 1) {
+            listData = listData.stream().filter(t -> Objects.isNull(t.getConfigId())).collect(Collectors.toList());
+        }
+        if (Objects.nonNull(vo.getSource()) && vo.getSource() == 2 && Objects.isNull(vo.getConfigId())) {
+            listData = listData.stream().filter(t -> Objects.nonNull(t.getConfigId())).collect(Collectors.toList());
+        }
+        if (Objects.nonNull(vo.getSource()) && vo.getSource() == 2 && Objects.nonNull(vo.getConfigId())) {
+            listData = listData.stream().filter(t -> Objects.nonNull(t.getConfigId()) && vo.getConfigId().equals(t.getConfigId()))
+                    .collect(Collectors.toList());
+        }
+        if (Objects.nonNull(vo.getSource()) && vo.getSource() == 1 && Objects.nonNull(vo.getConfigId())) {
+            listData = new ArrayList<>();
+        }
         return ResponseResult.success(listData, sceneList.getTotalNum());
     }
 
@@ -439,10 +453,10 @@ public class SceneManageServiceImpl implements SceneManageService {
         // 在上传文件时已经校验脚本和业务活动的关联关系，此处不再校验
         if (ScriptTypeEnum.JMETER.getCode().equals(dto.getScriptType())) {
             ScriptAndActivityVerifyRequest param = ScriptAndActivityVerifyRequest.builder()
-                .isPressure(dto.isPressure()).sceneId(dto.getId()).sceneName(dto.getPressureTestSceneName())
-                .scriptType(dto.getScriptType()).scriptList(execList)
-                .absolutePath(true).businessActivityList(businessActivityList)
-                .deployDetail(scriptManageDeployDetail).version(scriptManageDeployDetail.getScriptVersion()).build();
+                    .isPressure(dto.isPressure()).sceneId(dto.getId()).sceneName(dto.getPressureTestSceneName())
+                    .scriptType(dto.getScriptType()).scriptList(execList)
+                    .absolutePath(true).businessActivityList(businessActivityList)
+                    .deployDetail(scriptManageDeployDetail).version(scriptManageDeployDetail.getScriptVersion()).build();
             ScriptCheckDTO checkDTO = this.checkScriptAndActivity(param);
             if (StringUtils.isNoneBlank(checkDTO.getErrmsg())) {
                 throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, checkDTO.getErrmsg());
@@ -592,14 +606,14 @@ public class SceneManageServiceImpl implements SceneManageService {
             List<SceneScriptRefOpen> execList = response.getData();
             List<SceneBusinessActivityRef> businessActivityList = Lists.newArrayList();
             sceneData.getBusinessActivityConfig().forEach(
-                data -> businessActivityList.add(buildSceneBusinessActivityRef(data)));
+                    data -> businessActivityList.add(buildSceneBusinessActivityRef(data)));
             if (ScriptTypeEnum.JMETER.getCode().equals(scriptType)) {
                 ScriptAndActivityVerifyRequest param = ScriptAndActivityVerifyRequest.builder()
-                    .isPressure(true).scriptType(scriptType).scriptList(execList)
-                    .sceneId(sceneData.getId()).sceneName(sceneData.getPressureTestSceneName())
-                    .absolutePath(sceneData.getIsAbsoluteScriptPath())
-                    .businessActivityList(businessActivityList)
-                    .deployDetail(scriptManageService.getScriptManageDeployDetail(sceneData.getScriptId())).build();
+                        .isPressure(true).scriptType(scriptType).scriptList(execList)
+                        .sceneId(sceneData.getId()).sceneName(sceneData.getPressureTestSceneName())
+                        .absolutePath(sceneData.getIsAbsoluteScriptPath())
+                        .businessActivityList(businessActivityList)
+                        .deployDetail(scriptManageService.getScriptManageDeployDetail(sceneData.getScriptId())).build();
                 dto = checkScriptAndActivity(param);
             }
         } catch (ApiException apiException) {
@@ -668,7 +682,7 @@ public class SceneManageServiceImpl implements SceneManageService {
     /**
      * 检查脚本和活动
      *
-     * @param verifyParam           校验请求
+     * @param verifyParam 校验请求
      * @return dto
      */
     private ScriptCheckDTO checkScriptAndActivity(ScriptAndActivityVerifyRequest verifyParam) {
@@ -940,27 +954,27 @@ public class SceneManageServiceImpl implements SceneManageService {
         }
 
         return queryTpsParamList.stream().map(queryTpsParam -> {
-            // 通过条件, 查询influxdb, 获取到tps, sql语句
-            String influxDbSql = String.format("SELECT time as datetime, ((count - fail_count) / 5) AS tps "
-                            + "FROM %s WHERE time <= NOW() AND time >= (NOW() - %dm) AND transaction = '%s' ORDER BY time",
-                    this.getTableName(queryTpsParam), request.getInterval(),
-                    queryTpsParam.getBusinessActivityList().get(0).getBindRef());
+                    // 通过条件, 查询influxdb, 获取到tps, sql语句
+                    String influxDbSql = String.format("SELECT time as datetime, ((count - fail_count) / 5) AS tps "
+                                    + "FROM %s WHERE time <= NOW() AND time >= (NOW() - %dm) AND transaction = '%s' ORDER BY time",
+                            this.getTableName(queryTpsParam), request.getInterval(),
+                            queryTpsParam.getBusinessActivityList().get(0).getBindRef());
 
-            List<SceneReportListOutput> reportList = influxDatabaseManager.query(influxDbSql, SceneReportListOutput.class, "jmeter");
+                    List<SceneReportListOutput> reportList = influxDatabaseManager.query(influxDbSql, SceneReportListOutput.class, "jmeter");
 
-            if (CollectionUtil.isEmpty(reportList)) {
-                return null;
-            }
+                    if (CollectionUtil.isEmpty(reportList)) {
+                        return null;
+                    }
 
-            // 时间戳处理
-            for (SceneReportListOutput report : reportList) {
-                report.setSceneId(queryTpsParam.getSceneId());
-                report.setSceneName(queryTpsParam.getSceneName());
-                report.setTime(LocalDateTimeUtil.format(report.getDatetime(), "HH:mm:ss"));
-            }
+                    // 时间戳处理
+                    for (SceneReportListOutput report : reportList) {
+                        report.setSceneId(queryTpsParam.getSceneId());
+                        report.setSceneName(queryTpsParam.getSceneName());
+                        report.setTime(LocalDateTimeUtil.format(report.getDatetime(), "HH:mm:ss"));
+                    }
 
-            return reportList;
-        }).filter(Objects::nonNull).flatMap(Collection::stream)
+                    return reportList;
+                }).filter(Objects::nonNull).flatMap(Collection::stream)
                 .sorted(Comparator.comparing(SceneReportListOutput::getTime))
                 .collect(Collectors.toList());
     }
@@ -974,16 +988,16 @@ public class SceneManageServiceImpl implements SceneManageService {
         }
 
         return queryTpsParamList.stream().map(queryTpsParam -> {
-            List<SceneReportListOutput> reportList = this.listReportFromInfluxDb(queryTpsParam);
-            if (CollectionUtil.isEmpty(reportList) || reportList.get(0) == null) {
-                return null;
-            }
+                    List<SceneReportListOutput> reportList = this.listReportFromInfluxDb(queryTpsParam);
+                    if (CollectionUtil.isEmpty(reportList) || reportList.get(0) == null) {
+                        return null;
+                    }
 
-            SceneReportListOutput sceneReportListOutput = reportList.get(0);
-            sceneReportListOutput.setSceneId(queryTpsParam.getSceneId());
-            sceneReportListOutput.setSceneName(queryTpsParam.getSceneName());
-            return sceneReportListOutput;
-        }).filter(Objects::nonNull)
+                    SceneReportListOutput sceneReportListOutput = reportList.get(0);
+                    sceneReportListOutput.setSceneId(queryTpsParam.getSceneId());
+                    sceneReportListOutput.setSceneName(queryTpsParam.getSceneName());
+                    return sceneReportListOutput;
+                }).filter(Objects::nonNull)
                 .sorted(Comparator.comparing(SceneReportListOutput::getTps).reversed())
                 .limit(10).collect(Collectors.toList());
     }
@@ -1048,7 +1062,9 @@ public class SceneManageServiceImpl implements SceneManageService {
         checkReq.setRequest(new ArrayList<>());
         parseDeployIfNecessary(verifyParam, checkReq);
         Integer version = verifyParam.getVersion();
-        if (version != null) {checkReq.setVersion(version);}
+        if (version != null) {
+            checkReq.setVersion(version);
+        }
         return checkReq;
     }
 
@@ -1059,15 +1075,15 @@ public class SceneManageServiceImpl implements SceneManageService {
                 List<PluginConfigDetailResponse> pluginFiles = deployDetail.getPluginConfigDetailResponseList();
                 if (CollectionUtils.isNotEmpty(pluginFiles)) {
                     List<EnginePlugin> refOutputList = pluginFiles.stream()
-                        .map(plugin -> EnginePlugin.of(Long.valueOf(plugin.getId()), plugin.getVersion()))
-                        .collect(Collectors.toList());
+                            .map(plugin -> EnginePlugin.of(Long.valueOf(plugin.getId()), plugin.getVersion()))
+                            .collect(Collectors.toList());
                     req.setPlugins(refOutputList);
                 }
                 if (Objects.isNull(verifyParam.getSceneId())) {
                     List<FileManageResponse> dataFiles = deployDetail.getFileManageResponseList();
                     if (CollectionUtils.isNotEmpty(dataFiles)) {
                         Map<Integer, List<FileManageResponse>> dataFilesMap = dataFiles.stream()
-                            .collect(Collectors.groupingBy(FileManageResponse::getFileType, Collectors.toList()));
+                                .collect(Collectors.groupingBy(FileManageResponse::getFileType, Collectors.toList()));
                         List<FileManageResponse> scriptFile = dataFilesMap.get(FileTypeEnum.SCRIPT.getCode());
                         if (CollectionUtils.isNotEmpty(scriptFile)) {
                             req.setScriptPath(scriptFile.get(0).getUploadPath());
@@ -1075,13 +1091,13 @@ public class SceneManageServiceImpl implements SceneManageService {
                         List<FileManageResponse> csvFiles = dataFilesMap.get(FileTypeEnum.DATA.getCode());
                         if (CollectionUtils.isNotEmpty(csvFiles)) {
                             req.setCsvPaths(csvFiles.stream()
-                                .map(FileManageResponse::getUploadPath).collect(Collectors.toList()));
+                                    .map(FileManageResponse::getUploadPath).collect(Collectors.toList()));
                         }
                     }
                     List<FileManageResponse> attachmentFiles = deployDetail.getAttachmentManageResponseList();
                     if (CollectionUtils.isNotEmpty(attachmentFiles)) {
                         req.setAttachments(attachmentFiles.stream()
-                            .map(FileManageResponse::getUploadPath).collect(Collectors.toList()));
+                                .map(FileManageResponse::getUploadPath).collect(Collectors.toList()));
                     }
                 }
             }

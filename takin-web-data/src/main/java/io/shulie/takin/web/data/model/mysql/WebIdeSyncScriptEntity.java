@@ -46,4 +46,17 @@ public class WebIdeSyncScriptEntity extends TenantBaseEntity {
      */
     @TableField(value = "UPDATE_TIME")
     private LocalDateTime updateTime;
+
+//    private Long startTime;
+//
+//    private Long endTime;
+//
+//    private Long initTime;
+//
+//    private Long prepareDebugTime;
+//
+//    private Long debugTime;
+//
+//    private Long totalTime;
+
 }

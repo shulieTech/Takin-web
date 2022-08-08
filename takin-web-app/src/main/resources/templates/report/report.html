@@ -154,7 +154,19 @@
     <#return arr />
 </#function>
 
+<#-- 过滤数组 -->
+<#function filter things name value>
+    <#local result = []>
+    <#list things as thing>
+        <#if thing[name] == value>
+            <#local result = result + [thing]>
+        </#if>
+    </#list>
+    <#return result>
+</#function>
+
 <#assign flatTreeData=flatTree(data.nodeTree.scriptNodeSummaryBeans![], 0)>
+<#assign failedData=filter(flatTreeData![], "passFlag", 0)>
 
 
 <body>
@@ -232,11 +244,111 @@
                 </tr>
             </table>
         </div>
+
+        <#--  压测不通过的列表  -->
+        <#if failedData?size gt 0>
+            <div style="background: #fff; padding: 8px;">
+                <h3><span class="text-red">${failedData?size}</span>个业务活动不达标</h3>
+                <table>
+                    <tr>
+                        <th>业务活动</th>
+                        <th>平均TPS(实际/目标)</th>
+                        <th>平均RT(实际/目标)</th>
+                        <th>成功率(实际/目标)</th>
+                        <th>SA(实际/目标)</th>
+                    </tr>
+                    <#list failedData as reportItem>
+                        <tr>
+                            <td>
+                                ${reportItem.testName}
+                            </td>
+                            <td>
+                                <span class="${(reportItem.tps.result < reportItem.tps.value) ? string('text-red','')}">${reportItem.tps.result}</span>
+                                /
+                                ${(reportItem.tps.value == -1)?string("-",reportItem.tps.value)}
+                            </td>
+                            <td>
+                                <span class="${(reportItem.avgRt.result > reportItem.avgRt.value && reportItem.avgRt.value != -1) ?string('text-red' , '')}">${reportItem.avgRt.result}</span>ms
+                                /
+                                ${(reportItem.avgRt.value == -1)?string("-",reportItem.avgRt.value + 'ms')}
+                            </td>
+                            <td>
+                                <span class="${(reportItem.successRate.result < reportItem.successRate.value) ?string('text-red' , '')}">${reportItem.successRate.result}</span>%
+                                /
+                                ${(reportItem.successRate.value == -1)?string("-",reportItem.successRate.value+ '%')}
+                            </td>
+                            <td>
+                                <span class="${(reportItem.sa.result < reportItem.sa.value) ?string('text-red','')}">${reportItem.sa.result}</span>%
+                                /
+                                ${(reportItem.sa.value == -1)?string("-",reportItem.sa.value+ '%')}
+                            </td>
+                        </tr>
+                    </#list>
+                </table>
+            </div>
+        </#if>
     </div>
+    <#--  瓶颈接口  -->
+    <h2>压测概览</h2>
+    <div style="height: 300px" id="chart1"></div>
+
+    
+
+    <#--  瓶颈接口  -->
+    <h2>瓶颈接口</h2>
+    <table>
+        <tr>
+            <th>排名</th>
+            <th>应用</th>
+            <th>接口</th>
+            <th>TPS</th>
+            <th>RT</th>
+            <th>成功率</th>
+        </tr>
+        <#if list?size gt 0>
+            <#list list as item>
+                <tr>
+                    <td>${item.rank}</td>
+                    <td>${item.applicationName}</td>
+                    <td>${item.interfaceName}</td>
+                    <td>${item.tps}</td>
+                    <td>${item.rt}ms</td>
+                    <td>${item.successRate}</td>
+                </tr>
+            </#list>
+        <#else>
+            <tr>
+                <td colSpan="6" style="text-align: center;">暂无数据</td>
+            </tr>
+        </#if>
+    </table>
+
+    <#--  风险机器  -->
+    <h2>风险机器</h2>
+    <table>
+        <tr>
+            <th>AgentID</th>
+            <th>机器</th>
+            <th>风险</th>
+        </tr>
+        <#if list?size gt 0>
+            <#list list as item>
+                <tr>
+                    <td>${item.agentId}</td>
+                    <td>${item.machineIp}</td>
+                    <td>${item.riskContent}</td>
+                </tr>
+            </#list>
+        <#else>
+            <tr>
+                <td colSpan="3">暂无数据</td>
+            </tr>
+        </#if>
+    </table>
 
     <!-- 压测明细 -->
+    <h2>压测明细</h2>
     <table class="">
-
         <tr>
             <th rowspan="2">业务活动</th>
             <th rowspan="2">请求数</th>
@@ -287,7 +399,58 @@
             </tr>
         </#list>
     </table>
+
+    <#--  告警明细  -->
+    <h2>告警明细</h2>
+    <table>
+        <tr>
+            <th>SLA名称</th>
+            <th>警告对象</th>
+            <th>规则明细</th>
+            <th>警告时间</th>
+        </tr>
+        <#if list?size gt 0>
+            <#list list as item>
+                <tr>
+                    <td>${item.slaName}</td>
+                    <td>${item.businessActivityName}</td>
+                    <td>${item.content}</td>
+                    <td>${item.warnTime}</td>
+                </tr>
+            </#list>
+        <#else>
+            <tr>
+                <td colSpan="4">暂无数据</td>
+            </tr>
+        </#if>
+    </table>
 </div>
+
+<script src="https://fastly.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
+<script>
+var dom = document.getElementById('chart1');
+var myChart = echarts.init(dom, null, {
+  renderer: 'canvas',
+  useDirtyRect: false
+});
+var option = {
+  animation: false,  
+  xAxis: {
+    type: 'category',
+    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  },
+  yAxis: {
+    type: 'value'
+  },
+  series: [
+    {
+      data: [150, 230, 224, 218, 135, 147, 260],
+      type: 'line'
+    }
+  ]
+};
+myChart.setOption(option);
+</script>
 </body>
 
 </html>

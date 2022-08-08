@@ -412,20 +412,21 @@ public class ShiftCloudController {
             try {
                 data = this.getData(reportId, true, token, pid);
             } catch (Exception e) {
-                log.error(e.getStackTrace().toString());
+                log.info("error = "+e.getStackTrace().toString());
             }
         } else {
             long reportId = Long.parseLong(rd.replaceFirst(BENCH, ""));
             try {
                 data = this.getData(reportId, false, token, pid);
             } catch (Exception e) {
-                log.error(e.getStackTrace().toString());
+                log.info("error = "+e.getStackTrace().toString());
             }
         }
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpPost httpPost = new HttpPost(yPath + "/ms/testcloudplatform/api/service/test/plan/task/status");
         CloseableHttpResponse response = null;
         try {
+            log.info("开始推送数据 report id = "+rd+"data="+JSON.toJSONString(data));
             StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
             httpPost.setEntity(stringEntity);
             httpPost.setHeader("Content-Type", "application/json");

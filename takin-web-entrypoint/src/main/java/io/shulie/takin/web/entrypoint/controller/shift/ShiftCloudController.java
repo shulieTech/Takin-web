@@ -468,6 +468,7 @@ public class ShiftCloudController {
                 data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")), false, token, pid);
             }
         }
+        log.info("主动拉取数据 report id = "+shiftCloudVO.getTool_execute_id()+" data="+JSON.toJSONString(data));
         baseResult.setData(data);
         return baseResult;
     }

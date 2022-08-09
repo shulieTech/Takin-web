@@ -611,7 +611,7 @@ public class ShiftCloudController {
     @GetMapping("/api/c/report/export")
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.YI_DONG_YUN_TASK_REPORT,
-            needAuth = ActionTypeEnum.REPORT
+            needAuth = ActionTypeEnum.DOWNLOAD
     )
     public void export(ShiftCloudVO shiftCloudVO, HttpServletResponse response,HttpServletRequest request) throws Exception {
 

@@ -190,13 +190,13 @@ public class ShiftCloudController {
             queryVO.setIsDeleted(0);
             String userName = shiftCloudVO.getAccount();
             Long id = null;
-            if (StringUtils.isNotBlank(userName)) {
-                id = userService.getIdByName(userName);
-                if (null != id) {
-                    queryVO.setFilterSql("(" + id + ")");
-                    queryVO.setUserId(id);
-                }
-            }
+//            if (StringUtils.isNotBlank(userName)) {
+//                id = userService.getIdByName(userName);
+//                if (null != id) {
+//                    queryVO.setFilterSql("(" + id + ")");
+//                    queryVO.setUserId(id);
+//                }
+//            }
             ResponseResult<List<SceneManageListOutput>> responseResult = sceneManageService.getPageList(queryVO);
             Map<String, List> map = new HashMap<>(1);
             List<SceneManagerResult> list = new ArrayList<>();

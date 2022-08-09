@@ -27,4 +27,7 @@ public class YReleationTaskEntity extends TenantBaseEntity {
 
     @TableField(value = "user_id")
     private Long userId;
+
+    @TableField(value = "name")
+    private String name;
 }

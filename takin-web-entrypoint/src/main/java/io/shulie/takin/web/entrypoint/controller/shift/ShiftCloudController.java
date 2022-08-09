@@ -367,6 +367,7 @@ public class ShiftCloudController {
                 entity.setTaskId(taskId);
                 entity.setEnvCode(pid);
                 entity.setUserId(WebPluginUtils.traceUserId());
+                entity.setName(WebPluginUtils.traceUser().getName());
                 mapper.insert(entity);
             }
         }

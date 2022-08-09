@@ -222,7 +222,12 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         List<ApplicationPluginsConfigEntity> list = applicationPluginsConfigDAO.findList(param);
         if (list != null && !list.isEmpty()) {
             List<ApplicationPluginsConfigVO> vos = CopyUtils.copyFieldsList(list, ApplicationPluginsConfigVO.class);
-            vos.forEach(x -> x.setConfigValue(NumberUtil.div(x.getConfigValue(),"60",3).toString()));
+            vos.forEach(x -> {
+                if(!"-1".equals(x.getConfigValue())){
+                    x.setConfigValue(NumberUtil.div(x.getConfigValue(),"60",3).toString());
+                }
+            });
+//            vos.forEach(x -> x.setConfigValue(NumberUtil.div(x.getConfigValue(),"60",3).toString()));
             return vos;
         }
         return null;

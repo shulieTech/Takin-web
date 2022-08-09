@@ -167,12 +167,7 @@
 
 <#assign flatTreeData=flatTree(data.nodeTree.scriptNodeSummaryBeans![], 0)>
 <#assign failedData=filter(flatTreeData![], "passFlag", 0)>
-<#assign infoTreeData=flatTree(data.info![], 0)>
-<#assign infoData=filter(infoTreeData![], "passFlag", 0)>
-<#assign riskTreeData=flatTree(data.riskApplicationCountDTO![], 0)>
-<#assign riskData=filter(riskTreeData![], "passFlag", 0)>
-<#assign responseTreeData=flatTree(data.responses![], 0)>
-<#assign responseData=filter(responseTreeData![], "passFlag", 0)>
+
 
 
 <body>
@@ -311,8 +306,8 @@
         <th>RT</th>
         <th>成功率</th>
     </tr>
-    <#if infoData?size gt 0>
-    <#list infoData as item>
+    <#if data.info?size gt 0>
+    <#list data.info as item>
     <tr>
         <td>${item.rank}</td>
         <td>${item.applicationName}</td>
@@ -337,8 +332,8 @@
         <th>机器</th>
         <th>风险</th>
     </tr>
-            <#if infoData?size gt 0>
-                <#list infoData as item>
+            <#if data.riskApplicationCountDTO?size gt 0>
+                <#list data.riskApplicationCountDTO as item>
                     <tr>
                         <td>${item.agentId}</td>
                         <td>${item.machineIp}</td>
@@ -415,8 +410,8 @@
         <th>规则明细</th>
         <th>警告时间</th>
     </tr>
-            <#if responseData?size gt 0>
-                <#list responseData as item>
+            <#if data.responses?size gt 0>
+                <#list data.responses as item>
                     <tr>
                         <td>${item.slaName}</td>
                         <td>${item.businessActivityName}</td>

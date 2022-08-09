@@ -602,6 +602,7 @@ public class ShiftCloudController {
             //TODO failedCaseInfo?
             analysis.put("executeDuration", r);
             analysis.put("task_message", "test result " + JSON.toJSONString(l));
+            analysis.put("performanceResult", ((int) data.get("task_status")) == 1 ? true : false);
             data.put("last_analysis_result_list", JSON.toJSONString(analysis));
         }
         return data;

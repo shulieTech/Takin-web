@@ -672,7 +672,7 @@ public class ShiftCloudController {
             List<PressureTaskResult> t = JSON.parseArray(taskResponseJson, PressureTaskResult.class);
             if (CollectionUtils.isNotEmpty(t)) {
                 for (PressureTaskResult p : t) {
-                    result.put("reportId", p.getId());
+                    result.put("reportId", p.getTaskId());
                     String d = HttpUtil.get(path + "/api/benchmark/result/detail?tenantCode=yidongyun&token="+token+"&envCode="+pid, result, 10000);
                     if (StringUtils.isNotBlank(d)) {
                         dataModel.put("data", JSON.parseObject(d).getObject("data", PressureTaskResultVO.class));

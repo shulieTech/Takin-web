@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.pojo.request.scene;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -16,4 +17,7 @@ public class PressureMachineUpdateRequest implements Serializable {
     private String userName;
 
     private String password;
+
+    @ApiModelProperty("备注")
+    private String remark;
 }

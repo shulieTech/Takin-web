@@ -1,34 +1,22 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
-import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
-import cn.hutool.crypto.symmetric.SymmetricCrypto;
-import io.shulie.takin.cloud.entrypoint.machine.CloudMachineApi;
-import io.shulie.takin.cloud.ext.content.trace.ContextExt;
-import io.shulie.takin.cloud.sdk.model.request.machine.MachineAddReq;
-import io.shulie.takin.cloud.sdk.model.request.machine.MachineBaseReq;
-import io.shulie.takin.cloud.sdk.model.request.machine.MachineUpdateReq;
-import io.shulie.takin.cloud.sdk.model.response.machine.NodeMetricsResp;
+import cn.hutool.http.HttpRequest;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.common.beans.page.PagingDevice;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.scene.*;
-import io.shulie.takin.web.biz.pojo.response.placeholdermanage.PlaceholderManageResponse;
+import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
 import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
-import io.shulie.takin.web.common.util.BeanCopyUtils;
-import io.shulie.takin.web.data.param.machine.PressureMachineUpdateParam;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pressureMachine")
@@ -53,8 +41,8 @@ public class PressureTestMachineController {
     @GetMapping("/list")
     @ApiOperation("压力机列表")
     @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request) {
-        return machineManageService.list(request);
+    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request, HttpRequest httpRequest) {
+        return machineManageService.list(request, httpRequest);
     }
 
 
@@ -75,7 +63,7 @@ public class PressureTestMachineController {
     }
 
     @PostMapping("/enable")
-    @ApiOperation("部署压力机")
+    @ApiOperation("takin-部署压力机")
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<String> enable(@RequestBody @Valid PressureMachineBaseRequest request) {
         String failContent = machineManageService.enable(request);
@@ -83,6 +71,31 @@ public class PressureTestMachineController {
             return ResponseResult.fail("部署失败", failContent);
         }
         return ResponseResult.success("部署成功");
+    }
+
+    @PostMapping("/benchmarkEnable")
+    @ApiOperation("benchmark-部署压力机")
+    @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
+    public ResponseResult<String> benchmarkEnable(@RequestBody @Valid PressureMachineBaseRequest request,HttpRequest httpRequest) {
+        String failContent = machineManageService.benchmarkEnable(request,httpRequest);
+        if (failContent != null) {
+            return ResponseResult.fail("部署失败", failContent);
+        }
+        return ResponseResult.success("部署成功");
+    }
+
+    @GetMapping("/benchmarkSuiteList")
+    @ApiOperation("benchmark组件列表")
+    @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
+    public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpRequest httpRequest) {
+        return machineManageService.benchmarkSuiteList(request, httpRequest);
+    }
+
+    @GetMapping("/deployProgress")
+    @ApiOperation("部署进度")
+    @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
+    public ResponseResult<String> deployProgress(Long id) {
+        return machineManageService.deployProgress(id);
     }
 
     @PostMapping("/disable")

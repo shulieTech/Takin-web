@@ -336,7 +336,7 @@ public class ReportServiceImpl implements ReportService {
         WarnQueryReq param = new WarnQueryReq();
         param.setReportId(reportId);
         ResponseResult<List<WarnDetailResponse>> result = reportService.listWarn(param);
-        downLoadOutput.setResponses(result.getData());
+        downLoadOutput.setResponses(CollectionUtils.isEmpty(result.getData())?new ArrayList<>():result.getData());
 
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("data", downLoadOutput);

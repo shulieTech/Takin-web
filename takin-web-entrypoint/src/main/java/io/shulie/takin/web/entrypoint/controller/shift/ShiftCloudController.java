@@ -675,7 +675,7 @@ public class ShiftCloudController {
                     result.put("reportId", p.getTaskId());
                     String d = HttpUtil.get(path + "/api/benchmark/result/detail?tenantCode=yidongyun&token="+token+"&envCode="+pid, result, 10000);
                     if (StringUtils.isNotBlank(d)) {
-                        dataModel.put("data", JSON.parseObject(d).getObject("data", PressureTaskResultVO.class));
+                        dataModel.put("list", JSON.parseArray(JSON.parseObject(d).getString("data"),PressureTaskResultVO.class));
                         String content = pdfUtil.parseFreemarker("report/tpl.html", dataModel);
                         String pdf = "report_" + reportId + "_" + ".pdf";
                         try {

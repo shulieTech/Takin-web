@@ -38,6 +38,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -60,7 +62,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String dockerInstallCmd;
     @Value("${docker.cmd.pull: docker pull 192.168.10.11/library/BENCHMARK_SUITE_NAME:latest}")
     private String dockerPullCmd;
-    @Value("${docker.cmd.run: docker run -itd --net=host --name BENCHMARK_SUITE_NAME BENCHMARK_SUITE_NAME:latest}")
+    @Value("${docker.cmd.run: docker run -itd --net=host --name BENCHMARK_SUITE_NAME 192.168.10.11/library/BENCHMARK_SUITE_NAME:latest}")
     private String dockerRunCmd;
 
     @Value("${harbor.machine.ip: 192.168.10.11}")
@@ -165,7 +167,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         if (CollectionUtils.isNotEmpty(nodeMetrics)) {
                             NodeMetricsResp nodeMetricsResp = nodeMetrics.get(0);
                             pressureMachineResponse.setCpu(nodeMetricsResp.getCpu() == null ? "" : nodeMetricsResp.getCpu().toString());
-                            pressureMachineResponse.setMemory(nodeMetricsResp.getMemory() == null ? "" : nodeMetricsResp.getMemory().toString());
+                            pressureMachineResponse.setMemory(nodeMetricsResp.getMemory() == null ? "" : nodeMetricsResp.getMemory().divide(new BigDecimal(1024 * 1024),2, RoundingMode.HALF_UP) + "G");
                             pressureMachineResponse.setEngineStatus(nodeMetricsResp.getStatus());
                         }
                     });

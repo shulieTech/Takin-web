@@ -210,14 +210,14 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public void delete(PressureMachineBaseRequest request) {
+    public String delete(PressureMachineBaseRequest request) {
         MachineManageEntity manageDAOById = machineManageDAO.getById(request.getId());
         if (manageDAOById == null) {
-            return;
+            return "删除的数据已经不存在，请刷新页面再试";
         }
         //部署中的内容不能删除
         if (manageDAOById.getStatus() == 1) {
-            return;
+            return "部署中的内容不能删除";
         }
         //已部署的节点需要先进行卸载
         if (manageDAOById.getStatus() == 2) {
@@ -227,7 +227,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             this.disable(disableRequest);
         }
         machineManageDAO.removeById(request.getId());
+        return null;
     }
+
 
     /**
      * 返回失败原因
@@ -385,30 +387,32 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 //docker环境安装
                 List<String> checkDockerExec = shellClient.exec(getShellInfo(manageDAOById, "docker -v"));
                 if (CollectionUtils.isEmpty(checkDockerExec) || !checkDockerExec.toString().contains("version")) {
-                    log.info("当前服务不存在docker环境,开始拉取docker环境安装包");
+                    log.info("当前服务不存在docker环境,开始拉取docker环境安装包:"+checkDockerExec.toString());
                     deployStatusMap.put(request.getId(), "拉docker环境安装包");
                     List<String> dockerPullExec = shellClient.exec(getShellInfo(manageDAOById, dockerDownloadCmd));
+                    log.info("拉docker环境安装包日志：" + dockerPullExec);
                     log.info("安装docker环境");
                     deployStatusMap.put(request.getId(), "安装docker环境");
                     List<String> dockerInstallExec = shellClient.exec(getShellInfo(manageDAOById, dockerInstallCmd));
+                    log.info("安装日志：" + dockerInstallExec);
                 }
                 //设置harbor白名单
                 deployStatusMap.put(request.getId(), "设置harbor白名单");
                 log.info("开始设置harbor白名单");
-                shellClient.exec(this.getHarborShellInfo(manageDAOById.getMachineIp()));
-
+                List<String> harborShellExec = shellClient.exec(this.getHarborShellInfo(manageDAOById.getMachineIp()));
+                log.info("设置harbor白名单日志：" + harborShellExec.toString());
                 //拉取镜像
                 deployStatusMap.put(request.getId(), "拉取镜像");
                 String dockerPull = dockerPullCmd.replace("BENCHMARK_SUITE_NAME", request.getBenchmarkSuiteName());
                 log.info("开始拉取镜像，镜像命令为:{}", dockerPull);
                 List<String> dockerPullExec = shellClient.exec(getShellInfo(manageDAOById, dockerPull));
-
+                log.info("拉取镜像日志：" + dockerPullExec.toString());
                 //启动容器
                 deployStatusMap.put(request.getId(), "启动容器");
                 String dockerRun = dockerRunCmd.replaceAll("BENCHMARK_SUITE_NAME", request.getBenchmarkSuiteName());
                 log.info("开始执行docker命令，运行命令为:{}", dockerRun);
                 List<String> dockerRunExec = shellClient.exec(getShellInfo(manageDAOById, dockerRun));
-
+                log.info("启动容器日志：" + dockerRunExec.toString());
                 //监听启动成功
                 long startTimeMillis = System.currentTimeMillis();
                 while (true) {
@@ -428,7 +432,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                             }
                         }
                     } catch (Exception e) {
-                        log.error("查询已部署机器列表出现异常");
+                        log.error("查询已部署机器列表出现异常",e);
                     }
                 }
             } catch (Exception e) {

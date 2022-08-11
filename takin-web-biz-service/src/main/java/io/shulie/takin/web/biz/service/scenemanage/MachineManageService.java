@@ -15,7 +15,7 @@ public interface MachineManageService {
 
     void update(PressureMachineUpdateRequest request);
 
-    void delete(PressureMachineBaseRequest request);
+    String delete(PressureMachineBaseRequest request);
 
     String enable(PressureMachineBaseRequest request);
 

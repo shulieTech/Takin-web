@@ -56,7 +56,10 @@ public class PressureTestMachineController {
     @ApiOperation("删除压力机")
     @AuthVerification(needAuth = ActionTypeEnum.DELETE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<String> delete(@RequestBody @Valid PressureMachineBaseRequest request) {
-        machineManageService.delete(request);
+        String failContent = machineManageService.delete(request);
+        if (failContent != null) {
+            return ResponseResult.fail("删除失败:" + failContent, null);
+        }
         return ResponseResult.success("删除成功");
     }
 

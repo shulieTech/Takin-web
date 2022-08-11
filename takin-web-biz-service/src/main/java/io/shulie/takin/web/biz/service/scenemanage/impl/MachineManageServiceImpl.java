@@ -285,9 +285,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             //删除镜像
             List<String> deleteImageExec = shellClient.exec(getShellInfo(manageDAOById, "docker rmi -f " + manageDAOById.getBenchmarkSuiteName()));
             log.info("删除镜像日志：" + deleteImageExec);
-            manageDAOById.setBenchmarkSuiteName(null);
         }
-        manageDAOById.setDeployType(null);
+        manageDAOById.setBenchmarkSuiteName("");
+        manageDAOById.setDeployType("");
         manageDAOById.setUpdateTime(new Date());
         manageDAOById.setStatus(0);
         machineManageDAO.updateById(manageDAOById);

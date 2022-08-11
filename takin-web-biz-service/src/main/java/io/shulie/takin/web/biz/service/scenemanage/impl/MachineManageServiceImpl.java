@@ -471,7 +471,14 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
     @Override
     public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpRequest httpRequest) {
-        String sendGet = HttpClientUtil.sendGet(benchmarkSuiteListUrl, getHeaderMap(httpRequest));
+        String reqUrl = benchmarkSuiteListUrl + "?current=" + request.getCurrent() + "&pageSize=" + request.getPageSize();
+        if (request.getName() != null){
+            reqUrl = reqUrl + "&name=" + request.getName();
+        }
+        if (request.getPid() != null){
+            reqUrl = reqUrl + "&pid=" + request.getPid();
+        }
+        String sendGet = HttpClientUtil.sendGet(reqUrl, getHeaderMap(httpRequest));
         try {
             JSONObject jsonObject = JSONObject.parseObject(sendGet);
             Object data = jsonObject.get("data");

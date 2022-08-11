@@ -472,8 +472,8 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     @Override
     public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpServletRequest httpRequest) {
         String reqUrl = benchmarkSuiteListUrl + "?current=" + request.getCurrent() + "&pageSize=" + request.getPageSize();
-        if (request.getName() != null){
-            reqUrl = reqUrl + "&name=" + request.getName();
+        if (request.getSuite() != null){
+            reqUrl = reqUrl + "&suite=" + request.getSuite();
         }
         if (request.getPid() != null){
             reqUrl = reqUrl + "&pid=" + request.getPid();
@@ -482,9 +482,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         try {
             JSONObject jsonObject = JSONObject.parseObject(sendGet);
             Object data = jsonObject.get("data");
-            int total = jsonObject.getIntValue("total");
             if (data != null) {
                 JSONObject dataJson = JSONObject.parseObject(data.toString());
+                int total = dataJson.getIntValue("total");
                 Object records = dataJson.get("records");
                 if (records != null) {
                     List<BenchmarkSuiteResponse> benchmarkSuiteResponses = JSONObject.parseArray(records.toString(), BenchmarkSuiteResponse.class);

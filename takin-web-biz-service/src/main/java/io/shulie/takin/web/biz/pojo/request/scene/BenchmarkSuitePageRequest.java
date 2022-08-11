@@ -8,7 +8,7 @@ import lombok.Data;
 @ApiModel(value = "Benchmark组件请求参数")
 public class BenchmarkSuitePageRequest extends PagingDevice {
 
-    private String name;
+    private String suite;
 
     private Integer pid;
 }

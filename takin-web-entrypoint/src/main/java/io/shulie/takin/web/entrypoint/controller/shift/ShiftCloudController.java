@@ -717,14 +717,15 @@ public class ShiftCloudController {
         String resultString = "";
         try {
             // 创建Http Post请求
-            HttpPost httpPost = new HttpPost(yPath + "/ms/vteam/api/service/issue/custom/" + envCode + "/version_iteration/VERSION/" + versionId);
-            httpPost.addHeader("X-DEVOPS-UID", "admin");
-            // 创建请求内容
-            StringEntity entity = new StringEntity("[]", ContentType.APPLICATION_JSON);
-            httpPost.setEntity(entity);
-            // 执行http请求
-            response = httpClient.execute(httpPost);
-            resultString = EntityUtils.toString(response.getEntity(), "UTF8");
+//            HttpPost httpPost = new HttpPost(yPath + "/ms/vteam/api/service/issue/custom/" + envCode + "/version_iteration/VERSION/" + versionId);
+//            httpPost.addHeader("X-DEVOPS-UID", "admin");
+//            // 创建请求内容
+//            StringEntity entity = new StringEntity("[]", ContentType.APPLICATION_JSON);
+//            httpPost.setEntity(entity);
+//            // 执行http请求
+//            response = httpClient.execute(httpPost);
+//            resultString = EntityUtils.toString(response.getEntity(), "UTF8");
+            resultString = HttpUtil.createPost(yPath + "/ms/vteam/api/service/issue/custom/" + envCode + "/version_iteration/VERSION/" + versionId).body("[]").header("X-DEVOPS-UID", "admin").execute().body();
             if (StringUtils.isNotBlank(resultString)) {
                 return JSON.parseArray(JSONObject.parseObject(resultString).getJSONObject("data").getString("records"), Property.class).stream().map(p -> {
                     Map m = new HashMap();
@@ -735,10 +736,10 @@ public class ShiftCloudController {
             }
         } catch (Exception e) {
         } finally {
-            try {
-                response.close();
-            } catch (IOException e) {
-            }
+//            try {
+//                response.close();
+//            } catch (IOException e) {
+//            }
         }
         return null;
     }

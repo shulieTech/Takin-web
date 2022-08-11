@@ -27,9 +27,11 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.TagService;
 import io.shulie.takin.web.biz.service.UserService;
+import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.utils.PDFUtil;
 import io.shulie.takin.web.common.common.Response;
@@ -64,6 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -129,6 +132,9 @@ public class ShiftCloudController {
 
     @Autowired
     private SceneManageApi sceneManageApi;
+
+    @Resource
+    private ReportService reportService;
 
     //2.1
     @Deprecated
@@ -486,6 +492,7 @@ public class ShiftCloudController {
                 ReportDetailOutput output = responseResult.getData();
                 Long id = output.getId();
                 Long sceneId = output.getSceneId();
+                ReportDetailTempOutput out = reportService.tempReportDetail(sceneId);
                 Integer conclusion = output.getConclusion();
                 String conclusionRemark = output.getConclusionRemark();
                 Integer taskStatus = output.getTaskStatus();
@@ -539,8 +546,9 @@ public class ShiftCloudController {
 //                            if (businessActivity.get(i).getPassFlag() == 0) {
                                 Map failedCaseInfo = new HashMap();
                                 failedCaseInfo.put("name", businessActivity.get(i).getBusinessActivityName());
-                                Long t = businessActivity.get(i).getTotalRequest();
-                                int failCount = 0;
+//                                Long t = businessActivity.get(i).getTotalRequest();
+                            Long t = out.getTotalRequest();
+                            int failCount = 0;
                                 DataBean successRate = businessActivity.get(i).getSuccessRate();
                                 if (null != successRate && null != t) {
                                     BigDecimal value = (BigDecimal) successRate.getValue();
@@ -578,11 +586,15 @@ public class ShiftCloudController {
             int s = 0;
             int c1 = 0;
             int c3 = 0;
-            long r = 0;
+            int r = 0;
             List l = new ArrayList();
             if (StringUtils.isNotBlank(responseJson)) {
                 PressureTask pressureTask = JSON.parseObject(responseJson, PressureTask.class);
-                r = pressureTask.getRunTime();
+                if (null == pressureTask.getStopTime()) {
+                    r = LocalDateTime.now().compareTo(pressureTask.getStartTime());
+                } else {
+                    r = pressureTask.getStopTime().compareTo(pressureTask.getStartTime());
+                }
                 int percentage = pressureTask.getPercentage();
                 data.put("tool_task_id", BENCH + pressureTask.getSceneId());
                 result.put("sceneId", pressureTask.getSceneId());

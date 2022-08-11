@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pressureMachine")
@@ -32,7 +30,7 @@ public class PressureTestMachineController {
     public ResponseResult<String> create(@RequestBody @Valid PressureMachineCreateRequest request) {
         String failContent = machineManageService.create(request);
         if (failContent != null) {
-            return ResponseResult.fail("添加失败", failContent);
+            return ResponseResult.fail("添加失败" + failContent, null);
         }
         return ResponseResult.success("添加成功");
     }
@@ -68,7 +66,7 @@ public class PressureTestMachineController {
     public ResponseResult<String> enable(@RequestBody @Valid PressureMachineBaseRequest request) {
         String failContent = machineManageService.enable(request);
         if (failContent != null) {
-            return ResponseResult.fail("部署失败", failContent);
+            return ResponseResult.fail("部署失败" + failContent, null);
         }
         return ResponseResult.success("部署成功");
     }
@@ -76,10 +74,10 @@ public class PressureTestMachineController {
     @PostMapping("/benchmarkEnable")
     @ApiOperation("benchmark-部署压力机")
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<String> benchmarkEnable(@RequestBody @Valid PressureMachineBaseRequest request,HttpRequest httpRequest) {
-        String failContent = machineManageService.benchmarkEnable(request,httpRequest);
+    public ResponseResult<String> benchmarkEnable(@RequestBody @Valid PressureMachineBaseRequest request, HttpRequest httpRequest) {
+        String failContent = machineManageService.benchmarkEnable(request, httpRequest);
         if (failContent != null) {
-            return ResponseResult.fail("部署失败", failContent);
+            return ResponseResult.fail("部署失败" + failContent, null);
         }
         return ResponseResult.success("部署成功");
     }
@@ -104,7 +102,7 @@ public class PressureTestMachineController {
     public ResponseResult<String> disable(@RequestBody @Valid PressureMachineBaseRequest request) {
         String failContent = machineManageService.disable(request);
         if (failContent != null) {
-            return ResponseResult.fail("卸载失败", failContent);
+            return ResponseResult.fail("卸载失败" + failContent, null);
         }
         return ResponseResult.success("卸载成功");
     }

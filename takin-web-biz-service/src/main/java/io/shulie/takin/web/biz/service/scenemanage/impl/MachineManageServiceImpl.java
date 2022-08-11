@@ -73,15 +73,11 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     @Value("${docker.start.timeout: 15}")
     private Integer dockerStartTimeout;
 
-
     private SymmetricCrypto des;
     private final static ExecutorService THREAD_POOL = new ThreadPoolExecutor(4, 20,
             300L, TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(100), new ThreadFactoryBuilder()
             .setNameFormat("machine-manage-exec-%d").build(), new ThreadPoolExecutor.AbortPolicy());
-
-    @Resource
-    private ShellClient shellClient;
 
     private static final ConcurrentHashMap<Long, String> deployStatusMap = new ConcurrentHashMap<>();
 
@@ -93,11 +89,12 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
     @Resource
     private MachineManageDAO machineManageDAO;
-
     @Resource
     private CloudMachineApi cloudMachineApi;
     @Resource
     private PluginManager pluginManager;
+    @Resource
+    private ShellClient shellClient;
 
     @Override
     public String create(PressureMachineCreateRequest request) {

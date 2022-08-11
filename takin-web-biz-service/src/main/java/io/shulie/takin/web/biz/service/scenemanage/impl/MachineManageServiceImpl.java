@@ -18,12 +18,10 @@ import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
 import io.shulie.takin.web.biz.constant.MachineManageConstants;
-import io.shulie.takin.web.biz.pojo.dto.ShellInfo;
 import io.shulie.takin.web.biz.pojo.dto.machinemanage.PressureMachineDTO;
 import io.shulie.takin.web.biz.pojo.request.scene.*;
 import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
 import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
-import io.shulie.takin.web.biz.utils.ShellClient;
 import io.shulie.takin.web.biz.utils.SshInitUtil;
 import io.shulie.takin.web.common.util.BeanCopyUtils;
 import io.shulie.takin.web.data.dao.scenemanage.MachineManageDAO;
@@ -105,8 +103,6 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private CloudMachineApi cloudMachineApi;
     @Resource
     private PluginManager pluginManager;
-    @Resource
-    private ShellClient shellClient;
 
     @Override
     public String create(PressureMachineCreateRequest request) {
@@ -193,7 +189,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             }
             //如果机器为已部署，然后没有上报信息，状态为不可用
             pressureMachineResponses.forEach(pressureMachineResponse -> {
-                if (deployStatusMap.containsKey(pressureMachineResponse.getId())){
+                if (deployStatusMap.containsKey(pressureMachineResponse.getId())) {
                     pressureMachineResponse.setDeployProgressList(deployProgressList);
                     String progress = deployStatusMap.get(pressureMachineResponse.getId());
                     pressureMachineResponse.setCurrentProgressIndex(deployProgressList.indexOf(progress));
@@ -295,14 +291,16 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             cloudMachineApi.delete(baseReq);
         }
         if (MachineManageConstants.TYPE_BENCHMARK.equals(manageDAOById.getDeployType())) {
+            SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
+                    manageDAOById.getUserName());
             //停止容器服务
-            List<String> stopExec = shellClient.exec(getShellInfo(manageDAOById, "docker stop " + manageDAOById.getBenchmarkSuiteName()));
+            String stopExec = sshInitUtil.execute("docker stop " + manageDAOById.getBenchmarkSuiteName());
             log.info("停止容器日志：" + stopExec);
             //删除容器
-            List<String> deleteExec = shellClient.exec(getShellInfo(manageDAOById, "docker rm -f " + manageDAOById.getBenchmarkSuiteName()));
+            String deleteExec = sshInitUtil.execute("docker rm -f " + manageDAOById.getBenchmarkSuiteName());
             log.info("删除容器日志：" + deleteExec);
             //删除镜像
-            List<String> deleteImageExec = shellClient.exec(getShellInfo(manageDAOById, "docker rmi -f " + manageDAOById.getBenchmarkSuiteName()));
+            String deleteImageExec = sshInitUtil.execute("docker rmi -f " + manageDAOById.getBenchmarkSuiteName());
             log.info("删除镜像日志：" + deleteImageExec);
         }
         manageDAOById.setBenchmarkSuiteName("");
@@ -404,40 +402,41 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             try {
                 SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
                         manageDAOById.getUserName());
-                sshInitUtil.login();
                 //docker环境安装
-//                List<String> checkDockerExec = shellClient.exec(getShellInfo(manageDAOById, "docker -v"));
                 String checkDockerExec = sshInitUtil.execute("docker -v");
                 if (checkDockerExec == null || !checkDockerExec.contains("version")) {
-                    log.info("当前服务不存在docker环境,开始拉取docker环境安装包:"+ checkDockerExec);
+                    log.info("当前服务不存在docker环境,开始拉取docker环境安装包:" + checkDockerExec);
                     deployStatusMap.put(request.getId(), "拉docker环境安装包");
-//                    List<String> dockerPullExec = shellClient.exec(getShellInfo(manageDAOById, dockerDownloadCmd));
                     String dockerPullExec = sshInitUtil.execute(dockerDownloadCmd);
                     log.info("拉docker环境安装包日志：" + dockerPullExec);
                     log.info("安装docker环境");
                     deployStatusMap.put(request.getId(), "安装docker环境");
-//                    List<String> dockerInstallExec = shellClient.exec(getShellInfo(manageDAOById, dockerInstallCmd));
-                    String dockerInstallExec = sshInitUtil.execute(dockerInstallCmd);
+                    String dockerInstallExec = sshInitUtil.execute("source /etc/profile && " + dockerInstallCmd);
                     log.info("安装日志：" + dockerInstallExec);
                 }
+
                 //设置harbor白名单
                 deployStatusMap.put(request.getId(), "设置harbor白名单");
                 log.info("开始设置harbor白名单");
-//                List<String> harborShellExec = shellClient.exec(this.getHarborShellInfo(manageDAOById.getMachineIp()));
-                String harborShellExec = sshInitUtil.execute(dockerInstallCmd);
-                log.info("设置harbor白名单日志：" + harborShellExec.toString());
+                SshInitUtil harborShellUtil = this.getHarborShellInfo();
+                String iptablesAccept = "iptables -I INPUT -s " + manageDAOById.getMachineIp() + " -p TCP --dport 80 -j ACCEPT";
+                String harborShellExec = harborShellUtil.execute(iptablesAccept);
+                log.info("设置harbor白名单日志：" + harborShellExec);
+
                 //拉取镜像
                 deployStatusMap.put(request.getId(), "拉取镜像");
                 String dockerPull = dockerPullCmd.replace("BENCHMARK_SUITE_NAME", request.getBenchmarkSuiteName());
                 log.info("开始拉取镜像，镜像命令为:{}", dockerPull);
-                List<String> dockerPullExec = shellClient.exec(getShellInfo(manageDAOById, dockerPull));
-                log.info("拉取镜像日志：" + dockerPullExec.toString());
+                String dockerPullExec = sshInitUtil.execute(dockerPull);
+                log.info("拉取镜像日志：" + dockerPullExec);
+
                 //启动容器
                 deployStatusMap.put(request.getId(), "启动容器");
                 String dockerRun = dockerRunCmd.replaceAll("BENCHMARK_SUITE_NAME", request.getBenchmarkSuiteName());
                 log.info("开始执行docker命令，运行命令为:{}", dockerRun);
-                List<String> dockerRunExec = shellClient.exec(getShellInfo(manageDAOById, dockerRun));
-                log.info("启动容器日志：" + dockerRunExec.toString());
+                String dockerRunExec = sshInitUtil.execute(dockerRun);
+                log.info("启动容器日志：" + dockerRunExec);
+
                 //监听启动成功
                 long startTimeMillis = System.currentTimeMillis();
                 while (true) {
@@ -457,7 +456,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                             }
                         }
                     } catch (Exception e) {
-                        log.error("查询已部署机器列表出现异常",e);
+                        log.error("查询已部署机器列表出现异常", e);
                     }
                 }
             } catch (Exception e) {
@@ -473,38 +472,17 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         return null;
     }
 
-    private ShellInfo getShellInfo(MachineManageEntity entity, String cmd) {
-        ShellInfo shellInfo = new ShellInfo();
-        shellInfo.setSsh(true);
-        shellInfo.setNoPass(false);
-        shellInfo.setCmd(cmd);
-        shellInfo.setIp(entity.getMachineIp());
-        shellInfo.setName(entity.getUserName());
-        shellInfo.setPassword(des.decryptStr(entity.getPassword()));
-        shellInfo.setSpawn(false);
-        return shellInfo;
-    }
-
-    private ShellInfo getHarborShellInfo(String machineIp) {
-        String iptablesAccept = "iptables -I INPUT -s " + machineIp + " -p TCP --dport 80 -j ACCEPT";
-        ShellInfo shellInfo = new ShellInfo();
-        shellInfo.setSsh(true);
-        shellInfo.setNoPass(false);
-        shellInfo.setCmd(iptablesAccept);
-        shellInfo.setIp(harborMachineIp);
-        shellInfo.setName(harborMachineUserName);
-        shellInfo.setPassword(harborMachinePassword);
-        shellInfo.setSpawn(false);
-        return shellInfo;
+    private SshInitUtil getHarborShellInfo() {
+        return new SshInitUtil(harborMachineIp, harborMachinePassword, harborMachineUserName);
     }
 
     @Override
     public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpServletRequest httpRequest) {
         String reqUrl = benchmarkSuiteListUrl + "?current=" + request.getCurrent() + "&pageSize=" + request.getPageSize();
-        if (request.getSuite() != null){
+        if (request.getSuite() != null) {
             reqUrl = reqUrl + "&suite=" + request.getSuite();
         }
-        if (request.getPid() != null){
+        if (request.getPid() != null) {
             reqUrl = reqUrl + "&pid=" + request.getPid();
         }
         String sendGet = HttpClientUtil.sendGet(reqUrl, getHeaderMap(httpRequest));

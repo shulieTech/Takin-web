@@ -438,14 +438,14 @@ public class ShiftCloudController {
             log.error(e.getStackTrace().toString());
             return false;
         } finally {
-            try {
-                if (null != response) {
-                    response.close();
-                }
-                httpClient.close();
-            } catch (IOException e) {
-                //Ignore
-            }
+//            try {
+//                if (null != response) {
+//                    response.close();
+//                }
+//                httpClient.close();
+//            } catch (IOException e) {
+//                //Ignore
+//            }
         }
     }
 

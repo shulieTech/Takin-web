@@ -423,15 +423,15 @@ public class ShiftCloudController {
                 log.info("error = "+e.getStackTrace().toString());
             }
         }
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        HttpPost httpPost = new HttpPost(yPath + "/ms/testcloudplatform/api/service/test/plan/task/status");
-        CloseableHttpResponse response = null;
+//        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+//        HttpPost httpPost = new HttpPost(yPath + "/ms/testcloudplatform/api/service/test/plan/task/status");
+//        CloseableHttpResponse response = null;
         try {
             log.info("开始推送数据 report id = "+rd+" data="+JSON.toJSONString(data));
-            StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
-            httpPost.setEntity(stringEntity);
-            httpPost.setHeader("Content-Type", "application/json");
-            response = httpClient.execute(httpPost);
+//            StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
+//            httpPost.setEntity(stringEntity);
+//            httpPost.setHeader("Content-Type", "application/json");
+            HttpUtil.createPost(yPath + "/ms/testcloudplatform/api/service/test/plan/task/status").body(JSON.toJSONString(data)).header("Content-Type", "application/json").execute().body();
             Object task_status = data.remove("task_status");
             return task_status != null && (Integer.parseInt(task_status.toString()) == 1 || Integer.parseInt(task_status.toString()) == 3);
         } catch (Exception e) {

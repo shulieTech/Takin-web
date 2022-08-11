@@ -289,9 +289,7 @@
 </div>
 </#if>
 </div>
-<#--  瓶颈接口  -->
-<h2>压测概览</h2>
-<div style="height: 300px" id="chart1"></div>
+
 
 
 
@@ -427,31 +425,7 @@
 </table>
 </div>
 
-<script src="https://fastly.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
-<script>
-    var dom = document.getElementById('chart1');
-    var myChart = echarts.init(dom, null, {
-        renderer: 'canvas',
-        useDirtyRect: false
-    });
-    var option = {
-        animation: false,
-        xAxis: {
-            type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-        },
-        yAxis: {
-            type: 'value'
-        },
-        series: [
-            {
-                data: [150, 230, 224, 218, 135, 147, 260],
-                type: 'line'
-            }
-        ]
-    };
-    myChart.setOption(option);
-</script>
+
 </body>
 
 </html>

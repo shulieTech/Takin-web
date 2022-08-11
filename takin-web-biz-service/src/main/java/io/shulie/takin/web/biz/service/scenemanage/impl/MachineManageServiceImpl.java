@@ -508,9 +508,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
     private Map<String, String> getHeaderMap(HttpServletRequest httpRequest) {
         Map<String, String> headerMap = new HashMap<>();
-        headerMap.put("token", Objects.requireNonNull(httpRequest.getHeader("token")));
-        headerMap.put("envCode", Objects.requireNonNull(httpRequest.getHeader("envCode")));
-        headerMap.put("tenantCode", Objects.requireNonNull(httpRequest.getHeader("tenantCode")));
+        headerMap.put("token", Objects.requireNonNull(httpRequest.getHeader("x-token")));
+        headerMap.put("envCode", Objects.requireNonNull(httpRequest.getHeader("env-code")));
+        headerMap.put("tenantCode", Objects.requireNonNull(httpRequest.getHeader("tenant-code")));
         return headerMap;
     }
 

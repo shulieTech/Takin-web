@@ -2,7 +2,6 @@ package io.shulie.takin.web.biz.service.scenemanage.impl;
 
 import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
-import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -39,6 +38,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -135,7 +135,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request, HttpRequest httpRequest) {
+    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request, HttpServletRequest httpRequest) {
         Page<MachineManageEntity> page = new Page<>(request.getCurrent() + 1, request.getPageSize());
         QueryWrapper<MachineManageEntity> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(request.getName())) {
@@ -357,7 +357,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public String benchmarkEnable(PressureMachineBaseRequest request, HttpRequest httpRequest) {
+    public String benchmarkEnable(PressureMachineBaseRequest request, HttpServletRequest httpRequest) {
         if (request.getBenchmarkSuiteName() == null) {
             return "benchmark部署需要上传部署组件名称";
         }
@@ -470,7 +470,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpRequest httpRequest) {
+    public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpServletRequest httpRequest) {
         String reqUrl = benchmarkSuiteListUrl + "?current=" + request.getCurrent() + "&pageSize=" + request.getPageSize();
         if (request.getName() != null){
             reqUrl = reqUrl + "&name=" + request.getName();
@@ -506,15 +506,15 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         return ResponseResult.success(progress);
     }
 
-    private Map<String, String> getHeaderMap(HttpRequest httpRequest) {
+    private Map<String, String> getHeaderMap(HttpServletRequest httpRequest) {
         Map<String, String> headerMap = new HashMap<>();
-        headerMap.put("token", httpRequest.header("token"));
-        headerMap.put("envCode", httpRequest.header("envCode"));
-        headerMap.put("tenantCode", httpRequest.header("tenantCode"));
+        headerMap.put("token", Objects.requireNonNull(httpRequest.getHeader("x-token")));
+        headerMap.put("envCode", Objects.requireNonNull(httpRequest.getHeader("env-code")));
+        headerMap.put("tenantCode", Objects.requireNonNull(httpRequest.getHeader("tenant-code")));
         return headerMap;
     }
 
-    private List<PressureMachineDTO> getPressureMachineDTOList(HttpRequest httpRequest) {
+    private List<PressureMachineDTO> getPressureMachineDTOList(HttpServletRequest httpRequest) {
         String sendGet = HttpClientUtil.sendGet(benchmarkMachineUrl, getHeaderMap(httpRequest));
         try {
             JSONObject jsonObject = JSONObject.parseObject(sendGet);

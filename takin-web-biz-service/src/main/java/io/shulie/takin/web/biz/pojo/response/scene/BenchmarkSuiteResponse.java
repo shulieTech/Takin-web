@@ -16,7 +16,7 @@ public class BenchmarkSuiteResponse implements Serializable {
     private String suite;
 
     @ApiModelProperty(value = "组件描述，用来存储客户的适用产品")
-    private String describe;
+    private String suiteDescribe;
     /**
      * 该套件需要的参数个数
      */

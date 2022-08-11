@@ -389,7 +389,7 @@ public class ShiftCloudController {
                                 String typeMachine = j.getString("typeMachine");
                                 String[] split = typeMachine.split(",");
                                 List<String> list = Arrays.asList(split);
-                                if (list.contains(suite)) {
+                                if (list.contains(suite.split(",")[0])) {
                                     flag[0] = true;
                                     id.set(j.getInteger("id"));
                                 }

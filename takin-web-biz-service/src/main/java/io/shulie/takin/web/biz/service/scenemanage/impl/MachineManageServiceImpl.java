@@ -36,6 +36,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -135,7 +137,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request, HttpRequest httpRequest) {
+    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request, ServerHttpRequest httpRequest) {
         Page<MachineManageEntity> page = new Page<>(request.getCurrent() + 1, request.getPageSize());
         QueryWrapper<MachineManageEntity> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(request.getName())) {
@@ -357,7 +359,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public String benchmarkEnable(PressureMachineBaseRequest request, HttpRequest httpRequest) {
+    public String benchmarkEnable(PressureMachineBaseRequest request, ServerHttpRequest httpRequest) {
         if (request.getBenchmarkSuiteName() == null) {
             return "benchmark部署需要上传部署组件名称";
         }
@@ -470,7 +472,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpRequest httpRequest) {
+    public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, ServerHttpRequest httpRequest) {
         String reqUrl = benchmarkSuiteListUrl + "?current=" + request.getCurrent() + "&pageSize=" + request.getPageSize();
         if (request.getName() != null){
             reqUrl = reqUrl + "&name=" + request.getName();
@@ -506,15 +508,19 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         return ResponseResult.success(progress);
     }
 
-    private Map<String, String> getHeaderMap(HttpRequest httpRequest) {
+    private Map<String, String> getHeaderMap(ServerHttpRequest httpRequest) {
         Map<String, String> headerMap = new HashMap<>();
-        headerMap.put("token", httpRequest.header("token"));
-        headerMap.put("envCode", httpRequest.header("envCode"));
-        headerMap.put("tenantCode", httpRequest.header("tenantCode"));
+        HttpHeaders headers = httpRequest.getHeaders();
+        if (!headers.containsKey("token") || !headers.containsKey("envCode") || !headers.containsKey("tenantCode")){
+            return headerMap;
+        }
+        headerMap.put("token", Objects.requireNonNull(headers.get("token")).get(0));
+        headerMap.put("envCode", Objects.requireNonNull(headers.get("envCode")).get(0));
+        headerMap.put("tenantCode", Objects.requireNonNull(headers.get("tenantCode")).get(0));
         return headerMap;
     }
 
-    private List<PressureMachineDTO> getPressureMachineDTOList(HttpRequest httpRequest) {
+    private List<PressureMachineDTO> getPressureMachineDTOList(ServerHttpRequest httpRequest) {
         String sendGet = HttpClientUtil.sendGet(benchmarkMachineUrl, getHeaderMap(httpRequest));
         try {
             JSONObject jsonObject = JSONObject.parseObject(sendGet);

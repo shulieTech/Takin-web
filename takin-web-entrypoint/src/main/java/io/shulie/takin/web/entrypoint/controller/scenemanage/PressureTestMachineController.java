@@ -11,6 +11,7 @@ import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
 import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -39,7 +40,7 @@ public class PressureTestMachineController {
     @GetMapping("/list")
     @ApiOperation("压力机列表")
     @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request, HttpRequest httpRequest) {
+    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request, ServerHttpRequest httpRequest) {
         return machineManageService.list(request, httpRequest);
     }
 
@@ -74,7 +75,7 @@ public class PressureTestMachineController {
     @PostMapping("/benchmarkEnable")
     @ApiOperation("benchmark-部署压力机")
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<String> benchmarkEnable(@RequestBody @Valid PressureMachineBaseRequest request, HttpRequest httpRequest) {
+    public ResponseResult<String> benchmarkEnable(@RequestBody @Valid PressureMachineBaseRequest request, ServerHttpRequest httpRequest) {
         String failContent = machineManageService.benchmarkEnable(request, httpRequest);
         if (failContent != null) {
             return ResponseResult.fail("部署失败" + failContent, null);
@@ -85,7 +86,7 @@ public class PressureTestMachineController {
     @GetMapping("/benchmarkSuiteList")
     @ApiOperation("benchmark组件列表")
     @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpRequest httpRequest) {
+    public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, ServerHttpRequest httpRequest) {
         return machineManageService.benchmarkSuiteList(request, httpRequest);
     }
 

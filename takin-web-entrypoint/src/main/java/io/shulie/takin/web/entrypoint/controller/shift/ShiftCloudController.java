@@ -536,7 +536,7 @@ public class ShiftCloudController {
                     List list = new ArrayList();
                     if (CollectionUtils.isNotEmpty(businessActivity)) {
                         for (int i = 0; i < businessActivity.size(); i++) {
-                            if (businessActivity.get(i).getPassFlag() == 0) {
+//                            if (businessActivity.get(i).getPassFlag() == 0) {
                                 Map failedCaseInfo = new HashMap();
                                 failedCaseInfo.put("name", businessActivity.get(i).getBusinessActivityName());
                                 Long t = businessActivity.get(i).getTotalRequest();
@@ -561,7 +561,7 @@ public class ShiftCloudController {
                                 failedCaseInfo.put("reason", sb.toString());
                                 failedCaseInfo.put("failCount", failCount);
                                 list.add(failedCaseInfo);
-                            }
+//                            }
                         }
                     }
                     analysis.put("failedCaseInfo", list);

@@ -92,12 +92,6 @@ public class PressureTestMachineController {
         return machineManageService.benchmarkSuiteList(request, httpRequest);
     }
 
-    @GetMapping("/deployProgress")
-    @ApiOperation("部署进度")
-    @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<String> deployProgress(Long id) {
-        return machineManageService.deployProgress(id);
-    }
 
     @PostMapping("/disable")
     @ApiOperation("卸载压力机")

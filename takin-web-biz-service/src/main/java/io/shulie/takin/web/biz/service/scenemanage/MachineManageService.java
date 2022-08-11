@@ -26,6 +26,4 @@ public interface MachineManageService {
     String benchmarkEnable(PressureMachineBaseRequest request,HttpServletRequest httpRequest);
 
     PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpServletRequest httpRequest);
-
-    ResponseResult<String> deployProgress(Long id);
 }

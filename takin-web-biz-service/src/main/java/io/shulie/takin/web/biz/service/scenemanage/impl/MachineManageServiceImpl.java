@@ -81,10 +81,21 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
     private static final ConcurrentHashMap<Long, String> deployStatusMap = new ConcurrentHashMap<>();
 
+    private static final List<String> deployProgressList = new ArrayList<>();
+
     @Override
     public void afterPropertiesSet() throws Exception {
         //这样需要同时拿到数据库，代码，配置文件密码才会泄露
         des = new SymmetricCrypto(SymmetricAlgorithm.DES, (machinePasswordSaltPre + "fankfneioqn").getBytes());
+
+        //初始化进度列表
+        deployProgressList.add("检查docker环境");
+        deployProgressList.add("拉docker环境安装包");
+        deployProgressList.add("安装docker环境");
+        deployProgressList.add("设置harbor白名单");
+        deployProgressList.add("拉取镜像");
+        deployProgressList.add("启动容器");
+        deployProgressList.add("启动成功");
     }
 
     @Resource
@@ -181,6 +192,11 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             }
             //如果机器为已部署，然后没有上报信息，状态为不可用
             pressureMachineResponses.forEach(pressureMachineResponse -> {
+                if (deployStatusMap.containsKey(pressureMachineResponse.getId())){
+                    pressureMachineResponse.setDeployProgressList(deployProgressList);
+                    String progress = deployStatusMap.get(pressureMachineResponse.getId());
+                    pressureMachineResponse.setCurrentProgressIndex(deployProgressList.indexOf(progress));
+                }
                 if (pressureMachineResponse.getStatus() == 2 && pressureMachineResponse.getEngineStatus() == null) {
                     pressureMachineResponse.setEngineStatus("not ready");
                 }
@@ -499,15 +515,6 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             log.error("解析benchmarkSuiteListUrl返回结果出现异常,返回值为:{}", sendGet, e);
         }
         return PagingList.empty();
-    }
-
-    @Override
-    public ResponseResult<String> deployProgress(Long id) {
-        String progress = deployStatusMap.get(id);
-        if (progress == null) {
-            return ResponseResult.fail("该机器已不在部署中", "请刷新页面");
-        }
-        return ResponseResult.success(progress);
     }
 
     private Map<String, String> getHeaderMap(HttpServletRequest httpRequest) {

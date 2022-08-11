@@ -8,6 +8,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class PressureMachineResponse implements Serializable {
@@ -37,6 +38,10 @@ public class PressureMachineResponse implements Serializable {
 
     @ApiModelProperty("benchmark组件名称")
     private String benchmarkSuiteName;
+
+    private List<String> deployProgressList;
+
+    private Integer currentProgressIndex;
 
     /**
      * 部署类型

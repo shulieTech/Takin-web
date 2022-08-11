@@ -2,7 +2,6 @@ package io.shulie.takin.web.biz.service.scenemanage.impl;
 
 import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
-import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -36,11 +35,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -137,7 +135,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request, ServerHttpRequest httpRequest) {
+    public PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request, HttpServletRequest httpRequest) {
         Page<MachineManageEntity> page = new Page<>(request.getCurrent() + 1, request.getPageSize());
         QueryWrapper<MachineManageEntity> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(request.getName())) {
@@ -359,7 +357,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public String benchmarkEnable(PressureMachineBaseRequest request, ServerHttpRequest httpRequest) {
+    public String benchmarkEnable(PressureMachineBaseRequest request, HttpServletRequest httpRequest) {
         if (request.getBenchmarkSuiteName() == null) {
             return "benchmark部署需要上传部署组件名称";
         }
@@ -472,7 +470,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, ServerHttpRequest httpRequest) {
+    public PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpServletRequest httpRequest) {
         String reqUrl = benchmarkSuiteListUrl + "?current=" + request.getCurrent() + "&pageSize=" + request.getPageSize();
         if (request.getName() != null){
             reqUrl = reqUrl + "&name=" + request.getName();
@@ -508,19 +506,15 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         return ResponseResult.success(progress);
     }
 
-    private Map<String, String> getHeaderMap(ServerHttpRequest httpRequest) {
+    private Map<String, String> getHeaderMap(HttpServletRequest httpRequest) {
         Map<String, String> headerMap = new HashMap<>();
-        HttpHeaders headers = httpRequest.getHeaders();
-        if (!headers.containsKey("token") || !headers.containsKey("envCode") || !headers.containsKey("tenantCode")){
-            return headerMap;
-        }
-        headerMap.put("token", Objects.requireNonNull(headers.get("token")).get(0));
-        headerMap.put("envCode", Objects.requireNonNull(headers.get("envCode")).get(0));
-        headerMap.put("tenantCode", Objects.requireNonNull(headers.get("tenantCode")).get(0));
+        headerMap.put("token", Objects.requireNonNull(httpRequest.getHeader("token")));
+        headerMap.put("envCode", Objects.requireNonNull(httpRequest.getHeader("envCode")));
+        headerMap.put("tenantCode", Objects.requireNonNull(httpRequest.getHeader("tenantCode")));
         return headerMap;
     }
 
-    private List<PressureMachineDTO> getPressureMachineDTOList(ServerHttpRequest httpRequest) {
+    private List<PressureMachineDTO> getPressureMachineDTOList(HttpServletRequest httpRequest) {
         String sendGet = HttpClientUtil.sendGet(benchmarkMachineUrl, getHeaderMap(httpRequest));
         try {
             JSONObject jsonObject = JSONObject.parseObject(sendGet);

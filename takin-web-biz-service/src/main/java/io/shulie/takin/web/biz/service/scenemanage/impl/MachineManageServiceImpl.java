@@ -300,7 +300,8 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             String deleteExec = sshInitUtil.execute("docker rm -f " + manageDAOById.getBenchmarkSuiteName());
             log.info("删除容器日志：" + deleteExec);
             //删除镜像
-            String deleteImageExec = sshInitUtil.execute("docker rmi -f " + manageDAOById.getBenchmarkSuiteName());
+            String dockerRmi = dockerPullCmd.replace("docker pull", "docker rmi -f").replace("BENCHMARK_SUITE_NAME", manageDAOById.getBenchmarkSuiteName());
+            String deleteImageExec = sshInitUtil.execute(dockerRmi);
             log.info("删除镜像日志：" + deleteImageExec);
         }
         manageDAOById.setBenchmarkSuiteName("");
@@ -413,6 +414,14 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                     deployStatusMap.put(request.getId(), "安装docker环境");
                     String dockerInstallExec = sshInitUtil.execute("source /etc/profile && " + dockerInstallCmd);
                     log.info("安装日志：" + dockerInstallExec);
+                }
+                //检测harbor配置
+                String checkHarborExec = sshInitUtil.execute("cat /etc/docker/daemon.json");
+                if (checkHarborExec == null || !checkHarborExec.contains(harborMachineIp)){
+                    log.info("开始修改目标机器的harbor配置");
+                    String harborConf = "sed -i 's/\"quay.io\"/\"quay.io\",\""+harborMachineIp+"\"/' /etc/docker/daemon.json";
+                    String harborConfExec = sshInitUtil.execute(harborConf + " && systemctl daemon-reload && systemctl restart docker");
+                    log.info("harbor配置修改日志：" + harborConfExec);
                 }
 
                 //设置harbor白名单

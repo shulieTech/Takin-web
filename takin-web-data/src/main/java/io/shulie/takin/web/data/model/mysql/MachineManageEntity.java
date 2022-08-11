@@ -29,6 +29,18 @@ public class MachineManageEntity extends TenantBaseEntity {
     @TableField(value = "password")
     private String password;
 
+    @TableField(value = "remark")
+    private String remark;
+
+    @TableField(value = "benchmark_suite_name")
+    private String benchmarkSuiteName;
+
+    /**
+     * 部署类型
+     */
+    @TableField(value = "deploy_type")
+    private String deployType;
+
     /**
      * '状态 0：未部署 ；1：部署中  2:已部署'
      */

@@ -1,13 +1,16 @@
 package io.shulie.takin.web.biz.service.scenemanage;
 
+import cn.hutool.http.HttpRequest;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.scene.*;
+import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
 
 public interface MachineManageService {
 
     String create(PressureMachineCreateRequest request);
 
-    PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request);
+    PagingList<PressureMachineResponse> list(PressureMachineQueryRequest request, HttpRequest httpRequest);
 
     void update(PressureMachineUpdateRequest request);
 
@@ -18,4 +21,10 @@ public interface MachineManageService {
     String disable(PressureMachineBaseRequest request);
 
     void syncMachine();
+
+    String benchmarkEnable(PressureMachineBaseRequest request,HttpRequest httpRequest);
+
+    PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpRequest httpRequest);
+
+    ResponseResult<String> deployProgress(Long id);
 }

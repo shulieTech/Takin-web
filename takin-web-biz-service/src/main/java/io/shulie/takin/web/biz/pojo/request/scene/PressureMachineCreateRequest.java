@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.pojo.request.scene;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
@@ -15,4 +16,6 @@ public class PressureMachineCreateRequest {
 
     private String password;
 
+    @ApiModelProperty("备注")
+    private String remark;
 }

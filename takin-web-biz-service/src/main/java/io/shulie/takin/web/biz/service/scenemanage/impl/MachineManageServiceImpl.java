@@ -176,7 +176,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             }
             long benchmarkCount = pressureMachineResponses.stream().filter(o -> MachineManageConstants.TYPE_BENCHMARK.equals(o.getDeployType())).count();
             if (benchmarkCount > 0) {
-                List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(httpRequest);
+                List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(getHeaderMap(httpRequest));
                 if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
                     Map<String, List<PressureMachineDTO>> stringListMap = pressureMachineDTOS.stream().collect(Collectors.groupingBy(PressureMachineDTO::getIp));
                     pressureMachineResponses.forEach(pressureMachineResponse -> {
@@ -389,6 +389,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         if (manageDAOById.getPassword() == null) {
             return "当前机器没有密码，请先补充密码";
         }
+        Map<String, String> headerMap = getHeaderMap(httpRequest);
         //首先更新状态为进行中
         manageDAOById.setBenchmarkSuiteName(request.getBenchmarkSuiteName());
         manageDAOById.setDeployType(MachineManageConstants.TYPE_BENCHMARK);
@@ -438,7 +439,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                             break;
                         }
                         Thread.sleep(3000);
-                        List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(httpRequest);
+                        List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(headerMap);
                         if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
                             List<String> stringList = pressureMachineDTOS.stream().map(PressureMachineDTO::getIp).collect(Collectors.toList());
                             if (stringList.contains(manageDAOById.getMachineIp())) {
@@ -525,8 +526,8 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         return headerMap;
     }
 
-    private List<PressureMachineDTO> getPressureMachineDTOList(HttpServletRequest httpRequest) {
-        String sendGet = HttpClientUtil.sendGet(benchmarkMachineUrl, getHeaderMap(httpRequest));
+    private List<PressureMachineDTO> getPressureMachineDTOList(Map<String, String> headerMap) {
+        String sendGet = HttpClientUtil.sendGet(benchmarkMachineUrl, headerMap);
         try {
             JSONObject jsonObject = JSONObject.parseObject(sendGet);
             Object data = jsonObject.get("data");

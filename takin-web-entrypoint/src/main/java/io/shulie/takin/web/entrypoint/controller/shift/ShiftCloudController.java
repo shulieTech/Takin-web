@@ -586,10 +586,13 @@ public class ShiftCloudController {
                 if (c3 > 0) status = 3;
                 else status = 1;
                 data.put("task_status", runStatus);
+
                 String startParam = pressureTask.getStartParam();
                 if (StringUtils.isNotBlank(startParam)) {
                     s = JSON.parseArray(startParam).size();
                 }
+                if (runStatus == 1) c1=s;
+                else c3=s;
             }
             data.put("tool_code", "Performance");
             String taskResponseJson = HttpUtil.get(path + "/api/task/n?tenantCode=yidongyun&token="+token+"&envCode="+pid, result, 10000);

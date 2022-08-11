@@ -15,7 +15,7 @@ public interface MachineManageService {
 
     void update(PressureMachineUpdateRequest request);
 
-    void delete(PressureMachineBaseRequest request);
+    String delete(PressureMachineBaseRequest request);
 
     String enable(PressureMachineBaseRequest request);
 
@@ -26,6 +26,4 @@ public interface MachineManageService {
     String benchmarkEnable(PressureMachineBaseRequest request,HttpServletRequest httpRequest);
 
     PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpServletRequest httpRequest);
-
-    ResponseResult<String> deployProgress(Long id);
 }

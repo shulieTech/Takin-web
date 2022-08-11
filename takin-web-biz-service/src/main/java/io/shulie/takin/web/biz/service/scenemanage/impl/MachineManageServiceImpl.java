@@ -24,6 +24,7 @@ import io.shulie.takin.web.biz.pojo.request.scene.*;
 import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
 import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
 import io.shulie.takin.web.biz.utils.ShellClient;
+import io.shulie.takin.web.biz.utils.SshInitUtil;
 import io.shulie.takin.web.common.util.BeanCopyUtils;
 import io.shulie.takin.web.data.dao.scenemanage.MachineManageDAO;
 import io.shulie.takin.web.data.model.mysql.MachineManageEntity;
@@ -401,22 +402,29 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         deployStatusMap.put(request.getId(), "检查docker环境");
         THREAD_POOL.execute(() -> {
             try {
+                SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
+                        manageDAOById.getUserName());
+                sshInitUtil.login();
                 //docker环境安装
-                List<String> checkDockerExec = shellClient.exec(getShellInfo(manageDAOById, "docker -v"));
-                if (CollectionUtils.isEmpty(checkDockerExec) || !checkDockerExec.toString().contains("version")) {
-                    log.info("当前服务不存在docker环境,开始拉取docker环境安装包:"+checkDockerExec.toString());
+//                List<String> checkDockerExec = shellClient.exec(getShellInfo(manageDAOById, "docker -v"));
+                String checkDockerExec = sshInitUtil.execute("docker -v");
+                if (checkDockerExec == null || !checkDockerExec.contains("version")) {
+                    log.info("当前服务不存在docker环境,开始拉取docker环境安装包:"+ checkDockerExec);
                     deployStatusMap.put(request.getId(), "拉docker环境安装包");
-                    List<String> dockerPullExec = shellClient.exec(getShellInfo(manageDAOById, dockerDownloadCmd));
+//                    List<String> dockerPullExec = shellClient.exec(getShellInfo(manageDAOById, dockerDownloadCmd));
+                    String dockerPullExec = sshInitUtil.execute(dockerDownloadCmd);
                     log.info("拉docker环境安装包日志：" + dockerPullExec);
                     log.info("安装docker环境");
                     deployStatusMap.put(request.getId(), "安装docker环境");
-                    List<String> dockerInstallExec = shellClient.exec(getShellInfo(manageDAOById, dockerInstallCmd));
+//                    List<String> dockerInstallExec = shellClient.exec(getShellInfo(manageDAOById, dockerInstallCmd));
+                    String dockerInstallExec = sshInitUtil.execute(dockerInstallCmd);
                     log.info("安装日志：" + dockerInstallExec);
                 }
                 //设置harbor白名单
                 deployStatusMap.put(request.getId(), "设置harbor白名单");
                 log.info("开始设置harbor白名单");
-                List<String> harborShellExec = shellClient.exec(this.getHarborShellInfo(manageDAOById.getMachineIp()));
+//                List<String> harborShellExec = shellClient.exec(this.getHarborShellInfo(manageDAOById.getMachineIp()));
+                String harborShellExec = sshInitUtil.execute(dockerInstallCmd);
                 log.info("设置harbor白名单日志：" + harborShellExec.toString());
                 //拉取镜像
                 deployStatusMap.put(request.getId(), "拉取镜像");

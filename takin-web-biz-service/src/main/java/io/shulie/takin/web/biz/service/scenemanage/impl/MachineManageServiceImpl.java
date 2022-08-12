@@ -52,9 +52,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String machinePasswordSaltPre;
     @Value("${yidongyun.user.machine.url: http://devops.testcloud.com/ms/testcloudplatform/api/service/user/host}")
     private String url;
-    @Value("${benchmark.server.ip: 192.168.1.220}")
+    @Value("${benchmark.server.ip:192.168.1.220}")
     private String benchmarkServerIp;
-    @Value("${benchmark.server.port: 80}")
+    @Value("${benchmark.server.port:80}")
     private String benchmarkServerPort;
     @Value("${benchmark.user.appKey: f524efbb720797aedc4d3339cbf9dda0}")
     private String benchmarkUserAppKey;

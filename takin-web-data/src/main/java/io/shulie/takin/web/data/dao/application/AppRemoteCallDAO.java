@@ -96,6 +96,12 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
     List<String> getRemoteCallMd5(AppRemoteCallQueryParam param);
 
     /**
+     * 查询数据 md5
+     * @return
+     */
+    List<AppRemoteCallEntity> getRemoteCallMd5_ext(AppRemoteCallQueryParam param);
+
+    /**
      * 查询数据
      *
      * @return

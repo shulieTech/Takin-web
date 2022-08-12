@@ -73,6 +73,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -586,14 +587,14 @@ public class ShiftCloudController {
             int s = 0;
             int c1 = 0;
             int c3 = 0;
-            int r = 0;
+            long r = 0;
             List l = new ArrayList();
             if (StringUtils.isNotBlank(responseJson)) {
                 PressureTask pressureTask = JSON.parseObject(responseJson, PressureTask.class);
                 if (null == pressureTask.getStopTime()) {
-                    r = LocalDateTime.now().compareTo(pressureTask.getStartTime());
+                    r = Duration.between(LocalDateTime.now(),pressureTask.getStartTime()).toMillis();
                 } else {
-                    r = pressureTask.getStopTime().compareTo(pressureTask.getStartTime());
+                    r = Duration.between(pressureTask.getStopTime(),pressureTask.getStartTime()).toMillis();
                 }
                 int percentage = pressureTask.getPercentage();
                 data.put("tool_task_id", BENCH + pressureTask.getSceneId());

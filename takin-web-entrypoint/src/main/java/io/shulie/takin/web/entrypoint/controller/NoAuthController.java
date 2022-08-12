@@ -43,26 +43,5 @@ public class NoAuthController {
         return ResponseResult.success("resume success");
     }
 
-    @Value("${page.report.takin}")
-    private String pageTakin;
-    @Value("${page.report.bench}")
-    private String pageBench;
 
-    @GetMapping("/parsepage")
-    public void parsePage(HttpServletRequest req, HttpServletResponse response) {
-        String baseURL = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath();
-
-        String id = req.getParameter("id");
-        try {
-            if(id.startsWith("web-")){
-                response.sendRedirect(pageTakin+"?bare=1&id="+id.replace("web-", ""));
-            }else if(id.startsWith("bench-")){
-                response.sendRedirect(pageBench+"?bare=1&reportId="+id.replace("bench-", ""));
-            }else {
-                return;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

@@ -320,7 +320,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             String deleteImageExec = sshInitUtil.execute(dockerRmi);
             log.info("删除镜像日志：" + deleteImageExec);
             Map<String, String> headerMap = getHeaderMap(httpRequest);
-            unInstallBenchmark(headerMap, manageDAOById.getMachineIp(), manageDAOById.getBenchmarkSuiteName());
+            this.unInstallBenchmark(headerMap, manageDAOById.getMachineIp(), manageDAOById.getBenchmarkSuiteName());
         }
         manageDAOById.setBenchmarkSuiteName("");
         manageDAOById.setDeployType("");
@@ -412,7 +412,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         //机器联通测试
         String checkMachineExec = sshInitUtil.execute("echo machine_test");
         if (checkMachineExec == null || !checkMachineExec.contains("machine_test")){
-            return "机器连通性测试未通过，请确认用户名和密码是否正确";
+            return "机器连通性验证未通过，请确认用户名和密码是否正确";
         }
 
         Map<String, String> headerMap = getHeaderMap(httpRequest);

@@ -55,8 +55,8 @@ public class PressureTestMachineController {
     @DeleteMapping()
     @ApiOperation("删除压力机")
     @AuthVerification(needAuth = ActionTypeEnum.DELETE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<String> delete(@RequestBody @Valid PressureMachineBaseRequest request) {
-        String failContent = machineManageService.delete(request);
+    public ResponseResult<String> delete(@RequestBody @Valid PressureMachineBaseRequest request, HttpServletRequest httpRequest) {
+        String failContent = machineManageService.delete(request,httpRequest);
         if (failContent != null) {
             return ResponseResult.fail("删除失败:" + failContent, null);
         }
@@ -96,8 +96,8 @@ public class PressureTestMachineController {
     @PostMapping("/disable")
     @ApiOperation("卸载压力机")
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<String> disable(@RequestBody @Valid PressureMachineBaseRequest request) {
-        String failContent = machineManageService.disable(request);
+    public ResponseResult<String> disable(@RequestBody @Valid PressureMachineBaseRequest request,HttpServletRequest httpRequest) {
+        String failContent = machineManageService.disable(request,httpRequest);
         if (failContent != null) {
             return ResponseResult.fail("卸载失败" + failContent, null);
         }

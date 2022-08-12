@@ -21,6 +21,7 @@ public class PressureMachineDTO {
     private Long id;
     @ApiModelProperty("主机IP")
     private String ip;
+    private String configIp;
     @ApiModelProperty("主机Mac")
     private String macAddr;
     @ApiModelProperty("CPU")

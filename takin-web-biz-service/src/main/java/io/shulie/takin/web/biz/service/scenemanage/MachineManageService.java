@@ -15,11 +15,11 @@ public interface MachineManageService {
 
     void update(PressureMachineUpdateRequest request);
 
-    String delete(PressureMachineBaseRequest request);
+    String delete(PressureMachineBaseRequest request, HttpServletRequest httpRequest);
 
     String enable(PressureMachineBaseRequest request);
 
-    String disable(PressureMachineBaseRequest request);
+    String disable(PressureMachineBaseRequest request,HttpServletRequest httpRequest);
 
     void syncMachine();
 

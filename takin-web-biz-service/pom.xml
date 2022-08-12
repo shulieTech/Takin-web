@@ -17,6 +17,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.53</version>
+        </dependency>
         <!--takin common 公共包-->
         <dependency>
             <groupId>io.shulie.takin</groupId>

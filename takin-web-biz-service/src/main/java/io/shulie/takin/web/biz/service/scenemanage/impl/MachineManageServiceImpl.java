@@ -191,7 +191,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             if (benchmarkCount > 0) {
                 List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(getHeaderMap(httpRequest));
                 if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
-                    Map<String, List<PressureMachineDTO>> stringListMap = pressureMachineDTOS.stream().collect(Collectors.groupingBy(PressureMachineDTO::getIp));
+                    Map<String, List<PressureMachineDTO>> stringListMap = pressureMachineDTOS.stream().collect(Collectors.groupingBy(PressureMachineDTO::getConfigIp));
                     pressureMachineResponses.forEach(pressureMachineResponse -> {
                         List<PressureMachineDTO> machineDTOS = stringListMap.get(pressureMachineResponse.getMachineIp());
                         if (CollectionUtils.isNotEmpty(machineDTOS)) {

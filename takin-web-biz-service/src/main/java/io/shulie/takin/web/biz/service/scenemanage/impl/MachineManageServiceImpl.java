@@ -586,6 +586,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                             }
                             o.setIp(ip);
                         }
+                        if (o.getConfigIp() == null){
+                            o.setConfigIp(o.getIp());
+                        }
                     });
                 }
                 return pressureMachineDTOS;

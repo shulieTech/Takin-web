@@ -52,10 +52,15 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String machinePasswordSaltPre;
     @Value("${yidongyun.user.machine.url: http://devops.testcloud.com/ms/testcloudplatform/api/service/user/host}")
     private String url;
-    @Value("${benchmark.machine.list.url: http://192.168.1.220/api/machine/list?type=1}")
+    @Value("${benchmark.server.ip: 192.168.1.220}")
+    private String benchmarkServerIp;
+    @Value("${benchmark.server.port: 80}")
+    private String benchmarkServerPort;
+    @Value("${benchmark.user.appKey: f524efbb720797aedc4d3339cbf9dda0}")
+    private String benchmarkUserAppKey;
     private String benchmarkMachineUrl;
-    @Value("${benchmark.suite.list.url: http://192.168.1.220/api/benchmarksuite/getOrders}")
     private String benchmarkSuiteListUrl;
+
     @Value("${docker.cmd.download: cd /data && wget https://install-pkg.oss-cn-hangzhou.aliyuncs.com/alone-pkg/docker-compose_install.zip && unzip docker-compose_install.zip -x __MACOSX/* && mv docker-compose_install/* ./ }")
     private String dockerDownloadCmd;
     @Value("${docker.cmd.install: cd /data && sh docker-compose_install.sh}")
@@ -64,6 +69,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String dockerPullCmd;
     @Value("${docker.cmd.run: docker run -itd --net=host --name BENCHMARK_SUITE_NAME 192.168.10.11/library/BENCHMARK_SUITE_NAME:latest}")
     private String dockerRunCmd;
+    @Value("${docker.cmd.replaceAndRun: cd /data && wget https://install-pkg.oss-cn-hangzhou.aliyuncs.com/alone-pkg/docker-compose_install.zip && unzip pressure-engine.zip}")
+    private String dockerReplaceAndRunCmd;
+
 
     @Value("${harbor.machine.ip: 192.168.10.11}")
     private String harborMachineIp;
@@ -89,6 +97,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         //这样需要同时拿到数据库，代码，配置文件密码才会泄露
         des = new SymmetricCrypto(SymmetricAlgorithm.DES, (machinePasswordSaltPre + "fankfneioqn").getBytes());
 
+        benchmarkMachineUrl = "http://" + benchmarkServerIp + ":" + benchmarkServerPort + "/api/machine/list?type=1";
+        benchmarkSuiteListUrl = "http://" + benchmarkServerIp + ":" + benchmarkServerPort + "/api/benchmarksuite/getOrders";
+
         //初始化进度列表
         deployProgressList.add("检查docker环境");
         deployProgressList.add("拉docker环境安装包");
@@ -96,6 +107,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         deployProgressList.add("设置harbor白名单");
         deployProgressList.add("拉取镜像");
         deployProgressList.add("启动容器");
+        deployProgressList.add("启动服务");
         deployProgressList.add("启动成功");
     }
 
@@ -167,7 +179,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         if (CollectionUtils.isNotEmpty(nodeMetrics)) {
                             NodeMetricsResp nodeMetricsResp = nodeMetrics.get(0);
                             pressureMachineResponse.setCpu(nodeMetricsResp.getCpu() == null ? "" : nodeMetricsResp.getCpu().toString());
-                            pressureMachineResponse.setMemory(nodeMetricsResp.getMemory() == null ? "" : nodeMetricsResp.getMemory().divide(new BigDecimal(1024 * 1024),2, RoundingMode.HALF_UP) + "G");
+                            pressureMachineResponse.setMemory(nodeMetricsResp.getMemory() == null ? "" : nodeMetricsResp.getMemory().divide(new BigDecimal(1024 * 1024), 2, RoundingMode.HALF_UP) + "G");
                             pressureMachineResponse.setEngineStatus(nodeMetricsResp.getStatus());
                         }
                     });
@@ -419,9 +431,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 }
                 //检测harbor配置
                 String checkHarborExec = sshInitUtil.execute("cat /etc/docker/daemon.json");
-                if (checkHarborExec == null || !checkHarborExec.contains(harborMachineIp)){
+                if (checkHarborExec == null || !checkHarborExec.contains(harborMachineIp)) {
                     log.info("开始修改目标机器的harbor配置");
-                    String harborConf = "sed -i 's/\"quay.io\"/\"quay.io\",\""+harborMachineIp+"\"/' /etc/docker/daemon.json";
+                    String harborConf = "sed -i 's/\"quay.io\"/\"quay.io\",\"" + harborMachineIp + "\"/' /etc/docker/daemon.json";
                     String harborConfExec = sshInitUtil.execute(harborConf + " && systemctl daemon-reload && systemctl restart docker");
                     log.info("harbor配置修改日志：" + harborConfExec);
                 }
@@ -448,6 +460,21 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 String dockerRunExec = sshInitUtil.execute(dockerRun);
                 log.info("启动容器日志：" + dockerRunExec);
 
+                //替换配置文件
+                String dockerReplaceAndRun = dockerReplaceAndRunCmd + " && sed -i 's/LOCAL_PASSWORD/" + des.decryptStr(manageDAOById.getPassword()) + "/' ./pressure-engine/config/application-engine.yml && " +
+                        "sed -i 's/TAKIN_LITE_IP/" + benchmarkServerIp + "/' ./pressure-engine/config/application-engine.yml && " +
+                        "sed -i 's/TAKIN_LITE_PORT/" + benchmarkServerPort + "/' ./pressure-engine/config/application-engine.yml && " +
+                        "sed -i 's/LOCALHOST_IP/" + manageDAOById.getMachineIp() + "/' ./pressure-engine/config/application-engine.yml && " +
+                        "sed -i 's/USER_APPKEY/" + benchmarkUserAppKey + "/' ./pressure-engine/config/application-engine.yml && " +
+                        "sed -i 's/SUITE_NAME/" + manageDAOById.getBenchmarkSuiteName() + "/' ./pressure-engine/config/application-engine.yml ";
+                //替换并启动
+                dockerReplaceAndRun = dockerReplaceAndRun + " && rm -f pressure-engine.zip && zip -r pressure-engine.zip ./pressure-engine && " +
+                        "docker cp pressure-engine.zip " + manageDAOById.getBenchmarkSuiteName() + ":/data/pressure-engine.zip && rm -f pressure-engine.zip && rm -rf ./pressure-engine " +
+                        "&& docker exec " + manageDAOById.getBenchmarkSuiteName() + " /bin/bash -c 'cd /data && mv pressure-engine pressure-engine_bak " +
+                        "&& unzip pressure-engine.zip && cd pressure-engine && sh start.sh'";
+                deployStatusMap.put(request.getId(), "启动服务");
+                String replaceAndRunExec = sshInitUtil.execute(dockerReplaceAndRun);
+                log.info("替换配置并启动服务日志：" + replaceAndRunExec);
                 //监听启动成功
                 long startTimeMillis = System.currentTimeMillis();
                 while (true) {

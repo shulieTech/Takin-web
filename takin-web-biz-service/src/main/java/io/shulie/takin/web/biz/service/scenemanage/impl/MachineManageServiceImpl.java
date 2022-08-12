@@ -60,6 +60,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String benchmarkUserAppKey;
     private String benchmarkMachineUrl;
     private String benchmarkSuiteListUrl;
+    private String benchmarkUnInstallUrl;
 
     @Value("${docker.cmd.download: cd /data && wget https://install-pkg.oss-cn-hangzhou.aliyuncs.com/alone-pkg/docker-compose_install.zip && unzip docker-compose_install.zip -x __MACOSX/* && mv docker-compose_install/* ./ }")
     private String dockerDownloadCmd;
@@ -69,7 +70,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String dockerPullCmd;
     @Value("${docker.cmd.run: docker run -itd --net=host --name BENCHMARK_SUITE_NAME 192.168.10.11/library/BENCHMARK_SUITE_NAME:latest}")
     private String dockerRunCmd;
-    @Value("${docker.cmd.replaceAndRun: cd /data && wget https://install-pkg.oss-cn-hangzhou.aliyuncs.com/alone-pkg/docker-compose_install.zip && unzip pressure-engine.zip}")
+    @Value("${docker.cmd.replaceAndRun: cd /data && wget https://shulie-daily.oss-cn-hangzhou.aliyuncs.com/yidongyun/pressure-engine.zip && unzip pressure-engine.zip}")
     private String dockerReplaceAndRunCmd;
 
 
@@ -99,6 +100,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
         benchmarkMachineUrl = "http://" + benchmarkServerIp + ":" + benchmarkServerPort + "/api/machine/list?type=1";
         benchmarkSuiteListUrl = "http://" + benchmarkServerIp + ":" + benchmarkServerPort + "/api/benchmarksuite/getOrders";
+        benchmarkUnInstallUrl = "http://" + benchmarkServerIp + ":" + benchmarkServerPort + "/api/engine/unInstall";
 
         //初始化进度列表
         deployProgressList.add("检查docker环境");
@@ -237,7 +239,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public String delete(PressureMachineBaseRequest request) {
+    public String delete(PressureMachineBaseRequest request, HttpServletRequest httpRequest) {
         MachineManageEntity manageDAOById = machineManageDAO.getById(request.getId());
         if (manageDAOById == null) {
             return "删除的数据已经不存在，请刷新页面再试";
@@ -251,7 +253,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             //卸载已部署的节点
             PressureMachineBaseRequest disableRequest = new PressureMachineBaseRequest();
             disableRequest.setId(request.getId());
-            this.disable(disableRequest);
+            this.disable(disableRequest, httpRequest);
         }
         machineManageDAO.removeById(request.getId());
         return null;
@@ -292,7 +294,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public String disable(PressureMachineBaseRequest request) {
+    public String disable(PressureMachineBaseRequest request, HttpServletRequest httpRequest) {
         MachineManageEntity manageDAOById = machineManageDAO.getById(request.getId());
         if (manageDAOById == null) {
             return "没有找到对应机器数据，请刷新页面再试";
@@ -317,6 +319,8 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             String dockerRmi = dockerPullCmd.replace("docker pull", "docker rmi -f").replace("BENCHMARK_SUITE_NAME", manageDAOById.getBenchmarkSuiteName());
             String deleteImageExec = sshInitUtil.execute(dockerRmi);
             log.info("删除镜像日志：" + deleteImageExec);
+            Map<String, String> headerMap = getHeaderMap(httpRequest);
+            unInstallBenchmark(headerMap, manageDAOById.getMachineIp(), manageDAOById.getBenchmarkSuiteName());
         }
         manageDAOById.setBenchmarkSuiteName("");
         manageDAOById.setDeployType("");
@@ -417,6 +421,12 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             try {
                 SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
                         manageDAOById.getUserName());
+//                //机器联通测试
+//                String checkMachineExec = sshInitUtil.execute("echo machine_test");
+//                if (checkMachineExec == null || !checkMachineExec.contains("machine_test")){
+//
+//                }
+
                 //docker环境安装
                 String checkDockerExec = sshInitUtil.execute("docker -v");
                 if (checkDockerExec == null || !checkDockerExec.contains("version")) {
@@ -486,8 +496,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         Thread.sleep(3000);
                         List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(headerMap);
                         if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
-                            List<String> stringList = pressureMachineDTOS.stream().map(PressureMachineDTO::getIp).collect(Collectors.toList());
-                            if (stringList.contains(manageDAOById.getMachineIp())) {
+                            long count = pressureMachineDTOS.stream().filter(o -> manageDAOById.getMachineIp().equals(o.getConfigIp())
+                                    && manageDAOById.getBenchmarkSuiteName().trim().equals(o.getTypeMachine().trim())).count();
+                            if (count > 0) {
                                 deployStatusMap.put(request.getId(), "启动成功");
                                 log.info("启动成功，结束监听");
                                 break;
@@ -548,6 +559,11 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         headerMap.put("envCode", Objects.requireNonNull(httpRequest.getHeader("env-code")));
         headerMap.put("tenantCode", Objects.requireNonNull(httpRequest.getHeader("tenant-code")));
         return headerMap;
+    }
+
+    private void unInstallBenchmark(Map<String, String> headerMap, String ip, String suiteName) {
+        HttpClientUtil.sendGet(benchmarkUnInstallUrl + "?configIp=" + ip + "&typeMachine="
+                + suiteName + "&userAppKey=" + benchmarkUserAppKey, headerMap);
     }
 
     private List<PressureMachineDTO> getPressureMachineDTOList(Map<String, String> headerMap) {

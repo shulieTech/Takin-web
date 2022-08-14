@@ -191,7 +191,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             if (benchmarkCount > 0) {
                 List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(getHeaderMap(httpRequest));
                 if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
-                    Map<String, List<PressureMachineDTO>> stringListMap = pressureMachineDTOS.stream().collect(Collectors.groupingBy(PressureMachineDTO::getIp));
+                    Map<String, List<PressureMachineDTO>> stringListMap = pressureMachineDTOS.stream().collect(Collectors.groupingBy(PressureMachineDTO::getConfigIp));
                     pressureMachineResponses.forEach(pressureMachineResponse -> {
                         List<PressureMachineDTO> machineDTOS = stringListMap.get(pressureMachineResponse.getMachineIp());
                         if (CollectionUtils.isNotEmpty(machineDTOS)) {
@@ -320,7 +320,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             String deleteImageExec = sshInitUtil.execute(dockerRmi);
             log.info("删除镜像日志：" + deleteImageExec);
             Map<String, String> headerMap = getHeaderMap(httpRequest);
-            unInstallBenchmark(headerMap, manageDAOById.getMachineIp(), manageDAOById.getBenchmarkSuiteName());
+            this.unInstallBenchmark(headerMap, manageDAOById.getMachineIp(), manageDAOById.getBenchmarkSuiteName());
         }
         manageDAOById.setBenchmarkSuiteName("");
         manageDAOById.setDeployType("");
@@ -407,6 +407,14 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         if (manageDAOById.getPassword() == null) {
             return "当前机器没有密码，请先补充密码";
         }
+        SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
+                manageDAOById.getUserName());
+        //机器联通测试
+        String checkMachineExec = sshInitUtil.execute("echo machine_test");
+        if (checkMachineExec == null || !checkMachineExec.contains("machine_test")){
+            return "机器连通性验证未通过，请确认用户名和密码是否正确";
+        }
+
         Map<String, String> headerMap = getHeaderMap(httpRequest);
         //首先更新状态为进行中
         manageDAOById.setBenchmarkSuiteName(request.getBenchmarkSuiteName());
@@ -419,14 +427,6 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         deployStatusMap.put(request.getId(), "检查docker环境");
         THREAD_POOL.execute(() -> {
             try {
-                SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
-                        manageDAOById.getUserName());
-//                //机器联通测试
-//                String checkMachineExec = sshInitUtil.execute("echo machine_test");
-//                if (checkMachineExec == null || !checkMachineExec.contains("machine_test")){
-//
-//                }
-
                 //docker环境安装
                 String checkDockerExec = sshInitUtil.execute("docker -v");
                 if (checkDockerExec == null || !checkDockerExec.contains("version")) {
@@ -585,6 +585,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                                 ip = ip.substring(0, ip.length() - 1);
                             }
                             o.setIp(ip);
+                        }
+                        if (o.getConfigIp() == null){
+                            o.setConfigIp(o.getIp());
                         }
                     });
                 }

@@ -557,20 +557,21 @@ public class ShiftCloudController {
                                         failCount = (int) (t * (100 - value.intValue()) / 100);
                                     }
                                 }
+                                                        if (businessActivity.get(i).getPassFlag() == 0) {
                                 StringBuilder sb = new StringBuilder("业务活动不达标:");
                                 BusinessActivitySummaryBean b = businessActivity.get(i);
                                 DataBean tps = b.getTps();
-                                if (Float.parseFloat(tps.getResult().toString())<Float.parseFloat(tps.getValue().toString()))sb.append("平均TPS ");
+                                if (null != tps.getResult() && Float.parseFloat(tps.getResult().toString())<Float.parseFloat(tps.getValue().toString()))sb.append("平均TPS ");
                                 DataBean avgRT = b.getAvgRT();
-                                if (Float.parseFloat(avgRT.getResult().toString())>Float.parseFloat(avgRT.getValue().toString()))sb.append("平均RT ");
+                                if (null != avgRT.getResult() && Float.parseFloat(avgRT.getResult().toString())>Float.parseFloat(avgRT.getValue().toString()))sb.append("平均RT ");
                                 DataBean rate = b.getSuccessRate();
-                                if (Float.parseFloat(rate.getResult().toString())<Float.parseFloat(rate.getValue().toString()))sb.append("成功率 ");
+                                if (null != rate.getResult() && Float.parseFloat(rate.getResult().toString())<Float.parseFloat(rate.getValue().toString()))sb.append("成功率 ");
                                 DataBean sa = b.getSa();
-                                if (Float.parseFloat(sa.getResult().toString())<Float.parseFloat(sa.getValue().toString()))sb.append("SA ");
+                                if (null != sa.getResult() && Float.parseFloat(sa.getResult().toString())<Float.parseFloat(sa.getValue().toString()))sb.append("SA ");
                                 failedCaseInfo.put("reason", sb.toString());
                                 failedCaseInfo.put("failCount", failCount);
                                 list.add(failedCaseInfo);
-//                            }
+                            }
                         }
                     }
                     analysis.put("failedCaseInfo", list);

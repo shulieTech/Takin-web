@@ -592,9 +592,9 @@ public class ShiftCloudController {
             if (StringUtils.isNotBlank(responseJson)) {
                 PressureTask pressureTask = JSON.parseObject(responseJson, PressureTask.class);
                 if (null == pressureTask.getStopTime()) {
-                    r = Duration.between(LocalDateTime.now(),pressureTask.getStartTime()).toMillis()/1000;
+                    r = Duration.between(pressureTask.getStartTime(),LocalDateTime.now()).toMillis()/1000;
                 } else {
-                    r = Duration.between(pressureTask.getStopTime(),pressureTask.getStartTime()).toMillis()/1000;
+                    r = Duration.between(pressureTask.getStartTime(),pressureTask.getStopTime()).toMillis()/1000;
                 }
                 int percentage = pressureTask.getPercentage();
                 data.put("tool_task_id", BENCH + pressureTask.getSceneId());

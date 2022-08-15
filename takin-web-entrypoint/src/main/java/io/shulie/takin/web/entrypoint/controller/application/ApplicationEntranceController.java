@@ -63,46 +63,47 @@ public class ApplicationEntranceController {
     public List<WebOptionEntity> getEntranceTypes() {
         EntranceTypeEnum[] values = EntranceTypeEnum.values();
         return Stream.of(values)
-            .map(item -> {
-                WebOptionEntity webOptionEntity = new WebOptionEntity();
-                webOptionEntity.setLabel(item.name());
-                webOptionEntity.setValue(item.name());
-                return webOptionEntity;
-            }).collect(Collectors.toList());
+                .map(item -> {
+                    WebOptionEntity webOptionEntity = new WebOptionEntity();
+                    webOptionEntity.setLabel(item.name());
+                    webOptionEntity.setValue(item.name());
+                    return webOptionEntity;
+                }).collect(Collectors.toList());
     }
 
     @GetMapping()
     @ApiOperation("获得入口服务列表")
     public List<ApplicationEntrancesResponse> getApplicationEntrances(@Validated
-        ApplicationEntrancesQueryRequest request) {
+                                                                              ApplicationEntrancesQueryRequest request) {
         List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-            request.getApplicationName(), request.getType().getType(),request.getServiceName(),  1, 500);
+                request.getApplicationName(), request.getType().getType(), request.getServiceName(), 1, 500);
         if (CollectionUtils.isEmpty(applicationEntrances)) {
             return Lists.newArrayList();
         }
         return applicationEntrances.stream()
-            .filter(item -> !item.getServiceName().startsWith("PT_"))
-            .map(item -> {
-                ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
-                applicationEntrancesResponse.setMethod(item.getMethodName());
-                applicationEntrancesResponse.setRpcType(item.getRpcType());
-                applicationEntrancesResponse.setExtend(item.getExtend());
-                applicationEntrancesResponse.setServiceName(item.getServiceName());
-                applicationEntrancesResponse.setLabel(
-                    ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
-                applicationEntrancesResponse.setValue(
-                    ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
-                        item.getAppName(), item.getRpcType(), item.getExtend()));
-                return applicationEntrancesResponse;
-                // 增加去重
-            }).distinct().collect(Collectors.toList());
+                .filter(item -> !item.getServiceName().startsWith("PT_"))
+                .map(item -> {
+                    ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
+                    applicationEntrancesResponse.setMethod(item.getMethodName());
+                    applicationEntrancesResponse.setRpcType(item.getRpcType());
+                    applicationEntrancesResponse.setExtend(item.getExtend());
+                    applicationEntrancesResponse.setServiceName(item.getServiceName());
+                    applicationEntrancesResponse.setLabel(
+                            ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
+                    applicationEntrancesResponse.setValue(
+                            ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
+                                    item.getAppName(), item.getRpcType(), item.getExtend()));
+                    return applicationEntrancesResponse;
+                    // 增加去重
+                }).distinct().collect(Collectors.toList());
     }
 
     @GetMapping("/bySamplerType")
     @ApiOperation("获得入口服务列表")
     public List<ApplicationEntrancesResponse> getApplicationEntrances(@Validated ApplicationEntrancesSampleTypeQueryRequest request) {
         List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-                request.getApplicationName(), EntranceTypeEnum.getEnumByType(request.getSamplerType().getType()).getType(), null,0, 500);
+                request.getApplicationName(), EntranceTypeEnum.getEnumByType(request.getSamplerType().getType()).getType(),
+                null, 0, 1000);
         if (CollectionUtils.isEmpty(applicationEntrances)) {
             return Lists.newArrayList();
         }
@@ -117,7 +118,7 @@ public class ApplicationEntranceController {
                     applicationEntrancesResponse.setLabel(item.getMethodName() + "|" + item.getServiceName());
                     // 只有这个地方用到
                     applicationEntrancesResponse.setValue(
-                            ActivityUtil.buildEntrance(item.getMethodName(),item.getServiceName(),item.getRpcType()));
+                            ActivityUtil.buildEntrance(item.getMethodName(), item.getServiceName(), item.getRpcType()));
                     return applicationEntrancesResponse;
                     // 增加去重
                 }).distinct().collect(Collectors.toList());
@@ -133,7 +134,7 @@ public class ApplicationEntranceController {
     @ApiOperation("获得入口服务拓扑图")
     @GetMapping("topology")
     public ApplicationEntranceTopologyResponse getApplicationEntrancesTopology(@Validated
-        ApplicationEntranceTopologyQueryRequest request) {
+                                                                                       ApplicationEntranceTopologyQueryRequest request) {
         if (StringUtils.isEmpty(request.getApplicationName())) {
             throw new TakinWebException(ExceptionCode.APP_LINK_TOPOLOGY_ERROR, "没有应用名");
         }
@@ -144,19 +145,19 @@ public class ApplicationEntranceController {
     @ApiOperation("标记未知节点")
     public Boolean updateUnknownNodeToOuter(@Validated @RequestBody ApplicationEntranceTopologyQueryRequest request) {
         return applicationEntranceClient.updateUnknownNodeToOuter(request.getApplicationName(), request.getLinkId(),
-            request.getServiceName(), request.getMethod(),
-            request.getRpcType(), request.getExtend(), request.getNodeId());
+                request.getServiceName(), request.getMethod(),
+                request.getRpcType(), request.getExtend(), request.getNodeId());
     }
 
     @GetMapping("/all")
     @ApiOperation("获取应用下所有入口服务列表")
     public List<ApplicationEntrancesResponse> getApplicationAllEntrances(String appName) {
-        if(StringUtils.isBlank(appName)){
+        if (StringUtils.isBlank(appName)) {
             log.error("应用名称不能为空");
             return Collections.emptyList();
         }
         List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-                appName, "",null, 0, 500);
+                appName, "", null, 0, 500);
         if (CollectionUtils.isEmpty(applicationEntrances)) {
             return Lists.newArrayList();
         }
@@ -185,7 +186,7 @@ public class ApplicationEntranceController {
     @GetMapping("/allByActivity")
     @ApiOperation("获取应用下创建业务活动所有入口服务列表")
     public List<ApplicationEntrancesResponse> getApplicationAllEntrancesByActivity(String appName) {
-        if(StringUtils.isBlank(appName)){
+        if (StringUtils.isBlank(appName)) {
             log.error("应用名称不能为空");
             return Collections.emptyList();
         }
@@ -195,16 +196,16 @@ public class ApplicationEntranceController {
         }
         return activities.stream()
                 .filter(item -> {
-                        String entrace = item.getEntrace();
-                        String[] entraceArray = entrace.split("\\|");
-                        return 4  == entraceArray.length;
+                    String entrace = item.getEntrace();
+                    String[] entraceArray = entrace.split("\\|");
+                    return 4 == entraceArray.length;
                 }).map(item -> {
                     String entrace = item.getEntrace();
                     String[] entraceArray = entrace.split("\\|");
                     ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
                     HashMap nameAndId = new HashMap();
-                    nameAndId.put("linkId",item.getLinkId());
-                    nameAndId.put("linkName",item.getLinkName());
+                    nameAndId.put("linkId", item.getLinkId());
+                    nameAndId.put("linkName", item.getLinkName());
                     applicationEntrancesResponse.setActivityNameAndId(nameAndId);
                     applicationEntrancesResponse.setLabel(
                             ActivityUtil.serviceNameLabel(entraceArray[2], entraceArray[1]));

@@ -29,3 +29,4 @@ application-local.*
 
 .DS_Store
 public/
+/takin-web-ext/takin-web-ext-jmeter/dependency-reduced-pom.xml

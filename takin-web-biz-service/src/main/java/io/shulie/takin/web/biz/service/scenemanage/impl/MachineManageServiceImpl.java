@@ -278,6 +278,13 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         if (manageDAOById.getPassword() == null) {
             return "当前机器没有密码，请先补充密码";
         }
+        SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
+                manageDAOById.getUserName());
+        //机器联通测试
+        String checkMachineExec = sshInitUtil.execute("echo machine_test");
+        if (checkMachineExec == null || !checkMachineExec.contains("machine_test")){
+            return "机器连通性验证未通过，请确认用户名和密码是否正确";
+        }
         MachineAddReq machineAddReq = new MachineAddReq();
         machineAddReq.setNodeIp(manageDAOById.getMachineIp());
         machineAddReq.setPassword(des.decryptStr(manageDAOById.getPassword()));

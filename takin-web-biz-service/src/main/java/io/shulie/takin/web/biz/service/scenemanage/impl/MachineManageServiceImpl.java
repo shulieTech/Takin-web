@@ -306,6 +306,13 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         if (manageDAOById == null) {
             return "没有找到对应机器数据，请刷新页面再试";
         }
+        SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
+                manageDAOById.getUserName());
+        //机器联通测试
+        String checkMachineExec = sshInitUtil.execute("echo machine_test");
+        if (checkMachineExec == null || !checkMachineExec.contains("machine_test")){
+            return "机器连通性验证未通过，请确认用户名和密码是否正确";
+        }
         if (MachineManageConstants.TYPE_TAKIN.equals(manageDAOById.getDeployType())) {
             //卸载已部署的节点
             MachineBaseReq baseReq = new MachineBaseReq();
@@ -314,8 +321,6 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             cloudMachineApi.delete(baseReq);
         }
         if (MachineManageConstants.TYPE_BENCHMARK.equals(manageDAOById.getDeployType())) {
-            SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
-                    manageDAOById.getUserName());
             //停止容器服务
             String stopExec = sshInitUtil.execute("docker stop " + manageDAOById.getBenchmarkSuiteName());
             log.info("停止容器日志：" + stopExec);

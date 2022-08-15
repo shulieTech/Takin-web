@@ -72,7 +72,10 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String dockerRunCmd;
     @Value("${docker.cmd.replaceAndRun: cd /data && wget https://shulie-daily.oss-cn-hangzhou.aliyuncs.com/yidongyun/pressure-engine.zip && unzip pressure-engine.zip}")
     private String dockerReplaceAndRunCmd;
-
+    @Value("${benchmark.install.use.sudo: sudo su}")
+    private String benchmarkInstallUseSudo;
+    @Value("${harbor.install.use.sudo: sudo su}")
+    private String harborInstallUseSudo;
 
     @Value("${harbor.machine.ip: 192.168.10.11}")
     private String harborMachineIp;
@@ -281,7 +284,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
                 manageDAOById.getUserName());
         //机器联通测试
-        String checkMachineExec = sshInitUtil.execute("echo machine_test");
+        String checkMachineExec = sshInitUtil.execute(setBenchmarkExecPre() + "echo machine_test");
         if (checkMachineExec == null || !checkMachineExec.contains("machine_test")){
             return "机器连通性验证未通过，请确认用户名和密码是否正确";
         }
@@ -317,14 +320,14 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
                     manageDAOById.getUserName());
             //停止容器服务
-            String stopExec = sshInitUtil.execute("sudo su && docker stop " + manageDAOById.getBenchmarkSuiteName());
+            String stopExec = sshInitUtil.execute(setBenchmarkExecPre() + "docker stop " + manageDAOById.getBenchmarkSuiteName());
             log.info("停止容器日志：" + stopExec);
             //删除容器
-            String deleteExec = sshInitUtil.execute("sudo su && docker rm -f " + manageDAOById.getBenchmarkSuiteName());
+            String deleteExec = sshInitUtil.execute(setBenchmarkExecPre() + "docker rm -f " + manageDAOById.getBenchmarkSuiteName());
             log.info("删除容器日志：" + deleteExec);
             //删除镜像
             String dockerRmi = dockerPullCmd.replace("docker pull", "docker rmi -f").replace("BENCHMARK_SUITE_NAME", manageDAOById.getBenchmarkSuiteName());
-            String deleteImageExec = sshInitUtil.execute(dockerRmi);
+            String deleteImageExec = sshInitUtil.execute(setBenchmarkExecPre() + dockerRmi);
             log.info("删除镜像日志：" + deleteImageExec);
             Map<String, String> headerMap = getHeaderMap(httpRequest);
             this.unInstallBenchmark(headerMap, manageDAOById.getMachineIp(), manageDAOById.getBenchmarkSuiteName());
@@ -417,7 +420,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
                 manageDAOById.getUserName());
         //机器联通测试
-        String checkMachineExec = sshInitUtil.execute("echo machine_test");
+        String checkMachineExec = sshInitUtil.execute(setBenchmarkExecPre() + "echo machine_test");
         if (checkMachineExec == null || !checkMachineExec.contains("machine_test")){
             return "机器连通性验证未通过，请确认用户名和密码是否正确";
         }
@@ -435,23 +438,23 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         THREAD_POOL.execute(() -> {
             try {
                 //docker环境安装
-                String checkDockerExec = sshInitUtil.execute("sudo su && docker -v");
+                String checkDockerExec = sshInitUtil.execute(setBenchmarkExecPre() + "docker -v");
                 if (checkDockerExec == null || !checkDockerExec.contains("version")) {
                     log.info("当前服务不存在docker环境,开始拉取docker环境安装包:" + checkDockerExec);
                     deployStatusMap.put(request.getId(), "拉docker环境安装包");
-                    String dockerPullExec = sshInitUtil.execute(dockerDownloadCmd);
+                    String dockerPullExec = sshInitUtil.execute(setBenchmarkExecPre() + dockerDownloadCmd);
                     log.info("拉docker环境安装包日志：" + dockerPullExec);
                     log.info("安装docker环境");
                     deployStatusMap.put(request.getId(), "安装docker环境");
-                    String dockerInstallExec = sshInitUtil.execute(dockerInstallCmd);
+                    String dockerInstallExec = sshInitUtil.execute(setBenchmarkExecPre() + dockerInstallCmd);
                     log.info("安装日志：" + dockerInstallExec);
                 }
                 //检测harbor配置
-                String checkHarborExec = sshInitUtil.execute("sudo su && cat /etc/docker/daemon.json");
+                String checkHarborExec = sshInitUtil.execute(setBenchmarkExecPre() + "cat /etc/docker/daemon.json");
                 if (checkHarborExec == null || !checkHarborExec.contains(harborMachineIp)) {
                     log.info("开始修改目标机器的harbor配置");
-                    String harborConf = "sudo su && sed -i 's/\"quay.io\"/\"quay.io\",\"" + harborMachineIp + "\"/' /etc/docker/daemon.json";
-                    String harborConfExec = sshInitUtil.execute(harborConf + " && systemctl daemon-reload && systemctl restart docker");
+                    String harborConf = "sed -i 's/\"quay.io\"/\"quay.io\",\"" + harborMachineIp + "\"/' /etc/docker/daemon.json";
+                    String harborConfExec = sshInitUtil.execute(setBenchmarkExecPre() + harborConf + " && systemctl daemon-reload && systemctl restart docker");
                     log.info("harbor配置修改日志：" + harborConfExec);
                 }
 
@@ -459,22 +462,22 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 deployStatusMap.put(request.getId(), "设置harbor白名单");
                 log.info("开始设置harbor白名单");
                 SshInitUtil harborShellUtil = this.getHarborShellInfo();
-                String iptablesAccept = "sudo su && iptables -I INPUT -s " + manageDAOById.getMachineIp() + " -p TCP --dport 80 -j ACCEPT";
-                String harborShellExec = harborShellUtil.execute(iptablesAccept);
+                String iptablesAccept = "iptables -I INPUT -s " + manageDAOById.getMachineIp() + " -p TCP --dport 80 -j ACCEPT";
+                String harborShellExec = harborShellUtil.execute(setHarborExecPre() + iptablesAccept);
                 log.info("设置harbor白名单日志：" + harborShellExec);
 
                 //拉取镜像
                 deployStatusMap.put(request.getId(), "拉取镜像");
                 String dockerPull = dockerPullCmd.replace("BENCHMARK_SUITE_NAME", request.getBenchmarkSuiteName());
                 log.info("开始拉取镜像，镜像命令为:{}", dockerPull);
-                String dockerPullExec = sshInitUtil.execute(dockerPull);
+                String dockerPullExec = sshInitUtil.execute(setBenchmarkExecPre() + dockerPull);
                 log.info("拉取镜像日志：" + dockerPullExec);
 
                 //启动容器
                 deployStatusMap.put(request.getId(), "启动容器");
                 String dockerRun = dockerRunCmd.replaceAll("BENCHMARK_SUITE_NAME", request.getBenchmarkSuiteName());
                 log.info("开始执行docker命令，运行命令为:{}", dockerRun);
-                String dockerRunExec = sshInitUtil.execute(dockerRun);
+                String dockerRunExec = sshInitUtil.execute(setBenchmarkExecPre() + dockerRun);
                 log.info("启动容器日志：" + dockerRunExec);
 
                 //替换配置文件
@@ -490,7 +493,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         "&& docker exec " + manageDAOById.getBenchmarkSuiteName() + " /bin/bash -c 'cd /data && mv pressure-engine pressure-engine_bak " +
                         "&& unzip pressure-engine.zip && cd pressure-engine && sh start.sh'";
                 deployStatusMap.put(request.getId(), "启动服务");
-                String replaceAndRunExec = sshInitUtil.execute(dockerReplaceAndRun);
+                String replaceAndRunExec = sshInitUtil.execute(setBenchmarkExecPre() + dockerReplaceAndRun);
                 log.info("替换配置并启动服务日志：" + replaceAndRunExec);
                 //监听启动成功
                 long startTimeMillis = System.currentTimeMillis();
@@ -604,6 +607,13 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             log.error("解析benchmarkMachineUrl返回结果出现异常,返回值为:{}", sendGet, e);
         }
         return null;
+    }
+
+    private String setBenchmarkExecPre(){
+        return benchmarkInstallUseSudo.contains("sudo") ? benchmarkInstallUseSudo + " && " : "";
+    }
+    private String setHarborExecPre(){
+        return harborInstallUseSudo.contains("sudo") ? benchmarkInstallUseSudo + " && " : "";
     }
 
 }

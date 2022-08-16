@@ -50,8 +50,8 @@ public class AppRemoteApiFilterJob implements SimpleJob {
     @Resource
     private ApplicationApiService apiService;
     @Resource
-    @Qualifier("jobThreadPool")
-    private ThreadPoolExecutor jobThreadPool;
+    @Qualifier("appRemoteApiFilterThreadPool")
+    private ThreadPoolExecutor appRemoteApiFilterThreadPool;
     @Resource
     private DistributedLock distributedLock;
 
@@ -64,7 +64,7 @@ public class AppRemoteApiFilterJob implements SimpleJob {
         } else {
             List<TenantInfoExt> tenantInfoExtList = WebPluginUtils.getTenantInfoList();
             for (TenantInfoExt ext : tenantInfoExtList) {
-                if(CollectionUtils.isEmpty(ext.getEnvs())) {
+                if (CollectionUtils.isEmpty(ext.getEnvs())) {
                     continue;
                 }
                 // 根据环境 分线程
@@ -74,15 +74,15 @@ public class AppRemoteApiFilterJob implements SimpleJob {
                     if (distributedLock.checkLock(lockKey)) {
                         continue;
                     }
-                    jobThreadPool.execute(() -> {
-                        boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+                    appRemoteApiFilterThreadPool.execute(() -> {
+                        boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
                         if (!tryLock) {
                             return;
                         }
                         try {
                             WebPluginUtils.setTraceTenantContext(
-                                new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                                    ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                                    new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                            ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
                             this.appRemoteApiFilter();
                             WebPluginUtils.removeTraceContext();
                         } finally {
@@ -121,7 +121,7 @@ public class AppRemoteApiFilterJob implements SimpleJob {
                 }
                 delList.addAll(appRemoteCallFilterList);
                 // 唯一
-                filterMap.put(apiManage.getApplicationId()+"##" +apiManage.getApi(), appRemoteCallFilterList);
+                filterMap.put(apiManage.getApplicationId() + "##" + apiManage.getApi(), appRemoteCallFilterList);
             });
         });
 
@@ -132,7 +132,7 @@ public class AppRemoteApiFilterJob implements SimpleJob {
         List<AppRemoteCallResult> save = Lists.newArrayList();
         filterMap.forEach((k, v) -> {
             String[] temp = k.split("##");
-            if(temp.length != 2) {
+            if (temp.length != 2) {
                 return;
             }
             String interfaceName = temp[1];

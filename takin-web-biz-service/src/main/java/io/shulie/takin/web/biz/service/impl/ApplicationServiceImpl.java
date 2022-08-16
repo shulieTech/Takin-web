@@ -499,18 +499,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (tApplicationMnt == null) {
             return Response.success(new ApplicationVo());
         }
-        //判断是否有异常信息来获取状态，t_application_mnt中的不准
-        ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
-        queryInput.setApplicationId(tApplicationMnt.getApplicationId());
-
-        List<ApplicationErrorOutput> errors =
-                applicationErrorService.list(queryInput);
-        if (CollectionUtil.isNotEmpty(errors)) {
-            tApplicationMnt.setAccessStatus(3);
-        } else {
-            tApplicationMnt.setAccessStatus(0);
-        }
-
         // 取应用节点数信息
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(
                 Collections.singletonList(tApplicationMnt.getApplicationName()));
@@ -689,7 +677,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public synchronized void syncApplicationAccessStatus() {
+    public void syncApplicationAccessStatus() {
         try {
             // 应用分页大小
             int pageSize = 20;
@@ -698,19 +686,16 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
             PageBaseDTO pageBaseDTO = new PageBaseDTO();
             pageBaseDTO.setPageSize(pageSize);
-
             do {
                 // 分页查询数据库应用列表
                 List<ApplicationListResult> applicationList = applicationDAO.pageFromSync(pageBaseDTO);
                 if (applicationList.isEmpty()) {
                     return;
                 }
-
                 // 下一页
                 pageBaseDTO.setCurrent(pageBaseDTO.getCurrent() + 1);
                 // 赋值查询出的应用数量
                 applicationNumber = applicationList.size();
-
                 // 收集应用名称
                 List<String> appNames = applicationList.stream()
                         .map(ApplicationListResult::getApplicationName)
@@ -780,8 +765,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList
-            , Set<Long> errorApplicationIdSet
-            , Map<Long, String> errorInfo) {
+            , Set<Long> errorApplicationIdSet, Map<Long, String> errorInfo) {
         if (CollectionUtils.isNotEmpty(applicationList)) {
             for (ApplicationListResult app : applicationList) {
                 Map result = applicationDAO.getStatus(app.getApplicationName());
@@ -1355,17 +1339,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
             response.setId(result.getApplicationId().toString());
 
-
-            ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
-            queryInput.setApplicationId(result.getApplicationId());
-            List<ApplicationErrorOutput> errors =
-                    applicationErrorService.list(queryInput);
-            if (CollectionUtil.isNotEmpty(errors)) {
-                response.setAccessStatus(3);
-            } else {
-                response.setAccessStatus(0);
+            // 跟应用详情再对比下,同步下状态
+            Response<ApplicationVo> vo = this.getApplicationInfo(response.getId());
+            if (vo.getSuccess() && vo.getData() != null) {
+                response.setAccessStatus(vo.getData().getAccessStatus());
             }
-
             return response;
         }).collect(Collectors.toList());
         return PagingList.of(responseList, applicationListResultPage.getTotal());

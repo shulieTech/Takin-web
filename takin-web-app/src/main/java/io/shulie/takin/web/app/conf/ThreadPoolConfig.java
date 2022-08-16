@@ -37,6 +37,25 @@ public class ThreadPoolConfig {
      *
      * @return 线程池
      */
+    @Bean(name = "syncAppStatusThreadPool")
+    public ThreadPoolExecutor syncAppStatusThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("syncAppStatusThread-%d").build();
+        return new ThreadPoolExecutor(10, 20, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    @Bean(name = "appRemoteApiFilterThreadPool")
+    public ThreadPoolExecutor appRemoteApiFilterThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("appRemoteApiFilterThread-%d").build();
+        return new ThreadPoolExecutor(10, 20, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 用于定时任务
+     *
+     * @return 线程池
+     */
     @Bean(name = "jobThreadPool")
     public ThreadPoolExecutor jobThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();

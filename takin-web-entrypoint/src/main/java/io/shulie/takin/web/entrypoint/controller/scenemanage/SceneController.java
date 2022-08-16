@@ -117,9 +117,8 @@ public class SceneController {
                 setExecuteTime(request.getBasicInfo().getExecuteTime());
             }});
         }
-
         // 忽略检测的应用
-        sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(), request.getDataValidation().getExcludedApplicationIds());
+        sceneManageService.createSceneExcludedApplication(sceneId, request.getDataValidation().getExcludedApplicationIds());
 
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);

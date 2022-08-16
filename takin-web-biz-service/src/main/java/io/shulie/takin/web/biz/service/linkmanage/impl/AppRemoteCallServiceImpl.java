@@ -766,6 +766,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                                 updateParam.setId(callEntity.getId());
                                 updateParam.setGmtModified(new Date());
                                 updateParam.setType(param.getType());
+                                updateParam.setServerAppName(param.getServerAppName());
                                 updateRemoteCall.add(updateParam);
                             }
                         }

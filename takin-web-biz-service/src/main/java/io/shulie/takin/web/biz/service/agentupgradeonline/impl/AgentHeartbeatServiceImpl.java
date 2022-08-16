@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
+    private static Logger logger = LoggerFactory.getLogger(AgentHeartbeatServiceImpl.class);
 
     private final Logger distributionLog = LoggerFactory.getLogger("AGENT_COMMAND_DISTRIBUTION");
 
@@ -113,8 +114,8 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
             enterpriseProcessorList.forEach(processor -> {
                 if (processor instanceof IAgentCommandProcessor) {
                     enterpriseCommandProcessorMap.put(
-                        ((IAgentCommandProcessor)processor).getCommand().getCommand(),
-                        (IAgentCommandProcessor)processor);
+                            ((IAgentCommandProcessor) processor).getCommand().getCommand(),
+                            (IAgentCommandProcessor) processor);
                 }
             });
         }
@@ -130,6 +131,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
     private AgentHeartbeatBO buildAgentHeartBeatBO(AgentHeartbeatRequest commandRequest) {
         Long applicationId = applicationService.queryApplicationIdByAppName(commandRequest.getProjectName());
         if (applicationId == null) {
+            logger.error("应用名不存在,{}", commandRequest.getProjectName());
             throw new TakinWebException(ExceptionCode.AGENT_REGISTER_ERROR, "应用名不存在");
         }
 

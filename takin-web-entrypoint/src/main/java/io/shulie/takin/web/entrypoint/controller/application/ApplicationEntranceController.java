@@ -102,7 +102,8 @@ public class ApplicationEntranceController {
     @ApiOperation("获得入口服务列表")
     public List<ApplicationEntrancesResponse> getApplicationEntrances(@Validated ApplicationEntrancesSampleTypeQueryRequest request) {
         List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-                request.getApplicationName(), EntranceTypeEnum.getEnumByType(request.getSamplerType().getType()).getType(), null,0, 500);
+                request.getApplicationName(), EntranceTypeEnum.getEnumByType(request.getSamplerType().getType()).getType(),
+                null, 0, 1000);
         if (CollectionUtils.isEmpty(applicationEntrances)) {
             return Lists.newArrayList();
         }

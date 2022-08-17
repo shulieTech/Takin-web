@@ -350,7 +350,6 @@ public abstract class AbstractIndicators {
                 .updateEnum(SceneManageStatusEnum.STOP).build());
             updateReportEndTime(context, time);
             pressureTaskDAO.updateStatus(context.getTaskId(), PressureTaskStateEnum.INACTIVE, null);
-            notifyFinish(context);
         }
     }
 

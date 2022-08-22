@@ -18,6 +18,7 @@ public class SshInitUtil {
     private String USR = "";// 远程服务器用户名
     private String PSWORD = ""; // 远程服务器密码
     private Integer port = 22;
+    private Integer timeout = 15 * 1000;
 
     private String DEFAULTCHART = "UTF-8";
 
@@ -36,6 +37,7 @@ public class SshInitUtil {
             session.setConfig("StrictHostKeyChecking", "no");
 
             session.setPassword(PSWORD);
+            session.setTimeout(timeout);
             session.connect();
 
             ChannelExec channelExec = (ChannelExec) session.openChannel("exec");

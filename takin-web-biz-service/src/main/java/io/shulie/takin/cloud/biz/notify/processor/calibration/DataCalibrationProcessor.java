@@ -29,6 +29,7 @@ import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
+import io.shulie.takin.cloud.model.callback.Calibration.Data;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.report.impl.SummaryService;
 import io.shulie.takin.web.common.util.RedisClientUtil;
@@ -59,7 +60,7 @@ public class DataCalibrationProcessor extends AbstractIndicators
 
     @Override
     public CallbackType type() {
-        return CallbackType.EXCESS_JOB;
+        return CallbackType.CALIBRATION;
     }
 
     /**
@@ -71,10 +72,12 @@ public class DataCalibrationProcessor extends AbstractIndicators
      */
     @Override
     public String process(DataCalibrationNotifyParam param) {
-        long jobId = param.getJobId();
+        Data data = param.getData();
+        long jobId = data.getPressureId();
+        String resourceId = String.valueOf(data.getResourceId());
         String statusKey = PressureStartCache.getDataCalibrationStatusKey(jobId);
         if (!redisClientUtil.hasKey(statusKey)) {
-            return param.getResourceId();
+            return resourceId;
         }
         String source = StringUtils.defaultIfBlank(param.getSource(), PressureDataCalibration.CLOUD);
         String callbackKey = PressureStartCache.getDataCalibrationCallbackKey(jobId, source);
@@ -85,27 +88,27 @@ public class DataCalibrationProcessor extends AbstractIndicators
             if (!redisClientUtil.isSet(statusKey, PressureDataCalibration.offset(cloud))) {
                 execute = true;
                 if (cloud) {
-                    processCloud(param, action);
+                    processCloud(data, action);
                 } else {
-                    processAmdb(param, action);
+                    processAmdb(data, action);
                 }
             }
             if (!execute) {
                 action.run();
             }
         }
-        return param.getResourceId();
+        return resourceId;
     }
 
-    private void processAmdb(DataCalibrationNotifyParam param, Runnable finalAction) {
-        pressureDataCalibration.processCalibrationStatus(param.getJobId(),
+    private void processAmdb(Data param, Runnable finalAction) {
+        pressureDataCalibration.processCalibrationStatus(param.getPressureId(),
             Boolean.TRUE.equals(param.getCompleted()), param.getContent(), false);
         finalAction.run();
     }
 
-    private void processCloud(DataCalibrationNotifyParam param, Runnable finalAction) {
+    private void processCloud(Data param, Runnable finalAction) {
         boolean success = Boolean.TRUE.equals(param.getCompleted());
-        long jobId = param.getJobId();
+        long jobId = param.getPressureId();
         if (success) {
             // 删除表
             influxWriter.truncateMeasurement(InfluxUtil.getMeasurement(jobId, null, null, null));
@@ -135,13 +138,13 @@ public class DataCalibrationProcessor extends AbstractIndicators
         boolean isConclusion = cloudReportService.updateReportBusinessActivity(jobId, sceneId, reportId, tenantId);
         if (isSla(report)) {
             report.setConclusion(ReportConstants.FAIL);
-            getReportFeatures(report, ReportConstants.FEATURES_ERROR_MSG, "触发SLA终止规则");
+            getReportFeatures(report, "触发SLA终止规则");
         } else if (!isConclusion) {
             report.setConclusion(ReportConstants.FAIL);
-            getReportFeatures(report, ReportConstants.FEATURES_ERROR_MSG, "业务活动指标不达标");
+            getReportFeatures(report, "业务活动指标不达标");
         } else {
             report.setConclusion(ReportConstants.PASS);
-            getReportFeatures(report, ReportConstants.FEATURES_ERROR_MSG, "");
+            getReportFeatures(report, "");
         }
         summaryService.calcReportSummay(reportId);
         StatReportDTO statReport = cloudReportService.statReport(jobId, sceneId, reportId, tenantId, transaction);
@@ -184,21 +187,21 @@ public class DataCalibrationProcessor extends AbstractIndicators
             && StringUtils.isNotEmpty(jsonObject.getString(ReportConstants.SLA_ERROR_MSG));
     }
 
-    private void getReportFeatures(ReportResult reportResult, String errKey, String errMsg) {
+    private void getReportFeatures(ReportResult reportResult, String errMsg) {
         Map<String, String> map = Maps.newHashMap();
         if (StringUtils.isNotBlank(reportResult.getFeatures())) {
             map = JsonHelper.string2Obj(reportResult.getFeatures(), new TypeReference<Map<String, String>>() {
             });
         }
-        if (StringUtils.isNotBlank(errKey)) {
+        if (StringUtils.isNotBlank(ReportConstants.FEATURES_ERROR_MSG)) {
             if (StringUtils.isBlank(errMsg)) {
-                map.remove(errKey);
+                map.remove(ReportConstants.FEATURES_ERROR_MSG);
             } else {
                 errMsg = StringUtils.trim(errMsg);
                 if (!errMsg.startsWith("[") && !errMsg.startsWith("{") && errMsg.length() > 100) {
                     errMsg = errMsg.substring(0, 100);
                 }
-                map.put(errKey, errMsg);
+                map.put(ReportConstants.FEATURES_ERROR_MSG, errMsg);
             }
             reportResult.setFeatures(GsonUtil.gsonToString(map));
         }

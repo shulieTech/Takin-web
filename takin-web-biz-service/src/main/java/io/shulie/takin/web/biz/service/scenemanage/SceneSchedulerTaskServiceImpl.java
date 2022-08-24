@@ -51,6 +51,8 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
     private SceneTaskService sceneTaskService;
     @Resource
     private SceneSchedulerTaskDao sceneSchedulerTaskDao;
+    @Resource
+    private EngineClusterService engineClusterService;
     /**
      * 定时任务线程池
      * ps:只是为了消除黄色提醒
@@ -165,8 +167,10 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                     ext.setTenantAppKey(infoExt.getTenantAppKey());
                     try {
                         WebPluginUtils.setTraceTenantContext(ext);
+                        // 默认选择集群
                         SceneActionParam param = new SceneActionParam();
                         param.setSceneId(scheduler.getSceneId());
+                        param.setMachineId(engineClusterService.selectOne().getId());
                         CheckResultVo resultVo;
                         do {
                             resultVo = sceneTaskService.preCheck(param);

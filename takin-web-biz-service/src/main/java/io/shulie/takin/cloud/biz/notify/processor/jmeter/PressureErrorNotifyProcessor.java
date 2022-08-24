@@ -23,13 +23,13 @@ public class PressureErrorNotifyProcessor extends AbstractIndicators
     }
 
     private void processError(PressureErrorNotifyParam param) {
-        JobExampleErrorInfo data = param.getData();
+        PressureExampleErrorInfo data = param.getData();
         String resourceId = String.valueOf(data.getResourceId());
         if (!redisClientUtil.hasKey(PressureStartCache.getResourceKey(resourceId))) {
             return;
         }
         updatePressureTaskMessageByResourceId(resourceId, data.getErrorMessage());
-        String jmeterId = String.valueOf(data.getJobExampleId());
+        String jmeterId = String.valueOf(data.getPressureExampleId());
         if (redisClientUtil.lockNoExpire(PressureStartCache.getJmeterErrorFirstKey(resourceId), jmeterId)) {
             callRunningFailedEvent(String.valueOf(data.getResourceId()), data.getErrorMessage());
         }
@@ -38,6 +38,6 @@ public class PressureErrorNotifyProcessor extends AbstractIndicators
 
     @Override
     public CallbackType type() {
-        return CallbackType.JOB_EXAMPLE_ERROR;
+        return CallbackType.PRESSURE_EXAMPLE_ERROR;
     }
 }

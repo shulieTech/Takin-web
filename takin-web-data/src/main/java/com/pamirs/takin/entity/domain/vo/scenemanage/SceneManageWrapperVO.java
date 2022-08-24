@@ -109,4 +109,5 @@ public class SceneManageWrapperVO extends ContextExt implements Serializable {
     private List<Long> excludedApplicationIds;
 
     private boolean isPressure;
+    private List<String> watchmanIdList;
 }

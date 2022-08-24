@@ -3,6 +3,7 @@ package io.shulie.takin.adapter.api.entrypoint.pressure;
 import java.util.List;
 
 import io.shulie.takin.adapter.api.constant.ThreadGroupType;
+import io.shulie.takin.adapter.api.model.request.excess.DataCalibrationRequest;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureParamModifyReq;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureParamsReq;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStartReq;
@@ -20,9 +21,11 @@ public interface PressureTaskApi {
 
     List<JobConfig> params(PressureParamsReq req);
 
+    Long dataCalibration(DataCalibrationRequest request);
+
     @Data
     class JobConfig {
-        private Long jobId;
+        private Long pressureId;
         private String ref;
         private ThreadGroupType type;
         private ThreadConfigInfo context;

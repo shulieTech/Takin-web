@@ -16,7 +16,7 @@ import io.shulie.takin.cloud.common.enums.scenemanage.SceneRunTaskStatusEnum;
 import io.shulie.takin.cloud.constant.enums.CallbackType;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
-import io.shulie.takin.cloud.model.callback.basic.JobExample;
+import io.shulie.takin.cloud.model.callback.basic.PressureExample;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -42,7 +42,7 @@ public class PressureStartNotifyProcessor extends AbstractIndicators
     private SceneTaskStatusCache taskStatusCache;
     @Override
     public CallbackType type() {
-        return CallbackType.JOB_EXAMPLE_START;
+        return CallbackType.PRESSURE_EXAMPLE_START;
     }
 
     @Override
@@ -52,9 +52,9 @@ public class PressureStartNotifyProcessor extends AbstractIndicators
     }
 
     private void processStartSuccess(PressureStartNotifyParam context) {
-        JobExample data = context.getData();
+        PressureExample data = context.getData();
         String resourceId = String.valueOf(data.getResourceId());
-        String podId = String.valueOf(data.getJobExampleId());
+        String podId = String.valueOf(data.getPressureExampleId());
         ResourceContext resourceContext = getResourceContext(resourceId);
         if (resourceContext == null) {
             return;
@@ -90,7 +90,7 @@ public class PressureStartNotifyProcessor extends AbstractIndicators
         long startTime = param.getTime().getTime();
         String resourceId = context.getResourceId();
         redisClientUtil.hmset(PressureStartCache.getJmeterHeartbeatKey(resourceId),
-            String.valueOf(param.getData().getJobExampleId()), System.currentTimeMillis());
+            String.valueOf(param.getData().getPressureExampleId()), System.currentTimeMillis());
         cloudAsyncService.checkJmeterHeartbeatTask(context);
         cloudAsyncService.pressureStop(context.getPtTestTime(), resourceId, context.getJobId());
         log.info("场景[{}]压测任务开始，更新报告[{}]开始时间[{}]", context.getSceneId(), reportId, startTime);

@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class PressureParamModifyReq extends ContextExt {
 
-    private Long jobId;
+    private Long pressureId;
     /**
      * 修改的关联节点
      */

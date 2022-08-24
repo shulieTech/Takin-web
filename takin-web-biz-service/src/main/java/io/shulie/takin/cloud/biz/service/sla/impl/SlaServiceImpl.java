@@ -68,7 +68,7 @@ public class SlaServiceImpl extends AbstractIndicators implements SlaService {
         Set<Object> keys = stringRedisTemplate.opsForHash().keys(SLA_DESTROY_KEY);
         List keyList = new ArrayList(keys);
         for (Sla.SlaInfo info : slaInfo) {
-            Report report = tReportMapper.getReportByTaskId(info.getJobId());
+            Report report = tReportMapper.getReportByTaskId(info.getPressureId());
             String ref = info.getRef();
             if (org.apache.commons.lang3.StringUtils.isNoneBlank(ref)) {
                 String id = info.getAttach();
@@ -110,7 +110,7 @@ public class SlaServiceImpl extends AbstractIndicators implements SlaService {
                 if (model.getTimes() >= output.getRule().getTimes()) {//连续命中次数满足条件
                     try {
                         ScheduleStopRequestExt scheduleStopRequest = new ScheduleStopRequestExt();
-                        scheduleStopRequest.setTaskId(info.getJobId());
+                        scheduleStopRequest.setTaskId(info.getPressureId());
                         scheduleStopRequest.setSceneId(slaRef.getSceneId());
                         // 增加顾客id
 //                    scheduleStopRequest.setTenantId();

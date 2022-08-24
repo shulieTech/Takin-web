@@ -25,6 +25,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
@@ -383,5 +384,11 @@ public class SceneManageController {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());
         String deleteSceneResponse = sceneManageService.archive(deleteVO);
         return WebResponse.success(deleteSceneResponse);
+    }
+
+    @ApiOperation(value = "压力机集群列表")
+    @GetMapping("/machine")
+    public WebResponse<SceneMachineResponse> machineClusters(@RequestParam String id, @RequestParam Integer type) {
+        return WebResponse.success(sceneManageService.machineClusters(id, type));
     }
 }

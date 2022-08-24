@@ -30,10 +30,8 @@ import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivity
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneFileReadPosition;
 import com.pamirs.takin.cloud.entity.domain.vo.file.FileSliceRequest;
 import com.pamirs.takin.cloud.entity.domain.vo.report.SceneTaskNotifyParam;
-import io.shulie.takin.adapter.api.entrypoint.pressure.PressureTaskApi;
 import io.shulie.takin.adapter.api.model.common.RuleBean;
 import io.shulie.takin.adapter.api.model.common.TimeBean;
-import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStopReq;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
@@ -187,8 +185,6 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
     private RedisClientUtil redisClientUtil;
     @Resource
     private PressureTaskVarietyDAO pressureTaskVarietyDAO;
-    @Resource
-    private PressureTaskApi pressureTaskApi;
     @Resource
     private ActivityDAO activityDAO;
 
@@ -382,7 +378,10 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             scene.setReportId(reportResult.getId());
             if (StringUtils.isNotEmpty(reportResult.getFeatures())) {
                 JSONObject jb = JSON.parseObject(reportResult.getFeatures());
-                errorMessageList.add(jb.getString(ReportConstants.FEATURES_ERROR_MSG));
+                String errorMessage = jb.getString(ReportConstants.FEATURES_ERROR_MSG);
+                if (StringUtils.isNotBlank(errorMessage)) {
+                    errorMessageList.add(errorMessage);
+                }
             }
             if (CollectionUtils.isNotEmpty(errorMessageList)) {
                 scene.setMsg(errorMessageList);
@@ -510,6 +509,8 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
 
         StartConditionCheckerContext context = StartConditionCheckerContext.of(sceneManageId);
         context.setUniqueKey(PressureStartCache.getSceneResourceLockingKey(sceneManageId));
+        context.setMachineId(input.getMachineId());
+        context.setMachineType(input.getEngineType().getType());
         CheckResult checkResult = engineResourceChecker.check(context);
         if (checkResult.getStatus().equals(CheckStatus.FAIL.ordinal())) {
             redisClientUtil.del(flowDebugKey, PressureStartCache.getSceneResourceLockingKey(sceneManageId));
@@ -588,6 +589,8 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
 
         StartConditionCheckerContext context = StartConditionCheckerContext.of(sceneManageId);
         context.setUniqueKey(PressureStartCache.getSceneResourceLockingKey(sceneManageId));
+        context.setMachineId(input.getMachineId());
+        context.setMachineType(input.getEngineType().getType());
         context.setInspect(true);
         CheckResult checkResult = engineResourceChecker.check(context);
         if (checkResult.getStatus().equals(CheckStatus.FAIL.ordinal())) {
@@ -612,10 +615,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
                 r.addMsg("任务不存在");
                 return r;
             }
-
-            PressureTaskStopReq request = new PressureTaskStopReq();
-            request.setJobId(report.getJobId());
-            pressureTaskApi.stop(request);
+            stopJob(report.getResourceId(), report.getJobId());
 
             // 触发强制停止
             if (isNeedFinishReport && ReportConstants.INIT_STATUS == (report.getStatus())
@@ -721,6 +721,8 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
 
         StartConditionCheckerContext context = StartConditionCheckerContext.of(sceneManageId);
         context.setUniqueKey(PressureStartCache.getSceneResourceLockingKey(sceneManageId));
+        context.setMachineId(input.getMachineId());
+        context.setMachineType(input.getEngineType().getType());
         CheckResult checkResult = engineResourceChecker.check(context);
         if (checkResult.getStatus().equals(CheckStatus.FAIL.ordinal())) {
             redisClientUtil.del(tryRunKey, PressureStartCache.getSceneResourceLockingKey(sceneManageId));
@@ -1136,6 +1138,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         entity.setUserId(WebPluginUtils.traceUserId());
         entity.setTenantId(scene.getTenantId());
         entity.setEnvCode(scene.getEnvCode());
+        entity.setFeatures(machineFeatures(scene));
         pressureTaskDAO.save(entity);
         pressureTaskVarietyDAO.save(PressureTaskVarietyEntity.of(entity.getId(), PressureTaskStateEnum.INITIALIZED));
         return entity;
@@ -1179,6 +1182,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         }
         report.setCalibrationStatus(0);
         report.setPtConfig(scene.getPtConfig());
+        report.setFeatures(machineFeatures(scene));
         reportMapper.insert(report);
         associateTaskAndReport(pressureTask, report);
         Long reportId = report.getId();
@@ -1491,5 +1495,16 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         commonExt.setTenantAppKey(input.getUserAppKey());
         commonExt.setSource(ContextSourceEnum.JOB_SCRIPT_DEBUG.getCode());
         WebPluginUtils.setTraceTenantContext(commonExt);
+    }
+
+    private String machineFeatures(SceneManageWrapperOutput scene) {
+        String machineId = scene.getMachineId();
+        if (StringUtils.isBlank(machineId)) {
+            return null;
+        }
+        JSONObject features = new JSONObject();
+        features.put(PressureStartCache.FEATURES_MACHINE_ID, machineId);
+        features.put(PressureStartCache.FEATURES_MACHINE_TYPE, scene.getMachineType());
+        return features.toJSONString();
     }
 }

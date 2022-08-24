@@ -1,6 +1,8 @@
 package io.shulie.takin.cloud.biz.collector.collector;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -8,29 +10,46 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import com.alibaba.fastjson.JSONObject;
+
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import io.shulie.takin.adapter.api.entrypoint.pressure.PressureTaskApi;
 import io.shulie.takin.adapter.api.entrypoint.resource.CloudResourceApi;
+import io.shulie.takin.adapter.api.entrypoint.watchman.CloudWatchmanApi;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStopReq;
 import io.shulie.takin.adapter.api.model.request.resource.ResourceUnLockRequest;
+import io.shulie.takin.adapter.api.model.request.watchman.WatchmanResourceRequest;
+import io.shulie.takin.adapter.api.model.response.watchman.WatchmanNode;
 import io.shulie.takin.cloud.biz.notify.StartFailEventSource;
 import io.shulie.takin.cloud.biz.notify.StopEventSource;
 import io.shulie.takin.cloud.biz.notify.processor.calibration.PressureDataCalibration;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
+import io.shulie.takin.cloud.biz.utils.DataUtils;
 import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
 import io.shulie.takin.cloud.common.bean.task.TaskResult;
 import io.shulie.takin.cloud.common.constants.ScheduleConstants;
 import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
 import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
+import io.shulie.takin.cloud.common.utils.GsonUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
+import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
 import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
+import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
+import io.shulie.takin.cloud.data.param.report.ReportUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.eventcenter.Event;
 import io.shulie.takin.eventcenter.EventCenterTemplate;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.checker.StartConditionChecker.CheckStatus;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigSceneRelateShipMapper;
+import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
+import io.shulie.takin.web.ext.entity.tenant.EngineType;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -93,7 +112,13 @@ public abstract class AbstractIndicators {
     @Resource
     private CloudResourceApi cloudResourceApi;
     @Resource
+    private CloudWatchmanApi cloudWatchmanApi;
+    @Resource
+    private SceneManageDAO sceneManageDAO;
+    @Resource
     private PressureDataCalibration pressureDataCalibration;
+    @Resource
+    private InterfacePerformanceConfigSceneRelateShipMapper interfacePerformanceConfigSceneRelateShipMapper;
     private DefaultRedisScript<Void> minRedisScript;
     private DefaultRedisScript<Void> maxRedisScript;
     private DefaultRedisScript<Void> unlockRedisScript;
@@ -231,11 +256,18 @@ public abstract class AbstractIndicators {
         context.setSceneId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.SCENE_ID))));
         context.setReportId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.REPORT_ID))));
         context.setTenantId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.TENANT_ID))));
+        context.setEnvCode(String.valueOf(resource.get(PressureStartCache.ENV_CODE)));
         context.setCheckStatus(String.valueOf(resource.get(PressureStartCache.CHECK_STATUS)));
         context.setTaskId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.TASK_ID))));
         context.setUniqueKey(String.valueOf(resource.get(PressureStartCache.UNIQUE_KEY)));
         context.setPtTestTime(Long.valueOf(String.valueOf(resource.get(PressureStartCache.PT_TEST_TIME))));
         context.setPressureType(Integer.valueOf(String.valueOf(resource.get(PressureStartCache.PRESSURE_TYPE))));
+        context.setAttachId(String.valueOf(resource.get(PressureStartCache.FILE_ATTACH_ID)));
+        context.setMachineId(String.valueOf(resource.get(PressureStartCache.MACHINE_ID)));
+        Object machineType = resource.get(PressureStartCache.MACHINE_TYPE);
+        if (Objects.nonNull(machineType)) {
+            context.setMachineType(Integer.valueOf(String.valueOf(machineType)));
+        }
         Object jobId = resource.get(PressureStartCache.JOB_ID);
         if (Objects.nonNull(jobId)) {
             context.setJobId(Long.valueOf(String.valueOf(jobId)));
@@ -350,7 +382,6 @@ public abstract class AbstractIndicators {
                 .updateEnum(SceneManageStatusEnum.STOP).build());
             updateReportEndTime(context, time);
             pressureTaskDAO.updateStatus(context.getTaskId(), PressureTaskStateEnum.INACTIVE, null);
-            notifyFinish(context);
         }
     }
 
@@ -430,7 +461,7 @@ public abstract class AbstractIndicators {
     protected void stopJob(String resourceId, Long jobId) {
         if (redisClientUtil.hasKey(PressureStartCache.getJmeterStartFirstKey(resourceId))) {
             PressureTaskStopReq request = new PressureTaskStopReq();
-            request.setJobId(jobId);
+            request.setPressureId(jobId);
             pressureTaskApi.stop(request);
         } else {
             releaseResource(resourceId);
@@ -460,11 +491,76 @@ public abstract class AbstractIndicators {
         redisClientUtil.setBit(statusKey, PressureDataCalibration.offset(true) + 1, true);
     }
 
+    protected void updateSceneMachineId(Long sceneId, String machineId, Integer machineType) {
+        if (Objects.isNull(sceneId) || StringUtils.isBlank(machineId)) {
+            return;
+        }
+        SceneManageEntity sceneById = sceneManageDAO.getSceneById(sceneId);
+        String features = sceneById.getFeatures();
+        JSONObject param;
+        if (StringUtils.isNotEmpty(features)) {
+            param = JSONObject.parseObject(features);
+        } else {
+            param = new JSONObject();
+        }
+        param.put(PressureStartCache.FEATURES_MACHINE_ID, machineId);
+        param.put(PressureStartCache.FEATURES_MACHINE_TYPE, machineType);
+        String machineFeatures = param.toJSONString();
+        sceneManageDAO.getBaseMapper().update(null,
+            Wrappers.lambdaUpdate(SceneManageEntity.class)
+                .set(SceneManageEntity::getFeatures, machineFeatures)
+                .eq(SceneManageEntity::getId, sceneId));
+
+        // 关联更新单接口压测
+        interfacePerformanceConfigSceneRelateShipMapper.update(null,
+            Wrappers.lambdaUpdate(InterfacePerformanceConfigSceneRelateShipEntity.class)
+            .set(InterfacePerformanceConfigSceneRelateShipEntity::getFeatures, machineFeatures)
+            .eq(InterfacePerformanceConfigSceneRelateShipEntity::getSceneId, sceneId)
+            .eq(InterfacePerformanceConfigSceneRelateShipEntity::getIsDeleted, 0));
+    }
+
+    protected void updateReportPtlLocation(ResourceContext ext) {
+        try {
+            String machineId = ext.getMachineId();
+            String relativePath = DataUtils.mergePath(ext.getResourceId(), String.valueOf(ext.getJobId()), "/");
+            WatchmanResourceRequest request = new WatchmanResourceRequest();
+            request.setWatchmanId(machineId);
+            List<WatchmanNode> resource = cloudWatchmanApi.resource(request);
+            resource.stream().filter(node -> !StringUtils.isAllBlank(node.getNfsServer(), node.getNfsDir()))
+                .findAny().ifPresent(node -> updatePtlPath(ext.getReportId(), node, relativePath));
+        } catch (Exception ignore) {}
+    }
+
+    private void updatePtlPath(Long reportId, WatchmanNode node, String relativePath) {
+        ReportResult reportResult = reportDao.getById(reportId);
+        Map<String, String> map = Maps.newHashMap();
+        if (StringUtils.isNotBlank(reportResult.getFeatures())) {
+            map = JsonHelper.string2Obj(reportResult.getFeatures(), new TypeReference<Map<String, String>>() {
+            });
+        }
+        String nfsServer = node.getNfsServer();
+        String nfsDir = node.getNfsDir();
+        map.put(PressureStartCache.FEATURES_NFS_SERVER, nfsServer);
+        map.put(PressureStartCache.FEATURES_NFS_ROOT, nfsDir);
+        if (Objects.equals(map.get(PressureStartCache.FEATURES_MACHINE_TYPE), String.valueOf(EngineType.PRIVATE.getType()))) {
+            List<String> paths = new ArrayList<>(3);
+            paths.add("nfsServer：" + nfsServer);
+            paths.add("ptl：" +  DataUtils.mergePath(DataUtils.mergePath(nfsDir, "ptl", "/"), relativePath, "/"));
+            paths.add("logs：" +  DataUtils.mergePath(DataUtils.mergePath(nfsDir, "logs", "/"), relativePath, "/"));
+            map.put(PressureStartCache.FEATURES_MACHINE_PTL_PATH, StringUtils.join(paths, ","));
+        }
+        ReportUpdateParam param = new ReportUpdateParam();
+        param.setId(reportId);
+        param.setFeatures(GsonUtil.gsonToString(map));
+        reportDao.updateReport(param);
+    }
+
     @Data
     public static class ResourceContext {
         private Long sceneId;
         private Long reportId;
         private Long taskId;
+        private String envCode;
         private Long jobId;
         private String resourceId;
         private Long tenantId;
@@ -473,7 +569,10 @@ public abstract class AbstractIndicators {
         private String uniqueKey;
         private Long ptTestTime;
         private Integer pressureType;
-
+        private String machineId;
+        private Integer machineType;
+        private String attachId;
         private String message;
+        private boolean fileFailed;
     }
 }

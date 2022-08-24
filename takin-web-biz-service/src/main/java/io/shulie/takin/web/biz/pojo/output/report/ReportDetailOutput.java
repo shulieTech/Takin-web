@@ -128,4 +128,5 @@ public class ReportDetailOutput extends UserCommonExt {
     private Integer calibration;
     private Integer calibrationStatus;
     private String calibrationMessage;
+    private List<String> ptlPath;
 }

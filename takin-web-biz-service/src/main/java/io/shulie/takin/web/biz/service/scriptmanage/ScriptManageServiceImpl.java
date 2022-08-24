@@ -43,7 +43,6 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
 import com.pamirs.takin.entity.domain.entity.linkmanage.BusinessLinkManageTable;
 import com.pamirs.takin.entity.domain.entity.linkmanage.Scene;
 import io.shulie.amdb.common.enums.RpcType;
-import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.adapter.api.model.common.UploadFileDTO;
 import io.shulie.takin.adapter.api.model.request.engine.EnginePluginDetailsWrapperReq;
 import io.shulie.takin.adapter.api.model.request.engine.EnginePluginFetchWrapperReq;
@@ -59,14 +58,15 @@ import io.shulie.takin.adapter.api.model.response.engine.EnginePluginDetailResp;
 import io.shulie.takin.adapter.api.model.response.engine.EnginePluginSimpleInfoResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageListResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.ScriptCheckResp;
+import io.shulie.takin.cloud.common.utils.Md5Util;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.PathFormatForTest;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
-import io.shulie.takin.utils.security.MD5Utils;
 import io.shulie.takin.utils.string.StringUtil;
-import io.shulie.takin.web.biz.cache.agentimpl.FileManageSignCache;
 import io.shulie.takin.web.biz.convert.performace.TraceManageResponseConvertor;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
@@ -90,6 +90,7 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.SupportJmeterPluginVer
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.WebPartResponse;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
 import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
+import io.shulie.takin.web.biz.utils.FileEncoder;
 import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.biz.utils.exception.ScriptManageExceptionUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
@@ -141,7 +142,9 @@ import io.shulie.takin.web.data.result.tagmanage.TagManageResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.DiffFileApi;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
+import io.shulie.takin.web.ext.api.tenant.WebTenantExtApi;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantKeyExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -207,6 +210,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     private TagManageDAO tagManageDAO;
     @Resource
     private TBusinessLinkManageTableMapper tBusinessLinkManageTableMapper;
+    @Resource
+    private PluginManager pluginManager;
 
     @PostConstruct
     public void init() {
@@ -318,6 +323,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             fileCopyParamReq.setTargetPath(targetScriptPath);
             fileCopyParamReq.setSourcePaths(tmpFilePaths);
             fileApi.copyFile(fileCopyParamReq);
+            // 加密文件
+            encryptFileIfNecessary(fileCopyParamReq);
 
             FileDeleteParamReq fileDeleteParamReq = new FileDeleteParamReq();
             fileDeleteParamReq.setPaths(tmpFilePaths);
@@ -690,6 +697,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         fileCopyParamReq.setTargetPath(targetScriptPath);
         fileCopyParamReq.setSourcePaths(sourcePaths);
         fileApi.copyFile(fileCopyParamReq);
+        encryptFileIfNecessary(fileCopyParamReq);
         if (CollectionUtils.isNotEmpty(tmpFilePaths)) {
             FileDeleteParamReq fileDeleteParamReq = new FileDeleteParamReq();
             fileDeleteParamReq.setPaths(tmpFilePaths);
@@ -1266,11 +1274,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             uploadPath = PathFormatForTest.format(uploadPath);
             fileManageCreateParam.setUploadPath(uploadPath);
             fileManageCreateParam.setUploadTime(fileManageUpdateRequest.getUploadTime());
-            String targetP = fileManageCreateParam.getUploadPath().replaceAll("[/]", "");
-            String targetPMd5 = MD5Utils.getInstance().getMD5(targetP);
-            Object bodyMd5 = redisTemplate.opsForValue().get(FileManageSignCache.CACHE_NAME+targetPMd5);
-            //写入md5
-            fileManageCreateParam.setMd5(bodyMd5!=null?bodyMd5.toString():"");
+            fileManageCreateParam.setMd5(Md5Util.md5File(fileManageCreateParam.getUploadPath()));
             return fileManageCreateParam;
         }).collect(Collectors.toList());
 
@@ -1290,6 +1294,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             fileManageCreateParam.setFileExtend(JsonHelper.bean2Json(fileExtend));
             fileManageCreateParam.setUploadPath(targetScriptPath + fileManageCreateRequest.getFileName());
             fileManageCreateParam.setUploadTime(fileManageCreateRequest.getUploadTime());
+            fileManageCreateParam.setMd5(Md5Util.md5File(fileManageCreateParam.getUploadPath()));
             return fileManageCreateParam;
         }).collect(Collectors.toList());
 
@@ -1960,6 +1965,28 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         return String.format("%s/%s/%s/",
             ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH),
             scriptManageDeployResult.getScriptId(), scriptManageDeployResult.getScriptVersion());
+    }
+
+    private void encryptFileIfNecessary(FileCopyParamReq fileCopyParamReq) {
+        String targetPath = fileCopyParamReq.getTargetPath();
+        List<String> sourcePaths = fileCopyParamReq.getSourcePaths();
+        if (CollectionUtils.isNotEmpty(sourcePaths) && StringUtils.isNotBlank(targetPath)) {
+            List<String> validFilePaths = sourcePaths.stream()
+                .map(path -> targetPath + StringUtils.substring(path, path.lastIndexOf(File.separator)))
+                .filter(path -> StringUtils.endsWith(path, ".jmx"))
+                .collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(validFilePaths)) {
+                // 开始加密文件
+                // 取值：TenantKeyEnum#TENANT
+                List<TenantKeyExt> tenantKey = pluginManager.getExtension(WebTenantExtApi.class)
+                    .getTenantKey(WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), "TENANT");
+                if (CollectionUtils.isNotEmpty(tenantKey)) {
+                    tenantKey.sort(Comparator.comparing(TenantKeyExt::getVersion).reversed()); // 此处重新排序
+                    TenantKeyExt tenantKeyExt = tenantKey.get(0);
+                    validFilePaths.forEach(path -> FileEncoder.encode(tenantKeyExt, path));
+                }
+            }
+        }
     }
 
 }

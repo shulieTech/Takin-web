@@ -47,4 +47,6 @@ public class InterfacePerformanceConfigSceneRelateShipEntity extends TenantBaseE
     @TableField(value = "flow_id")
     private Long flowId;
 
+    @TableField(value = "features")
+    private String features;
 }

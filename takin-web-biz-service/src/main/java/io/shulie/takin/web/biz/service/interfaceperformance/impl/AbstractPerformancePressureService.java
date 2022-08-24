@@ -14,6 +14,7 @@ import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
+import io.shulie.takin.adapter.api.constant.EntrypointUrl;
 import io.shulie.takin.adapter.api.entrypoint.file.CloudFileApi;
 import io.shulie.takin.adapter.api.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageDeleteReq;
@@ -32,7 +33,6 @@ import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PressureConfigRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
@@ -98,7 +98,7 @@ public abstract class AbstractPerformancePressureService
     @Value("${takin.cloud.url}")
     protected String urlOfCloud;
 
-    protected String uriOfScriptGenerator = "/script/build";
+    protected String uriOfScriptGenerator = EntrypointUrl.MODULE_RRESSURE + EntrypointUrl.METHOD_SCRIPT_BUILD;
 
     Long fetchSceneId(Long apiId) {
         QueryWrapper queryWrapper = new QueryWrapper();

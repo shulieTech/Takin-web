@@ -142,6 +142,9 @@ public class SceneManageWrapperOutput extends ContextExt {
 
     private String ptConfig;
 
+    private String machineId;
+    private Integer machineType;
+
     @Data
     @EqualsAndHashCode(callSuper = true)
     public static class SceneBusinessActivityRefOutput extends SceneBusinessActivityRefBean {

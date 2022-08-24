@@ -22,4 +22,6 @@ public interface CloudAsyncService {
     void checkStartTimeout(String resourceId);
 
     void pressureStop(Long delay, String resourceId, Long jobId);
+
+    void checkFileFailed(String attach, String message);
 }

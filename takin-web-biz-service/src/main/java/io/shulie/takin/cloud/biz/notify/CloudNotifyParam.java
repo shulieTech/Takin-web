@@ -7,12 +7,14 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import io.shulie.takin.cloud.biz.notify.processor.calibration.DataCalibrationNotifyParam;
+import io.shulie.takin.cloud.biz.notify.processor.file.FileDownloadParam;
+import io.shulie.takin.cloud.biz.notify.processor.file.FileVerifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.jmeter.PressureErrorNotifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.jmeter.PressureHeartbeatNotifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.jmeter.PressureInterruptNotifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.jmeter.PressureStartNotifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.jmeter.PressureStopNotifyParam;
-import io.shulie.takin.cloud.biz.notify.processor.pod.FilePositionParam;
+import io.shulie.takin.cloud.biz.notify.processor.file.FilePositionParam;
 import io.shulie.takin.cloud.biz.notify.processor.pod.PodErrorNotifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.pod.PodHeartbeatNotifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.pod.PodStartNotifyParam;
@@ -36,6 +38,8 @@ import lombok.Data;
     @JsonSubTypes.Type(value = SlaNotifyParam.class, name = "301"),
     @JsonSubTypes.Type(value = DataCalibrationNotifyParam.class, name = "302"),
     @JsonSubTypes.Type(value = FilePositionParam.class, name = "303"),
+    @JsonSubTypes.Type(value = FileDownloadParam.class, name = "400"),
+    @JsonSubTypes.Type(value = FileVerifyParam.class, name = "500"),
 })
 public class CloudNotifyParam {
 

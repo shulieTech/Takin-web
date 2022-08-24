@@ -12,6 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import io.shulie.takin.adapter.api.entrypoint.watchman.CloudWatchmanApi;
 import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.service.async.CloudAsyncService;
@@ -77,6 +78,8 @@ public class PressureEventCenter extends AbstractIndicators {
     private SceneTaskService sceneTaskService;
     @Resource
     private CloudAsyncService cloudAsyncService;
+    @Resource
+    private CloudWatchmanApi cloudWatchmanApi;
 
     /**
      * 校验成功事件
@@ -92,6 +95,7 @@ public class PressureEventCenter extends AbstractIndicators {
         String resourceKey = PressureStartCache.getResourceKey(resourceId);
         redisClientUtil.hmset(resourceKey, PressureStartCache.CHECK_STATUS, CheckStatus.SUCCESS.ordinal());
         pressureTaskDAO.updateStatus(ext.getTaskId(), PressureTaskStateEnum.STARTING, null);
+        updateSceneMachineId(ext.getSceneId(), ext.getMachineId(), ext.getMachineType());
         cloudAsyncService.checkStartTimeout(resourceId);
     }
 
@@ -243,6 +247,7 @@ public class PressureEventCenter extends AbstractIndicators {
             releaseResource(resourceId);
             deleteReport(reportId, message);
             updateSceneFailed(context, SceneManageStatusEnum.FAILED);
+            updateSceneMachineId(context.getSceneId(), context.getMachineId(), context.getMachineType());
             checkFailed(context, message);
             pressureTaskDAO.updateStatus(context.getTaskId(), PressureTaskStateEnum.INACTIVE, null);
         }
@@ -274,7 +279,9 @@ public class PressureEventCenter extends AbstractIndicators {
                     PressureStartCache.getPodStartFirstKey(resourceId), PressureStartCache.getPodHeartbeatKey(resourceId));
             String resourceKey = PressureStartCache.getResourceKey(resourceId);
             Map<String, Object> param = new HashMap<>(4);
-            param.put(PressureStartCache.ERROR_MESSAGE, message);
+            if (!context.isFileFailed()) {
+                param.put(PressureStartCache.ERROR_MESSAGE, message);
+            }
             param.put(PressureStartCache.CHECK_STATUS, CheckStatus.FAIL.ordinal());
             redisClientUtil.hmset(resourceKey, param);
             redisClientUtil.expire(resourceKey, 60);
@@ -464,5 +471,46 @@ public class PressureEventCenter extends AbstractIndicators {
         final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
         redisTemplate.opsForList().remove(WebRedisKeyConstant.getTaskList(), 0, reportKey);
         redisTemplate.opsForValue().getOperations().delete(reportKey);
+    }
+
+    // 资源锁定成功
+    @IntrestFor(event = PressureStartCache.RESOURCE_LOCK_SUCCESS_EVENT)
+    public void resourceLockSuccess(Event event) {
+        ResourceContext ext = (ResourceContext) event.getExt();
+        String resourceId = ext.getResourceId();
+        String resourceKey = PressureStartCache.getResourceKey(resourceId);
+        redisClientUtil.hmset(resourceKey, PressureStartCache.RESOURCE_LOCK_STATUS, CheckStatus.SUCCESS.ordinal());
+        // 增加成功事件数
+        String attach = (String)redisClientUtil.hmget(resourceKey, PressureStartCache.FILE_ATTACH_ID);
+        incrementSuccessEvent(attach, "resource-lock");
+    }
+
+    // 文件下载成功
+    @IntrestFor(event = PressureStartCache.FILE_DOWNLOAD_SUCCESS_EVENT)
+    public void fileDownloadSuccess(Event event) {
+        String attach = (String) event.getExt();
+        incrementSuccessEvent(attach, "file-download");
+    }
+
+    // 文件校验成功
+    @IntrestFor(event = PressureStartCache.FILE_VERIFY_SUCCESS_EVENT)
+    public void fileVerifySuccess(Event event) {
+        String attach = (String) event.getExt();
+        incrementSuccessEvent(attach, "file-verify");
+    }
+
+    // 计数并触发校验成功事件
+    private void incrementSuccessEvent(String fileAttach, String type) {
+        String conditionKey = PressureStartCache.getAllConditionKey(fileAttach);
+        Long successEventCount = redisClientUtil.addSetValueAndReturnCount(conditionKey, type);
+        if (successEventCount == 3 && redisClientUtil.lockExpire(conditionKey, String.valueOf(System.currentTimeMillis()), 1, TimeUnit.DAYS)) {
+            String pressureFileKey = PressureStartCache.getPressureFileKey(fileAttach);
+            String resourceId = (String)redisClientUtil.hmget(pressureFileKey, PressureStartCache.RESOURCE_ID);
+            Event event = new Event();
+            event.setEventName(PressureStartCache.CHECK_SUCCESS_EVENT);
+            event.setExt(getResourceContext(resourceId));
+            eventCenterTemplate.doEvents(event);
+            redisClientUtil.del(conditionKey, pressureFileKey);
+        }
     }
 }

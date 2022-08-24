@@ -1,4 +1,4 @@
-package io.shulie.takin.cloud.biz.notify.processor.pod;
+package io.shulie.takin.cloud.biz.notify.processor.file;
 
 import lombok.Data;
 

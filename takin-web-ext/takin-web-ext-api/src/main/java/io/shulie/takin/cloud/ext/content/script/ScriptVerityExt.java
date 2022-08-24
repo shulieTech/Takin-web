@@ -27,13 +27,46 @@ public class ScriptVerityExt {
      */
     private Integer version;
 
+    private boolean fromScene;
     private boolean useNewVerify;
+    private List<String> watchmanIdList; // 压力机集群Id
     // 脚本文件路径, 此处是单个
-    private List<String> scriptPaths = new ArrayList<>();
+    private List<FileVerifyItem> scriptPaths = new ArrayList<>();
     // 插件路径，多个按逗号分隔
-    private List<String> pluginPaths = new ArrayList<>();
+    private List<FileVerifyItem> pluginPaths = new ArrayList<>();
     // 数据文件路径，多个按逗号分隔
-    private List<String> csvPaths = new ArrayList<>();
+    private List<FileVerifyItem> csvPaths = new ArrayList<>();
     // 附件文件路径，多个按逗号分隔
-    private List<String> attachments = new ArrayList<>();
+    private List<FileVerifyItem> attachments = new ArrayList<>();
+
+    @Data
+    public static class FileVerifyItem {
+        private String path;
+        private String md5;
+        private boolean calcFullPath;
+        private String rootPath;
+        private boolean bigFile;
+        private boolean inner;
+
+        public FileVerifyItem(String path, String md5) {
+            this.path = path;
+            this.md5 = md5;
+        }
+
+        public FileVerifyItem(String path, String md5, boolean bigFile) {
+            this.path = path;
+            this.md5 = md5;
+            this.bigFile = bigFile;
+        }
+
+        public FileVerifyItem(boolean inner, String path, String md5) {
+            this.path = path;
+            this.md5 = md5;
+            this.inner = inner;
+        }
+
+        public String getFullPath() {
+            return calcFullPath ? rootPath + "/" + path : path;
+        }
+    }
 }

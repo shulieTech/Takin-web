@@ -12,6 +12,7 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.adapter.api.model.request.file.UploadRequest;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
+import io.shulie.takin.cloud.biz.utils.DataUtils;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
@@ -39,7 +40,6 @@ import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelat
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
-import jdk.nashorn.internal.runtime.regexp.joni.ast.StringNode;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
@@ -390,7 +390,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         ResponseWrapper responseWrapper = null;
         try {
             responseWrapper = HttpSupport.get().get("post").to
-                    (urlOfCloud + uriOfScriptGenerator, JSON.toJSONString(reqParam), header);
+                    (DataUtils.mergeUrl(urlOfCloud, uriOfScriptGenerator), JSON.toJSONString(reqParam), header);
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }

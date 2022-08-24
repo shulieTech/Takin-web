@@ -9,6 +9,7 @@ import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.adapter.api.model.request.engine.EnginePluginsRefOpen;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneScriptRefOpen;
+import io.shulie.takin.web.ext.entity.tenant.EngineType;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -62,4 +63,7 @@ public class TaskInspectStartReq extends ContextExt {
 
     @ApiModelProperty(value = "脚本节点信息")
     private String scriptAnalysisResult;
+
+    private String machineId;
+    private EngineType engineType;
 }

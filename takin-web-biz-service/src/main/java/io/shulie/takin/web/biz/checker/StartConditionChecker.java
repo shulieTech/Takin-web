@@ -43,6 +43,13 @@ public interface StartConditionChecker extends Ordered {
             result.setMessage(message);
             return result;
         }
+
+        public static CheckResult pending(String type) {
+            CheckResult result = new CheckResult();
+            result.setType(type);
+            result.setStatus(CheckStatus.PENDING.ordinal());
+            return result;
+        }
     }
 
     enum CheckStatus {

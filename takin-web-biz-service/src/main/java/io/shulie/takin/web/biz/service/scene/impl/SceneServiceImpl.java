@@ -44,6 +44,7 @@ import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
+import io.shulie.takin.web.biz.utils.FileEncoder;
 import io.shulie.takin.web.common.constant.ScriptManageConstant;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.scene.SceneTypeEnum;
@@ -254,6 +255,7 @@ public class SceneServiceImpl implements SceneService {
             fileManageCreateRequest.setId(null);
             fileManageCreateRequest.setScriptContent(null);
         }
+        boolean encoded = false;
         ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
         analyzeRequest.setScriptFile(tmpFilePath + "/" + fileManageCreateRequest.getUploadId() + "/" + fileManageCreateRequest.getFileName());
         if (businessFlowParseRequest.getScriptFile().getId() != null) {
@@ -263,16 +265,23 @@ public class SceneServiceImpl implements SceneService {
                 throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "没有根据脚本id找到对应脚本！");
             }
             analyzeRequest.setScriptFile(fileManageResult.getUploadPath());
+            encoded = FileEncoder.fileEncoded(analyzeRequest.getScriptFile());
         }
         //解析脚本
-        List<ScriptNode> data = sceneManageApi.scriptAnalyze(analyzeRequest);
-        List<ScriptNode> testPlan = JmxUtil.getScriptNodeByType(NodeTypeEnum.TEST_PLAN, data);
-        if (CollectionUtils.isEmpty(testPlan)) {
-            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
+        List<ScriptNode> data = new ArrayList<>();
+        String testPlanName = "";
+        if (!encoded) {
+            //解析脚本
+            data = sceneManageApi.scriptAnalyze(analyzeRequest);
+            List<ScriptNode> testPlan = JmxUtil.getScriptNodeByType(NodeTypeEnum.TEST_PLAN, data);
+            if (CollectionUtils.isEmpty(testPlan)) {
+                throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
+            }
+            testPlanName = testPlan.get(0).getTestName();
         }
         String businessFlowName = null;
         if (businessFlowParseRequest.getId() == null) {
-            SceneCreateParam createParam = saveBusinessFlow(businessFlowParseRequest.getSource(), testPlan.get(0).getTestName(), data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
+            SceneCreateParam createParam = saveBusinessFlow(businessFlowParseRequest.getSource(), testPlanName, data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
             businessFlowParseRequest.setId(createParam.getId());
             businessFlowName = createParam.getSceneName();
         } else {
@@ -906,5 +915,10 @@ public class SceneServiceImpl implements SceneService {
     @Override
     public boolean existsScene(Long tenantId, String envCode) {
         return sceneDao.existsScene(tenantId, envCode);
+    }
+
+    @Override
+    public void update(SceneUpdateParam param) {
+        sceneDao.update(param);
     }
 }

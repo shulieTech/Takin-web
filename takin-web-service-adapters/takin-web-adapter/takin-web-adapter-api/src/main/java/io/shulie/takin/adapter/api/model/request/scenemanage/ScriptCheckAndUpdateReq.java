@@ -1,7 +1,9 @@
 package io.shulie.takin.adapter.api.model.request.scenemanage;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import io.shulie.takin.cloud.ext.content.script.ScriptVerityExt.FileVerifyItem;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -38,16 +40,17 @@ public class ScriptCheckAndUpdateReq extends ContextExt {
      */
     private Integer version = 1;
 
+    private List<String> watchmanIdList = new ArrayList<>();
     private boolean isPressure;
     private Long sceneId;
     // 主要是巡检使用，巡检关联的版本的业务活动
     private String sceneName;
     // 脚本文件路径
-    private String scriptPath;
+    private FileVerifyItem scriptPath;
     // 数据文件路径
-    private List<String> csvPaths;
+    private List<FileVerifyItem> csvPaths;
     // 附件文件路径
-    private List<String> attachments;
+    private List<FileVerifyItem> attachments;
     // 插件
     private List<EnginePlugin> plugins;
 

@@ -10,5 +10,5 @@ import lombok.EqualsAndHashCode;
 @JsonTypeName("203")
 public class PressureErrorNotifyParam extends CloudNotifyParam {
 
-    private JobExampleErrorInfo data;
+    private PressureExampleErrorInfo data;
 }

@@ -3,9 +3,24 @@ package io.shulie.takin.cloud.data.util;
 import java.util.Arrays;
 import java.util.List;
 
+import com.alibaba.ttl.TransmittableThreadLocal;
+
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 
 public abstract class PressureStartCache {
+
+    public static final TransmittableThreadLocal<String> ATTACH_ID_LOCAL = new TransmittableThreadLocal<>();
+
+    public static String removeFileAttachId() {
+        String attachId = ATTACH_ID_LOCAL.get();
+        ATTACH_ID_LOCAL.remove();
+        return attachId;
+    }
+
+    public static void setFileAttachId(String announceId) {
+        ATTACH_ID_LOCAL.set(announceId);
+    }
 
     // 缓存
     public static final String CHECK_STATUS = "check_status";
@@ -23,6 +38,16 @@ public abstract class PressureStartCache {
     public static final String ERROR_MESSAGE = "error_message";
     public static final String PT_TEST_TIME = "pt_test_time";
     public static final String PRESSURE_TYPE = "pressure_type";
+    public static final String MACHINE_ID = "machine_id";
+    public static final String MACHINE_TYPE = "machine_type";
+    public static final String RESOURCE_LOCK_STATUS = "resource_lock_status";
+
+    // 文件标识
+    public static final String FILE_ATTACH_ID = "file_attach_id";
+    public static final String FILE_DOWNLOAD_STATUS = "file_download_status";
+    public static final String FILE_VERIFY_STATUS = "file_verify_status";
+    public static final String FILE_DOWNLOAD_MESSAGE = "file_download_message";
+    public static final String FILE_VERIFY_MESSAGE = "file_verify_message";
 
     // 事件
     public static final String CHECK_FAIL_EVENT = "check_failed";
@@ -32,6 +57,16 @@ public abstract class PressureStartCache {
     public static final String START_FAILED = "start_fail";
     public static final String RUNNING_FAILED = "running_fail";
     public static final String PRESSURE_END = "pressure_end";
+    public static final String RESOURCE_LOCK_SUCCESS_EVENT = "resource_lock_success";
+    public static final String FILE_DOWNLOAD_SUCCESS_EVENT = "file_download_success";
+    public static final String FILE_VERIFY_SUCCESS_EVENT = "file_verify_success";
+
+
+    public static final String FEATURES_MACHINE_ID = "machineId"; // 集群Id
+    public static final String FEATURES_MACHINE_TYPE = "machineType"; // 集群类型
+    public static final String FEATURES_MACHINE_PTL_PATH = "machinePtlPath";
+    public static final String FEATURES_NFS_SERVER = "nfsServer";
+    public static final String FEATURES_NFS_ROOT= "nfsRoot";
 
     public static String getResourceKey(String resourceId) {
         return String.format("pressure:resource:%s:locking", resourceId);
@@ -176,6 +211,34 @@ public abstract class PressureStartCache {
 
     public static String getResourceFinishEventKey(String resourceId) {
         return String.format("pressure:resource:%s:finish_event", resourceId);
+    }
+
+    // 成功条件
+    public static String getAllConditionKey(String fileAttach) {
+        return "pressure:condition:" + getScriptFileKey(fileAttach);
+    }
+
+    public static String getPressureFileKey(String fileAttach) {
+        return "pressure:file:info:" + getScriptFileKey(fileAttach);
+    }
+
+    // 下载的文件集合
+    public static String getScriptDownloadFilesKey(String fileAttach) {
+        return "pressure:file:download:" + getScriptFileKey(fileAttach);
+    }
+
+    // 文件校验hash大key
+    public static String getScriptVerifyKey(String fileAttach) {
+        return "pressure:file:verify:" + getScriptFileKey(fileAttach);
+    }
+
+    public static String getScriptMappingKey(String fileAttach) {
+        return "pressure:file:mapping:" + getScriptFileKey(fileAttach);
+    }
+
+    // 文件字段key
+    private static String getScriptFileKey(String fileAttach) {
+        return String.format("%s:%s:%s", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), fileAttach);
     }
 
     public static List<String> clearCacheKey(String resourceId, Long sceneId) {

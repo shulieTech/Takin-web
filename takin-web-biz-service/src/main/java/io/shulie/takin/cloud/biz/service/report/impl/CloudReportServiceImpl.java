@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -73,6 +74,7 @@ import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
 import io.shulie.takin.cloud.biz.service.scene.ReportEventService;
 import io.shulie.takin.cloud.biz.service.scene.SceneTaskEventService;
+import io.shulie.takin.cloud.biz.utils.DataUtils;
 import io.shulie.takin.cloud.common.bean.scenemanage.SceneManageQueryOptions;
 import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
 import io.shulie.takin.cloud.common.bean.scenemanage.WarnBean;
@@ -87,11 +89,8 @@ import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
-import io.shulie.takin.cloud.common.utils.*;
-import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
-import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
-import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
+import io.shulie.takin.cloud.common.utils.CommonUtil;
 import io.shulie.takin.cloud.common.utils.GsonUtil;
 import io.shulie.takin.cloud.common.utils.JsonPathUtil;
 import io.shulie.takin.cloud.common.utils.JsonUtil;
@@ -99,6 +98,8 @@ import io.shulie.takin.cloud.common.utils.NumberUtil;
 import io.shulie.takin.cloud.common.utils.TestTimeUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
+import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
+import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
 import io.shulie.takin.cloud.data.param.report.ReportUpdateConclusionParam;
 import io.shulie.takin.cloud.data.param.report.ReportUpdateParam;
@@ -119,6 +120,7 @@ import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -258,6 +260,10 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             if (jsonObject.containsKey(ReportConstants.SLA_ERROR_MSG)) {
                 detail.setSlaMsg(
                     JsonHelper.json2Bean(jsonObject.getString(ReportConstants.SLA_ERROR_MSG), SlaBean.class));
+            }
+            String ptlPath = jsonObject.getString(PressureStartCache.FEATURES_MACHINE_PTL_PATH);
+            if (StringUtils.isNotBlank(ptlPath)) {
+                detail.setPtlPath(Arrays.asList(ptlPath.split(",")));
             }
         }
         dealCalibrationStatus(detail);
@@ -1027,13 +1033,13 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     @Override
     public void updateReportOnSceneStartFailed(Long sceneId, Long reportId, String errMsg) {
+        ReportResult report = reportDao.getById(reportId);
+        getReportFeatures(report, ReportConstants.FEATURES_ERROR_MSG, errMsg);
         reportDao.updateReport(new ReportUpdateParam() {{
             setSceneId(sceneId);
             setId(reportId);
             setStatus(ReportConstants.FINISH_STATUS);
-            JSONObject errorMsg = new JSONObject();
-            errorMsg.put(ReportConstants.FEATURES_ERROR_MSG, errMsg);
-            setFeatures(errorMsg.toJSONString());
+            setFeatures(report.getFeatures());
         }});
     }
 
@@ -1567,14 +1573,32 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (reportResult == null) {
             throw new TakinCloudException(TakinCloudExceptionEnum.FILE_ZIP_ERROR, "未找到报告");
         }
+        String features = reportResult.getFeatures();
+        if (StringUtils.isNotBlank(features)
+            && JSONObject.parseObject(features).containsKey(PressureStartCache.FEATURES_MACHINE_PTL_PATH)) {
+            return "";
+        }
+        String realJtlPath = pressureEngineJtlPath;
+        String realLogPath = pressureEngineLogPath;
+
+        // 获取集群上报的挂载目录并替换,此处不考虑分别独立挂载nfs的情况
+        if (StringUtils.isNotBlank(features)) {
+            JSONObject engineInfos = JSONObject.parseObject(features);
+            String nfsRoot = engineInfos.getString(PressureStartCache.FEATURES_NFS_ROOT);
+            if (StringUtils.isNotBlank(nfsRoot)) {
+                realJtlPath = DataUtils.mergeDirPath(nfsRoot, "ptl");
+                realLogPath = DataUtils.mergeDirPath(nfsRoot, "logs");
+            }
+        }
+
         // 1.查看是否有jtl.zip /nfs_dir/jtl/127/1637/pressure.jtl
-        String jtlPath = pressureEngineJtlPath + "/" + reportResult.getSceneId() + "/" + reportId;
-        String logPath = pressureEngineLogPath + "/" + reportResult.getSceneId() + "/" + reportId;
+        String jtlPath = realJtlPath + "/" + reportResult.getSceneId() + "/" + reportId;
+        String logPath = realLogPath + "/" + reportResult.getSceneId() + "/" + reportId;
         Long jobId = reportResult.getJobId();
         if (Objects.nonNull(jobId)) {
             String resourceId = reportResult.getResourceId();
-            jtlPath = pressureEngineJtlPath + "/" + resourceId + "/" + jobId;
-            logPath = pressureEngineLogPath + "/" + resourceId + "/" + jobId;
+            jtlPath = realJtlPath + "/" + resourceId + "/" + jobId;
+            logPath = realLogPath + "/" + resourceId + "/" + jobId;
         }
         if (new File(jtlPath + "/" + "Jmeter.zip").exists()) {
             // 2.存在直接返回

@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.adapter.api.model.common.TimeBean;
+import io.shulie.takin.web.ext.entity.tenant.EngineType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -97,4 +98,7 @@ public class SceneManageWrapperInput extends ContextExt {
     private Long operateId;
 
     private String operateName;
+
+    private String machineId;
+    private EngineType engineType;
 }

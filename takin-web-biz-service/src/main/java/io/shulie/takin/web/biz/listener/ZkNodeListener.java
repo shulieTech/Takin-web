@@ -20,6 +20,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ import java.util.ResourceBundle;
  */
 @Slf4j
 @Component
-public class ZkNodeListener implements Initializable {
+public class ZkNodeListener implements InitializingBean {
 
     @Resource
     private AgentZkClientUtil client;
@@ -43,7 +44,7 @@ public class ZkNodeListener implements Initializable {
     private ApplicationService applicationService;
 
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void afterPropertiesSet() throws Exception {
         try {
             CuratorFramework client = this.client.getClient();
             String agentRegisteredPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.AGENT_REGISTERED_PATH);
@@ -61,7 +62,8 @@ public class ZkNodeListener implements Initializable {
                             if (CollectionUtils.isEmpty(agentIds)){
                                 continue;
                             }
-                            Long appId = applicationService.queryApplicationIdByAppName(application);
+                            String applicationName = application.substring(application.lastIndexOf("/"));
+                            Long appId = applicationService.queryApplicationIdByAppName(applicationName);
                             if (appId == null){
                                 continue;
                             }
@@ -75,7 +77,7 @@ public class ZkNodeListener implements Initializable {
                                 createAgentReportParam.setProgressId(applicationNodeDTO.getPid());
                                 createAgentReportParam.setAgentVersion(applicationNodeDTO.getAgentVersion());
                                 createAgentReportParam.setApplicationId(appId);
-                                createAgentReportParam.setApplicationName(application);
+                                createAgentReportParam.setApplicationName(applicationName);
                                 createAgentReportParam.setAgentId(applicationNodeDTO.getAgentId());
                                 createAgentReportParam.setStatus(applicationNodeDTO.isStatus() ? AgentReportStatusEnum.RUNNING.getVal() : AgentReportStatusEnum.ERROR.getVal());
                                 createAgentReportParam.setAgentErrorInfo(applicationNodeDTO.getErrorMsg());

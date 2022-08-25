@@ -285,9 +285,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private ApplicationDsDbManageDAO dsDbManageDAO;
 
     @Autowired
-    private AgentReportService agentReportService;
-
-    @Autowired
     @Qualifier("agentDataThreadPool")
     private ThreadPoolExecutor agentDataThreadPool;
 
@@ -686,14 +683,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
 
         if (param.getSwitchErrorMap() != null && !param.getSwitchErrorMap().isEmpty()) {
-            //兼容agent1.0接口，所以这里更新应用状态
-            CreateAgentReportParam createAgentReportParam = new CreateAgentReportParam();
-            createAgentReportParam.setApplicationId(applicationId);
-            createAgentReportParam.setApplicationName(param.getApplicationName());
-            createAgentReportParam.setAgentId(param.getAgentId());
-            createAgentReportParam.setStatus(AgentReportStatusEnum.ERROR.getVal());
-//            createAgentReportParam.setAgentErrorInfo();
-            agentReportService.insertOrUpdate(createAgentReportParam);
             //应用id+ agent id唯一键 作为节点信息
             String envCode = WebPluginUtils.traceEnvCode();
             String key = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, tenantAppKey, envCode,

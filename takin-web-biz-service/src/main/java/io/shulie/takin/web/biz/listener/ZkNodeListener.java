@@ -58,12 +58,11 @@ public class ZkNodeListener implements InitializingBean {
                     log.info("获取到当前所有的子节点为:" + applicationNames);
                     if (CollectionUtils.isNotEmpty(applicationNames)) {
                         for (String application : applicationNames) {
-                            List<String> agentIds = client.getChildren().forPath(application);
+                            List<String> agentIds = client.getChildren().forPath(finalAgentRegisteredPath + "/" + application);
                             if (CollectionUtils.isEmpty(agentIds)) {
                                 continue;
                             }
-                            String applicationName = application.substring(application.lastIndexOf("/"));
-                            Long appId = applicationService.queryApplicationIdByAppName(applicationName);
+                            Long appId = applicationService.queryApplicationIdByAppName(application);
                             if (appId == null) {
                                 continue;
                             }
@@ -77,7 +76,7 @@ public class ZkNodeListener implements InitializingBean {
                                 createAgentReportParam.setProgressId(applicationNodeDTO.getPid());
                                 createAgentReportParam.setAgentVersion(applicationNodeDTO.getAgentVersion());
                                 createAgentReportParam.setApplicationId(appId);
-                                createAgentReportParam.setApplicationName(applicationName);
+                                createAgentReportParam.setApplicationName(application);
                                 createAgentReportParam.setAgentId(applicationNodeDTO.getAgentId());
                                 createAgentReportParam.setStatus(applicationNodeDTO.isStatus() ? AgentReportStatusEnum.RUNNING.getVal() : AgentReportStatusEnum.ERROR.getVal());
                                 createAgentReportParam.setAgentErrorInfo(applicationNodeDTO.getErrorMsg());

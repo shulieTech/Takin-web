@@ -79,6 +79,7 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoRe
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
 import io.shulie.takin.web.biz.pojo.vo.application.ApplicationDsManageExportVO;
 import io.shulie.takin.web.biz.service.*;
+import io.shulie.takin.web.biz.service.agentupgradeonline.AgentReportService;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
@@ -98,6 +99,7 @@ import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
+import io.shulie.takin.web.common.enums.fastagentaccess.AgentReportStatusEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -113,6 +115,7 @@ import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.*;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
 import io.shulie.takin.web.data.model.mysql.*;
+import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
 import io.shulie.takin.web.data.param.application.*;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
@@ -280,6 +283,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private ApplicationDsDbManageDAO dsDbManageDAO;
+
+    @Autowired
+    private AgentReportService agentReportService;
 
     @Autowired
     @Qualifier("agentDataThreadPool")
@@ -680,6 +686,14 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
 
         if (param.getSwitchErrorMap() != null && !param.getSwitchErrorMap().isEmpty()) {
+            //兼容agent1.0接口，所以这里更新应用状态
+            CreateAgentReportParam createAgentReportParam = new CreateAgentReportParam();
+            createAgentReportParam.setApplicationId(applicationId);
+            createAgentReportParam.setApplicationName(param.getApplicationName());
+            createAgentReportParam.setAgentId(param.getAgentId());
+            createAgentReportParam.setStatus(AgentReportStatusEnum.ERROR.getVal());
+//            createAgentReportParam.setAgentErrorInfo();
+            agentReportService.insertOrUpdate(createAgentReportParam);
             //应用id+ agent id唯一键 作为节点信息
             String envCode = WebPluginUtils.traceEnvCode();
             String key = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, tenantAppKey, envCode,

@@ -147,7 +147,7 @@ public class AgentPushController {
 
     /**
      * 判断是否需要上传
-     *
+     * 兼容agent1.0，将此接口作为心跳接口使用，因为agent1.0每5s调用一次该接口
      * @param uploadNeedVo appName与数量
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      */

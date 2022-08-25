@@ -468,6 +468,12 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             // 如果结束时间 小于等于当前时间，数据不用补充，
             // 如果结束时间 大于 当前时间，需要补充期间每5秒的数据 延后5s
             while (isSaveLastPoint && timeWindow <= endTimeWindow && timeWindow <= nowTimeWindow) {
+                try {
+                    //休眠300毫秒，避免一直查询
+                    Thread.sleep(300);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 timeWindow = reduceMetrics(report, podNum, eTime, timeWindow, nodes);
                 timeWindow = CollectorUtil.getNextTimeWindow(timeWindow);
             }
@@ -665,6 +671,8 @@ public class PushWindowDataScheduled extends AbstractIndicators {
                         break;
                     }
                     timeWindow = CollectorUtil.getNextTimeWindow(timeWindow);
+                    //休眠300毫秒，避免一直查询
+                    Thread.sleep(300);
                 } while (timeWindow <= breakTime);
 
                 if (!dataCalibration && null != r.getEndTime() && timeWindow >= r.getEndTime().getTime()) {

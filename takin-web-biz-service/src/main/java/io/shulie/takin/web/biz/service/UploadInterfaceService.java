@@ -103,17 +103,18 @@ public class UploadInterfaceService extends CommonService implements Initializin
             return;
         }
         try {
+            String registeredPath = agentRegisteredPath;
             CuratorFramework client = this.agentZkClientUtil.getClient();
-            if (!agentRegisteredPath.endsWith("/")) {
-                agentRegisteredPath = agentRegisteredPath + "/";
+            if (!registeredPath.endsWith("/")) {
+                registeredPath = registeredPath + "/";
             }
-            agentRegisteredPath = agentRegisteredPath + appName;
-            List<String> agentIds = client.getChildren().forPath(agentRegisteredPath);
+            registeredPath = registeredPath + appName;
+            List<String> agentIds = client.getChildren().forPath(registeredPath);
             if (CollectionUtils.isEmpty(agentIds)) {
                 return;
             }
             for (String agentId : agentIds) {
-                byte[] bytes = client.getData().forPath(agentRegisteredPath + "/" + agentId);
+                byte[] bytes = client.getData().forPath(registeredPath + "/" + agentId);
                 String s = new String(bytes);
                 JSONObject jsonObject = JSONObject.parseObject(s);
                 if (jsonObject.get("simulatorVersion") != null) {

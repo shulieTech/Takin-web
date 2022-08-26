@@ -98,8 +98,6 @@ public class UploadInterfaceService extends CommonService implements Initializin
             }
             return;
         }
-
-        log.info("zk监听的节点为:" + agentRegisteredPath);
         if (agentRegisteredPath == null) {
             log.warn("zk节点信息不存在，本次不会做节点监听，如果需要兼容agent1.0版本请在数据库添加zk节点");
             return;
@@ -199,5 +197,6 @@ public class UploadInterfaceService extends CommonService implements Initializin
     @Override
     public void afterPropertiesSet() throws Exception {
         agentRegisteredPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.AGENT_REGISTERED_PATH);
+        log.info("上报agent状态的zk节点为:" + agentRegisteredPath);
     }
 }

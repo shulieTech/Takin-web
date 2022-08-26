@@ -56,7 +56,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -174,16 +173,19 @@ public class ShiftCloudController {
             needAuth = ActionTypeEnum.QUERY
     )
     public BaseResult getSceneManagers(@RequestBody ShiftCloudVO shiftCloudVO, HttpServletRequest request) {
-        String token = request.getAttribute("token").toString();
-        String pid = request.getAttribute("pid").toString();
+
 
         BaseResult result = new BaseResult<>();
         try {
+            String token = request.getAttribute("token").toString();
+            String pid = request.getAttribute("pid").toString();
+            String tenantId = request.getAttribute("tenantId").toString();
+            String tenantCode = request.getAttribute("tenantCode").toString();
             SceneManageQueryVO queryVO = new SceneManageQueryVO();
-            queryVO.setTenantId(4l);
+            queryVO.setTenantId(Long.valueOf(tenantId));
             queryVO.setPageNumber(shiftCloudVO.getPage_index());
             queryVO.setPageSize(shiftCloudVO.getPage_size());
-            queryVO.setTenantCode("yidongyun");
+            queryVO.setTenantCode(tenantCode);
             if (StringUtils.isNoneBlank(shiftCloudVO.getTask_name())) {
                 queryVO.setSceneName(shiftCloudVO.getTask_name());
             }
@@ -224,7 +226,7 @@ public class ShiftCloudController {
                 }
                 //TODO 数据不足是拿基准测试补齐
                 Map data = new HashMap();
-                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?tenantCode=yidongyun&token="+token+"&envCode="+pid+"&current=" + current + "&pageSize=" + pageSize + "&status=", data, 10000);
+                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?tenantCode="+tenantCode+"&token="+token+"&envCode="+pid+"&current=" + current + "&pageSize=" + pageSize + "&status=", data, 10000);
                 if (StringUtils.isNotBlank(responseJson)) {
                     Long finalId = id;
                     JSONArray ja = JSON.parseObject(responseJson).getJSONObject("data").getJSONArray("records");
@@ -238,6 +240,7 @@ public class ShiftCloudController {
             result.setData(map);
             return result;
         } catch (Exception e) {
+            log.error(e);
             result.fail(e.getMessage());
             return result;
         }
@@ -265,6 +268,8 @@ public class ShiftCloudController {
 
         BaseResult baseResult = new BaseResult();
         try {
+            String tenantId = request.getAttribute("tenantId").toString();
+            String tenantCode = request.getAttribute("tenantCode").toString();
             String taskId = shiftCloudVO.getTool_task_id();
             if (isWeb(taskId)) {
                 SceneActionParam param = new SceneActionParam();
@@ -281,7 +286,7 @@ public class ShiftCloudController {
                             data.put("tool_execute_id", WEB + toolExecuteId);
                             ScheduledExecutorService pool = Executors.newScheduledThreadPool(4);
                             pool.scheduleWithFixedDelay(() -> {
-                                boolean status = this.pushStatus(WEB + toolExecuteId,token,pid);
+                                boolean status = this.pushStatus(WEB + toolExecuteId,token,pid,tenantCode);
                                 if (status) {
                                     pool.shutdown();
                                 }
@@ -297,15 +302,15 @@ public class ShiftCloudController {
                 int type;
                 String suites = null;
 
-                String rj = HttpUtil.get(path + "/api/benchmark/scene/detail?tenantCode=yidongyun&token="+token+"&envCode="+pid+"&id=" + taskId.replaceFirst(BENCH, ""), 10000);
+                String rj = HttpUtil.get(path + "/api/benchmark/scene/detail?tenantCode="+tenantCode+"&token="+token+"&envCode="+pid+"&id=" + taskId.replaceFirst(BENCH, ""), 10000);
                 if (StringUtils.isNotBlank(rj)) {
                     BenchmarkSceneDetailVO b = JSON.parseObject(rj).getObject("data", BenchmarkSceneDetailVO.class);
                     suites = b.getSuites();
                 }
-                getId(flag, id, type = 1, suites,token,pid);
-                if (!flag[0]) getId(flag, id, type = 2, suites, token, pid);
-                if (!flag[0]) getId(flag, id, type = 1, null, token, pid);
-                if (!flag[0]) getId(flag, id, type = 2, null, token, pid);
+                getId(flag, id, type = 1, suites,token,pid,tenantCode);
+                if (!flag[0]) getId(flag, id, type = 2, suites, token, pid, tenantCode);
+                if (!flag[0]) getId(flag, id, type = 1, null, token, pid, tenantCode);
+                if (!flag[0]) getId(flag, id, type = 2, null, token, pid, tenantCode);
                 if (!flag[0]) baseResult.fail("压力机繁忙");
                 else {
                     Map data = new HashMap();
@@ -316,7 +321,7 @@ public class ShiftCloudController {
 
 
                     CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-                    HttpPost httpPost = new HttpPost(path + "api/pressure/start?tenantCode=yidongyun&token="+token+"&envCode="+pid);
+                    HttpPost httpPost = new HttpPost(path + "api/pressure/start?tenantCode="+tenantCode+"&token="+token+"&envCode="+pid);
                     CloseableHttpResponse response = null;
                     String responseJson = null;
                     try {
@@ -352,7 +357,7 @@ public class ShiftCloudController {
                             ScheduledExecutorService pool = Executors.newScheduledThreadPool(4);
                             String finalResponseJson = responseJson;
                             pool.scheduleWithFixedDelay(() -> {
-                                boolean status = this.pushStatus(BENCH + JSON.parseObject(finalResponseJson).getLong("data"),token,pid);
+                                boolean status = this.pushStatus(BENCH + JSON.parseObject(finalResponseJson).getLong("data"),token,pid, tenantCode);
                                 if (status) {
                                     pool.shutdown();
                                 }
@@ -380,9 +385,9 @@ public class ShiftCloudController {
         }
     }
 
-    private void getId(final boolean[] flag, final AtomicLong id, int i, String suite, String token, String pid) {
+    private void getId(final boolean[] flag, final AtomicLong id, int i, String suite, String token, String pid, String tenantCode) {
         Map data = new HashMap();
-        String responseJson = HttpUtil.get(path + "/api/machine/list?tenantCode=yidongyun&token="+token+"&envCode="+pid+"&type=" + i, data, 10000);
+        String responseJson = HttpUtil.get(path + "/api/machine/list?tenantCode="+tenantCode+"&token="+token+"&envCode="+pid+"&type=" + i, data, 10000);
         if (StringUtils.isNotBlank(responseJson)) {
             JSON.parseObject(responseJson).getJSONArray("data").forEach(o -> {
                 if (!flag[0]) {
@@ -413,19 +418,19 @@ public class ShiftCloudController {
     }
 
     //2.5
-    public boolean pushStatus(String rd, String token, String pid) {
+    public boolean pushStatus(String rd, String token, String pid, String tenantCode) {
         Map data = new HashMap();
         if (isWeb(rd)) {
             long reportId = Long.parseLong(rd.replaceFirst(WEB, ""));
             try {
-                data = this.getData(reportId, true, token, pid);
+                data = this.getData(reportId, true, token, pid,tenantCode);
             } catch (Exception e) {
                 log.info("error = "+e.getStackTrace().toString());
             }
         } else {
             long reportId = Long.parseLong(rd.replaceFirst(BENCH, ""));
             try {
-                data = this.getData(reportId, false, token, pid);
+                data = this.getData(reportId, false, token, pid, tenantCode);
             } catch (Exception e) {
                 log.info("error = "+e.getStackTrace().toString());
             }
@@ -466,14 +471,16 @@ public class ShiftCloudController {
 
         String token = request.getAttribute("token").toString();
         String pid = request.getAttribute("pid").toString();
+        String tenantId = request.getAttribute("tenantId").toString();
+        String tenantCode = request.getAttribute("tenantCode").toString();
 
         BaseResult baseResult = new BaseResult();
         Map data = new HashMap();
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
             if (isWeb(shiftCloudVO.getTool_execute_id())) {
-                data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")), true,token,pid);
+                data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")), true,token,pid, tenantCode);
             } else {
-                data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")), false, token, pid);
+                data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")), false, token, pid, tenantCode);
             }
         }
         log.info("主动拉取数据 report id = "+shiftCloudVO.getTool_execute_id()+" data="+JSON.toJSONString(data));
@@ -481,7 +488,7 @@ public class ShiftCloudController {
         return baseResult;
     }
 
-    private Map getData(long reportId, boolean isWeb, String token, String pid) throws ParseException {
+    private Map getData(long reportId, boolean isWeb, String token, String pid, String tenantCode) throws ParseException {
         HashMap data = new HashMap();
         if (isWeb) {
             ResponseResult<ReportDetailOutput> responseResult = reportController.getReportByReportId(reportId);
@@ -584,7 +591,7 @@ public class ShiftCloudController {
             data.put("tool_execute_id", BENCH + reportId);
             Map result = new HashMap();
             result.put("id", reportId);
-            String responseJson = HttpUtil.get(path + "/api/task?tenantCode=yidongyun&token="+token+"&envCode="+pid, result, 10000);
+            String responseJson = HttpUtil.get(path + "/api/task?tenantCode="+tenantCode+"&token="+token+"&envCode="+pid, result, 10000);
             int s = 0;
             int c1 = 0;
             int c3 = 0;
@@ -619,7 +626,7 @@ public class ShiftCloudController {
                 else c3=s;
             }
             data.put("tool_code", "Performance");
-            String taskResponseJson = HttpUtil.get(path + "/api/task/n?tenantCode=yidongyun&token="+token+"&envCode="+pid, result, 10000);
+            String taskResponseJson = HttpUtil.get(path + "/api/task/n?tenantCode="+tenantCode+"&token="+token+"&envCode="+pid, result, 10000);
             Map analysis = new HashMap();
             if (StringUtils.isNotBlank(taskResponseJson))
                 analysis.put("coverDemand", Integer.parseInt(taskResponseJson));
@@ -646,6 +653,8 @@ public class ShiftCloudController {
 
         String token = request.getAttribute("token").toString();
         String pid = request.getAttribute("pid").toString();
+        String tenantId = request.getAttribute("tenantId").toString();
+        String tenantCode = request.getAttribute("tenantCode").toString();
 
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
             if (isWeb(shiftCloudVO.getTool_execute_id())) {
@@ -654,7 +663,7 @@ public class ShiftCloudController {
                     this.export(url.getData(), response);
                 }
             } else {
-                List<String> paths = benchExport(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")),token,pid);
+                List<String> paths = benchExport(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")),token,pid,tenantCode);
                 paths.forEach(p -> export(p, response));
             }
 
@@ -685,7 +694,7 @@ public class ShiftCloudController {
         }
     }
 
-    private List<String> benchExport(long reportId, String token, String pid) {
+    private List<String> benchExport(long reportId, String token, String pid, String tenantCode) {
         String lockKey = String.format(LockKeyConstants.LOCK_REPORT_EXPORT, reportId);
         if (!distributedLock.tryLockSecondsTimeUnit(lockKey, 0L, 30L)) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, "操作太频繁!");
@@ -693,14 +702,14 @@ public class ShiftCloudController {
         List paths = new ArrayList();
         Map result = new HashMap();
         result.put("id", reportId);
-        String taskResponseJson = HttpUtil.get(path + "/api/task/task?tenantCode=yidongyun&token="+token+"&envCode="+pid, result, 10000);
+        String taskResponseJson = HttpUtil.get(path + "/api/task/task?tenantCode="+tenantCode+"&token="+token+"&envCode="+pid, result, 10000);
         if (StringUtils.isNotBlank(taskResponseJson)) {
             Map<String, Object> dataModel = new HashMap<>();
             List<PressureTaskResult> t = JSON.parseArray(taskResponseJson, PressureTaskResult.class);
             if (CollectionUtils.isNotEmpty(t)) {
                 for (PressureTaskResult p : t) {
                     result.put("reportId", p.getTaskId());
-                    String d = HttpUtil.get(path + "/api/benchmark/result/detail?tenantCode=yidongyun&token="+token+"&envCode="+pid, result, 10000);
+                    String d = HttpUtil.get(path + "/api/benchmark/result/detail?tenantCode="+tenantCode+"&token="+token+"&envCode="+pid, result, 10000);
                     if (StringUtils.isNotBlank(d)) {
                         dataModel.put("list", JSON.parseArray(JSON.parseObject(d).getString("data"),PressureTaskResultVO.class));
                         String content = pdfUtil.parseFreemarker("report/tpl.html", dataModel);

@@ -135,10 +135,17 @@ public class AgentPullController {
         return ResponseResult.success(agentConfigCacheManager.getRemoteCallConfig(appName));
     }
 
+    /**
+     * agent1.0的白名单获取方式，兼容当前的白名单方式
+     * @param appName -
+     * @param userAppKey -
+     * @return
+     */
     @ApiOperation(value = "远程调用接口获取")
     @RequestMapping(value = "/confcenter/wbmnt/query/{userAppKey}", method = RequestMethod.GET)
     public ResponseResult<AgentRemoteCallVO> wbmntQuery(
-            @ApiParam(name = "appName", value = "应用名") @RequestParam("appName") String appName, @PathParam("userAppKey") String userAppKey) {
+            @ApiParam(name = "appName", value = "应用名") @RequestParam("appName") String appName,
+            @PathParam("userAppKey") String userAppKey) {
         return ResponseResult.success(agentConfigCacheManager.getRemoteCallConfig(appName));
     }
 

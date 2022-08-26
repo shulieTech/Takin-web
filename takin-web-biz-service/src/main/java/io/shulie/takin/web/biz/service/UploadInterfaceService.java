@@ -55,7 +55,7 @@ public class UploadInterfaceService extends CommonService implements Initializin
 
     private String agentRegisteredPath = null;
 
-    private ConcurrentHashMap<String, Long> agentDealTimeMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Long> agentDealTimeMap = new ConcurrentHashMap<>();
 
     /**
      * 判断是否需要上传接口信息

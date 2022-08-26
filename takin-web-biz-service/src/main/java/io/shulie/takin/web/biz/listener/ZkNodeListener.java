@@ -67,7 +67,7 @@ public class ZkNodeListener implements InitializingBean {
                                 continue;
                             }
                             for (String agentId : agentIds) {
-                                byte[] bytes = client.getData().forPath(agentId);
+                                byte[] bytes = client.getData().forPath(finalAgentRegisteredPath + "/" + application + "/" + agentId);
                                 String s = new String(bytes);
                                 ApplicationNodeZkDTO applicationNodeDTO = JsonHelper.json2Bean(s, ApplicationNodeZkDTO.class);
                                 //兼容agent1.0接口，所以这里更新应用状态

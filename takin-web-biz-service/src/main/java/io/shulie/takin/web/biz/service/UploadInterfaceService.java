@@ -1,8 +1,6 @@
 package io.shulie.takin.web.biz.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.fastjson.JSONObject;
@@ -57,6 +55,8 @@ public class UploadInterfaceService extends CommonService implements Initializin
 
     private final ConcurrentHashMap<String, Long> agentDealTimeMap = new ConcurrentHashMap<>();
 
+    private final Map<String, Long> simulatorAgentMap = new ConcurrentHashMap<>();
+
     /**
      * 判断是否需要上传接口信息
      *
@@ -85,11 +85,19 @@ public class UploadInterfaceService extends CommonService implements Initializin
         long timeMillis = System.currentTimeMillis();
         if (agentDealTimeMap.containsKey(appName)) {
             //因为这个接口目前5s调用一次，心跳数据一分钟更新一次就好，这里做一次限制，避免服务压力太大
-            if (timeMillis - agentDealTimeMap.get(appName) < 1000 * 40){
+            if (timeMillis - agentDealTimeMap.get(appName) < 1000 * 60){
                 return;
             }
         }
         agentDealTimeMap.put(appName, timeMillis);
+
+        if (simulatorAgentMap.containsKey(appName)){
+            //30分钟清除一次数据，避免agent版本切换
+            if (timeMillis - simulatorAgentMap.get(appName) > 1000 * 60 * 30){
+                simulatorAgentMap.remove(appName);
+            }
+            return;
+        }
 
         log.info("zk监听的节点为:" + agentRegisteredPath);
         if (agentRegisteredPath == null) {
@@ -117,6 +125,7 @@ public class UploadInterfaceService extends CommonService implements Initializin
                 String s = new String(bytes);
                 JSONObject jsonObject = JSONObject.parseObject(s);
                 if (jsonObject.get("simulatorVersion") != null) {
+                    simulatorAgentMap.put(appName, timeMillis);
                     log.info("agent2.0的数据，不予处理，agent版本为:" + jsonObject.get("simulatorVersion"));
                     return;
                 }

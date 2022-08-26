@@ -88,9 +88,8 @@ public class UploadInterfaceService extends CommonService implements Initializin
             if (timeMillis - agentDealTimeMap.get(appName) < 1000 * 40){
                 return;
             }
-        } else {
-            agentDealTimeMap.put(appName, timeMillis);
         }
+        agentDealTimeMap.put(appName, timeMillis);
 
         log.info("zk监听的节点为:" + agentRegisteredPath);
         if (agentRegisteredPath == null) {

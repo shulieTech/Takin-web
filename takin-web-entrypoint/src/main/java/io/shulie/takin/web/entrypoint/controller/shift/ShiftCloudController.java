@@ -240,7 +240,7 @@ public class ShiftCloudController {
             result.setData(map);
             return result;
         } catch (Exception e) {
-            log.error(e);
+            e.printStackTrace();
             result.fail(e.getMessage());
             return result;
         }

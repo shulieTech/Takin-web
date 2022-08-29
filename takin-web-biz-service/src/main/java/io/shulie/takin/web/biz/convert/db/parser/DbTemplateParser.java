@@ -87,19 +87,19 @@ public class DbTemplateParser extends AbstractTemplateParser {
             list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
         }
         list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
-        if (select.isNewVersion()) {
-            List<InputWithSelectStyle.NodeDetail> dataSource_pwd = new ArrayList<>();
-            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key8, "1"));
-            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
-            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key9, "3"));
+//        if (select.isNewVersion()) {
+        List<InputWithSelectStyle.NodeDetail> dataSource_pwd = new ArrayList<>();
+        dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key8, "1"));
+        dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
+        dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key9, "3"));
 
-            List<String> keys_pwd = Arrays.asList(key3, key4);
-            InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
-            InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.SELECT_WITH_INPUT_PWD.getCode(), nodeInfo_pwd);
-            list.add(selectStyle_pwd);
-        } else {
-            list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
-        }
+        List<String> keys_pwd = Arrays.asList(key3, key4);
+        InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
+        InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.SELECT_WITH_INPUT_PWD.getCode(), nodeInfo_pwd);
+        list.add(selectStyle_pwd);
+//        } else {
+//            list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
+//        }
 
         List<String> attributeArray;
         if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {

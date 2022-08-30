@@ -17,6 +17,7 @@ import com.pamirs.takin.entity.domain.vo.TUploadInterfaceVo;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery;
 import io.shulie.takin.channel.bean.CommandPacket;
+import io.shulie.takin.web.biz.service.pressureresource.AppDataSourceService;
 import io.shulie.takin.web.biz.utils.XmlUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.AgentUrls;
@@ -30,6 +31,7 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
+import io.shulie.takin.web.data.param.application.AppDatabaseInputParam;
 import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
 import io.shulie.takin.web.biz.service.perfomanceanaly.TraceManageService;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
@@ -71,6 +73,8 @@ public class AgentPushController {
     private TraceManageService traceManageService;
     @Resource
     private ReportDetailService reportDetailService;
+    @Resource
+    private AppDataSourceService appDataSourceService;
 
     @ApiOperation("|_ agent注册api")
     @PostMapping(value = AgentUrls.REGISTER_URL)
@@ -225,5 +229,16 @@ public class AgentPushController {
     @ApiOperation(value = "agent上传配置信息")
     public void uploadConfigInfo(@Validated @RequestBody ConfigReportInputParam inputParam) {
         reportDetailService.uploadConfigInfo(inputParam);
+    }
+
+    /**
+     * 配置数据上报
+     *
+     * @param inputParam 入参
+     */
+    @PostMapping(value = AgentUrls.AGENT_PUSH_APPLICATION_DATA_BASE)
+    @ApiOperation(value = "agent上传应用数据源信息")
+    public void uploadAppDataBase(@Validated @RequestBody AppDatabaseInputParam inputParam) {
+        appDataSourceService.save(inputParam);
     }
 }

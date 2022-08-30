@@ -16,8 +16,10 @@ import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.ImmutableMap;
+import com.pamirs.pradar.AppNameUtils;
 import io.shulie.amdb.common.dto.agent.AgentConfigDTO;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.AgentConfigClient;
 import io.shulie.takin.web.amdb.bean.query.fastagentaccess.AgentConfigQueryDTO;
 import io.shulie.takin.web.biz.constant.LoginConstant;
@@ -30,6 +32,7 @@ import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentDynamicConfigQu
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigEffectListResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigListResponse;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
+import io.shulie.takin.web.biz.utils.AgentZkClientUtil;
 import io.shulie.takin.web.biz.utils.TestZkConnUtils;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
 import io.shulie.takin.web.common.constant.CacheConstants;
@@ -47,7 +50,9 @@ import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import org.apache.curator.framework.CuratorFramework;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -71,14 +76,19 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
     private AgentConfigDAO agentConfigDAO;
     @Resource
     private AgentConfigClient agentConfigClient;
-
     @Autowired
     private AgentConfigService agentConfigService;
+    @Resource
+    private AgentZkClientUtil agentZkClientUtil;
 
     /**
      * 对应的zk地址key
      */
     private final static String ZK_CONFIG_KEY = "simulator.zk.servers";
+    /**
+     * 采样率表中的key
+     */
+    private final static String ZK_TRACE_SAMPLING_INTERVAL = "trace.samplingInterval";
 
     @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
     @Override
@@ -188,6 +198,12 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         }
 
         String projectName = updateRequest.getProjectName();
+        //兼容agent1.0的采样率配置
+        if (ZK_TRACE_SAMPLING_INTERVAL.equals(detailResult.getEnKey())) {
+            String zkPath = StrUtil.isBlank(projectName) ? "/config/log/trace/simpling" : "/config/log/trace/" + projectName + "/simpling";
+            agentZkClientUtil.syncNodeNotTenant(zkPath, updateRequest.getDefaultValue());
+        }
+
         if (StrUtil.isBlank(projectName)) {
             this.updateWithoutProjectName(updateRequest, detailResult);
             return;
@@ -314,6 +330,12 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         if (detailResult == null || !AgentConfigTypeEnum.PROJECT.getVal().equals(detailResult.getType())) {
             return;
         }
+        //agent1.0采样率兼容
+        if (ZK_TRACE_SAMPLING_INTERVAL.equals(detailResult.getEnKey()) && StringUtil.isNotEmpty(detailResult.getProjectName())) {
+            String zkPath = "/config/log/trace/" + detailResult.getProjectName() + "/simpling";
+            agentZkClientUtil.deleteNodeNotTenant(zkPath);
+        }
+
         // 删除应用配置
         agentConfigDAO.deleteById(id);
     }
@@ -554,5 +576,4 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         UserExt userExt = WebPluginUtils.traceUser();
         return userExt == null ? LoginConstant.DEFAULT_OPERATOR : userExt.getName();
     }
-
 }

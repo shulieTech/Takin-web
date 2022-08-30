@@ -141,7 +141,7 @@ public class AgentPullController {
      * @param userAppKey -
      * @return
      */
-    @ApiOperation(value = "远程调用接口获取")
+    @ApiOperation(value = "白名单获取")
     @RequestMapping(value = "/confcenter/wbmnt/query/{userAppKey}", method = RequestMethod.GET)
     public ResponseResult<AgentRemoteCallVO> wbmntQuery(
             @ApiParam(name = "appName", value = "应用名") @RequestParam("appName") String appName,

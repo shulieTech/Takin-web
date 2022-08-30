@@ -97,11 +97,11 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         List<String> zhConfigKeyList = new ArrayList<>();
 
         createRequestList.stream()
-            .filter(item -> item.getType() == null || AgentConfigTypeEnum.GLOBAL.getVal().equals(item.getType()))
-            .forEach(item -> {
-                enConfigKeyList.add(item.getEnKey());
-                zhConfigKeyList.add(item.getZhKey());
-            });
+                .filter(item -> item.getType() == null || AgentConfigTypeEnum.GLOBAL.getVal().equals(item.getType()))
+                .forEach(item -> {
+                    enConfigKeyList.add(item.getEnKey());
+                    zhConfigKeyList.add(item.getZhKey());
+                });
 
         // 1、校验新增的全局配置中是否有重复key，有则直接抛异常
         checkGlobalConfig(enConfigKeyList, zhConfigKeyList);
@@ -115,19 +115,19 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
         // 3、批量插入
         List<CreateAgentConfigParam> createAgentConfigParams = createRequestList.stream()
-            .map(item -> {
-                CreateAgentConfigParam createAgentConfigParam = new CreateAgentConfigParam();
-                BeanUtils.copyProperties(item, createAgentConfigParam);
-                createAgentConfigParam.setOperator(getOperator());
-                if (!CollectionUtils.isEmpty(item.getValueOptionList())) {
-                    createAgentConfigParam.setValueOption(JSON.toJSONString(item.getValueOptionList()));
-                }
-                createAgentConfigParam.setEffectMinVersionNum(AgentVersionUtil.string2Long(item.getEffectMinVersion()));
-                createAgentConfigParam.setTenantId(WebPluginUtils.SYS_DEFAULT_TENANT_ID);
-                createAgentConfigParam.setEnvCode(WebPluginUtils.SYS_DEFAULT_ENV_CODE);
-                return createAgentConfigParam;
-            })
-            .collect(Collectors.toList());
+                .map(item -> {
+                    CreateAgentConfigParam createAgentConfigParam = new CreateAgentConfigParam();
+                    BeanUtils.copyProperties(item, createAgentConfigParam);
+                    createAgentConfigParam.setOperator(getOperator());
+                    if (!CollectionUtils.isEmpty(item.getValueOptionList())) {
+                        createAgentConfigParam.setValueOption(JSON.toJSONString(item.getValueOptionList()));
+                    }
+                    createAgentConfigParam.setEffectMinVersionNum(AgentVersionUtil.string2Long(item.getEffectMinVersion()));
+                    createAgentConfigParam.setTenantId(WebPluginUtils.SYS_DEFAULT_TENANT_ID);
+                    createAgentConfigParam.setEnvCode(WebPluginUtils.SYS_DEFAULT_ENV_CODE);
+                    return createAgentConfigParam;
+                })
+                .collect(Collectors.toList());
         agentConfigDAO.batchInsert(createAgentConfigParams);
     }
 
@@ -135,17 +135,17 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
     public List<Map<String, String>> getAllGlobalKey() {
         List<AgentConfigDetailResult> detailResultList = agentConfigDAO.getAllGlobalConfig();
         return detailResultList.stream().map(item -> ImmutableMap.of(item.getEnKey(), item.getZhKey())).collect(
-            Collectors.toList());
+                Collectors.toList());
     }
 
     @Override
     public List<String> getAllApplication(String keyword) {
         List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
         List<ApplicationDetailResult> applicationMntList = applicationDAO.getApplicationMntByUserIdsAndKeyword(
-            userIdList,
-            keyword);
+                userIdList,
+                keyword);
         return applicationMntList.stream().map(ApplicationDetailResult::getApplicationName).collect(
-            Collectors.toList());
+                Collectors.toList());
     }
 
     @Override
@@ -178,11 +178,11 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         queryBO.setEnKey(queryRequest.getEnKey());
         queryBO.setReadProjectConfig(queryRequest.getReadProjectConfig());
         List<AgentConfigListResponse> list = agentConfigService.getConfigList(queryBO).values().stream()
-            .map(item -> {
-                AgentConfigListResponse agentConfigListResponse = new AgentConfigListResponse();
-                BeanUtils.copyProperties(item, agentConfigListResponse);
-                return agentConfigListResponse;
-            }).collect(Collectors.toList());
+                .map(item -> {
+                    AgentConfigListResponse agentConfigListResponse = new AgentConfigListResponse();
+                    BeanUtils.copyProperties(item, agentConfigListResponse);
+                    return agentConfigListResponse;
+                }).collect(Collectors.toList());
         // 过滤是否生效配置
         return filterConfigEffect(list, queryRequest);
     }
@@ -227,10 +227,10 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
         // 全局或者租户全局，需要根据应用的有无进行新增或更新
         if (AgentConfigTypeEnum.isGlobal(detailResult.getType())
-            || AgentConfigTypeEnum.isTenantGlobal(detailResult.getType())) {
+                || AgentConfigTypeEnum.isTenantGlobal(detailResult.getType())) {
             String enKey = detailResult.getEnKey();
             AgentConfigDetailResult agentConfig = agentConfigDAO.getByEnKeyAndTypeAndProjectNameWithTenant(enKey,
-                AgentConfigTypeEnum.PROJECT.getVal(), updateRequest.getProjectName());
+                    AgentConfigTypeEnum.PROJECT.getVal(), updateRequest.getProjectName());
             if (agentConfig != null) {
                 this.updateConfig(agentConfig.getId(), updateRequest.getDefaultValue());
                 return;
@@ -238,7 +238,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
             // 插入
             CreateAgentConfigParam createParam = this.getCreateAgentConfigParam(detailResult,
-                updateRequest.getDefaultValue(), AgentConfigTypeEnum.PROJECT.getVal());
+                    updateRequest.getDefaultValue(), AgentConfigTypeEnum.PROJECT.getVal());
             createParam.setProjectName(updateRequest.getProjectName());
             agentConfigDAO.insert(createParam);
         }
@@ -267,10 +267,10 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
      * @param detailResult  配置详情
      */
     private void updateWithoutProjectName(AgentConfigUpdateRequest updateRequest,
-        AgentConfigDetailResult detailResult) {
+                                          AgentConfigDetailResult detailResult) {
         // 如果是应用级别或者是租户级别，直接更新
         if (AgentConfigTypeEnum.isProject(detailResult.getType())
-            || AgentConfigTypeEnum.isTenantGlobal(detailResult.getType())) {
+                || AgentConfigTypeEnum.isTenantGlobal(detailResult.getType())) {
             this.updateConfig(updateRequest.getId(), updateRequest.getDefaultValue());
             return;
         }
@@ -282,7 +282,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         // 如果是全局级别，判断租户级别是否存在，来是否插入或者更新
         String enKey = detailResult.getEnKey();
         AgentConfigDetailResult agentConfig = agentConfigDAO.getByEnKeyAndTypeWithTenant(enKey,
-            AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
+                AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
         if (agentConfig != null) {
             this.updateConfig(agentConfig.getId(), updateRequest.getDefaultValue());
             return;
@@ -290,7 +290,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
         // 插入租户环境全局
         CreateAgentConfigParam createParam = this.getCreateAgentConfigParam(detailResult,
-            updateRequest.getDefaultValue(), AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
+                updateRequest.getDefaultValue(), AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
         agentConfigDAO.insert(createParam);
     }
 
@@ -303,7 +303,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
      * @return 新增所需数据
      */
     private CreateAgentConfigParam getCreateAgentConfigParam(AgentConfigDetailResult detailResult,
-        String defaultValue, Integer type) {
+                                                             String defaultValue, Integer type) {
         CreateAgentConfigParam createParam = new CreateAgentConfigParam();
         createParam.setOperator(getOperator());
         createParam.setType(type);
@@ -330,9 +330,17 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         if (detailResult == null || !AgentConfigTypeEnum.PROJECT.getVal().equals(detailResult.getType())) {
             return;
         }
-        //agent1.0采样率兼容
+        //agent1.0采样率兼容 因为agent监听的应用节点，在删除的时候并不会监听处理，所以这里手动先修改一次应用zk的值，然后再删除
         if (ZK_TRACE_SAMPLING_INTERVAL.equals(detailResult.getEnKey()) && StringUtil.isNotEmpty(detailResult.getProjectName())) {
+            //获取global的采样率
+            String globalZkPath = "/config/log/trace/simpling";
+            String globalValue = agentZkClientUtil.getNodeNotTenant(globalZkPath);
+            //将global的值同步到应用的值上面
             String zkPath = "/config/log/trace/" + detailResult.getProjectName() + "/simpling";
+            if (globalValue != null) {
+                agentZkClientUtil.syncNodeNotTenant(zkPath, globalValue);
+            }
+            //删除应用自身的值
             agentZkClientUtil.deleteNodeNotTenant(zkPath);
         }
 
@@ -348,7 +356,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         queryBO.setEffectMinVersionNum(AgentVersionUtil.string2Long(queryRequest.getVersion()));
         Map<String, AgentConfigDetailResult> configList = agentConfigService.getConfigList(queryBO);
         return configList.values().stream().collect(
-            Collectors.toMap(AgentConfigDetailResult::getEnKey, AgentConfigDetailResult::getDefaultValue));
+                Collectors.toMap(AgentConfigDetailResult::getEnKey, AgentConfigDetailResult::getDefaultValue));
     }
 
     @Cacheable(value = CACHE_KEY_AGENT_CONFIG, keyGenerator = CACHE_KEY_GENERATOR_BY_TENANT_INFO)
@@ -367,7 +375,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
         // 将全局配置放入内存map中，因为后续要进行替换，key为配置key，value为AgentConfigDetailResult对象
         Map<String, AgentConfigDetailResult> configMap = globalConfigList.stream().collect(
-            Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));
+                Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));
 
         // 1.2 租户下的全局配置
         if (!StringUtils.isEmpty(queryBO.getUserAppKey()) && !StringUtils.isEmpty(queryBO.getEnvCode())) {
@@ -386,10 +394,10 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         }
         queryParam.setType(AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
         List<AgentConfigDetailResult> tenantGlobalConfigList = agentConfigDAO.listByTypeAndTenantIdAndEnvCode(
-            queryParam);
+                queryParam);
         if (!tenantGlobalConfigList.isEmpty()) {
             Map<String, AgentConfigDetailResult> tenantConfigMap = tenantGlobalConfigList.stream().collect(
-                Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));
+                    Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));
             configMap.putAll(tenantConfigMap);
         }
 
@@ -413,8 +421,8 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         // 如果仅看应用配置则只返回应用配置
         if (queryBO.getReadProjectConfig() != null && queryBO.getReadProjectConfig()) {
             configMap = configMap.values().stream()
-                .filter(item -> AgentConfigTypeEnum.PROJECT.getVal().equals(item.getType()))
-                .collect(Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x));
+                    .filter(item -> AgentConfigTypeEnum.PROJECT.getVal().equals(item.getType()))
+                    .collect(Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x));
         }
         return configMap;
     }
@@ -449,7 +457,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             if (needEffectValue) {
                 // 根据应用名，userAppKey 和 enKey查询应该生效的value
                 AgentConfigDetailResult configDetailResult = queryByEnKeyAndProject(queryRequest.getEnKey(),
-                    item.getAppName());
+                        item.getAppName());
                 if (configDetailResult != null) {
                     response.setEffectVal(configDetailResult.getDefaultValue());
                 }
@@ -515,7 +523,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
      * @return AgentConfigListResponse集合
      */
     private List<AgentConfigListResponse> filterConfigEffect(List<AgentConfigListResponse> list,
-        AgentConfigQueryRequest query) {
+                                                             AgentConfigQueryRequest query) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
@@ -539,7 +547,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
                 queryRequest.setIsEffect(false);
                 queryRequest.setNeedEffectValue(false);
                 PagingList<AgentConfigEffectListResponse> effectListResponsePagingList = queryConfigEffectList(
-                    queryRequest);
+                        queryRequest);
                 if (effectListResponsePagingList.getTotal() > 0) {
                     item.setIsEffect(false);
                     notEffectList.add(item);
@@ -562,8 +570,8 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             responseList = notEffectList;
         }
         responseList = responseList.parallelStream().sorted(Comparator.comparing(AgentConfigListResponse::getEnKey))
-            .sorted(Comparator.comparing(AgentConfigListResponse::getGmtCreate).reversed()).collect(
-                Collectors.toList());
+                .sorted(Comparator.comparing(AgentConfigListResponse::getGmtCreate).reversed()).collect(
+                        Collectors.toList());
         return responseList;
     }
 

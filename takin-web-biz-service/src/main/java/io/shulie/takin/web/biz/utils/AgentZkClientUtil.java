@@ -8,9 +8,6 @@ import io.shulie.takin.web.common.util.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.recipes.cache.TreeCache;
-import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
-import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.springframework.beans.factory.annotation.Value;
@@ -112,74 +109,6 @@ public final class AgentZkClientUtil {
             client.delete().guaranteed().deletingChildrenIfNeeded().forPath(CommonUtil.getZkTenantAndEnvPath(path));
         } catch (Exception e) {
             throw new TakinWebException(ExceptionCode.ZK_ERROR, String.format("删除zk数据节点失败;path=[%s]", CommonUtil.getZkTenantAndEnvPath(path)));
-        }
-    }
-
-    /**
-     * // 递归创建所需父节点
-     * // 创建类型为持久节点
-     * // 目录及内容
-     */
-    public void addNodeNotTenant(String path, String data) {
-        try {
-            client.create().creatingParentContainersIfNeeded()
-                    .withMode(CreateMode.PERSISTENT)
-                    .forPath(path, data.getBytes());
-        } catch (Exception e) {
-            log.error("创建zk数据节点失败;path={},data={}", path, data, e);
-        }
-    }
-
-    public String getNodeNotTenant(String path) {
-        if (!checkNodeExists(path)) {
-            return null;
-        }
-        byte[] bytes = new byte[0];
-        try {
-            bytes = client.getData().forPath(path);
-        } catch (Exception e) {
-            log.error("读取zk数据节点失败;path={}", path, e);
-        }
-        return new String(bytes);
-    }
-
-    public boolean checkNodeExistsNotTenant(String path) {
-        try {
-            return client.checkExists().forPath(path) != null;
-        } catch (Exception e) {
-            log.error("判断数据节点是否存在失败;path={}", path, e);
-        }
-        return false;
-    }
-
-    public void syncNodeNotTenant(String path, String data) {
-        if (data.getBytes().length > 1024 * 1024) {
-            throw new RuntimeException("ZK单个节点的数据大小不能超过1M，请修改ZK配置");
-        }
-        if (checkNodeExistsNotTenant(path)) {
-            updateNodeNotTenant(path, data);
-        } else {
-            addNodeNotTenant(path, data);
-        }
-    }
-
-    public void updateNodeNotTenant(String path, String data) {
-        try {
-            client.setData().forPath(path, data.getBytes());
-        } catch (Exception e) {
-            log.error("创建zk数据节点失败;path={},data={}", path, data, e);
-        }
-    }
-
-    /**
-     * // 强制保证删除
-     * // 递归删除子节点
-     */
-    public void deleteNodeNotTenant(String path) {
-        try {
-            client.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
-        } catch (Exception e) {
-            throw new TakinWebException(ExceptionCode.ZK_ERROR, String.format("删除zk数据节点失败;path=[%s]", path));
         }
     }
 }

@@ -330,16 +330,9 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         if (detailResult == null || !AgentConfigTypeEnum.PROJECT.getVal().equals(detailResult.getType())) {
             return;
         }
-        //agent1.0采样率兼容 因为agent监听的应用节点，在删除的时候并不会监听处理，所以这里手动先修改一次应用zk的值，然后再删除
+        //agent1.0采样率兼容
         if (ZK_TRACE_SAMPLING_INTERVAL.equals(detailResult.getEnKey()) && StringUtil.isNotEmpty(detailResult.getProjectName())) {
-            //获取global的采样率
-            String globalZkPath = "/config/log/trace/simpling";
-            String globalValue = agentZkClientUtil.getNodeNotTenant(globalZkPath);
-            //将global的值同步到应用的值上面
             String zkPath = "/config/log/trace/" + detailResult.getProjectName() + "/simpling";
-            if (globalValue != null) {
-                agentZkClientUtil.syncNodeNotTenant(zkPath, globalValue);
-            }
             //删除应用自身的值
             agentZkClientUtil.deleteNodeNotTenant(zkPath);
         }

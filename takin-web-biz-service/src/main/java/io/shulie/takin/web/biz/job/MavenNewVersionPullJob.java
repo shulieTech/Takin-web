@@ -29,6 +29,7 @@ import io.shulie.takin.web.data.model.mysql.MiddlewareJarEntity;
 import io.shulie.takin.web.data.model.mysql.MiddlewareSummaryEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -37,7 +38,9 @@ import org.springframework.stereotype.Component;
  * @author liqiyu
  */
 @Component
-@ElasticSchedulerJob(jobName = "MavenNewVersionPullJob", cron = "0 0 3 * * ? *",
+//@ElasticSchedulerJob(jobName = "MavenNewVersionPullJob", cron = "0 0 3 * * ? *",
+//    description = "定时查询阿里云maven仓库是否有新的maven版本")
+@ElasticSchedulerJob(jobName = "MavenNewVersionPullJob", cron = "0/10 * * * * ?",
     description = "定时查询阿里云maven仓库是否有新的maven版本")
 @Slf4j
 public class MavenNewVersionPullJob implements SimpleJob {
@@ -55,8 +58,14 @@ public class MavenNewVersionPullJob implements SimpleJob {
     private static final String SEARCH_MAVEN_URL_ORG
         = "https://search.maven.org/solrsearch/select?q=g:%s+AND+a:%s&core=gav&start=0&rows=99999";
 
+    @Value("${maven.pull.job.enable:true}")
+    private boolean enable;
+
     @Override
     public void execute(ShardingContext shardingContext) {
+        if (!enable){
+            return;
+        }
         final List<MiddlewareSummaryEntity> middlewareSummaryEntityList = middlewareSummaryService.list();
         middlewareSummaryEntityList.stream()
             .map(middlewareSummaryEntity -> {

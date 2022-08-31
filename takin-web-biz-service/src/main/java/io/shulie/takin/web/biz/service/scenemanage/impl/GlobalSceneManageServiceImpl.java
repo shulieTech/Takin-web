@@ -206,13 +206,13 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
             wrapper.lambda().like(GlobalSceneManageEntity::getSceneName, name);
         }
 
-        Page<GlobalSceneManageEntity> globalSceneManageEntityPage = globalSceneManageDAO.page(page, wrapper);
-        if (globalSceneManageEntityPage == null) {
+        List<GlobalSceneManageEntity> records = globalSceneManageDAO.pageWithNoEnvCode(page, name);
+        int size = globalSceneManageDAO.countWithNoEnvCode(page, name);
+        if (CollectionUtils.isEmpty(records)) {
             return PagingList.empty();
         }
-        List<GlobalSceneManageEntity> records = globalSceneManageEntityPage.getRecords();
         List<GlobalSceneManageResponse> globalSceneManageResponses = SceneManageConvert.INSTANCE.ofGlobalSceneManageResponse(records);
-        return PagingList.of(globalSceneManageResponses, globalSceneManageEntityPage.getTotal());
+        return PagingList.of(globalSceneManageResponses, size);
     }
 
     @Override

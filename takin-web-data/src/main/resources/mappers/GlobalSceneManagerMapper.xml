@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.GlobalSceneManageMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.GlobalSceneManageEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_file_manage-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="scene_manage_id" jdbcType="VARCHAR" property="sceneManageId"/>
+        <result column="scene_name" jdbcType="VARCHAR" property="sceneName"/>
+        <result column="scene_detail" jdbcType="VARCHAR" property="sceneDetail"/>
+        <result column="file_content" jdbcType="TINYINT" property="fileContent"/>
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
+
+        <result column="is_deleted" jdbcType="BOOLEAN" property="isDeleted"/>
+    </resultMap>
+
+    <select id="pageWithNoEnvCode" resultMap="BaseResultMap">
+        select * from t_global_scene_manage where tenant_id = #{tenantId}
+        <if test="name != null and name != ''">
+            and scene_name = #{name}
+        </if>
+        limit #{current}, #{size}
+    </select>
+    <select id="countWithNoEnvCode" resultType="java.lang.Integer">
+        select count(*) from t_global_scene_manage where 1 = 1
+        <if test="name != null and name != ''">
+            and scene_name = #{name}
+        </if>
+    </select>
+</mapper>

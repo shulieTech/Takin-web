@@ -94,6 +94,8 @@ public class PressureStatisticsServiceImpl implements PressureStatisticsService 
         List<PressureListTotalOutput> outputs = Lists.newArrayList();
         PressureTotalReq req = new PressureTotalReq();
         BeanUtils.copyProperties(input, req);
+        req.setTenantId(WebPluginUtils.traceTenantId());
+        req.setEnvCode(WebPluginUtils.traceEnvCode());
         switch (input.getType()) {
             case "0":
                 //  压测场景次数统计   获取标签信息

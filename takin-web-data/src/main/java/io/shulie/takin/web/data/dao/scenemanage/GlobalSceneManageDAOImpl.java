@@ -26,6 +26,6 @@ public class GlobalSceneManageDAOImpl extends ServiceImpl<GlobalSceneManageMappe
 
     @Override
     public int countWithNoEnvCode(Page<GlobalSceneManageEntity> page, String name) {
-        return globalSceneManageMapper.countWithNoEnvCode(name);
+        return globalSceneManageMapper.countWithNoEnvCode(name,WebPluginUtils.traceTenantId());
     }
 }

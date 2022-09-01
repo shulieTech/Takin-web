@@ -21,7 +21,7 @@ public class GlobalSceneManageDAOImpl extends ServiceImpl<GlobalSceneManageMappe
 
     @Override
     public List<GlobalSceneManageEntity> pageWithNoEnvCode(Page<GlobalSceneManageEntity> page, String name) {
-        return globalSceneManageMapper.pageWithNoEnvCode(page.getCurrent(),page.getSize(),name, WebPluginUtils.traceTenantId());
+        return globalSceneManageMapper.pageWithNoEnvCode(page.getCurrent() - 1,page.getSize(),name, WebPluginUtils.traceTenantId());
     }
 
     @Override

@@ -546,12 +546,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             String time = errors.get(0).getTime();
             LocalDateTime localDateTime = LocalDateTime.parse(time, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             if (LocalDateTime.now().minusSeconds(errorExpireTime).compareTo(localDateTime) >= 0) {
-                tApplicationMnt.setAccessStatus(0);
+                //tApplicationMnt.setAccessStatus(0);
             } else {
                 tApplicationMnt.setAccessStatus(3);
             }
         } else {
-            tApplicationMnt.setAccessStatus(0);
+            //tApplicationMnt.setAccessStatus(0);
         }
 
         // 取应用节点数信息

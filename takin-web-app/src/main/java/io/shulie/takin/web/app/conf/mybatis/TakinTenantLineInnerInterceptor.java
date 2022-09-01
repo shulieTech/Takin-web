@@ -111,7 +111,8 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_remote_call_config",
         "t_interface_type_config",
         "t_middleware_type",
-        "t_tro_version"
+        "t_tro_version",
+        "t_global_scene_manage"
     };
 
     private String[] tableArrWithoutUserId = new String[] {

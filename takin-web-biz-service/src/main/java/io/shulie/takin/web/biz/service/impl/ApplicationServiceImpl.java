@@ -547,7 +547,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             // 错误信息已被倒序排序，这里去第一个错误信息,超过1分半的则忽略 2022-09-01 18:11:31
             String time = errors.get(0).getTime();
             DateTime dateTime = DateUtil.parse(time, DatePattern.NORM_DATETIME_FORMAT);
-            if (DateUtil.between(DateTime.now(), dateTime, DateUnit.SECOND) < 90) {
+            if (DateUtil.between(DateTime.now(), dateTime, DateUnit.SECOND) < errorExpireTime) {
                 tApplicationMnt.setAccessStatus(3);
             }
         }

@@ -1,13 +1,5 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
@@ -24,15 +16,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author 无涯
  * @date 2021/6/15 5:30 下午
  */
 @Component
-@ElasticSchedulerJob(
-        jobName = "appAccessStatusJob",
-        cron = "0/10 * *  * * ?",
-        description = "同步大数据应用状态",
+@ElasticSchedulerJob(jobName = "appAccessStatusJob", cron = "0/10 * *  * * ?", description = "同步大数据应用状态",
         // 时效转移
         misfire = true,
         // 重新执行
@@ -43,8 +37,8 @@ public class AppAccessStatusJob implements SimpleJob {
     @Autowired
     private ApplicationService applicationService;
     @Resource
-    @Qualifier("jobThreadPool")
-    private ThreadPoolExecutor jobThreadPool;
+    @Qualifier("syncAppStatusThreadPool")
+    private ThreadPoolExecutor syncAppStatusThreadPool;
 
     @Autowired
     private DistributedLock distributedLock;
@@ -57,7 +51,6 @@ public class AppAccessStatusJob implements SimpleJob {
             return;
         }
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-        List<CompletableFuture<Void>> futureList = new ArrayList<>(tenantInfoExts.size() << 1);
         for (TenantInfoExt ext : tenantInfoExts) {
             if (CollectionUtils.isEmpty(ext.getEnvs())) {
                 continue;
@@ -70,7 +63,7 @@ public class AppAccessStatusJob implements SimpleJob {
                     if (distributedLock.checkLock(lockKey)) {
                         continue;
                     }
-                    Runnable r = () -> {
+                    syncAppStatusThreadPool.execute(() -> {
                         boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
                         if (!tryLock) {
                             return;
@@ -84,14 +77,9 @@ public class AppAccessStatusJob implements SimpleJob {
                         } finally {
                             distributedLock.unLockSafely(lockKey);
                         }
-                    };
-                    futureList.add(CompletableFuture.runAsync(r, jobThreadPool));
+                    });
                 }
             }
         }
-        try {
-            CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0])).get();
-        } catch (Exception ignore) {}
     }
-
 }

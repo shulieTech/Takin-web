@@ -13,5 +13,5 @@ public interface GlobalSceneManageMapper extends BaseMapper<GlobalSceneManageEnt
     List<GlobalSceneManageEntity> pageWithNoEnvCode(@Param("current") long current, @Param("size") long size, @Param("name") String name,@Param("tenantId") Long tenantId);
 
     @InterceptorIgnore(tenantLine = "true")
-    int countWithNoEnvCode(String name,@Param("tenantId")  Long tenantId);
+    int countWithNoEnvCode(@Param("name")String name,@Param("tenantId")  Long tenantId);
 }

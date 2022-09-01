@@ -143,6 +143,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import static io.shulie.takin.web.common.common.Response.PAGE_TOTAL_HEADER;
+
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -392,7 +393,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Long getAccessErrorNum() {
         ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
         requestV2.setAccessStatus(3);
-     return this.pageApplication(requestV2).getTotal();
+        return this.pageApplication(requestV2).getTotal();
     }
 
 //    @Override
@@ -508,9 +509,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             }).collect(Collectors.toList());
         }
         Response.setHeaders(
-            new HashMap<String, String>(1) {{
-                put(PAGE_TOTAL_HEADER, String.valueOf(paging.getTotal()));
-            }});
+                new HashMap<String, String>(1) {{
+                    put(PAGE_TOTAL_HEADER, String.valueOf(paging.getTotal()));
+                }});
         return Response.success(resultList);
     }
 
@@ -703,7 +704,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public synchronized void syncApplicationAccessStatus() {
+    public void syncApplicationAccessStatus() {
         try {
             // 应用分页大小
             int pageSize = 20;
@@ -742,6 +743,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 // 正常的应用
                 Set<Long> normalApplicationIdSet = new HashSet<>(20);
 
+                Map<Long, String> errorInfo = Maps.newHashMap();
                 // 遍历比对
                 for (ApplicationListResult application : applicationList) {
                     String applicationName = application.getApplicationName();
@@ -758,6 +760,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                             || !Objects.equals(amdbApplication.getInstanceInfo().getInstanceOnlineAmount(), nodeNum)) {
                         // amdbApplicationMap 不存在, map.get 不存在, 或者节点数不一致
                         errorApplicationIdSet.add(applicationId);
+                        errorInfo.put(applicationId, "节点数不一致");
+
 
                     } else if (!amdbApplicationMap.isEmpty()
                             && (amdbApplication = amdbApplicationMap.get(applicationName)) != null
@@ -780,7 +784,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 }
 
 
-                this.syncApplicationAccessStatus(applicationList,errorApplicationIdSet);
+                this.syncApplicationAccessStatus(applicationList, errorApplicationIdSet, errorInfo);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
@@ -790,7 +794,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList,Set<Long> errorApplicationIdSet) {
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList
+            , Set<Long> errorApplicationIdSet, Map<Long, String> errorInfo) {
         if (CollectionUtils.isNotEmpty(applicationList)) {
             for (ApplicationListResult app : applicationList) {
                 Map result = applicationDAO.getStatus(app.getApplicationName());
@@ -801,6 +806,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     if (StringUtils.isBlank(e)) {
                         String a = (String) result.get("a");
                         if (StringUtils.isEmpty(a)) {
+                            if (!io.shulie.takin.utils.string.StringUtil
+                                    .isEmpty(errorInfo.get(app.getApplicationId()))) {
+                                //节点不一致
+                                applicationDAO.updateStatus(app.getApplicationId(), e);
+                            }
                             continue;
                         }
                         e = "探针接入异常";
@@ -823,7 +833,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     param.setSwitchErrorMap(map);
                     uploadAccessStatus(param);
                 } else {
-                    applicationDAO.updateStatus(app.getApplicationId());}
+                    applicationDAO.updateStatus(app.getApplicationId());
+                }
             }
         }
     }
@@ -1227,8 +1238,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void uninstallAllAgent(List<String> appIds) {
         try {
-            appIds = this.filterAppIds(appIds,AgentConstants.UNINSTALL);
-            if (CollectionUtils.isEmpty(appIds)){
+            appIds = this.filterAppIds(appIds, AgentConstants.UNINSTALL);
+            if (CollectionUtils.isEmpty(appIds)) {
                 log.info("所有需要卸载的应用都被过滤掉了");
                 return;
             }
@@ -1345,17 +1356,20 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         queryApplicationParam.setUpdateStartTime(request.getUpdateStartTime());
         queryApplicationParam.setUpdateEndTime(request.getUpdateEndTime());
         IPage<ApplicationListResult> applicationListResultPage = applicationDAO.pageByParam(queryApplicationParam);
-        if (org.springframework.util.CollectionUtils.isEmpty(applicationListResultPage.getRecords())){
+        if (applicationListResultPage.getTotal() == 0) {
             return PagingList.empty();
         }
-//        if (applicationListResultPage.getTotal() == 0) {
-//            return PagingList.empty();
-//        }
 
         List<ApplicationListResult> records = applicationListResultPage.getRecords();
         List<ApplicationListResponseV2> responseList = records.stream().map(result -> {
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
             response.setId(result.getApplicationId().toString());
+
+            // 跟应用详情再对比下,同步下状态
+            Response<ApplicationVo> vo = this.getApplicationInfo(response.getId());
+            if (vo.getSuccess() && vo.getData() != null) {
+                response.setAccessStatus(vo.getData().getAccessStatus());
+            }
             return response;
         }).collect(Collectors.toList());
         return PagingList.of(responseList, applicationListResultPage.getTotal());
@@ -1384,7 +1398,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public Response<String> operateCheck(List<String> appIds, String operate) {
-        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)){
+        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)) {
             return Response.fail("参数异常");
         }
 
@@ -1400,25 +1414,25 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<String> appNames = applicationList.stream().map(ApplicationDetailResult::getApplicationName).collect(
                 Collectors.toList());
         List<ApplicationNodeProbeResult> applicationNodeProbeResults = applicationNodeProbeDAO.listByAppNameAndOperate(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
-        long count = applicationNodeProbeResults == null ?  0 : applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().count();
-        if (AgentConstants.UNINSTALL.equals(operate)){
-            if (count > 0){
+        long count = applicationNodeProbeResults == null ? 0 : applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().count();
+        if (AgentConstants.UNINSTALL.equals(operate)) {
+            if (count > 0) {
                 //构建返回数据
                 List<String> distinct = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().collect(Collectors.toList());
                 StringBuilder sb = new StringBuilder();
                 distinct.forEach(s -> {
                     sb.append(s).append("\n");
                 });
-                return Response.success(String.format("已选择%d个应用,%d个应用已处于卸载状态\n应用名称为:",appIds.size(),count) + sb);
-            }else {
-                return Response.success(String.format("已选择%d个应用,点击继续卸载",appIds.size()));
+                return Response.success(String.format("已选择%d个应用,%d个应用已处于卸载状态\n应用名称为:", appIds.size(), count) + sb);
+            } else {
+                return Response.success(String.format("已选择%d个应用,点击继续卸载", appIds.size()));
             }
         }
-        if (AgentConstants.RESUME.equals(operate)){
-            if (appIds.size() > count){
+        if (AgentConstants.RESUME.equals(operate)) {
+            if (appIds.size() > count) {
                 //构建返回数据
                 List<String> result = appNames;
-                if (count != 0){
+                if (count != 0) {
                     List<String> distinct = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().collect(Collectors.toList());
                     result = result.stream().filter(o -> !distinct.contains(o)).collect(Collectors.toList());
                 }
@@ -1426,9 +1440,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 result.forEach(s -> {
                     sb.append(s).append("\n");
                 });
-                return Response.success(String.format("已选择%d个应用,%d个应用处于非卸载状态\n应用名称为:",appIds.size(), appIds.size() - count) + sb);
-            }else {
-                return Response.success(String.format("已选择%d个应用,点击继续",appIds.size()));
+                return Response.success(String.format("已选择%d个应用,%d个应用处于非卸载状态\n应用名称为:", appIds.size(), appIds.size() - count) + sb);
+            } else {
+                return Response.success(String.format("已选择%d个应用,点击继续", appIds.size()));
             }
         }
         return Response.fail("上传的状态当前不支持校验");
@@ -1436,7 +1450,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public List<String> filterAppIds(List<String> appIds, String operate) {
-        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)){
+        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)) {
             return null;
         }
 
@@ -1456,12 +1470,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<String> uninstallAppNames = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName)
                 .collect(Collectors.toList());
         //需要卸载的数据，需要不存在卸载的数据
-        if (AgentConstants.UNINSTALL.equals(operate)){
+        if (AgentConstants.UNINSTALL.equals(operate)) {
             return applicationList.stream().filter(o -> !uninstallAppNames.contains(o.getApplicationName())).map(o ->
                     o.getApplicationId().toString()).collect(Collectors.toList());
         }
         //需要恢复的数据，需要是已经卸载的数据
-        if (AgentConstants.RESUME.equals(operate)){
+        if (AgentConstants.RESUME.equals(operate)) {
             return applicationList.stream().filter(o -> uninstallAppNames.contains(o.getApplicationName())).map(o ->
                     o.getApplicationId().toString()).collect(Collectors.toList());
         }
@@ -2492,8 +2506,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void resumeAllAgent(List<String> appIds) {
         try {
-            appIds = this.filterAppIds(appIds,AgentConstants.RESUME);
-            if (CollectionUtils.isEmpty(appIds)){
+            appIds = this.filterAppIds(appIds, AgentConstants.RESUME);
+            if (CollectionUtils.isEmpty(appIds)) {
                 log.info("所有需要恢复的应用都被过滤掉了");
                 return;
             }

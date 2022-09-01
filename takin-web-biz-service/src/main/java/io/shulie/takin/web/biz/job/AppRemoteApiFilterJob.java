@@ -54,8 +54,8 @@ public class AppRemoteApiFilterJob implements SimpleJob {
     @Resource
     private ApplicationApiService apiService;
     @Resource
-    @Qualifier("remoteApiThreadPool")
-    private ThreadPoolExecutor remoteApiThreadPool;
+    @Qualifier("appRemoteApiFilterThreadPool")
+    private ThreadPoolExecutor appRemoteApiFilterThreadPool;
     @Resource
     private DistributedLock distributedLock;
 
@@ -81,7 +81,7 @@ public class AppRemoteApiFilterJob implements SimpleJob {
                         if (distributedLock.checkLock(lockKey)) {
                             continue;
                         }
-                        remoteApiThreadPool.execute(() -> {
+                        appRemoteApiFilterThreadPool.execute(() -> {
                             boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
                             if (!tryLock) {
                                 return;

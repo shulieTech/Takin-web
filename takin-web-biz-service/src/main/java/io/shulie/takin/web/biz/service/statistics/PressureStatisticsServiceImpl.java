@@ -55,6 +55,8 @@ public class PressureStatisticsServiceImpl implements PressureStatisticsService 
                 // 场景状态统计 需要cloud统计
                 PressureTotalReq req = new PressureTotalReq();
                 BeanUtils.copyProperties(input, req);
+                req.setTenantId(WebPluginUtils.traceTenantId());
+                req.setEnvCode(WebPluginUtils.traceEnvCode());
                 PressurePieTotalResp resp = pressureStatisticsApi.getPressurePieTotal(req);
                 output = StatisticsConvert.ofCloud(resp);
                 break;
@@ -85,6 +87,8 @@ public class PressureStatisticsServiceImpl implements PressureStatisticsService 
     public ReportTotalOutput getReportTotal(PressureTotalInput input) {
         PressureTotalReq req = new PressureTotalReq();
         BeanUtils.copyProperties(input, req);
+        req.setTenantId(WebPluginUtils.traceTenantId());
+        req.setEnvCode(WebPluginUtils.traceEnvCode());
         ReportTotalResp resp = pressureStatisticsApi.getReportTotal(req);
         return StatisticsConvert.ofCloud(resp);
     }

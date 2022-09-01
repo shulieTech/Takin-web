@@ -25,7 +25,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.Hutool;
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.date.*;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -544,14 +546,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (CollectionUtil.isNotEmpty(errors)) {
             // 错误信息已被倒序排序，这里去第一个错误信息,超过1分半的则忽略 2022-09-01 18:11:31
             String time = errors.get(0).getTime();
-            LocalDateTime localDateTime = LocalDateTime.parse(time, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            if (LocalDateTime.now().minusSeconds(errorExpireTime).compareTo(localDateTime) >= 0) {
-                //tApplicationMnt.setAccessStatus(0);
-            } else {
+            DateTime dateTime = DateUtil.parse(time, DatePattern.NORM_DATETIME_FORMAT);
+            if (DateUtil.between(DateTime.now(), dateTime, DateUnit.SECOND) < 90) {
                 tApplicationMnt.setAccessStatus(3);
             }
-        } else {
-            //tApplicationMnt.setAccessStatus(0);
         }
 
         // 取应用节点数信息

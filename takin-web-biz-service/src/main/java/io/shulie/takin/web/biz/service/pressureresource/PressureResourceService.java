@@ -46,7 +46,7 @@ public interface PressureResourceService {
      * @param request
      * @return
      */
-    List<PressureResourceDetailVO> detail(PressureResourceQueryRequest request);
+    PressureResourceInfoVO detail(PressureResourceQueryRequest request);
 
     /**
      * 修改数据隔离方式

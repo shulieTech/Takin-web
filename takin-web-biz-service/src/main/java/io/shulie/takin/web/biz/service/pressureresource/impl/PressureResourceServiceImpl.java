@@ -124,9 +124,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         param.setName(input.getName());
         PressureResourceEntity nameEntity = pressureResourceDAO.queryByName(input.getName());
         if (nameEntity != null && nameEntity.getId() != input.getId()) {
-            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, input.getName());
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "名字已存在");
         }
-
         // 修改
         PressureResourceDetailQueryParam detailParam = new PressureResourceDetailQueryParam();
         detailParam.setResourceId(input.getId());
@@ -139,7 +138,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         List<PressureResourceDetailEntity> insertEntitys = Lists.newArrayList();
         for (Map.Entry<String, List<PressureResourceDetailEntity>> entry : newMap.entrySet()) {
             String tmpKey = entry.getKey();
-            if (oldMap.containsKey(tmpKey)) {
+            if (!oldMap.containsKey(tmpKey)) {
                 // 相同URL和请求方式只有一个
                 insertEntitys.add(entry.getValue().get(0));
             }
@@ -164,7 +163,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     }
 
     private String fetchKey(PressureResourceDetailEntity ele) {
-        return String.format("%s-%s", ele.getEntranceUrl(), ele.getMethod());
+        return String.format("%s-%s-%s-%s-%s", ele.getEntranceUrl(), ele.getMethod(), ele.getRpcType(), ele.getExtend(), ele.getAppName());
     }
 
     /**
@@ -199,18 +198,21 @@ public class PressureResourceServiceImpl implements PressureResourceService {
      * @return
      */
     @Override
-    public List<PressureResourceDetailVO> detail(PressureResourceQueryRequest request) {
+    public PressureResourceInfoVO detail(PressureResourceQueryRequest request) {
+        PressureResourceInfoVO infoVO = new PressureResourceInfoVO();
+
         PressureResourceEntity resourceEntity = pressureResourceMapper.selectById(request.getId());
         if (resourceEntity == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "数据不存在");
         }
-
+        infoVO.setId(resourceEntity.getId());
+        infoVO.setName(resourceEntity.getName());
         // 判断是否有链路信息
         PressureResourceDetailQueryParam param = new PressureResourceDetailQueryParam();
         param.setResourceId(request.getId());
         List<PressureResourceDetailEntity> detailList = pressureResourceDetailDAO.getList(param);
         if (CollectionUtils.isEmpty(detailList)) {
-            return Collections.emptyList();
+            return infoVO;
         }
         List<PressureResourceDetailVO> detailVOList = detailList.stream().map(detail -> {
             PressureResourceDetailVO tmpDetailVo = new PressureResourceDetailVO();
@@ -218,7 +220,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             tmpDetailVo.setValue(String.valueOf(detail.getId()));
             return tmpDetailVo;
         }).collect(Collectors.toList());
-        return detailVOList;
+        infoVO.setDetailInputs(detailVOList);
+        return infoVO;
     }
 
     /**

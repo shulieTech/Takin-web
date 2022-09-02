@@ -36,6 +36,10 @@ public class PressureResourceEntity extends TenantBaseEntity {
     @Column(name = "`isolate_type`")
     private int isolateType;
 
+    @ApiModelProperty("状态(0-未开始 1-已开始)")
+    @Column(name = "`status`")
+    private int status;
+
     @Column(name = "`gmt_create`")
     @ApiModelProperty("创建时间")
     private Date gmtCreate;

@@ -35,4 +35,7 @@ public class PressureResourceInfoVO {
 
     @ApiModelProperty("更新时间")
     private Date gmtUpdate;
+
+    @ApiModelProperty("明细")
+    List<PressureResourceDetailVO> detailVOList;
 }

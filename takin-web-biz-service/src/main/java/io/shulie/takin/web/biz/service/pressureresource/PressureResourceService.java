@@ -4,8 +4,11 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceIsolateInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceQueryRequest;
+import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceDetailVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceInfoVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceVO;
+
+import java.util.List;
 
 /**
  * 压测资源配置
@@ -43,7 +46,7 @@ public interface PressureResourceService {
      * @param request
      * @return
      */
-    PressureResourceInfoVO detail(PressureResourceQueryRequest request);
+    List<PressureResourceDetailVO> detail(PressureResourceQueryRequest request);
 
     /**
      * 修改数据隔离方式

@@ -53,7 +53,7 @@ public class PressureResourceDetailDAOImpl implements PressureResourceDetailDAO 
             return queryWrapper;
         }
         if (param.getResourceId() != null) {
-            queryWrapper.eq("resourceId", param.getResourceId());
+            queryWrapper.eq("resource_id", param.getResourceId());
         }
         return queryWrapper;
     }

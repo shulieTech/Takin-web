@@ -44,6 +44,14 @@ public class PressureResourceDetailEntity extends TenantBaseEntity {
     @Column(name = "`method`")
     private String method;
 
+    @ApiModelProperty("rpcType")
+    @Column(name = "`rpc_type`")
+    private String rpcType;
+
+    @ApiModelProperty("extend")
+    @Column(name = "`extend`")
+    private String extend;
+
     @Column(name = "`gmt_create`")
     @ApiModelProperty("创建时间")
     private Date gmtCreate;

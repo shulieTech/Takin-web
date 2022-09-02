@@ -1,17 +1,27 @@
-package io.shulie.takin.web.biz.pojo.request.pressureresource;
+package io.shulie.takin.web.biz.service.pressureresource.vo;
 
+import io.shulie.surge.data.common.doc.annotation.Id;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Date;
 
+/**
+ * @author xingchen
+ * @description: TODO
+ * @date 2022/8/30 10:24 AM
+ */
 @Data
 @ToString(callSuper = true)
-public class PressureResourceDetailInput {
-    @ApiModelProperty("id")
+public class PressureResourceDetailVO extends TenantBaseEntity {
+    @Id
+    @ApiModelProperty("ID")
     private Long id;
+
+    @ApiModelProperty("给前端搞个ID的字符串")
+    private String value;
 
     @ApiModelProperty("资源配置Id")
     private Long resourceId;
@@ -24,15 +34,6 @@ public class PressureResourceDetailInput {
 
     @ApiModelProperty("入口名称")
     private String entranceName;
-
-    @ApiModelProperty("rpcType")
-    private String rpcType;
-
-    @ApiModelProperty("extend")
-    private String extend;
-
-    @ApiModelProperty("类型-是否虚拟")
-    private int type;
 
     @ApiModelProperty("请求方式")
     private String method;

@@ -78,7 +78,9 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             //查询所有的type
             entranceQueryParam.setRpcType("");
         }
-        entranceQueryParam.setAppName(applicationName);
+        if (StringUtils.isNotBlank(applicationName)) {
+            entranceQueryParam.setAppName(applicationName);
+        }
         entranceQueryParam.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         entranceQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         entranceQueryParam.setCurrentPage(currentPage);

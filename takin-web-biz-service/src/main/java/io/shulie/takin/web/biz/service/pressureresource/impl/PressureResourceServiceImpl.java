@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.pressureresource.impl;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
+import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceDetailVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceInfoVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationAppVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceVO;
@@ -198,22 +199,26 @@ public class PressureResourceServiceImpl implements PressureResourceService {
      * @return
      */
     @Override
-    public PressureResourceInfoVO detail(PressureResourceQueryRequest request) {
-        PressureResourceInfoVO vo = new PressureResourceInfoVO();
+    public List<PressureResourceDetailVO> detail(PressureResourceQueryRequest request) {
         PressureResourceEntity resourceEntity = pressureResourceMapper.selectById(request.getId());
-        vo.setId(resourceEntity.getId());
-        vo.setType(resourceEntity.getType());
-        vo.setName(resourceEntity.getName());
+        if (resourceEntity == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "数据不存在");
+        }
 
         // 判断是否有链路信息
         PressureResourceDetailQueryParam param = new PressureResourceDetailQueryParam();
         param.setResourceId(request.getId());
         List<PressureResourceDetailEntity> detailList = pressureResourceDetailDAO.getList(param);
         if (CollectionUtils.isEmpty(detailList)) {
-            return vo;
+            return Collections.emptyList();
         }
-        // 查询应用检查信息
-        return null;
+        List<PressureResourceDetailVO> detailVOList = detailList.stream().map(detail -> {
+            PressureResourceDetailVO tmpDetailVo = new PressureResourceDetailVO();
+            BeanUtils.copyProperties(detail, tmpDetailVo);
+            tmpDetailVo.setValue(String.valueOf(detail.getId()));
+            return tmpDetailVo;
+        }).collect(Collectors.toList());
+        return detailVOList;
     }
 
     /**

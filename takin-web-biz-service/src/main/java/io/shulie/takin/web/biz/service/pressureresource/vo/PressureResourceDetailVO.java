@@ -35,6 +35,12 @@ public class PressureResourceDetailVO extends TenantBaseEntity {
     @ApiModelProperty("入口名称")
     private String entranceName;
 
+    @ApiModelProperty("rpcType")
+    private String rpcType;
+
+    @ApiModelProperty("extend")
+    private String extend;
+
     @ApiModelProperty("请求方式")
     private String method;
 

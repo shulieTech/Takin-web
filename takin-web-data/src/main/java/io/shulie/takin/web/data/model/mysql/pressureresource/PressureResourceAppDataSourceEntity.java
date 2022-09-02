@@ -1,4 +1,4 @@
-package io.shulie.takin.web.data.model.mysql;
+package io.shulie.takin.web.data.model.mysql.pressureresource;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.surge.data.common.doc.annotation.Id;
@@ -79,7 +79,7 @@ public class PressureResourceAppDataSourceEntity extends TenantBaseEntity {
     @ApiModelProperty("创建时间")
     private Date gmtCreate;
 
-    @Column(name = "`gmt_update`")
+    @Column(name = "`gmt_modified`")
     @ApiModelProperty("更新时间")
-    private Date gmtUpdate;
+    private Date gmtModified;
 }

@@ -2,9 +2,8 @@ package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import com.pamirs.takin.common.util.MD5Util;
 import io.shulie.takin.web.biz.service.pressureresource.AppDataSourceService;
-import io.shulie.takin.web.data.model.mysql.PressureResourceAppDataSourceEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceAppDataSourceEntity;
 import io.shulie.takin.web.data.param.application.AppDatabaseInputParam;
-import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
 import io.shulie.takin.web.data.dao.pressureresource.AppDataSourceDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

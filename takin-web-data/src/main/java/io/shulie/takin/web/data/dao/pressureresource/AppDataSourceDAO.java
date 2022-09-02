@@ -1,6 +1,6 @@
 package io.shulie.takin.web.data.dao.pressureresource;
 
-import io.shulie.takin.web.data.model.mysql.PressureResourceAppDataSourceEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceAppDataSourceEntity;
 
 import java.util.List;
 

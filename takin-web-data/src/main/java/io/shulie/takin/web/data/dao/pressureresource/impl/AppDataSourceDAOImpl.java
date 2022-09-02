@@ -2,7 +2,7 @@ package io.shulie.takin.web.data.dao.pressureresource.impl;
 
 import io.shulie.takin.web.data.dao.pressureresource.AppDataSourceDAO;
 import io.shulie.takin.web.data.mapper.mysql.AppDataSourceMapper;
-import io.shulie.takin.web.data.model.mysql.PressureResourceAppDataSourceEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceAppDataSourceEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ public class AppDataSourceDAOImpl implements AppDataSourceDAO {
     private AppDataSourceMapper appDataSourceMapper;
 
     @Override
-    public void saveOrUpdate(List<PressureResourceAppDataSourceEntity> entitys) {
-        appDataSourceMapper.saveOrUpdate(entitys);
+    public void saveOrUpdate(List<PressureResourceAppDataSourceEntity> list) {
+        appDataSourceMapper.saveOrUpdate(list);
     }
 }

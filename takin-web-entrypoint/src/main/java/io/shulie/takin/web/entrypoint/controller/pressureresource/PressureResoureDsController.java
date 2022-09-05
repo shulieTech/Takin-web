@@ -35,7 +35,7 @@ public class PressureResoureDsController {
     @Resource
     private PressureResourceDsService pressureResourceDsService;
 
-    @ApiOperation("链路压测资源新增")
+    @ApiOperation("链路压测资源-数据源-新增")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseResult create(@RequestBody PressureResourceRelationDsInput input) {
         pressureResourceDsService.add(input);

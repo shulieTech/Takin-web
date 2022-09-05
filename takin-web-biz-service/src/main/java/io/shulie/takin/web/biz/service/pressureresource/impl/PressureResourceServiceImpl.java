@@ -2,11 +2,13 @@ package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDetailInput;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceIsolateInput;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceQueryRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceDetailVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceInfoVO;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationAppVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -17,8 +19,6 @@ import io.shulie.takin.web.data.mapper.mysql.PressureResourceDetailMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationAppEntity;
-import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
@@ -31,7 +31,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**

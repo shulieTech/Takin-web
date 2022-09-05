@@ -34,7 +34,7 @@ public class PressureResourceRelationTableEntity extends TenantBaseEntity {
 
     @ApiModelProperty("状态(0-正常 1-不正常)")
     @Column(name = "`status`")
-    private String status;
+    private Integer status;
 
     @ApiModelProperty("业务表")
     @Column(name = "`business_table`")
@@ -45,8 +45,8 @@ public class PressureResourceRelationTableEntity extends TenantBaseEntity {
     private String shadowTable;
 
     @ApiModelProperty("是否加入(0-加入 1-未加入)")
-    @Column(name = "`join`")
-    private int join;
+    @Column(name = "`join_flag`")
+    private int joinFlag;
 
     @ApiModelProperty("扩展信息")
     @Column(name = "`ext_info`")

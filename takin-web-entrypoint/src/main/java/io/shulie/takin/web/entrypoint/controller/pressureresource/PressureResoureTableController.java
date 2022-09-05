@@ -51,8 +51,8 @@ public class PressureResoureTableController {
     }
 
     @ApiOperation("链路压测资源-影子表-修改")
-    @RequestMapping(value = "/update", method = RequestMethod.GET)
-    public ResponseResult update(PressureResourceRelationTableInput input) {
+    @RequestMapping(value = "/update", method = RequestMethod.POST)
+    public ResponseResult update(@RequestBody PressureResourceRelationTableInput input) {
         pressureResourceTableService.update(input);
         return ResponseResult.success();
     }

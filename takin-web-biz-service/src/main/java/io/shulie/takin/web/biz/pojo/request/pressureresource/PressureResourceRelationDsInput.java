@@ -27,14 +27,14 @@ public class PressureResourceRelationDsInput extends TenantBaseEntity {
     @ApiModelProperty("应用名称")
     private String appName;
 
-    @ApiModelProperty("中间件类型")
-    private String middlewareType;
+    @ApiModelProperty("中间件名称")
+    private String middlewareName;
 
     @ApiModelProperty("状态")
     private String status;
 
     @ApiModelProperty("业务数据源")
-    private String businessDataBase;
+    private String businessDatabase;
 
     @ApiModelProperty("业务数据源用户名")
     private String businessUserName;

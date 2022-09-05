@@ -64,7 +64,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         }
         // 判断数据源是否已存在
         PressureResourceDsQueryParam param = new PressureResourceDsQueryParam();
-        param.setBussinessDatabase(input.getBusinessDataBase());
+        param.setBussinessDatabase(input.getBusinessDatabase());
         param.setResourceId(input.getResourceId());
         List<PressureResourceRelationDsEntity> list = pressureResourceRelationDsDAO.queryByParam(param);
         if (CollectionUtils.isNotEmpty(list)) {
@@ -111,18 +111,20 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             appQueryParam.setAppNames(appNames);
             appQueryParam.setResourceId(request.getResourceId());
             List<PressureResourceRelationAppEntity> appEntitys = pressureResourceRelationAppDAO.queryList(appQueryParam);
-            Map<String, List<PressureResourceRelationAppEntity>> appMap = appEntitys.stream().collect(Collectors.groupingBy(app -> app.getAppName()));
-            List<PressureResourceRelationAppVO> appVOList = appNames.stream().map(app -> {
-                PressureResourceRelationAppVO appVO = new PressureResourceRelationAppVO();
-                appVO.setAppName(app);
-                appVO.setJoinPressure(appMap.get(app).get(0).getJoinPressure());
-                return appVO;
-            }).collect(Collectors.toList());
-            tmpVO.setAppList(appVOList);
+            if (CollectionUtils.isNotEmpty(appEntitys)) {
+                Map<String, List<PressureResourceRelationAppEntity>> appMap = appEntitys.stream().collect(Collectors.groupingBy(app -> app.getAppName()));
+                List<PressureResourceRelationAppVO> appVOList = appNames.stream().map(app -> {
+                    PressureResourceRelationAppVO appVO = new PressureResourceRelationAppVO();
+                    appVO.setAppName(app);
+                    appVO.setJoinPressure(appMap.get(app).get(0).getJoinPressure());
+                    return appVO;
+                }).collect(Collectors.toList());
+                tmpVO.setAppList(appVOList);
+            }
             tmpVO.setSize(tmpList.size());
             listVO.add(tmpVO);
         }
-        List<PressureResourceRelationDsVO> pageList = ListUtil.page(request.getCurrentPage() + 1, request.getPageSize(), listVO);
+        List<PressureResourceRelationDsVO> pageList = ListUtil.page(request.getCurrentPage(), request.getPageSize(), listVO);
         return PagingList.of(pageList, listVO.size());
     }
 
@@ -157,7 +159,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             tmpVO.setSize(tmpList.size());
             listVO.add(tmpVO);
         }
-        List<PressureResourceRelationDsVO> pageList = ListUtil.page(request.getCurrentPage() + 1, request.getPageSize(), listVO);
+        List<PressureResourceRelationDsVO> pageList = ListUtil.page(request.getCurrentPage(), request.getPageSize(), listVO);
         return PagingList.of(pageList, listVO.size());
     }
 }

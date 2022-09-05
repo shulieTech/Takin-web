@@ -32,16 +32,16 @@ public class PressureResourceRelationDsEntity extends TenantBaseEntity {
     @Column(name = "`app_name`")
     private String appName;
 
-    @ApiModelProperty("中间件类型")
-    @Column(name = "`middleware_type`")
-    private String middlewareType;
+    @ApiModelProperty("中间件名称")
+    @Column(name = "`middleware_name`")
+    private String middlewareName;
 
-    @ApiModelProperty("状态")
+    @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
     @Column(name = "`status`")
     private String status;
 
     @ApiModelProperty("业务数据源")
-    @Column(name = "`business_data_base`")
+    @Column(name = "`business_database`")
     private String businessDatabase;
 
     @ApiModelProperty("业务数据源用户名")
@@ -49,7 +49,7 @@ public class PressureResourceRelationDsEntity extends TenantBaseEntity {
     private String businessUserName;
 
     @ApiModelProperty("影子数据源")
-    @Column(name = "`shadow_data_base`")
+    @Column(name = "`shadow_database`")
     private String shadowDatabase;
 
     @ApiModelProperty("影子数据源用户名")
@@ -63,6 +63,10 @@ public class PressureResourceRelationDsEntity extends TenantBaseEntity {
     @ApiModelProperty("扩展信息")
     @Column(name = "`ext_info`")
     private String extInfo;
+
+    @ApiModelProperty("remark")
+    @Column(name = "`remark`")
+    private String remark;
 
     @Column(name = "`gmt_create`")
     @ApiModelProperty("创建时间")

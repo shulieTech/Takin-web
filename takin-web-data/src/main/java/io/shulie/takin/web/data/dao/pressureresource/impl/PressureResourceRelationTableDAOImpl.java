@@ -37,7 +37,7 @@ public class PressureResourceRelationTableDAOImpl implements PressureResourceRel
      */
     @Override
     public void add(List<PressureResourceRelationTableEntity> dsEntitys) {
-        if (CollectionUtils.isNotEmpty(dsEntitys)) {
+        if (CollectionUtils.isEmpty(dsEntitys)) {
             return;
         }
         dsEntitys.stream().forEach(dsEntity -> {
@@ -85,11 +85,11 @@ public class PressureResourceRelationTableDAOImpl implements PressureResourceRel
             return queryWrapper;
         }
         // 模糊查询
-        if (StringUtils.isNotBlank(param.getQueryTableName())) {
-            queryWrapper.like("business_table", param.getQueryTableName());
+        if (StringUtils.isNotBlank(param.getQueryBusinessTableName())) {
+            queryWrapper.like("business_table", param.getQueryBusinessTableName());
         }
         if (StringUtils.isNotBlank(param.getBusinessTableName())) {
-            queryWrapper.like("business_table", param.getBusinessTableName());
+            queryWrapper.eq("business_table", param.getBusinessTableName());
         }
         if (param.getStatus() != null) {
             queryWrapper.eq("status", param.getStatus());

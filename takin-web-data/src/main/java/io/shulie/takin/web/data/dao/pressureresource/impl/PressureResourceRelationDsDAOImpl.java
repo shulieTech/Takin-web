@@ -3,7 +3,6 @@ package io.shulie.takin.web.data.dao.pressureresource.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationDsDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelationDsMapper;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationDsEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
@@ -64,14 +63,14 @@ public class PressureResourceRelationDsDAOImpl implements PressureResourceRelati
         }
         // 模糊查询
         if (StringUtils.isNotBlank(param.getQueryBussinessDatabase())) {
-            queryWrapper.like("business_data_base", param.getQueryBussinessDatabase());
+            queryWrapper.like("business_database", param.getQueryBussinessDatabase());
         }
         // 模糊查询
         if (StringUtils.isNotBlank(param.getQueryAppName())) {
             queryWrapper.like("app_name", param.getQueryAppName());
         }
         if (StringUtils.isNotBlank(param.getBussinessDatabase())) {
-            queryWrapper.eq("business_data_base", param.getBussinessDatabase());
+            queryWrapper.eq("business_database", param.getBussinessDatabase());
         }
         if (param.getResourceId() != null) {
             queryWrapper.eq("resource_id", param.getResourceId());

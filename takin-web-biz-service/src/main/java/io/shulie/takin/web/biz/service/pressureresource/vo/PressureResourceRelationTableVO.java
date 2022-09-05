@@ -25,11 +25,10 @@ public class PressureResourceRelationTableVO extends TenantBaseEntity {
     private Long resourceId;
 
     @ApiModelProperty("数据源Id")
-    @Column(name = "`dsId`")
-    private Long ds_id;
+    private Long dsId;
 
-    @ApiModelProperty("状态")
-    private String status;
+    @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
+    private Integer status;
 
     @ApiModelProperty("业务表")
     private String businessTable;
@@ -38,8 +37,7 @@ public class PressureResourceRelationTableVO extends TenantBaseEntity {
     private String shadowTable;
 
     @ApiModelProperty("是否加入")
-    @Column(name = "`join`")
-    private int join;
+    private int joinFlag;
 
     @ApiModelProperty("扩展信息")
     private int extInfo;

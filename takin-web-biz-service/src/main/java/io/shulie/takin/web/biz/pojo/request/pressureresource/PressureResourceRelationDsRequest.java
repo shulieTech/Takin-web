@@ -31,7 +31,7 @@ public class PressureResourceRelationDsRequest extends PageBaseDTO {
     @ApiModelProperty("业务数据源,模糊查询")
     private String queryBusinessDataBase;
 
-    @ApiModelProperty("状态")
+    @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
     private String status;
 
     @ApiModelProperty("业务数据源")

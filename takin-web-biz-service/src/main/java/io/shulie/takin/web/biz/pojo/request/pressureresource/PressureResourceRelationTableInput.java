@@ -35,8 +35,8 @@ public class PressureResourceRelationTableInput extends TenantBaseEntity {
     @ApiModelProperty("影子表")
     private String shadowTable;
 
-    @ApiModelProperty("是否加入")
-    private Integer join;
+    @ApiModelProperty("是否加入(0-加入 1-未加入)")
+    private Integer joinFlag;
 
     @ApiModelProperty("扩展信息")
     private String extInfo;

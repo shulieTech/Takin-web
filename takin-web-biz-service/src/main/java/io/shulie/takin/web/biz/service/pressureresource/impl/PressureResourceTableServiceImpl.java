@@ -1,7 +1,6 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationDsInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationTableInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationTableRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceTableService;
@@ -16,7 +15,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -62,7 +60,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         tableEntity.setDsId(input.getDsId());
         tableEntity.setBusinessTable(input.getBusinessTable());
         tableEntity.setShadowTable(input.getShadowTable());
-        tableEntity.setJoin(input.getJoin());
+        tableEntity.setJoinFlag(input.getJoinFlag());
         tableEntity.setGmtCreate(new Date());
 
         pressureResourceRelationTableDAO.add(Arrays.asList(tableEntity));
@@ -83,10 +81,21 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         if (entity == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "未查询到指定数据");
         }
-
+        PressureResourceRelationTableRequest tableRequest = new PressureResourceRelationTableRequest();
+        tableRequest.setBusinessTableName(updateInput.getBusinessTable());
+        PagingList<PressureResourceRelationTableVO> pageList = this.pageList(tableRequest);
+        if (!pageList.isEmpty()) {
+            List<PressureResourceRelationTableVO> list = pageList.getList();
+            if (CollectionUtils.isNotEmpty(list)) {
+                PressureResourceRelationTableVO vo = list.get(0);
+                if (!vo.getId().equals(updateInput.getId())) {
+                    throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "业务表名已存在");
+                }
+            }
+        }
         PressureResourceRelationTableEntity updateEntity = new PressureResourceRelationTableEntity();
         updateEntity.setId(updateInput.getId());
-        updateEntity.setJoin(updateInput.getJoin());
+        updateEntity.setJoinFlag(updateInput.getJoinFlag());
         updateEntity.setShadowTable(updateInput.getShadowTable());
         updateEntity.setRemark(updateEntity.getRemark());
         updateEntity.setStatus(updateEntity.getStatus());

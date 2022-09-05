@@ -124,7 +124,13 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (nameEntity != null && !nameEntity.getId().equals(input.getId())) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "名字已存在");
         }
-        // 修改
+        PressureResourceEntity updateResourceEntity = new PressureResourceEntity();
+        updateResourceEntity.setId(input.getId());
+        updateResourceEntity.setName(input.getName());
+        updateResourceEntity.setGmtModified(new Date());
+        pressureResourceMapper.updateById(updateResourceEntity);
+
+        // 修改详情
         PressureResourceDetailQueryParam detailParam = new PressureResourceDetailQueryParam();
         detailParam.setResourceId(input.getId());
         List<PressureResourceDetailEntity> oldList = pressureResourceDetailDAO.getList(detailParam);

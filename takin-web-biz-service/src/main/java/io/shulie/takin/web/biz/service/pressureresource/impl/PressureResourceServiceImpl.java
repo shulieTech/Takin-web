@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
+import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
@@ -30,10 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -183,11 +181,24 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         }
         //转换下
         List<PressureResourceEntity> source = pageList.getList();
+        List<Long> configIds = source.stream().map(configDto -> configDto.getId()).collect(Collectors.toList());
+        PressureResourceDetailQueryParam queryParam = new PressureResourceDetailQueryParam();
+        queryParam.setResourceIds(configIds);
+        List<PressureResourceDetailEntity> detailEntities = pressureResourceDetailDAO.getList(queryParam);
+        Map<String, List<PressureResourceDetailEntity>> detailMap = Maps.newHashMap();
+        if (CollectionUtils.isNotEmpty(detailEntities)) {
+            detailMap = detailEntities.stream().collect(Collectors.groupingBy(entity -> String.valueOf(entity.getResourceId())));
+        }
+        Map<String, List<PressureResourceDetailEntity>> finalDetailMap = detailMap;
         List<PressureResourceVO> returnList = source.stream().map(configDto -> {
             PressureResourceVO vo = new PressureResourceVO();
             BeanUtils.copyProperties(configDto, vo);
+            vo.setId(String.valueOf(configDto.getId()));
+            // 设置详情条数
+            vo.setDetailCount(finalDetailMap.getOrDefault(String.valueOf(configDto.getId()), Collections.EMPTY_LIST).size());
             return vo;
         }).collect(Collectors.toList());
+
         return PagingList.of(returnList, pageList.getTotal());
     }
 
@@ -205,7 +216,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (resourceEntity == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "数据不存在");
         }
-        infoVO.setId(resourceEntity.getId());
+        infoVO.setId(String.valueOf(resourceEntity.getId()));
         infoVO.setName(resourceEntity.getName());
         // 判断是否有链路信息
         PressureResourceDetailQueryParam param = new PressureResourceDetailQueryParam();

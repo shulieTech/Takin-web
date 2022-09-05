@@ -19,7 +19,7 @@ import java.util.List;
 public class PressureResourceInfoVO {
     @Id
     @ApiModelProperty("ID")
-    private Long id;
+    private String id;
 
     @ApiModelProperty("资源配置名称")
     private String name;

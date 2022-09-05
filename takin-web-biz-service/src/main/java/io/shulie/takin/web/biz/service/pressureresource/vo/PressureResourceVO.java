@@ -18,7 +18,7 @@ import java.util.Date;
 public class PressureResourceVO {
     @Id
     @ApiModelProperty("ID")
-    private Long id;
+    private String id;
 
     @ApiModelProperty("资源配置名称")
     private String name;
@@ -31,6 +31,12 @@ public class PressureResourceVO {
 
     @ApiModelProperty("状态(0-未开始 1-已开始)")
     private int status;
+
+    @ApiModelProperty("链路类型")
+    private Integer configType;
+
+    @ApiModelProperty("明细条数")
+    private Integer detailCount;
 
     @ApiModelProperty("创建时间")
     private Date gmtCreate;

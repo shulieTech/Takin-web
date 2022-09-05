@@ -2,6 +2,8 @@ package io.shulie.takin.web.data.param.pressureresource;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author xingchen
  * @description: TODO
@@ -10,4 +12,6 @@ import lombok.Data;
 @Data
 public class PressureResourceDetailQueryParam {
     private Long resourceId;
+
+    private List<Long> resourceIds;
 }

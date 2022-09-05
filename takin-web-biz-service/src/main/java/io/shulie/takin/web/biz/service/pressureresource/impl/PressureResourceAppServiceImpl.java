@@ -1,16 +1,23 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
+import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentVersionQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceAppInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceAppRequest;
+import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceAppService;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationAppVO;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationAppDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelationAppMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationAppEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -37,6 +44,9 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
     @Resource
     private PressureResourceRelationAppMapper pressureResourceRelationAppMapper;
 
+    @Resource
+    private ApplicationService applicationService;
+
     /**
      * 应用检查列表
      *
@@ -57,6 +67,18 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
         List<PressureResourceRelationAppVO> returnList = source.stream().map(configDto -> {
             PressureResourceRelationAppVO vo = new PressureResourceRelationAppVO();
             BeanUtils.copyProperties(configDto, vo);
+            vo.setAgentNodeNum(0);
+            vo.setStatus(1);
+            // 获取应用信息
+            List<ApplicationListResponse> list = applicationService.getApplicationList(vo.getAppName());
+            if (CollectionUtils.isNotEmpty(list)) {
+                Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(list.get(0).getApplicationId()));
+                if (voResponse.getSuccess()) {
+                    ApplicationVo applicationVo = voResponse.getData();
+                    vo.setAgentNodeNum(applicationVo.getOnlineNodeNum());
+                    vo.setStatus(applicationVo.getAccessStatus().equals(0) ? 0 : 1);
+                }
+            }
             return vo;
         }).collect(Collectors.toList());
         return PagingList.of(returnList, pageList.getTotal());

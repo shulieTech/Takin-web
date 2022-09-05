@@ -38,6 +38,9 @@ public class ApplicationVo extends AuthQueryResponseCommonExt implements Seriali
     @ApiModelProperty(name = "nodeNum", value = "节点数量")
     private Integer nodeNum;
 
+    @ApiModelProperty(name = "onlineNodeNum", value = "节点数量")
+    private Integer onlineNodeNum;
+
     @ApiModelProperty(name = "exceptionInfo", value = "异常信息")
     private String exceptionInfo;
 

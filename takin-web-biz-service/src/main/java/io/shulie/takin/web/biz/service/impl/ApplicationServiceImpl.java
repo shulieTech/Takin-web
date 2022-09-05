@@ -2598,6 +2598,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         vo.setNodeNum(param.getNodeNum());
         vo.setSwitchStutus(param.getSwitchStatus());
         vo.setUserId(param.getUserId());
+        vo.setOnlineNodeNum(applicationResult.getInstanceInfo().getInstanceOnlineAmount());
         if (Objects.isNull(applicationResult)
                 || !applicationResult.getInstanceInfo().getInstanceOnlineAmount().equals(param.getNodeNum())
                 || CollectionUtils.isEmpty(applicationNodeResultList)

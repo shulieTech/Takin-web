@@ -488,7 +488,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         "sed -i 's/TAKIN_LITE_PORT/" + benchmarkServerPort + "/' ./pressure-engine/config/application-engine.yml && " +
                         "sed -i 's/LOCALHOST_IP/" + manageDAOById.getMachineIp() + "/' ./pressure-engine/config/application-engine.yml && " +
                         "sed -i 's/USER_APPKEY/" + benchmarkUserAppKey + "/' ./pressure-engine/config/application-engine.yml && " +
-                        "sed -i 's/SUITE_NAME/" + manageDAOById.getBenchmarkSuiteName() + "/' ./pressure-engine/config/application-engine.yml ";
+                        "sed -i 's/SUITE_NAME/" + manageDAOById.getBenchmarkSuiteName() + "/' ./pressure-engine/config/application-engine.yml && " +
+                        "sed -i 's/TENANT_ID/" + WebPluginUtils.traceTenantId() + "/' ./pressure-engine/config/application-engine.yml && " +
+                        "sed -i 's/ENV_CODE/" + WebPluginUtils.traceEnvCode() + "/' ./pressure-engine/config/application-engine.yml ";
                 //替换并启动
                 dockerReplaceAndRun = dockerReplaceAndRun + " && rm -f pressure-engine.zip && zip -r pressure-engine.zip ./pressure-engine && " +
                         "docker cp pressure-engine.zip " + manageDAOById.getBenchmarkSuiteName() + ":/data/pressure-engine.zip && rm -f pressure-engine.zip && rm -rf ./pressure-engine " +

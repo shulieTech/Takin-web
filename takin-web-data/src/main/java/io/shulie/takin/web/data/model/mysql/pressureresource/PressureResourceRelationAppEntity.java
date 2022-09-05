@@ -40,7 +40,7 @@ public class PressureResourceRelationAppEntity extends TenantBaseEntity {
     @Column(name = "`status`")
     private int status;
 
-    @ApiModelProperty("隔离方式(1-影子库 2-影子库/影子表 3-影子表)")
+    @ApiModelProperty("隔离方式(0-无 1-影子库 2-影子库/影子表 3-影子表)")
     @Column(name = "`isolate_type`")
     private int isolateType;
 

@@ -26,7 +26,7 @@ public class PressureResourceVO {
     @ApiModelProperty("来源类型-手工/业务流程")
     private int type;
 
-    @ApiModelProperty("隔离方式(1-影子库 2-影子库/影子表 3-影子表)")
+    @ApiModelProperty("隔离方式(0-无 1-影子库 2-影子库/影子表 3-影子表)")
     private int isolateType;
 
     @ApiModelProperty("状态(0-未开始 1-已开始)")

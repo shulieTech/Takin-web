@@ -66,7 +66,7 @@ public class PressureResoureController {
         return ResponseResult.success(pressureResourceService.list(request));
     }
 
-    @ApiOperation("链路压测资源查询-详情")
+    @ApiOperation("链路压测资源查询-详情-编辑链路")
     @RequestMapping(value = "/detailList", method = RequestMethod.GET)
     public ResponseResult detailList(PressureResourceQueryRequest request) {
         return ResponseResult.success(pressureResourceService.detail(request));

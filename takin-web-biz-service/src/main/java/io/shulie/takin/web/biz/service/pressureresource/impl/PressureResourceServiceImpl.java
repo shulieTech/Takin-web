@@ -121,7 +121,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PressureResourceQueryParam param = new PressureResourceQueryParam();
         param.setName(input.getName());
         PressureResourceEntity nameEntity = pressureResourceDAO.queryByName(input.getName());
-        if (nameEntity != null && nameEntity.getId() != input.getId()) {
+        if (nameEntity != null && !nameEntity.getId().equals(input.getId())) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "名字已存在");
         }
         // 修改

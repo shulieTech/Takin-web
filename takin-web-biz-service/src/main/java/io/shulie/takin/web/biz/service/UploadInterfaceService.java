@@ -84,8 +84,8 @@ public class UploadInterfaceService extends CommonService implements Initializin
     private void agentInfoUpdate(String appName) {
         long timeMillis = System.currentTimeMillis();
         if (agentDealTimeMap.containsKey(appName)) {
-            //因为这个接口目前5s调用一次，心跳数据一分钟更新一次就好，这里做一次限制，避免服务压力太大
-            if (timeMillis - agentDealTimeMap.get(appName) < 1000 * 60){
+            //因为这个接口目前5s调用一次，心跳数据30s更新一次就好，这里做一次限制，避免服务压力太大
+            if (timeMillis - agentDealTimeMap.get(appName) < 1000 * 30){
                 return;
             }
         }

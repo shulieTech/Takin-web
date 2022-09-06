@@ -33,6 +33,9 @@ public class PressureResourceRelationDsInput extends TenantBaseEntity {
     @ApiModelProperty("状态")
     private String status;
 
+    @ApiModelProperty("来源类型(0-手工,1-自动)")
+    private int type;
+
     @ApiModelProperty("业务数据源")
     private String businessDatabase;
 

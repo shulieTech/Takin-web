@@ -13,11 +13,11 @@ public interface PressureResourceRelationTableMapper
 
     @Insert("<script>" +
             "insert into t_pressure_resource_relation_table(" +
-            "resource_id,ds_id,status,business_table,shadow_table,join_flag,ext_info," +
+            "resource_id,ds_id,type,status,business_table,shadow_table,join_flag,ext_info," +
             "type,remark,tenant_id,env_code,gmt_create)" +
             "values " +
             "<foreach collection='list' item='item' index='index' separator=','>" +
-            "(#{item.resourceId},#{item.dsId},#{item.status},#{item.businessTable},#{item.shadowTable},#{item.joinFlag}," +
+            "(#{item.resourceId},#{item.dsId},#{item.type},#{item.status},#{item.businessTable},#{item.shadowTable},#{item.joinFlag}," +
             "#{item.extInfo},#{item.type},#{item.remark},#{item.tenantId},#{item.envCode},#{item.gmtCreate})" +
             "</foreach>" +
             " ON DUPLICATE KEY UPDATE " +

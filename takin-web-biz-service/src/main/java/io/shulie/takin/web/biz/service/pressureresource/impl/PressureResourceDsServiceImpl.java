@@ -11,6 +11,7 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRel
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
 import io.shulie.takin.web.biz.service.pressureresource.common.DbNameUtil;
 import io.shulie.takin.web.biz.service.pressureresource.common.IsolateTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.*;
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -401,6 +402,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                 entity.setBusinessTable(input.getBusinessTable());
                 entity.setShadowTable(input.getShadowTable());
                 entity.setJoinFlag(0);
+                entity.setType(SourceTypeEnum.MANUAL.getCode());
                 entity.setGmtCreate(new Date());
 
                 tableEntityList.add(entity);
@@ -443,6 +445,9 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                 dsInput.setShadowDatabase(shadowDatabase);
                 dsInput.setShadowUserName(userName);
                 dsInput.setShadowPassword(password);
+                // 手工新增
+                dsInput.setType(SourceTypeEnum.MANUAL.getCode());
+
                 pressureResourceRelationDsMapper.insert(dsInput);
             } else {
                 // update

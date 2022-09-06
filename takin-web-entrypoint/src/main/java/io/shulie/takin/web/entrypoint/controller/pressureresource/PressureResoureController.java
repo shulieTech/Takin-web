@@ -1,12 +1,11 @@
 package io.shulie.takin.web.entrypoint.controller.pressureresource;
 
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceAppRequest;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceIsolateInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceQueryRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
-import io.shulie.takin.web.biz.service.pressureresource.common.ResourceTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -41,7 +40,7 @@ public class PressureResoureController {
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseResult create(@RequestBody PressureResourceInput input) {
         // 这里只是页面手工新增入口
-        input.setType(ResourceTypeEnum.MANUAL.getCode());
+        input.setType(SourceTypeEnum.MANUAL.getCode());
         pressureResourceService.add(input);
         return ResponseResult.success();
     }
@@ -49,6 +48,7 @@ public class PressureResoureController {
     @ApiOperation("链路压测资源修改")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult update(@RequestBody PressureResourceInput input) {
+        input.setType(SourceTypeEnum.MANUAL.getCode());
         pressureResourceService.update(input);
         return ResponseResult.success();
     }

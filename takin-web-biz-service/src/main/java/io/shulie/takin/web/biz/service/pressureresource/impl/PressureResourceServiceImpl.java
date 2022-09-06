@@ -87,17 +87,19 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         // 获取详情
         List<PressureResourceDetailInput> detailInputs = input.getDetailInputs();
         if (CollectionUtils.isNotEmpty(detailInputs)) {
-            List<PressureResourceDetailEntity> insertEntityList = convertEntitys(resourceId, detailInputs);
+            List<PressureResourceDetailEntity> insertEntityList = convertEntitys(input.getType(), resourceId, detailInputs);
             pressureResourceDetailDAO.batchInsert(insertEntityList);
         }
     }
 
-    private List<PressureResourceDetailEntity> convertEntitys(Long resourceId, List<PressureResourceDetailInput> detailInputs) {
+    private List<PressureResourceDetailEntity> convertEntitys(int type, Long resourceId, List<PressureResourceDetailInput> detailInputs) {
         List<PressureResourceDetailEntity> insertEntityList = detailInputs.stream().map(detail -> {
             PressureResourceDetailEntity detailEntity = new PressureResourceDetailEntity();
             BeanUtils.copyProperties(detail, detailEntity);
 
             detailEntity.setId(null);
+            // 来源类型
+            detailEntity.setType(type);
             detailEntity.setResourceId(resourceId);
             detailEntity.setGmtCreate(new Date());
             detailEntity.setGmtModified(new Date());
@@ -137,7 +139,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PressureResourceDetailQueryParam detailParam = new PressureResourceDetailQueryParam();
         detailParam.setResourceId(input.getId());
         List<PressureResourceDetailEntity> oldList = pressureResourceDetailDAO.getList(detailParam);
-        List<PressureResourceDetailEntity> newList = convertEntitys(input.getId(), input.getDetailInputs());
+        List<PressureResourceDetailEntity> newList = convertEntitys(input.getType(), input.getId(), input.getDetailInputs());
 
         Map<String, List<PressureResourceDetailEntity>> newMap = newList.stream().collect(Collectors.groupingBy(ele -> fetchKey(ele)));
         Map<String, List<PressureResourceDetailEntity>> oldMap = oldList.stream().collect(Collectors.groupingBy(ele -> fetchKey(ele)));

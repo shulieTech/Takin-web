@@ -1,13 +1,10 @@
 package io.shulie.takin.web.entrypoint.controller.pressureresource;
 
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationDsInput;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationDsRequest;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationTableInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationTableRequest;
-import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceTableService;
-import io.shulie.takin.web.biz.service.pressureresource.common.OpTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -33,15 +30,13 @@ import javax.annotation.Resource;
 @Api(tags = "接口: 数据源隔离")
 @Slf4j
 public class PressureResoureTableController {
-    private static Logger logger = LoggerFactory.getLogger(PressureResoureTableController.class);
-
     @Resource
     private PressureResourceTableService pressureResourceTableService;
 
     @ApiOperation("链路压测资源-影子表新增")
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     public ResponseResult save(@RequestBody PressureResourceRelationTableInput input) {
-        input.setType(OpTypeEnum.MANUAL.getCode());
+        input.setType(SourceTypeEnum.MANUAL.getCode());
         pressureResourceTableService.save(input);
         return ResponseResult.success();
     }

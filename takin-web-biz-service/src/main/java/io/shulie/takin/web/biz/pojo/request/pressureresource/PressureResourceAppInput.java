@@ -13,7 +13,7 @@ public class PressureResourceAppInput {
     @ApiModelProperty("id")
     private Long id;
 
-    @ApiModelProperty("隔离方式(1-影子库 2-影子库/影子表 3-影子表)")
+    @ApiModelProperty("隔离方式(0-未设置 1-影子库 2-影子库/影子表 3-影子表)")
     private int isolateType;
 
     @ApiModelProperty("节点数")

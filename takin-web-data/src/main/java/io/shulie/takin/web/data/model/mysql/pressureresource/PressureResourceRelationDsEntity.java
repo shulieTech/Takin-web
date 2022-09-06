@@ -40,6 +40,10 @@ public class PressureResourceRelationDsEntity extends TenantBaseEntity {
     @Column(name = "`status`")
     private int status;
 
+    @ApiModelProperty("来源类型(0-手工,1-自动)")
+    @Column(name = "`type`")
+    private int type;
+
     @ApiModelProperty("业务数据源")
     @Column(name = "`business_database`")
     private String businessDatabase;

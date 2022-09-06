@@ -19,5 +19,10 @@ public interface PressureResourceDetailDAO {
      */
     List<PressureResourceDetailEntity> getList(PressureResourceDetailQueryParam params);
 
+    /**
+     * 新增
+     *
+     * @param insertList
+     */
     void batchInsert(List<PressureResourceDetailEntity> insertList);
 }

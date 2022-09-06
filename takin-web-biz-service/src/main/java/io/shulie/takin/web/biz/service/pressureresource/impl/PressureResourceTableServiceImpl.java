@@ -88,7 +88,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
             List<PressureResourceRelationTableVO> list = pageList.getList();
             if (CollectionUtils.isNotEmpty(list)) {
                 PressureResourceRelationTableVO vo = list.get(0);
-                if (!vo.getId().equals(updateInput.getId())) {
+                if (!vo.getId().equals(String.valueOf(updateInput.getId()))) {
                     throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "业务表名已存在");
                 }
             }

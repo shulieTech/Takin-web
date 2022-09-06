@@ -9,15 +9,13 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRel
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationDsRequest;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationTableInput;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
+import io.shulie.takin.web.biz.service.pressureresource.common.DbNameUtil;
 import io.shulie.takin.web.biz.service.pressureresource.common.IsolateTypeEnum;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceDsVO;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationAppVO;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationDsVO;
+import io.shulie.takin.web.biz.service.pressureresource.vo.*;
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
-import io.shulie.takin.web.common.vo.excel.ShadowJobExcelVO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationAppDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationDsDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationTableDAO;
@@ -32,6 +30,7 @@ import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryPa
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.mortbay.util.ajax.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,6 +126,8 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             List<String> appNames = tmpList.stream().map(ds -> ds.getAppName()).collect(Collectors.toList());
             PressureResourceRelationDsVO tmpVO = new PressureResourceRelationDsVO();
             BeanUtils.copyProperties(tmpList.get(0), tmpVO);
+            tmpVO.setDatabase(DbNameUtil.getDbName(tmpList.get(0).getBusinessDatabase()));
+
             tmpVO.setId(String.valueOf(tmpList.get(0).getId()));
             tmpVO.setResourceId(String.valueOf(tmpList.get(0).getResourceId()));
             if (StringUtils.isNotBlank(tmpVO.getBusinessDatabase())) {
@@ -250,6 +251,44 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             exportShadowTable(response, resourceEntity);
         } else {
             // 影子库导出
+            exportShadowDB(response, resourceEntity);
+        }
+    }
+
+    /**
+     * 导出影子库
+     *
+     * @param response
+     * @param resource
+     */
+    private void exportShadowDB(HttpServletResponse response, PressureResourceEntity resource) {
+        // 查询所有影子库
+        PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
+        dsQueryParam.setResourceId(resource.getId());
+        List<PressureResourceRelationDsEntity> dsEntityList = pressureResourceRelationDsDAO.queryByParam(dsQueryParam);
+        List<ShadowDbExcelVO> shadowDbExcelVOList = Lists.newArrayList();
+        List<ExcelSheetVO<?>> sheets = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(dsEntityList)) {
+            shadowDbExcelVOList = dsEntityList.stream().map(entity -> {
+                ShadowDbExcelVO excelVO = new ShadowDbExcelVO();
+                excelVO.setBusinessDatabase(entity.getBusinessDatabase());
+                excelVO.setShadowDatabase(entity.getShadowDatabase());
+                excelVO.setIsolateType(IsolateTypeEnum.getName(resource.getType()));
+                excelVO.setShadowUsername(entity.getShadowUserName());
+                excelVO.setShadowPassword(entity.getShadowPassword());
+                return excelVO;
+            }).collect(Collectors.toList());
+        }
+        ExcelSheetVO<ShadowDbExcelVO> shadowDbSheet = new ExcelSheetVO<>();
+        shadowDbSheet.setData(shadowDbExcelVOList);
+        shadowDbSheet.setExcelModelClass(ShadowDbExcelVO.class);
+        shadowDbSheet.setSheetName("隔离方案-" + IsolateTypeEnum.getName(resource.getIsolateType()));
+        shadowDbSheet.setSheetNum(1);
+        sheets.add(shadowDbSheet);
+        try {
+            ExcelUtils.exportExcelManySheet(response, resource.getName() + "_隔离配置", sheets);
+        } catch (Exception e) {
+            logger.error("配置导出错误: {}", ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -273,20 +312,36 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             // 按照数据源分组下
             if (CollectionUtils.isNotEmpty(tableEntityList)) {
                 Map<String, List<PressureResourceRelationTableEntity>> tableEntityMap = tableEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getDsId())));
+                Map<String, List<PressureResourceRelationDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getId())));
+                List<ShadowTableExcelVO> shadowTableExcelVOList = Lists.newArrayList();
+                for (Map.Entry<String, List<PressureResourceRelationTableEntity>> entry : tableEntityMap.entrySet()) {
+                    String dsId = entry.getKey();
+                    PressureResourceRelationDsEntity tmpDs = dsMap.get(dsId).stream().findFirst().orElse(new PressureResourceRelationDsEntity());
+                    if (tmpDs != null && tmpDs.getId() != null) {
+                        List<ShadowTableExcelVO> list = entry.getValue().stream().map(table -> {
+                            ShadowTableExcelVO excelVO = new ShadowTableExcelVO();
+                            excelVO.setBusinessDatabase(tmpDs.getBusinessDatabase());
+                            excelVO.setDatabase(DbNameUtil.getDbName(tmpDs.getBusinessDatabase()));
+                            excelVO.setIsolateType(IsolateTypeEnum.getName(resource.getIsolateType()));
+                            excelVO.setShadowTable(table.getShadowTable());
+                            excelVO.setBusinessTable(table.getBusinessTable());
+                            return excelVO;
+                        }).collect(Collectors.toList());
+                        shadowTableExcelVOList.addAll(list);
+                    }
+                }
+                ExcelSheetVO<ShadowTableExcelVO> shadowTableSheet = new ExcelSheetVO<>();
+                shadowTableSheet.setData(shadowTableExcelVOList);
+                shadowTableSheet.setExcelModelClass(ShadowTableExcelVO.class);
+                shadowTableSheet.setSheetName("隔离方案-" + IsolateTypeEnum.getName(resource.getIsolateType()));
+                shadowTableSheet.setSheetNum(1);
+                sheets.add(shadowTableSheet);
             }
-            /*List<ShadowJobExcelVO> jobExcelModelList = this.job2ExcelJobModel(shadowJobConfigs);
-            ExcelSheetVO<ShadowJobExcelVO> jobSheet = new ExcelSheetVO<>();
-            jobSheet.setData(jobExcelModelList);
-            jobSheet.setExcelModelClass(ShadowJobExcelVO.class);
-            jobSheet.setSheetName(AppConfigSheetEnum.JOB.getDesc());
-            jobSheet.setSheetNum(1);
-            // 出口挡板配置
-            sheets.add(this.getLinkGuardSheet(applicationId));*/
         }
         try {
             ExcelUtils.exportExcelManySheet(response, resource.getName(), sheets);
         } catch (Exception e) {
-            logger.error("应用配置导出错误: {}", e.getMessage(), e);
+            logger.error("配置导出错误: {}", ExceptionUtils.getStackTrace(e));
         }
     }
 

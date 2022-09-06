@@ -17,6 +17,9 @@ public class PressureResourceTableQueryParam extends PageBaseDTO {
     @ApiModelProperty("业务数据源,等值匹配")
     private String businessTableName;
 
+    @ApiModelProperty("资源配置Id")
+    private Long resourceId;
+
     @ApiModelProperty("状态,等值查询")
     private Integer status;
 

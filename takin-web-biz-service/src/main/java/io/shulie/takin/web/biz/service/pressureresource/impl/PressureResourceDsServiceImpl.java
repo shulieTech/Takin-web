@@ -16,6 +16,8 @@ import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelat
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
+import io.shulie.takin.web.common.vo.excel.ShadowJobExcelVO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationAppDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationDsDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationTableDAO;
@@ -27,6 +29,7 @@ import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRel
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationTableEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
+import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mortbay.util.ajax.JSON;
@@ -37,6 +40,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -123,6 +127,8 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             List<String> appNames = tmpList.stream().map(ds -> ds.getAppName()).collect(Collectors.toList());
             PressureResourceRelationDsVO tmpVO = new PressureResourceRelationDsVO();
             BeanUtils.copyProperties(tmpList.get(0), tmpVO);
+            tmpVO.setId(String.valueOf(tmpList.get(0).getId()));
+            tmpVO.setResourceId(String.valueOf(tmpList.get(0).getResourceId()));
             if (StringUtils.isNotBlank(tmpVO.getBusinessDatabase())) {
                 String bussinessDatabase = tmpVO.getBusinessDatabase();
                 if (bussinessDatabase.indexOf("/") > 0) {
@@ -171,6 +177,8 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             List<PressureResourceRelationDsEntity> tmpList = entry.getValue();
             PressureResourceRelationDsVO tmpVO = new PressureResourceRelationDsVO();
             BeanUtils.copyProperties(tmpList.get(0), tmpVO);
+            tmpVO.setId(String.valueOf(tmpList.get(0).getId()));
+            tmpVO.setResourceId(String.valueOf(tmpList.get(0).getResourceId()));
             List<PressureResourceDsVO> dsVOList = tmpList.stream().map(ds -> {
                 PressureResourceDsVO tmpDs = new PressureResourceDsVO();
                 tmpDs.setBusinessDataBase(ds.getBusinessDatabase());
@@ -221,6 +229,64 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         } else {
             // 影子库处理
             processShadowDB(resourceId, stringArrayListHashMap);
+        }
+    }
+
+    /**
+     * 导出
+     *
+     * @param response
+     * @param resourceId
+     */
+    @Override
+    public void export(HttpServletResponse response, Long resourceId) {
+        PressureResourceEntity resourceEntity = pressureResourceMapper.selectById(resourceId);
+        if (resourceEntity == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "资源配置未获取到");
+        }
+        // 判断隔离方式
+        if (resourceEntity.getIsolateType() == IsolateTypeEnum.SHADOW_TABLE.getCode()) {
+            // 影子表导出
+            exportShadowTable(response, resourceEntity);
+        } else {
+            // 影子库导出
+        }
+    }
+
+    /**
+     * 导出影子表
+     *
+     * @param response
+     * @param resource
+     */
+    private void exportShadowTable(HttpServletResponse response, PressureResourceEntity resource) {
+        // 查询当前配置下的所有数据源信息
+        PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
+        dsQueryParam.setResourceId(resource.getId());
+        List<PressureResourceRelationDsEntity> dsEntityList = pressureResourceRelationDsDAO.queryByParam(dsQueryParam);
+        List<ExcelSheetVO<?>> sheets = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(dsEntityList)) {
+            // 查询影子表
+            PressureResourceTableQueryParam tableQueryParam = new PressureResourceTableQueryParam();
+            tableQueryParam.setResourceId(resource.getId());
+            List<PressureResourceRelationTableEntity> tableEntityList = pressureResourceRelationTableDAO.queryList(tableQueryParam);
+            // 按照数据源分组下
+            if (CollectionUtils.isNotEmpty(tableEntityList)) {
+                Map<String, List<PressureResourceRelationTableEntity>> tableEntityMap = tableEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getDsId())));
+            }
+            /*List<ShadowJobExcelVO> jobExcelModelList = this.job2ExcelJobModel(shadowJobConfigs);
+            ExcelSheetVO<ShadowJobExcelVO> jobSheet = new ExcelSheetVO<>();
+            jobSheet.setData(jobExcelModelList);
+            jobSheet.setExcelModelClass(ShadowJobExcelVO.class);
+            jobSheet.setSheetName(AppConfigSheetEnum.JOB.getDesc());
+            jobSheet.setSheetNum(1);
+            // 出口挡板配置
+            sheets.add(this.getLinkGuardSheet(applicationId));*/
+        }
+        try {
+            ExcelUtils.exportExcelManySheet(response, resource.getName(), sheets);
+        } catch (Exception e) {
+            logger.error("应用配置导出错误: {}", e.getMessage(), e);
         }
     }
 

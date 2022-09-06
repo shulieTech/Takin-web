@@ -105,6 +105,9 @@ public class PressureResourceRelationTableDAOImpl implements PressureResourceRel
         if (param.getDsId() != null) {
             queryWrapper.eq("ds_id", param.getDsId());
         }
+        if (param.getResourceId() != null) {
+            queryWrapper.eq("resource_id", param.getResourceId());
+        }
         return queryWrapper;
     }
 }

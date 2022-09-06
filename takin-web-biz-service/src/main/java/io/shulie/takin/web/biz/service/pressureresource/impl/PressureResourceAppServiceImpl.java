@@ -67,6 +67,7 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
             BeanUtils.copyProperties(configDto, vo);
             vo.setAgentNodeNum(0);
             vo.setStatus(1);
+            vo.setId(String.valueOf(configDto.getId()));
             // 获取应用信息
             List<ApplicationListResponse> list = applicationService.getApplicationList(vo.getAppName());
             if (CollectionUtils.isNotEmpty(list)) {

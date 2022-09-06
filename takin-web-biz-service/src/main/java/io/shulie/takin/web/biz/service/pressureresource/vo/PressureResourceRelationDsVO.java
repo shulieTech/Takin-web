@@ -20,10 +20,10 @@ import java.util.List;
 public class PressureResourceRelationDsVO extends TenantBaseEntity {
     @Id
     @ApiModelProperty("ID")
-    private Long id;
+    private String id;
 
     @ApiModelProperty("资源配置Id")
-    private Long resourceId;
+    private String resourceId;
 
     @ApiModelProperty("应用名称")
     private String appName;

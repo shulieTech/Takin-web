@@ -22,10 +22,10 @@ public class PressureResourceRelationTableVO extends TenantBaseEntity {
     private String id;
 
     @ApiModelProperty("资源配置Id")
-    private Long resourceId;
+    private String resourceId;
 
     @ApiModelProperty("数据源Id")
-    private Long dsId;
+    private String dsId;
 
     @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
     private Integer status;

@@ -238,6 +238,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             PressureResourceDetailVO tmpDetailVo = new PressureResourceDetailVO();
             BeanUtils.copyProperties(detail, tmpDetailVo);
             tmpDetailVo.setValue(String.valueOf(detail.getId()));
+            tmpDetailVo.setId(String.valueOf(detail.getId()));
+            tmpDetailVo.setResourceId(String.valueOf(detail.getResourceId()));
             return tmpDetailVo;
         }).collect(Collectors.toList());
         infoVO.setDetailInputs(detailVOList);

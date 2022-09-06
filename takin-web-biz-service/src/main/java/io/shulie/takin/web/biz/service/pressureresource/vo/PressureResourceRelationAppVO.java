@@ -19,13 +19,13 @@ import java.util.Date;
 public class PressureResourceRelationAppVO extends TenantBaseEntity {
     @Id
     @ApiModelProperty("ID")
-    private Long id;
+    private String id;
 
     @ApiModelProperty("资源配置Id")
-    private Long resourceId;
+    private String resourceId;
 
     @ApiModelProperty("详情Id")
-    private Long detailId;
+    private String detailId;
 
     @ApiModelProperty("应用名称")
     private String appName;

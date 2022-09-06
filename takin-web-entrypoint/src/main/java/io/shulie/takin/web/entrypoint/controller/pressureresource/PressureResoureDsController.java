@@ -63,7 +63,7 @@ public class PressureResoureDsController {
     @ApiOperation("链路压测资源-导出影子资源")
     @RequestMapping(value = "/export", method = RequestMethod.GET)
     public ResponseResult exportDsConfig(HttpServletResponse response, Long resourceId) {
-        //pressureResourceDsService.importDsConfig(file, resourceId);
+        pressureResourceDsService.export(response, resourceId);
         return ResponseResult.success();
     }
 }

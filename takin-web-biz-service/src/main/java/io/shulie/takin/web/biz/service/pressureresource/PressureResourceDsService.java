@@ -6,6 +6,8 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRel
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationDsVO;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * 压测资源配置-数据源
  *
@@ -36,4 +38,12 @@ public interface PressureResourceDsService {
      * @param resouceId
      */
     void importDsConfig(MultipartFile file, Long resouceId);
+
+    /**
+     * 导出
+     *
+     * @param response
+     * @param resourceId
+     */
+    void export(HttpServletResponse response, Long resourceId);
 }

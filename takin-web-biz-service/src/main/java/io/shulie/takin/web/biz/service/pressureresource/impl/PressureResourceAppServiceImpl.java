@@ -12,7 +12,9 @@ import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationAppDAO;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelationAppMapper;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationAppEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
@@ -45,6 +47,9 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
     @Resource
     private ApplicationService applicationService;
 
+    @Resource
+    private PressureResourceMapper pressureResourceMapper;
+
     /**
      * 应用检查列表
      *
@@ -53,6 +58,11 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
      */
     @Override
     public PagingList<PressureResourceRelationAppVO> appCheckList(PressureResourceAppRequest request) {
+        // 校验Resource
+        PressureResourceEntity resourceEntity = pressureResourceMapper.selectById(request.getResourceId());
+        if (resourceEntity == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "配置未查询到");
+        }
         PressureResourceAppQueryParam param = new PressureResourceAppQueryParam();
         BeanUtils.copyProperties(request, param);
 
@@ -65,6 +75,8 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
         List<PressureResourceRelationAppVO> returnList = source.stream().map(configDto -> {
             PressureResourceRelationAppVO vo = new PressureResourceRelationAppVO();
             BeanUtils.copyProperties(configDto, vo);
+            // 设置主表隔离方式
+            vo.setIsolateType(resourceEntity.getIsolateType());
             vo.setAgentNodeNum(0);
             vo.setStatus(1);
             vo.setId(String.valueOf(configDto.getId()));

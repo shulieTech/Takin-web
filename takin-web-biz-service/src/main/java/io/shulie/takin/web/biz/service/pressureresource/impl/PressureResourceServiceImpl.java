@@ -268,5 +268,6 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         updateEntity.setId(entity.getId());
         updateEntity.setIsolateType(isolateInput.getIsolateType());
         updateEntity.setGmtModified(new Date());
+        pressureResourceMapper.updateById(updateEntity);
     }
 }

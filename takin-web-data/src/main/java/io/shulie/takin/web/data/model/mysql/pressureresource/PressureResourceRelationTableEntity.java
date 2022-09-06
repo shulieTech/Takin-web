@@ -32,9 +32,9 @@ public class PressureResourceRelationTableEntity extends TenantBaseEntity {
     @Column(name = "`ds_id`")
     private Long dsId;
 
-    @ApiModelProperty("状态(0-正常 1-不正常)")
+    @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
     @Column(name = "`status`")
-    private Integer status;
+    private int status;
 
     @ApiModelProperty("业务表")
     @Column(name = "`business_table`")
@@ -47,6 +47,10 @@ public class PressureResourceRelationTableEntity extends TenantBaseEntity {
     @ApiModelProperty("是否加入(0-加入 1-未加入)")
     @Column(name = "`join_flag`")
     private int joinFlag;
+
+    @ApiModelProperty("类型(0-手工 1-自动)")
+    @Column(name = "`type`")
+    private int type;
 
     @ApiModelProperty("扩展信息")
     @Column(name = "`ext_info`")

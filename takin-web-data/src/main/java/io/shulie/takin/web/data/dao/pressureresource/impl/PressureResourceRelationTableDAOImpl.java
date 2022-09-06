@@ -79,6 +79,14 @@ public class PressureResourceRelationTableDAOImpl implements PressureResourceRel
         return list;
     }
 
+    @Override
+    public void saveOrUpdate(List<PressureResourceRelationTableEntity> tableEntitys) {
+        if (CollectionUtils.isEmpty(tableEntitys)) {
+            return;
+        }
+        pressureResourceRelationTableMapper.saveOrUpdate(tableEntitys);
+    }
+
     private QueryWrapper<PressureResourceRelationTableEntity> getWrapper(PressureResourceTableQueryParam param) {
         QueryWrapper<PressureResourceRelationTableEntity> queryWrapper = new QueryWrapper<>();
         if (param == null) {

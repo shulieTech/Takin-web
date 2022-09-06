@@ -26,6 +26,9 @@ public class PressureResourceRelationTableInput extends TenantBaseEntity {
     @ApiModelProperty("数据源配置Id")
     private Long dsId;
 
+    @ApiModelProperty("数据源")
+    private String database;
+
     @ApiModelProperty("状态")
     private String status;
 
@@ -40,6 +43,9 @@ public class PressureResourceRelationTableInput extends TenantBaseEntity {
 
     @ApiModelProperty("扩展信息")
     private String extInfo;
+
+    @ApiModelProperty("类型(0-手工 1-自动)")
+    private Integer type;
 
     @ApiModelProperty("创建时间")
     private Date gmtCreate;

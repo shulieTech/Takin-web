@@ -11,12 +11,11 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 链路资源配置-数据源隔离
@@ -52,5 +51,19 @@ public class PressureResoureDsController {
     @RequestMapping(value = "/listByApp", method = RequestMethod.GET)
     public ResponseResult listByApp(PressureResourceRelationDsRequest request) {
         return ResponseResult.success(pressureResourceDsService.listByApp(request));
+    }
+
+    @ApiOperation("链路压测资源-导入影子资源")
+    @RequestMapping(value = "/import", method = RequestMethod.POST)
+    public ResponseResult importDsConfig(@RequestParam MultipartFile file, @RequestParam Long resourceId) {
+        pressureResourceDsService.importDsConfig(file, resourceId);
+        return ResponseResult.success();
+    }
+
+    @ApiOperation("链路压测资源-导出影子资源")
+    @RequestMapping(value = "/export", method = RequestMethod.GET)
+    public ResponseResult exportDsConfig(HttpServletResponse response, Long resourceId) {
+        //pressureResourceDsService.importDsConfig(file, resourceId);
+        return ResponseResult.success();
     }
 }

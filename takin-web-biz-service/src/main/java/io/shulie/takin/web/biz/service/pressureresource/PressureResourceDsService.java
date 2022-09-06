@@ -4,6 +4,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationDsInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationDsRequest;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationDsVO;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 压测资源配置-数据源
@@ -27,4 +28,12 @@ public interface PressureResourceDsService {
      * 应用视图页面
      */
     PagingList<PressureResourceRelationDsVO> listByApp(PressureResourceRelationDsRequest request);
+
+    /**
+     * 导入
+     *
+     * @param file
+     * @param resouceId
+     */
+    void importDsConfig(MultipartFile file, Long resouceId);
 }

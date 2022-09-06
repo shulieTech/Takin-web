@@ -13,7 +13,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class PressureResourceDsVO {
     @ApiModelProperty("状态")
-    private String status;
+    private int status;
 
     @ApiModelProperty("业务数据源")
     private String businessDataBase;

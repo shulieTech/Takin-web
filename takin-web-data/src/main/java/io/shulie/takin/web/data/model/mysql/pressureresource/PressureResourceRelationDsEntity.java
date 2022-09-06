@@ -38,7 +38,7 @@ public class PressureResourceRelationDsEntity extends TenantBaseEntity {
 
     @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
     @Column(name = "`status`")
-    private String status;
+    private int status;
 
     @ApiModelProperty("业务数据源")
     @Column(name = "`business_database`")

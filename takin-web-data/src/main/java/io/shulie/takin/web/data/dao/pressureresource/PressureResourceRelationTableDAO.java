@@ -28,9 +28,15 @@ public interface PressureResourceRelationTableDAO {
     PagingList<PressureResourceRelationTableEntity> pageList(PressureResourceTableQueryParam param);
 
     /**
-     *
      * @param param
      * @return
      */
     List<PressureResourceRelationTableEntity> queryList(PressureResourceTableQueryParam param);
+
+    /**
+     * 批量保存
+     *
+     * @param tableEntitys
+     */
+    void saveOrUpdate(List<PressureResourceRelationTableEntity> tableEntitys);
 }

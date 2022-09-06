@@ -7,6 +7,7 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRel
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationTableRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceTableService;
+import io.shulie.takin.web.biz.service.pressureresource.common.OpTypeEnum;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -40,6 +41,7 @@ public class PressureResoureTableController {
     @ApiOperation("链路压测资源-影子表新增")
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     public ResponseResult save(@RequestBody PressureResourceRelationTableInput input) {
+        input.setType(OpTypeEnum.MANUAL.getCode());
         pressureResourceTableService.save(input);
         return ResponseResult.success();
     }

@@ -18,5 +18,11 @@ public interface PressureResourceRelationDsDAO {
      */
     void add(List<PressureResourceRelationDsEntity> dsEntitys);
 
+    /**
+     * 按条件查询列表页
+     *
+     * @param param
+     * @return
+     */
     List<PressureResourceRelationDsEntity> queryByParam(PressureResourceDsQueryParam param);
 }

@@ -201,6 +201,7 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      */
     PRESSURE_RESOURCE_OP_ERROR("1909-" + ErrorConstant.UPDATE_ERROR, "操作异常"),
     PRESSURE_RESOURCE_QUERY_ERROR("1910-" + ErrorConstant.QUERY_ERROR, "查询异常"),
+    PRESSURE_RESOURCE_CONFIG_FILE_VALIDATE_ERROR("1911-" + ErrorConstant.FILE_VALIDATE_ERROR, "配置文件校验异常"),
     ;
     private final String errorCode;
 

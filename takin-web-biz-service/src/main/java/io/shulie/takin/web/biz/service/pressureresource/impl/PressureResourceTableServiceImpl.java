@@ -61,8 +61,8 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         tableEntity.setBusinessTable(input.getBusinessTable());
         tableEntity.setShadowTable(input.getShadowTable());
         tableEntity.setJoinFlag(input.getJoinFlag());
+        tableEntity.setType(input.getType());
         tableEntity.setGmtCreate(new Date());
-
         pressureResourceRelationTableDAO.add(Arrays.asList(tableEntity));
     }
 
@@ -131,6 +131,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         List<PressureResourceRelationTableVO> returnList = source.stream().map(configDto -> {
             PressureResourceRelationTableVO vo = new PressureResourceRelationTableVO();
             BeanUtils.copyProperties(configDto, vo);
+            vo.setId(String.valueOf(configDto.getId()));
             return vo;
         }).collect(Collectors.toList());
         return PagingList.of(returnList, pageList.getTotal());

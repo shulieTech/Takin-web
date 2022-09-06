@@ -19,7 +19,7 @@ import java.util.Date;
 public class PressureResourceRelationTableVO extends TenantBaseEntity {
     @Id
     @ApiModelProperty("ID")
-    private Long id;
+    private String id;
 
     @ApiModelProperty("资源配置Id")
     private Long resourceId;
@@ -38,6 +38,9 @@ public class PressureResourceRelationTableVO extends TenantBaseEntity {
 
     @ApiModelProperty("是否加入")
     private int joinFlag;
+
+    @ApiModelProperty("类型(0-手工 1-自动)")
+    private int type;
 
     @ApiModelProperty("扩展信息")
     private int extInfo;

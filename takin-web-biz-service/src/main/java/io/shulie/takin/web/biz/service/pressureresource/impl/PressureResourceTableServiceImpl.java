@@ -4,7 +4,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceTableService;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationTableVO;
+import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateTableVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
@@ -83,11 +83,11 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         }
         PressureResourceRelateTableRequest tableRequest = new PressureResourceRelateTableRequest();
         tableRequest.setBusinessTableName(updateInput.getBusinessTable());
-        PagingList<PressureResourceRelationTableVO> pageList = this.pageList(tableRequest);
+        PagingList<PressureResourceRelateTableVO> pageList = this.pageList(tableRequest);
         if (!pageList.isEmpty()) {
-            List<PressureResourceRelationTableVO> list = pageList.getList();
+            List<PressureResourceRelateTableVO> list = pageList.getList();
             if (CollectionUtils.isNotEmpty(list)) {
-                PressureResourceRelationTableVO vo = list.get(0);
+                PressureResourceRelateTableVO vo = list.get(0);
                 if (!vo.getId().equals(String.valueOf(updateInput.getId()))) {
                     throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "业务表名已存在");
                 }
@@ -118,7 +118,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
      * @return
      */
     @Override
-    public PagingList<PressureResourceRelationTableVO> pageList(PressureResourceRelateTableRequest request) {
+    public PagingList<PressureResourceRelateTableVO> pageList(PressureResourceRelateTableRequest request) {
         PressureResourceTableQueryParam param = new PressureResourceTableQueryParam();
         BeanUtils.copyProperties(request, param);
         PagingList<PressureResourceRelateTableEntity> pageList = pressureResourceRelateTableDAO.pageList(param);
@@ -128,8 +128,8 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         }
         //转换下
         List<PressureResourceRelateTableEntity> source = pageList.getList();
-        List<PressureResourceRelationTableVO> returnList = source.stream().map(configDto -> {
-            PressureResourceRelationTableVO vo = new PressureResourceRelationTableVO();
+        List<PressureResourceRelateTableVO> returnList = source.stream().map(configDto -> {
+            PressureResourceRelateTableVO vo = new PressureResourceRelateTableVO();
             BeanUtils.copyProperties(configDto, vo);
             vo.setId(String.valueOf(configDto.getId()));
             return vo;

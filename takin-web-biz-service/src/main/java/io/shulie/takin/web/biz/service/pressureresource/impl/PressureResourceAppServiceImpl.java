@@ -7,13 +7,13 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceApp
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceAppRequest;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceAppService;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationAppVO;
+import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateAppVO;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelationAppMapper;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateAppMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateAppEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
@@ -39,10 +39,10 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
     private static Logger logger = LoggerFactory.getLogger(PressureResourceAppServiceImpl.class);
 
     @Resource
-    private PressureResourceRelateAppDAO pressureResourceRelationAppDAO;
+    private PressureResourceRelateAppDAO pressureResourceRelateAppDAO;
 
     @Resource
-    private PressureResourceRelationAppMapper pressureResourceRelationAppMapper;
+    private PressureResourceRelateAppMapper pressureResourceRelateAppMapper;
 
     @Resource
     private ApplicationService applicationService;
@@ -57,7 +57,7 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
      * @return
      */
     @Override
-    public PagingList<PressureResourceRelationAppVO> appCheckList(PressureResourceAppRequest request) {
+    public PagingList<PressureResourceRelateAppVO> appCheckList(PressureResourceAppRequest request) {
         // 校验Resource
         PressureResourceEntity resourceEntity = pressureResourceMapper.selectById(request.getResourceId());
         if (resourceEntity == null) {
@@ -66,14 +66,14 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
         PressureResourceAppQueryParam param = new PressureResourceAppQueryParam();
         BeanUtils.copyProperties(request, param);
 
-        PagingList<PressureResourceRelateAppEntity> pageList = pressureResourceRelationAppDAO.pageList(param);
+        PagingList<PressureResourceRelateAppEntity> pageList = pressureResourceRelateAppDAO.pageList(param);
         if (pageList.isEmpty()) {
             return PagingList.of(Collections.emptyList(), pageList.getTotal());
         }
         //转换下
         List<PressureResourceRelateAppEntity> source = pageList.getList();
-        List<PressureResourceRelationAppVO> returnList = source.stream().map(configDto -> {
-            PressureResourceRelationAppVO vo = new PressureResourceRelationAppVO();
+        List<PressureResourceRelateAppVO> returnList = source.stream().map(configDto -> {
+            PressureResourceRelateAppVO vo = new PressureResourceRelateAppVO();
             BeanUtils.copyProperties(configDto, vo);
             // 设置主表隔离方式
             vo.setIsolateType(resourceEntity.getIsolateType());
@@ -107,7 +107,7 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
         if (relationAppId == null) {
             throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "参数Id未指定");
         }
-        PressureResourceRelateAppEntity entity = pressureResourceRelationAppMapper.selectById(relationAppId);
+        PressureResourceRelateAppEntity entity = pressureResourceRelateAppMapper.selectById(relationAppId);
         if (entity == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "未查询到指定数据");
         }
@@ -116,6 +116,6 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
         updateEntity.setId(input.getId());
         updateEntity.setJoinPressure(input.getJoinPressure());
         updateEntity.setGmtModified(new Date());
-        pressureResourceRelationAppMapper.updateById(updateEntity);
+        pressureResourceRelateAppMapper.updateById(updateEntity);
     }
 }

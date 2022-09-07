@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDAO;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelationAppMapper;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateAppMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateAppEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
@@ -27,7 +27,7 @@ public class PressureResourceRelateAppDAOImpl implements PressureResourceRelateA
     private static Logger logger = LoggerFactory.getLogger(PressureResourceRelateAppDAOImpl.class);
 
     @Resource
-    private PressureResourceRelationAppMapper pressureResourceRelationAppMapper;
+    private PressureResourceRelateAppMapper pressureResourceRelateAppMapper;
 
     /**
      * 分页
@@ -40,7 +40,7 @@ public class PressureResourceRelateAppDAOImpl implements PressureResourceRelateA
         QueryWrapper<PressureResourceRelateAppEntity> queryWrapper = this.getWrapper(param);
         Page<PressureResourceRelateAppEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
         queryWrapper.orderByDesc("gmt_modified");
-        IPage<PressureResourceRelateAppEntity> pageList = pressureResourceRelationAppMapper.selectPage(page, queryWrapper);
+        IPage<PressureResourceRelateAppEntity> pageList = pressureResourceRelateAppMapper.selectPage(page, queryWrapper);
         if (pageList.getRecords().isEmpty()) {
             return PagingList.empty();
         }
@@ -50,7 +50,7 @@ public class PressureResourceRelateAppDAOImpl implements PressureResourceRelateA
     @Override
     public List<PressureResourceRelateAppEntity> queryList(PressureResourceAppQueryParam param) {
         QueryWrapper<PressureResourceRelateAppEntity> queryWrapper = this.getWrapper(param);
-        return pressureResourceRelationAppMapper.selectList(queryWrapper);
+        return pressureResourceRelateAppMapper.selectList(queryWrapper);
     }
 
     /**
@@ -63,7 +63,7 @@ public class PressureResourceRelateAppDAOImpl implements PressureResourceRelateA
         if (CollectionUtils.isEmpty(list)) {
             return;
         }
-        pressureResourceRelationAppMapper.saveOrUpdate(list);
+        pressureResourceRelateAppMapper.saveOrUpdate(list);
     }
 
     private QueryWrapper<PressureResourceRelateAppEntity> getWrapper(PressureResourceAppQueryParam param) {

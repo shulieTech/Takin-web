@@ -70,7 +70,7 @@ public class PressureResourceRelateDsVO extends TenantBaseEntity {
     private List<String> relationApps;
 
     @ApiModelProperty("关联应用信息")
-    private List<PressureResourceRelationAppVO> appList;
+    private List<PressureResourceRelateAppVO> appList;
 
     @ApiModelProperty("关联数据信息")
     private List<PressureResourceDsVO> dsList;

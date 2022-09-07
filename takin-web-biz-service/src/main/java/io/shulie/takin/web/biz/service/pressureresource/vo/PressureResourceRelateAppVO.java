@@ -16,7 +16,7 @@ import java.util.Date;
  */
 @Data
 @ToString(callSuper = true)
-public class PressureResourceRelationTableVO extends TenantBaseEntity {
+public class PressureResourceRelateAppVO extends TenantBaseEntity {
     @Id
     @ApiModelProperty("ID")
     private String id;
@@ -24,26 +24,27 @@ public class PressureResourceRelationTableVO extends TenantBaseEntity {
     @ApiModelProperty("资源配置Id")
     private String resourceId;
 
-    @ApiModelProperty("数据源Id")
-    private String dsId;
+    @ApiModelProperty("详情Id")
+    private String detailId;
 
-    @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
-    private Integer status;
+    @ApiModelProperty("应用名称")
+    private String appName;
 
-    @ApiModelProperty("业务表")
-    private String businessTable;
+    @ApiModelProperty("状态 0-正常 1-不正常")
+    @Column(name = "`status`")
+    private int status;
 
-    @ApiModelProperty("影子表")
-    private String shadowTable;
+    @ApiModelProperty("隔离方式(0-无 1-影子库 2-影子库/影子表 3-影子表)")
+    private int isolateType;
 
-    @ApiModelProperty("是否加入")
-    private int joinFlag;
+    @ApiModelProperty("节点数")
+    private Integer nodeNum;
 
-    @ApiModelProperty("类型(0-手工 1-自动)")
-    private int type;
+    @ApiModelProperty("探针节点数")
+    private Integer agentNodeNum;
 
-    @ApiModelProperty("扩展信息")
-    private int extInfo;
+    @ApiModelProperty("是否加入压测范围(0-否 1-是)")
+    private int joinPressure;
 
     @ApiModelProperty("创建时间")
     private Date gmtCreate;

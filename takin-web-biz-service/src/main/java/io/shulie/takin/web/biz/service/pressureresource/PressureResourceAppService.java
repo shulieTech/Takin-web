@@ -3,7 +3,7 @@ package io.shulie.takin.web.biz.service.pressureresource;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceAppInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceAppRequest;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationAppVO;
+import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateAppVO;
 
 /**
  * 压测资源配置
@@ -19,7 +19,7 @@ public interface PressureResourceAppService {
      * @param request
      * @return
      */
-    PagingList<PressureResourceRelationAppVO> appCheckList(PressureResourceAppRequest request);
+    PagingList<PressureResourceRelateAppVO> appCheckList(PressureResourceAppRequest request);
 
     /**
      * 修改

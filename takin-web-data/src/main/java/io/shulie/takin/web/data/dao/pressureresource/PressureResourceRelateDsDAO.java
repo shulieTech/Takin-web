@@ -1,6 +1,6 @@
 package io.shulie.takin.web.data.dao.pressureresource;
 
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationDsEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
 
 import java.util.List;
@@ -10,13 +10,13 @@ import java.util.List;
  * @description: TODO
  * @date 2022/8/30 2:54 PM
  */
-public interface PressureResourceRelationDsDAO {
+public interface PressureResourceRelateDsDAO {
     /**
      * 新增
      *
      * @param dsEntitys
      */
-    void add(List<PressureResourceRelationDsEntity> dsEntitys);
+    void add(List<PressureResourceRelateDsEntity> dsEntitys);
 
     /**
      * 按条件查询列表页
@@ -24,5 +24,7 @@ public interface PressureResourceRelationDsDAO {
      * @param param
      * @return
      */
-    List<PressureResourceRelationDsEntity> queryByParam(PressureResourceDsQueryParam param);
+    List<PressureResourceRelateDsEntity> queryByParam(PressureResourceDsQueryParam param);
+
+    void saveOrUpdate(List<PressureResourceRelateDsEntity> list);
 }

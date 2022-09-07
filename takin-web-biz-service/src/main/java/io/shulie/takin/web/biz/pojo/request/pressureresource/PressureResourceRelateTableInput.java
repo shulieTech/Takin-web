@@ -15,7 +15,7 @@ import java.util.Date;
  */
 @Data
 @ToString(callSuper = true)
-public class PressureResourceRelationTableInput extends TenantBaseEntity {
+public class PressureResourceRelateTableInput extends TenantBaseEntity {
     @Id
     @ApiModelProperty("ID")
     private Long id;
@@ -24,7 +24,7 @@ public class PressureResourceRelationTableInput extends TenantBaseEntity {
     private Long resourceId;
 
     @ApiModelProperty("数据源配置Id")
-    private Long dsId;
+    private String dsId;
 
     @ApiModelProperty("数据源")
     private String database;

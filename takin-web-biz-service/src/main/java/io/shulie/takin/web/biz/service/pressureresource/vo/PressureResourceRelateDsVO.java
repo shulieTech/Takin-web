@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Data
 @ToString(callSuper = true)
-public class PressureResourceRelationDsVO extends TenantBaseEntity {
+public class PressureResourceRelateDsVO extends TenantBaseEntity {
     @Id
     @ApiModelProperty("ID")
     private String id;

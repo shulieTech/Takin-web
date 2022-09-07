@@ -18,7 +18,7 @@ import java.util.Date;
 @Data
 @TableName(value = "t_pressure_resource_relation_app")
 @ToString(callSuper = true)
-public class PressureResourceRelationAppEntity extends TenantBaseEntity {
+public class PressureResourceRelateAppEntity extends TenantBaseEntity {
     @Id
     @Column(name = "`id`")
     @ApiModelProperty("ID")
@@ -39,10 +39,6 @@ public class PressureResourceRelationAppEntity extends TenantBaseEntity {
     @ApiModelProperty("状态")
     @Column(name = "`status`")
     private int status;
-
-    @ApiModelProperty("隔离方式(0-无 1-影子库 2-影子库/影子表 3-影子表)")
-    @Column(name = "`isolate_type`")
-    private int isolateType;
 
     @ApiModelProperty("节点数")
     @Column(name = "`node_num`")

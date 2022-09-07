@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Data
 @ToString(callSuper = true)
-public class PressureResourceRelationDsRequest extends PageBaseDTO {
+public class PressureResourceRelateDsRequest extends PageBaseDTO {
     @Id
     @ApiModelProperty("ID")
     private Long id;

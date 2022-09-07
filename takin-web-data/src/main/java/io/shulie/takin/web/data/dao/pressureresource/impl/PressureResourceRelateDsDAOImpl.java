@@ -1,9 +1,9 @@
 package io.shulie.takin.web.data.dao.pressureresource.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationDsDAO;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelationDsMapper;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationDsEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,8 +21,8 @@ import java.util.List;
  * @date 2022/8/31 7:41 PM
  */
 @Service
-public class PressureResourceRelationDsDAOImpl implements PressureResourceRelationDsDAO {
-    private static Logger logger = LoggerFactory.getLogger(PressureResourceRelationDsDAOImpl.class);
+public class PressureResourceRelateDsDAOImpl implements PressureResourceRelateDsDAO {
+    private static Logger logger = LoggerFactory.getLogger(PressureResourceRelateDsDAOImpl.class);
 
     @Resource
     private PressureResourceRelationDsMapper pressureResourceRelationDsMapper;
@@ -33,7 +33,7 @@ public class PressureResourceRelationDsDAOImpl implements PressureResourceRelati
      * @param dsEntitys
      */
     @Override
-    public void add(List<PressureResourceRelationDsEntity> dsEntitys) {
+    public void add(List<PressureResourceRelateDsEntity> dsEntitys) {
         if (CollectionUtils.isNotEmpty(dsEntitys)) {
             dsEntitys.stream().forEach(entity -> {
                 pressureResourceRelationDsMapper.insert(entity);
@@ -47,17 +47,25 @@ public class PressureResourceRelationDsDAOImpl implements PressureResourceRelati
      * @return
      */
     @Override
-    public List<PressureResourceRelationDsEntity> queryByParam(PressureResourceDsQueryParam param) {
-        QueryWrapper<PressureResourceRelationDsEntity> queryWrapper = this.getWrapper(param);
-        List<PressureResourceRelationDsEntity> resultLists = pressureResourceRelationDsMapper.selectList(queryWrapper);
+    public List<PressureResourceRelateDsEntity> queryByParam(PressureResourceDsQueryParam param) {
+        QueryWrapper<PressureResourceRelateDsEntity> queryWrapper = this.getWrapper(param);
+        List<PressureResourceRelateDsEntity> resultLists = pressureResourceRelationDsMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(resultLists)) {
             return Collections.emptyList();
         }
         return resultLists;
     }
 
-    private QueryWrapper<PressureResourceRelationDsEntity> getWrapper(PressureResourceDsQueryParam param) {
-        QueryWrapper<PressureResourceRelationDsEntity> queryWrapper = new QueryWrapper<>();
+    @Override
+    public void saveOrUpdate(List<PressureResourceRelateDsEntity> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return;
+        }
+        pressureResourceRelationDsMapper.saveOrUpdate(list);
+    }
+
+    private QueryWrapper<PressureResourceRelateDsEntity> getWrapper(PressureResourceDsQueryParam param) {
+        QueryWrapper<PressureResourceRelateDsEntity> queryWrapper = new QueryWrapper<>();
         if (param == null) {
             return queryWrapper;
         }

@@ -1,9 +1,9 @@
 package io.shulie.takin.web.biz.service.pressureresource;
 
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationDsInput;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationDsRequest;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationDsVO;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateDsInput;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateDsRequest;
+import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateDsVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -19,17 +19,17 @@ public interface PressureResourceDsService {
     /**
      * 数据源新增
      */
-    void add(PressureResourceRelationDsInput input);
+    void add(PressureResourceRelateDsInput input);
 
     /**
      * 数据源视图页面
      */
-    PagingList<PressureResourceRelationDsVO> listByDs(PressureResourceRelationDsRequest request);
+    PagingList<PressureResourceRelateDsVO> listByDs(PressureResourceRelateDsRequest request);
 
     /**
      * 应用视图页面
      */
-    PagingList<PressureResourceRelationDsVO> listByApp(PressureResourceRelationDsRequest request);
+    PagingList<PressureResourceRelateDsVO> listByApp(PressureResourceRelateDsRequest request);
 
     /**
      * 导入

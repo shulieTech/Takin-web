@@ -35,7 +35,7 @@ public class PressureResoureDsController {
 
     @ApiOperation("链路压测资源-数据源-新增")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ResponseResult create(@RequestBody PressureResourceRelationDsInput input) {
+    public ResponseResult create(@RequestBody PressureResourceRelateDsInput input) {
         input.setType(SourceTypeEnum.MANUAL.getCode());
         pressureResourceDsService.add(input);
         return ResponseResult.success();
@@ -43,13 +43,13 @@ public class PressureResoureDsController {
 
     @ApiOperation("链路压测资源-数据源视图")
     @RequestMapping(value = "/listByDs", method = RequestMethod.GET)
-    public ResponseResult listByDs(PressureResourceRelationDsRequest request) {
+    public ResponseResult listByDs(PressureResourceRelateDsRequest request) {
         return ResponseResult.success(pressureResourceDsService.listByDs(request));
     }
 
     @ApiOperation("链路压测资源-应用视图")
     @RequestMapping(value = "/listByApp", method = RequestMethod.GET)
-    public ResponseResult listByApp(PressureResourceRelationDsRequest request) {
+    public ResponseResult listByApp(PressureResourceRelateDsRequest request) {
         return ResponseResult.success(pressureResourceDsService.listByApp(request));
     }
 

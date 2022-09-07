@@ -1,15 +1,15 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationTableInput;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationTableRequest;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableInput;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceTableService;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationTableVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationTableDAO;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelationTableMapper;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationTableEntity;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -34,10 +34,10 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
     private static Logger logger = LoggerFactory.getLogger(PressureResourceTableServiceImpl.class);
 
     @Resource
-    private PressureResourceRelationTableDAO pressureResourceRelationTableDAO;
+    private PressureResourceRelateTableDAO pressureResourceRelateTableDAO;
 
     @Resource
-    private PressureResourceRelationTableMapper pressureResourceRelationTableMapper;
+    private PressureResourceRelateTableMapper pressureResourceRelateTableMapper;
 
     /**
      * 新增
@@ -45,25 +45,25 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
      * @param input
      */
     @Override
-    public void save(PressureResourceRelationTableInput input) {
+    public void save(PressureResourceRelateTableInput input) {
         // 判断业务表是否存在
         PressureResourceTableQueryParam queryParam = new PressureResourceTableQueryParam();
         queryParam.setBusinessTableName(input.getBusinessTable());
-        queryParam.setDsId(input.getDsId());
-        List<PressureResourceRelationTableEntity> tableList = pressureResourceRelationTableDAO.queryList(queryParam);
+        queryParam.setDsKey(input.getDsId());
+        List<PressureResourceRelateTableEntity> tableList = pressureResourceRelateTableDAO.queryList(queryParam);
         if (CollectionUtils.isNotEmpty(tableList)) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "业务表已存在");
         }
         // 新增
-        PressureResourceRelationTableEntity tableEntity = new PressureResourceRelationTableEntity();
+        PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
         tableEntity.setResourceId(input.getResourceId());
-        tableEntity.setDsId(input.getDsId());
         tableEntity.setBusinessTable(input.getBusinessTable());
         tableEntity.setShadowTable(input.getShadowTable());
         tableEntity.setJoinFlag(input.getJoinFlag());
         tableEntity.setType(input.getType());
         tableEntity.setGmtCreate(new Date());
-        pressureResourceRelationTableDAO.add(Arrays.asList(tableEntity));
+        tableEntity.setDsKey(input.getDsId());
+        pressureResourceRelateTableDAO.add(Arrays.asList(tableEntity));
     }
 
     /**
@@ -72,16 +72,16 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
      * @param updateInput
      */
     @Override
-    public void update(PressureResourceRelationTableInput updateInput) {
+    public void update(PressureResourceRelateTableInput updateInput) {
         if (updateInput.getId() == null) {
             throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "参数Id未指定");
         }
         // 判断是否存在
-        PressureResourceRelationTableEntity entity = pressureResourceRelationTableMapper.selectById(updateInput.getId());
+        PressureResourceRelateTableEntity entity = pressureResourceRelateTableMapper.selectById(updateInput.getId());
         if (entity == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "未查询到指定数据");
         }
-        PressureResourceRelationTableRequest tableRequest = new PressureResourceRelationTableRequest();
+        PressureResourceRelateTableRequest tableRequest = new PressureResourceRelateTableRequest();
         tableRequest.setBusinessTableName(updateInput.getBusinessTable());
         PagingList<PressureResourceRelationTableVO> pageList = this.pageList(tableRequest);
         if (!pageList.isEmpty()) {
@@ -93,14 +93,14 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
                 }
             }
         }
-        PressureResourceRelationTableEntity updateEntity = new PressureResourceRelationTableEntity();
+        PressureResourceRelateTableEntity updateEntity = new PressureResourceRelateTableEntity();
         updateEntity.setId(updateInput.getId());
         updateEntity.setJoinFlag(updateInput.getJoinFlag());
         updateEntity.setShadowTable(updateInput.getShadowTable());
         updateEntity.setRemark(updateEntity.getRemark());
         updateEntity.setStatus(updateEntity.getStatus());
         updateEntity.setExtInfo(updateEntity.getExtInfo());
-        pressureResourceRelationTableMapper.updateById(updateEntity);
+        pressureResourceRelateTableMapper.updateById(updateEntity);
     }
 
     @Override
@@ -108,7 +108,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         if (id == null) {
             throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "参数Id未指定");
         }
-        pressureResourceRelationTableMapper.deleteById(id);
+        pressureResourceRelateTableMapper.deleteById(id);
     }
 
     /**
@@ -118,16 +118,16 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
      * @return
      */
     @Override
-    public PagingList<PressureResourceRelationTableVO> pageList(PressureResourceRelationTableRequest request) {
+    public PagingList<PressureResourceRelationTableVO> pageList(PressureResourceRelateTableRequest request) {
         PressureResourceTableQueryParam param = new PressureResourceTableQueryParam();
         BeanUtils.copyProperties(request, param);
-        PagingList<PressureResourceRelationTableEntity> pageList = pressureResourceRelationTableDAO.pageList(param);
+        PagingList<PressureResourceRelateTableEntity> pageList = pressureResourceRelateTableDAO.pageList(param);
 
         if (pageList.isEmpty()) {
             return PagingList.of(Collections.emptyList(), pageList.getTotal());
         }
         //转换下
-        List<PressureResourceRelationTableEntity> source = pageList.getList();
+        List<PressureResourceRelateTableEntity> source = pageList.getList();
         List<PressureResourceRelationTableVO> returnList = source.stream().map(configDto -> {
             PressureResourceRelationTableVO vo = new PressureResourceRelationTableVO();
             BeanUtils.copyProperties(configDto, vo);

@@ -6,15 +6,20 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDet
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceIsolateInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceQueryRequest;
+import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
+import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceDetailVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceInfoVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceVO;
+import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDetailDAO;
-import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationAppDAO;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceDetailMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
@@ -50,9 +55,6 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     private PressureResourceDAO pressureResourceDAO;
 
     @Resource
-    private PressureResourceRelationAppDAO pressureResourceRelationAppDAO;
-
-    @Resource
     private PressureResourceMapper pressureResourceMapper;
 
     @Resource
@@ -79,6 +81,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         // 压测资源配置
         PressureResourceEntity insertEntity = new PressureResourceEntity();
         insertEntity.setName(input.getName());
+        // 来源Id,业务流程Id
+        insertEntity.setSourceId(input.getSourceId());
         insertEntity.setType(input.getType());
         insertEntity.setGmtCreate(new Date());
         insertEntity.setGmtModified(new Date());
@@ -92,6 +96,14 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         }
     }
 
+    /**
+     * 转换
+     *
+     * @param type
+     * @param resourceId
+     * @param detailInputs
+     * @return
+     */
     private List<PressureResourceDetailEntity> convertEntitys(int type, Long resourceId, List<PressureResourceDetailInput> detailInputs) {
         List<PressureResourceDetailEntity> insertEntityList = detailInputs.stream().map(detail -> {
             PressureResourceDetailEntity detailEntity = new PressureResourceDetailEntity();
@@ -101,6 +113,9 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             // 来源类型
             detailEntity.setType(type);
             detailEntity.setResourceId(resourceId);
+            String linkId = ActivityUtil.createLinkId(detail.getEntranceUrl(), detail.getMethod(),
+                    detail.getAppName(), detail.getRpcType(), detail.getExtend());
+            detailEntity.setLinkId(linkId);
             detailEntity.setGmtCreate(new Date());
             detailEntity.setGmtModified(new Date());
             return detailEntity;
@@ -155,19 +170,22 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (CollectionUtils.isNotEmpty(insertEntitys)) {
             pressureResourceDetailDAO.batchInsert(insertEntitys);
         }
-        // 删除的,不在newMap里面的
-        List<Long> deleteIds = Lists.newArrayList();
-        for (Map.Entry<String, List<PressureResourceDetailEntity>> entry : oldMap.entrySet()) {
-            String tmpKey = entry.getKey();
-            if (!newMap.containsKey(tmpKey)) {
-                Long id = entry.getValue().get(0).getId();
-                if (id != null) {
-                    deleteIds.add(id);
+        // 自动梳理出来的不做删除操作
+        if (input.getType() != SourceTypeEnum.AUTO.getCode()) {
+            // 删除的,不在newMap里面的,
+            List<Long> deleteIds = Lists.newArrayList();
+            for (Map.Entry<String, List<PressureResourceDetailEntity>> entry : oldMap.entrySet()) {
+                String tmpKey = entry.getKey();
+                if (!newMap.containsKey(tmpKey)) {
+                    Long id = entry.getValue().get(0).getId();
+                    if (id != null) {
+                        deleteIds.add(id);
+                    }
                 }
             }
-        }
-        if (CollectionUtils.isNotEmpty(deleteIds)) {
-            pressureResourceDetailMapper.deleteBatchIds(deleteIds);
+            if (CollectionUtils.isNotEmpty(deleteIds)) {
+                pressureResourceDetailMapper.deleteBatchIds(deleteIds);
+            }
         }
     }
 

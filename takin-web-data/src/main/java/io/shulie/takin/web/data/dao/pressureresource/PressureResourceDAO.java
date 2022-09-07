@@ -4,6 +4,8 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceQueryParam;
 
+import java.util.List;
+
 /**
  * @author xingchen
  * @description: TODO
@@ -33,4 +35,11 @@ public interface PressureResourceDAO {
      * @return
      */
     PressureResourceEntity queryByName(String name);
+
+    /**
+     * 获取所有
+     *
+     * @return
+     */
+    List<PressureResourceEntity> getAll();
 }

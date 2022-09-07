@@ -1,8 +1,8 @@
 package io.shulie.takin.web.biz.service.pressureresource;
 
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationTableInput;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationTableRequest;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableInput;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableRequest;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelationTableVO;
 
 /**
@@ -16,16 +16,18 @@ public interface PressureResourceTableService {
     /**
      * 数据源新增
      */
-    void save(PressureResourceRelationTableInput input);
+    void save(PressureResourceRelateTableInput input);
 
     /**
      * 更新
+     *
      * @param updateInput
      */
-    void update(PressureResourceRelationTableInput updateInput);
+    void update(PressureResourceRelateTableInput updateInput);
 
     /**
      * 删除
+     *
      * @param id
      */
     void delete(Long id);
@@ -36,5 +38,5 @@ public interface PressureResourceTableService {
      * @param request
      * @return
      */
-    PagingList<PressureResourceRelationTableVO> pageList(PressureResourceRelationTableRequest request);
+    PagingList<PressureResourceRelationTableVO> pageList(PressureResourceRelateTableRequest request);
 }

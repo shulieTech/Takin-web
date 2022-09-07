@@ -24,5 +24,5 @@ public class PressureResourceTableQueryParam extends PageBaseDTO {
     private Integer status;
 
     @ApiModelProperty("数据源Id")
-    private Long dsId;
+    private String dsKey;
 }

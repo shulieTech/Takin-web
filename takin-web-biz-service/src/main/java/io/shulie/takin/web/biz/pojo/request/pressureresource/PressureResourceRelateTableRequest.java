@@ -13,7 +13,7 @@ import lombok.ToString;
  */
 @Data
 @ToString(callSuper = true)
-public class PressureResourceRelationTableRequest extends PageBaseDTO {
+public class PressureResourceRelateTableRequest extends PageBaseDTO {
     @Id
     @ApiModelProperty("ID")
     private Long id;

@@ -17,23 +17,21 @@ import java.util.List;
 @Data
 public class PressureResourceInput extends TenantBaseEntity {
     @Id
-    @Column(name = "`id`")
     @ApiModelProperty("ID")
     private Long id;
 
     @ApiModelProperty("资源配置名称")
-    @Column(name = "`name`")
     private String name;
 
     @ApiModelProperty("来源类型-手工/业务流程")
-    @Column(name = "`type`")
     private int type;
 
-    @Column(name = "`gmt_create`")
+    @ApiModelProperty("sourceId")
+    private Long sourceId;
+
     @ApiModelProperty("创建时间")
     private Date gmtCreate;
 
-    @Column(name = "`gmt_update`")
     @ApiModelProperty("更新时间")
     private Date gmtUpdate;
 

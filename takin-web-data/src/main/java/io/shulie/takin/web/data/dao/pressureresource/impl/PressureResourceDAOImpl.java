@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author xingchen
@@ -63,6 +64,11 @@ public class PressureResourceDAOImpl implements PressureResourceDAO {
         return pressureResourceMapper.selectOne(queryWrapper);
     }
 
+    @Override
+    public List<PressureResourceEntity> getAll() {
+        return pressureResourceMapper.getAll();
+    }
+
     private QueryWrapper<PressureResourceEntity> getWrapper(PressureResourceQueryParam param) {
         QueryWrapper<PressureResourceEntity> queryWrapper = new QueryWrapper<>();
         if (param == null) {
@@ -70,6 +76,9 @@ public class PressureResourceDAOImpl implements PressureResourceDAO {
         }
         if (param.getName() != null) {
             queryWrapper.like("name", param.getName());
+        }
+        if (param.getSourceId() != null) {
+            queryWrapper.eq("source_id", param.getSourceId());
         }
         return queryWrapper;
     }

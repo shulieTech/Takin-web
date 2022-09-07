@@ -1,6 +1,7 @@
 package io.shulie.takin.web.data.param.pressureresource;
 
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -13,6 +14,9 @@ import java.util.List;
 @Data
 public class PressureResourceQueryParam extends PageBaseDTO {
     private String name;
+
+    @ApiModelProperty("来源ID")
+    private Long sourceId;
 
     private List<Long> userIdList;
 }

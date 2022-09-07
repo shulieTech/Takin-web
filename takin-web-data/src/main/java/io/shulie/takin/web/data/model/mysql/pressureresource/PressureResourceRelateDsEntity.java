@@ -16,9 +16,9 @@ import java.util.Date;
  * @date 2022/8/30 10:24 AM
  */
 @Data
-@TableName(value = "t_pressure_resource_relation_ds")
+@TableName(value = "t_pressure_resource_relate_ds")
 @ToString(callSuper = true)
-public class PressureResourceRelationDsEntity extends TenantBaseEntity {
+public class PressureResourceRelateDsEntity extends TenantBaseEntity {
     @Id
     @Column(name = "`id`")
     @ApiModelProperty("ID")
@@ -27,6 +27,10 @@ public class PressureResourceRelationDsEntity extends TenantBaseEntity {
     @ApiModelProperty("资源配置Id")
     @Column(name = "`resource_id`")
     private Long resourceId;
+
+    @ApiModelProperty("链路详情Id")
+    @Column(name = "`detail_id`")
+    private Long detailId;
 
     @ApiModelProperty("应用名称")
     @Column(name = "`app_name`")
@@ -43,6 +47,10 @@ public class PressureResourceRelationDsEntity extends TenantBaseEntity {
     @ApiModelProperty("来源类型(0-手工,1-自动)")
     @Column(name = "`type`")
     private int type;
+
+    @ApiModelProperty("唯一键")
+    @Column(name = "`unique_key`")
+    private String uniqueKey;
 
     @ApiModelProperty("业务数据源")
     @Column(name = "`business_database`")

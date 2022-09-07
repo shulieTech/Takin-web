@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Data
 @ToString(callSuper = true)
-public class PressureResourceRelationDsInput extends TenantBaseEntity {
+public class PressureResourceRelateDsInput extends TenantBaseEntity {
     @Id
     @ApiModelProperty("ID")
     private Long id;
@@ -35,6 +35,9 @@ public class PressureResourceRelationDsInput extends TenantBaseEntity {
 
     @ApiModelProperty("来源类型(0-手工,1-自动)")
     private int type;
+
+    @ApiModelProperty("唯一键")
+    private String uniqueKey;
 
     @ApiModelProperty("业务数据源")
     private String businessDatabase;

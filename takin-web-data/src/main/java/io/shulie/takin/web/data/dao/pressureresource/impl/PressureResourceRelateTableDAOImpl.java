@@ -2,14 +2,14 @@ package io.shulie.takin.web.data.dao.pressureresource.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationTableDAO;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelationTableMapper;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationTableEntity;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,11 +24,11 @@ import java.util.List;
  * @date 2022/9/1 8:38 PM
  */
 @Service
-public class PressureResourceRelationTableDAOImpl implements PressureResourceRelationTableDAO {
-    private static Logger logger = LoggerFactory.getLogger(PressureResourceRelationTableDAOImpl.class);
+public class PressureResourceRelateTableDAOImpl implements PressureResourceRelateTableDAO {
+    private static Logger logger = LoggerFactory.getLogger(PressureResourceRelateTableDAOImpl.class);
 
     @Resource
-    private PressureResourceRelationTableMapper pressureResourceRelationTableMapper;
+    private PressureResourceRelateTableMapper pressureResourceRelateTableMapper;
 
     /**
      * 新增
@@ -36,12 +36,12 @@ public class PressureResourceRelationTableDAOImpl implements PressureResourceRel
      * @param dsEntitys
      */
     @Override
-    public void add(List<PressureResourceRelationTableEntity> dsEntitys) {
+    public void add(List<PressureResourceRelateTableEntity> dsEntitys) {
         if (CollectionUtils.isEmpty(dsEntitys)) {
             return;
         }
         dsEntitys.stream().forEach(dsEntity -> {
-            pressureResourceRelationTableMapper.insert(dsEntity);
+            pressureResourceRelateTableMapper.insert(dsEntity);
         });
     }
 
@@ -52,11 +52,11 @@ public class PressureResourceRelationTableDAOImpl implements PressureResourceRel
      * @return
      */
     @Override
-    public PagingList<PressureResourceRelationTableEntity> pageList(PressureResourceTableQueryParam param) {
-        QueryWrapper<PressureResourceRelationTableEntity> queryWrapper = this.getWrapper(param);
-        Page<PressureResourceRelationTableEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
+    public PagingList<PressureResourceRelateTableEntity> pageList(PressureResourceTableQueryParam param) {
+        QueryWrapper<PressureResourceRelateTableEntity> queryWrapper = this.getWrapper(param);
+        Page<PressureResourceRelateTableEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
         queryWrapper.orderByDesc("gmt_modified");
-        IPage<PressureResourceRelationTableEntity> pageList = pressureResourceRelationTableMapper.selectPage(page, queryWrapper);
+        IPage<PressureResourceRelateTableEntity> pageList = pressureResourceRelateTableMapper.selectPage(page, queryWrapper);
         if (pageList.getRecords().isEmpty()) {
             return PagingList.empty();
         }
@@ -70,9 +70,9 @@ public class PressureResourceRelationTableDAOImpl implements PressureResourceRel
      * @return
      */
     @Override
-    public List<PressureResourceRelationTableEntity> queryList(PressureResourceTableQueryParam param) {
-        QueryWrapper<PressureResourceRelationTableEntity> queryWrapper = this.getWrapper(param);
-        List<PressureResourceRelationTableEntity> list = pressureResourceRelationTableMapper.selectList(queryWrapper);
+    public List<PressureResourceRelateTableEntity> queryList(PressureResourceTableQueryParam param) {
+        QueryWrapper<PressureResourceRelateTableEntity> queryWrapper = this.getWrapper(param);
+        List<PressureResourceRelateTableEntity> list = pressureResourceRelateTableMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
@@ -80,15 +80,15 @@ public class PressureResourceRelationTableDAOImpl implements PressureResourceRel
     }
 
     @Override
-    public void saveOrUpdate(List<PressureResourceRelationTableEntity> tableEntitys) {
+    public void saveOrUpdate(List<PressureResourceRelateTableEntity> tableEntitys) {
         if (CollectionUtils.isEmpty(tableEntitys)) {
             return;
         }
-        pressureResourceRelationTableMapper.saveOrUpdate(tableEntitys);
+        pressureResourceRelateTableMapper.saveOrUpdate(tableEntitys);
     }
 
-    private QueryWrapper<PressureResourceRelationTableEntity> getWrapper(PressureResourceTableQueryParam param) {
-        QueryWrapper<PressureResourceRelationTableEntity> queryWrapper = new QueryWrapper<>();
+    private QueryWrapper<PressureResourceRelateTableEntity> getWrapper(PressureResourceTableQueryParam param) {
+        QueryWrapper<PressureResourceRelateTableEntity> queryWrapper = new QueryWrapper<>();
         if (param == null) {
             return queryWrapper;
         }
@@ -102,8 +102,8 @@ public class PressureResourceRelationTableDAOImpl implements PressureResourceRel
         if (param.getStatus() != null) {
             queryWrapper.eq("status", param.getStatus());
         }
-        if (param.getDsId() != null) {
-            queryWrapper.eq("ds_id", param.getDsId());
+        if (StringUtils.isNotBlank(param.getDsKey())) {
+            queryWrapper.eq("ds_key", param.getDsKey());
         }
         if (param.getResourceId() != null) {
             queryWrapper.eq("resource_id", param.getResourceId());

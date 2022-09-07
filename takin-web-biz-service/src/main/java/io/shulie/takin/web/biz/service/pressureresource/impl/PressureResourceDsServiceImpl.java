@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.ExtInfo;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationDsInput;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationDsRequest;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelationTableInput;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateDsInput;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateDsRequest;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableInput;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
 import io.shulie.takin.web.biz.service.pressureresource.common.DbNameUtil;
 import io.shulie.takin.web.biz.service.pressureresource.common.IsolateTypeEnum;
@@ -17,15 +17,15 @@ import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
-import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationAppDAO;
-import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationDsDAO;
-import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelationTableDAO;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDAO;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelationDsMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationAppEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationDsEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelationTableEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateAppEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
@@ -57,10 +57,10 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
     private static Logger logger = LoggerFactory.getLogger(PressureResourceDsServiceImpl.class);
 
     @Resource
-    private PressureResourceRelationDsDAO pressureResourceRelationDsDAO;
+    private PressureResourceRelateDsDAO pressureResourceRelateDsDAO;
 
     @Resource
-    private PressureResourceRelationTableDAO pressureResourceRelationTableDAO;
+    private PressureResourceRelateTableDAO pressureResourceRelateTableDAO;
 
     @Resource
     private PressureResourceRelationDsMapper pressureResourceRelationDsMapper;
@@ -69,7 +69,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
     private PressureResourceMapper pressureResourceMapper;
 
     @Resource
-    private PressureResourceRelationAppDAO pressureResourceRelationAppDAO;
+    private PressureResourceRelateAppDAO pressureResourceRelateAppDAO;
 
     /**
      * 新增
@@ -77,7 +77,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
      * @param input
      */
     @Override
-    public void add(PressureResourceRelationDsInput input) {
+    public void add(PressureResourceRelateDsInput input) {
         // 批量给拆分到不同应用里面去，应用视角需要分页查询
         List<String> appNames = input.getRelationApps();
         if (CollectionUtils.isEmpty(appNames)) {
@@ -87,12 +87,12 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         PressureResourceDsQueryParam param = new PressureResourceDsQueryParam();
         param.setBussinessDatabase(input.getBusinessDatabase());
         param.setResourceId(input.getResourceId());
-        List<PressureResourceRelationDsEntity> list = pressureResourceRelationDsDAO.queryByParam(param);
+        List<PressureResourceRelateDsEntity> list = pressureResourceRelateDsDAO.queryByParam(param);
         if (CollectionUtils.isNotEmpty(list)) {
             throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "数据源已存在");
         }
-        List<PressureResourceRelationDsEntity> dsEntitys = appNames.stream().map(appName -> {
-            PressureResourceRelationDsEntity tmpEntity = new PressureResourceRelationDsEntity();
+        List<PressureResourceRelateDsEntity> dsEntitys = appNames.stream().map(appName -> {
+            PressureResourceRelateDsEntity tmpEntity = new PressureResourceRelateDsEntity();
 
             BeanUtils.copyProperties(input, tmpEntity);
             tmpEntity.setAppName(appName);
@@ -102,7 +102,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             tmpEntity.setExtInfo(JSON.toString(extInfo));
             return tmpEntity;
         }).collect(Collectors.toList());
-        pressureResourceRelationDsDAO.add(dsEntitys);
+        pressureResourceRelateDsDAO.add(dsEntitys);
     }
 
     /**
@@ -112,20 +112,20 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
      * @return
      */
     @Override
-    public PagingList<PressureResourceRelationDsVO> listByDs(PressureResourceRelationDsRequest request) {
+    public PagingList<PressureResourceRelateDsVO> listByDs(PressureResourceRelateDsRequest request) {
         // 查询所有的数据源信息
         PressureResourceDsQueryParam param = new PressureResourceDsQueryParam();
         param.setResourceId(request.getResourceId());
         param.setQueryBussinessDatabase(request.getQueryBusinessDataBase());
 
-        List<PressureResourceRelationDsEntity> dsList = pressureResourceRelationDsDAO.queryByParam(param);
+        List<PressureResourceRelateDsEntity> dsList = pressureResourceRelateDsDAO.queryByParam(param);
         // 相同数据源合并
-        List<PressureResourceRelationDsVO> listVO = Lists.newArrayList();
-        Map<String, List<PressureResourceRelationDsEntity>> dsMap = dsList.stream().collect(Collectors.groupingBy(ds -> ds.getBusinessDatabase()));
-        for (Map.Entry<String, List<PressureResourceRelationDsEntity>> entry : dsMap.entrySet()) {
-            List<PressureResourceRelationDsEntity> tmpList = entry.getValue();
+        List<PressureResourceRelateDsVO> listVO = Lists.newArrayList();
+        Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsList.stream().collect(Collectors.groupingBy(ds -> ds.getBusinessDatabase()));
+        for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : dsMap.entrySet()) {
+            List<PressureResourceRelateDsEntity> tmpList = entry.getValue();
             List<String> appNames = tmpList.stream().map(ds -> ds.getAppName()).collect(Collectors.toList());
-            PressureResourceRelationDsVO tmpVO = new PressureResourceRelationDsVO();
+            PressureResourceRelateDsVO tmpVO = new PressureResourceRelateDsVO();
             BeanUtils.copyProperties(tmpList.get(0), tmpVO);
             tmpVO.setDatabase(DbNameUtil.getDbName(tmpList.get(0).getBusinessDatabase()));
 
@@ -141,9 +141,9 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             PressureResourceAppQueryParam appQueryParam = new PressureResourceAppQueryParam();
             appQueryParam.setAppNames(appNames);
             appQueryParam.setResourceId(request.getResourceId());
-            List<PressureResourceRelationAppEntity> appEntitys = pressureResourceRelationAppDAO.queryList(appQueryParam);
+            List<PressureResourceRelateAppEntity> appEntitys = pressureResourceRelateAppDAO.queryList(appQueryParam);
             if (CollectionUtils.isNotEmpty(appEntitys)) {
-                Map<String, List<PressureResourceRelationAppEntity>> appMap = appEntitys.stream().collect(Collectors.groupingBy(app -> app.getAppName()));
+                Map<String, List<PressureResourceRelateAppEntity>> appMap = appEntitys.stream().collect(Collectors.groupingBy(app -> app.getAppName()));
                 List<PressureResourceRelationAppVO> appVOList = appNames.stream().map(app -> {
                     PressureResourceRelationAppVO appVO = new PressureResourceRelationAppVO();
                     appVO.setAppName(app);
@@ -155,7 +155,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             tmpVO.setSize(tmpList.size());
             listVO.add(tmpVO);
         }
-        List<PressureResourceRelationDsVO> pageList = ListUtil.page(request.getCurrentPage(), request.getPageSize(), listVO);
+        List<PressureResourceRelateDsVO> pageList = ListUtil.page(request.getCurrentPage(), request.getPageSize(), listVO);
         return PagingList.of(pageList, listVO.size());
     }
 
@@ -166,18 +166,18 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
      * @return
      */
     @Override
-    public PagingList<PressureResourceRelationDsVO> listByApp(PressureResourceRelationDsRequest request) {
+    public PagingList<PressureResourceRelateDsVO> listByApp(PressureResourceRelateDsRequest request) {
         // 查询所有的数据源信息
         PressureResourceDsQueryParam param = new PressureResourceDsQueryParam();
         param.setResourceId(request.getResourceId());
         param.setQueryAppName(request.getQueryAppName());
-        List<PressureResourceRelationDsEntity> dsList = pressureResourceRelationDsDAO.queryByParam(param);
+        List<PressureResourceRelateDsEntity> dsList = pressureResourceRelateDsDAO.queryByParam(param);
         // 相同数据源合并
-        List<PressureResourceRelationDsVO> listVO = Lists.newArrayList();
-        Map<String, List<PressureResourceRelationDsEntity>> appMap = dsList.stream().collect(Collectors.groupingBy(ds -> ds.getAppName()));
-        for (Map.Entry<String, List<PressureResourceRelationDsEntity>> entry : appMap.entrySet()) {
-            List<PressureResourceRelationDsEntity> tmpList = entry.getValue();
-            PressureResourceRelationDsVO tmpVO = new PressureResourceRelationDsVO();
+        List<PressureResourceRelateDsVO> listVO = Lists.newArrayList();
+        Map<String, List<PressureResourceRelateDsEntity>> appMap = dsList.stream().collect(Collectors.groupingBy(ds -> ds.getAppName()));
+        for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : appMap.entrySet()) {
+            List<PressureResourceRelateDsEntity> tmpList = entry.getValue();
+            PressureResourceRelateDsVO tmpVO = new PressureResourceRelateDsVO();
             BeanUtils.copyProperties(tmpList.get(0), tmpVO);
             tmpVO.setId(String.valueOf(tmpList.get(0).getId()));
             tmpVO.setResourceId(String.valueOf(tmpList.get(0).getResourceId()));
@@ -192,7 +192,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             tmpVO.setSize(tmpList.size());
             listVO.add(tmpVO);
         }
-        List<PressureResourceRelationDsVO> pageList = ListUtil.page(request.getCurrentPage(), request.getPageSize(), listVO);
+        List<PressureResourceRelateDsVO> pageList = ListUtil.page(request.getCurrentPage(), request.getPageSize(), listVO);
         return PagingList.of(pageList, listVO.size());
     }
 
@@ -266,7 +266,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         // 查询所有影子库
         PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
         dsQueryParam.setResourceId(resource.getId());
-        List<PressureResourceRelationDsEntity> dsEntityList = pressureResourceRelationDsDAO.queryByParam(dsQueryParam);
+        List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
         List<ShadowDbExcelVO> shadowDbExcelVOList = Lists.newArrayList();
         List<ExcelSheetVO<?>> sheets = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(dsEntityList)) {
@@ -303,21 +303,21 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         // 查询当前配置下的所有数据源信息
         PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
         dsQueryParam.setResourceId(resource.getId());
-        List<PressureResourceRelationDsEntity> dsEntityList = pressureResourceRelationDsDAO.queryByParam(dsQueryParam);
+        List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
         List<ExcelSheetVO<?>> sheets = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(dsEntityList)) {
             // 查询影子表
             PressureResourceTableQueryParam tableQueryParam = new PressureResourceTableQueryParam();
             tableQueryParam.setResourceId(resource.getId());
-            List<PressureResourceRelationTableEntity> tableEntityList = pressureResourceRelationTableDAO.queryList(tableQueryParam);
+            List<PressureResourceRelateTableEntity> tableEntityList = pressureResourceRelateTableDAO.queryList(tableQueryParam);
             // 按照数据源分组下
             if (CollectionUtils.isNotEmpty(tableEntityList)) {
-                Map<String, List<PressureResourceRelationTableEntity>> tableEntityMap = tableEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getDsId())));
-                Map<String, List<PressureResourceRelationDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getId())));
+                Map<String, List<PressureResourceRelateTableEntity>> tableEntityMap = tableEntityList.stream().collect(Collectors.groupingBy(item -> item.getDsKey()));
+                Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getId())));
                 List<ShadowTableExcelVO> shadowTableExcelVOList = Lists.newArrayList();
-                for (Map.Entry<String, List<PressureResourceRelationTableEntity>> entry : tableEntityMap.entrySet()) {
+                for (Map.Entry<String, List<PressureResourceRelateTableEntity>> entry : tableEntityMap.entrySet()) {
                     String dsId = entry.getKey();
-                    PressureResourceRelationDsEntity tmpDs = dsMap.get(dsId).stream().findFirst().orElse(new PressureResourceRelationDsEntity());
+                    PressureResourceRelateDsEntity tmpDs = dsMap.get(dsId).stream().findFirst().orElse(new PressureResourceRelateDsEntity());
                     if (tmpDs != null && tmpDs.getId() != null) {
                         List<ShadowTableExcelVO> list = entry.getValue().stream().map(table -> {
                             ShadowTableExcelVO excelVO = new ShadowTableExcelVO();
@@ -358,7 +358,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "隔离方案为空");
         }
         // 解析数据
-        List<PressureResourceRelationTableInput> tableList = Lists.newArrayList();
+        List<PressureResourceRelateTableInput> tableList = Lists.newArrayList();
         for (int i = 0; i < isolateType_ShadowTable.size(); i++) {
             ArrayList<String> mess = isolateType_ShadowTable.get(i);
             // 业务数据源地址
@@ -370,7 +370,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             // 影子表
             String shadowTable = mess.get(4);
 
-            PressureResourceRelationTableInput input = new PressureResourceRelationTableInput();
+            PressureResourceRelateTableInput input = new PressureResourceRelateTableInput();
             input.setDatabase(bussinessDatabase);
             input.setBusinessTable(businessTable);
             input.setShadowTable(shadowTable);
@@ -378,27 +378,27 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             tableList.add(input);
         }
         // 按照URL分组
-        Map<String, List<PressureResourceRelationTableInput>> tableMap = tableList.stream().collect(Collectors.groupingBy(PressureResourceRelationTableInput::getDatabase));
-        List<PressureResourceRelationTableEntity> tableEntityList = Lists.newArrayList();
-        for (Map.Entry<String, List<PressureResourceRelationTableInput>> entry : tableMap.entrySet()) {
+        Map<String, List<PressureResourceRelateTableInput>> tableMap = tableList.stream().collect(Collectors.groupingBy(PressureResourceRelateTableInput::getDatabase));
+        List<PressureResourceRelateTableEntity> tableEntityList = Lists.newArrayList();
+        for (Map.Entry<String, List<PressureResourceRelateTableInput>> entry : tableMap.entrySet()) {
             // 数据源
             String database = entry.getKey();
             // 判断数据源是否存在
             PressureResourceDsQueryParam queryParam = new PressureResourceDsQueryParam();
             queryParam.setResourceId(resourceId);
             queryParam.setBussinessDatabase(database);
-            List<PressureResourceRelationDsEntity> dsEntityList = pressureResourceRelationDsDAO.queryByParam(queryParam);
+            List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(queryParam);
             if (CollectionUtils.isEmpty(dsEntityList)) {
                 throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "数据源不存在");
             }
             // 获取数据源Id
-            Long dsId = dsEntityList.get(0).getId();
-            List<PressureResourceRelationTableInput> inputs = entry.getValue();
+            String dsKey = dsEntityList.get(0).getUniqueKey();
+            List<PressureResourceRelateTableInput> inputs = entry.getValue();
             for (int i = 0; i < inputs.size(); i++) {
-                PressureResourceRelationTableInput input = inputs.get(i);
-                PressureResourceRelationTableEntity entity = new PressureResourceRelationTableEntity();
+                PressureResourceRelateTableInput input = inputs.get(i);
+                PressureResourceRelateTableEntity entity = new PressureResourceRelateTableEntity();
                 entity.setResourceId(resourceId);
-                entity.setDsId(dsId);
+                entity.setDsKey(dsKey);
                 entity.setBusinessTable(input.getBusinessTable());
                 entity.setShadowTable(input.getShadowTable());
                 entity.setJoinFlag(0);
@@ -409,7 +409,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             }
         }
         // 批量保存
-        pressureResourceRelationTableDAO.saveOrUpdate(tableEntityList);
+        pressureResourceRelateTableDAO.saveOrUpdate(tableEntityList);
     }
 
     /**
@@ -436,10 +436,10 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             PressureResourceDsQueryParam queryParam = new PressureResourceDsQueryParam();
             queryParam.setResourceId(resourceId);
             queryParam.setBussinessDatabase(bussinessDatabase);
-            List<PressureResourceRelationDsEntity> dsEntityList = pressureResourceRelationDsDAO.queryByParam(queryParam);
+            List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(queryParam);
             if (CollectionUtils.isEmpty(dsEntityList)) {
                 // 新增
-                PressureResourceRelationDsEntity dsInput = new PressureResourceRelationDsEntity();
+                PressureResourceRelateDsEntity dsInput = new PressureResourceRelateDsEntity();
                 dsInput.setResourceId(resourceId);
                 dsInput.setBusinessDatabase(bussinessDatabase);
                 dsInput.setShadowDatabase(shadowDatabase);
@@ -451,13 +451,13 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                 pressureResourceRelationDsMapper.insert(dsInput);
             } else {
                 // update
-                PressureResourceRelationDsEntity updateEntity = new PressureResourceRelationDsEntity();
+                PressureResourceRelateDsEntity updateEntity = new PressureResourceRelateDsEntity();
                 updateEntity.setShadowDatabase(shadowDatabase);
                 updateEntity.setShadowUserName(userName);
                 updateEntity.setShadowPassword(password);
                 updateEntity.setGmtModified(new Date());
 
-                QueryWrapper<PressureResourceRelationDsEntity> whereWrapper = new QueryWrapper<>();
+                QueryWrapper<PressureResourceRelateDsEntity> whereWrapper = new QueryWrapper<>();
                 whereWrapper.eq("resource_id", resourceId);
                 whereWrapper.eq("business_database", bussinessDatabase);
                 pressureResourceRelationDsMapper.update(updateEntity, whereWrapper);

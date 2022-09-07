@@ -40,6 +40,10 @@ public class PressureResourceEntity extends TenantBaseEntity {
     @Column(name = "`status`")
     private int status;
 
+    @ApiModelProperty("来源的Id")
+    @Column(name = "`source_id`")
+    private Long sourceId;
+
     @Column(name = "`gmt_create`")
     @ApiModelProperty("创建时间")
     private Date gmtCreate;

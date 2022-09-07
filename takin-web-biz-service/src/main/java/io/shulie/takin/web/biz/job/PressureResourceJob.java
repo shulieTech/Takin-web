@@ -35,8 +35,8 @@ public class PressureResourceJob implements SimpleJob {
     private DistributedLock distributedLock;
 
     @Resource
-    @Qualifier("pressureResouceJob")
-    private ThreadPoolExecutor pressureResouceJob;
+    @Qualifier("pressureResouceThreadPool")
+    private ThreadPoolExecutor pressureResouceThreadPool;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -55,7 +55,7 @@ public class PressureResourceJob implements SimpleJob {
                     if (distributedLock.checkLock(lockKey)) {
                         continue;
                     }
-                    pressureResouceJob.execute(() -> {
+                    pressureResouceThreadPool.execute(() -> {
                         boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
                         if (!tryLock) {
                             return;

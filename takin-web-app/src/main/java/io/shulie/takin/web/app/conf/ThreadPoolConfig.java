@@ -47,6 +47,13 @@ public class ThreadPoolConfig {
             new ThreadPoolExecutor.AbortPolicy());
     }
 
+    @Bean(name = "pressureResouceThreadPool")
+    public ThreadPoolExecutor pressureResouceThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("pressureResouceJob-%d").build();
+        return new ThreadPoolExecutor(20, 40, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
     /**
      * 远程调用job
      *

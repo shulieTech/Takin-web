@@ -38,8 +38,8 @@ public class PressureResourceRelateJob implements SimpleJob {
     private PressureResourceDAO pressureResourceDAO;
 
     @Resource
-    @Qualifier("pressureResouceJob")
-    private ThreadPoolExecutor pressureResouceJob;
+    @Qualifier("pressureResouceThreadPool")
+    private ThreadPoolExecutor pressureResouceThreadPool;
 
     @Resource
     private DistributedLock distributedLock;
@@ -65,7 +65,7 @@ public class PressureResourceRelateJob implements SimpleJob {
             if (distributedLock.checkLock(lockKey)) {
                 continue;
             }
-            pressureResouceJob.execute(() -> {
+            pressureResouceThreadPool.execute(() -> {
                 boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
                 if (!tryLock) {
                     return;

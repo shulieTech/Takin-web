@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * 压测资源关联应用
  */
 @Component
-@ElasticSchedulerJob(jobName = "pressureResourceJob",
+@ElasticSchedulerJob(jobName = "pressureResourceRelateJob",
         isSharding = true,
         cron = "*/10 * * * * ?",
         description = "压测资源准备-压测资源关联应用")

@@ -32,7 +32,7 @@ public class PressureResourceRelateDsVO extends TenantBaseEntity {
     private String middlewareType;
 
     @ApiModelProperty("(0-未检测 1-检测失败 2-检测成功)")
-    private String status;
+    private Integer status;
 
     @ApiModelProperty("业务数据源")
     private String businessDatabase;

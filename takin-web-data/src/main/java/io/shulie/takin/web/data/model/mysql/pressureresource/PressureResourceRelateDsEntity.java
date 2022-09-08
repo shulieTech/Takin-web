@@ -42,11 +42,11 @@ public class PressureResourceRelateDsEntity extends TenantBaseEntity {
 
     @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
     @Column(name = "`status`")
-    private int status;
+    private Integer status;
 
     @ApiModelProperty("来源类型(0-手工,1-自动)")
     @Column(name = "`type`")
-    private int type;
+    private Integer type;
 
     @ApiModelProperty("唯一键")
     @Column(name = "`unique_key`")

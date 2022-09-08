@@ -24,10 +24,10 @@ public class PressureResourceIsolateInput {
     private String name;
 
     @ApiModelProperty("来源类型-手工/业务流程")
-    private int type;
+    private Integer type;
 
-    @ApiModelProperty("隔离方式(1-影子库 2-影子库/影子表 3-影子表)")
-    private int isolateType;
+    @ApiModelProperty("隔离方式(0-未设置 1-影子库 2-影子库/影子表 3-影子表)")
+    private Integer isolateType;
 
     @ApiModelProperty("更新时间")
     private Date gmtUpdate;

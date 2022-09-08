@@ -38,19 +38,19 @@ public class PressureResourceRelateAppEntity extends TenantBaseEntity {
 
     @ApiModelProperty("状态")
     @Column(name = "`status`")
-    private int status;
+    private Integer status;
 
     @ApiModelProperty("节点数")
     @Column(name = "`node_num`")
-    private int nodeNum;
+    private Integer nodeNum;
 
     @ApiModelProperty("是否加入压测范围(0-否 1-是)")
     @Column(name = "`join_pressure`")
-    private int joinPressure;
+    private Integer joinPressure;
 
     @ApiModelProperty("来源类型(0-手工,1-自动)")
     @Column(name = "`type`")
-    private int type;
+    private Integer type;
 
     @Column(name = "`gmt_create`")
     @ApiModelProperty("创建时间")

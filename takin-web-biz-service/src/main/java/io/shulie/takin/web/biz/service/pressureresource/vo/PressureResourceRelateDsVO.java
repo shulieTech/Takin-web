@@ -56,7 +56,7 @@ public class PressureResourceRelateDsVO extends TenantBaseEntity {
     private ExtInfo extInfo;
 
     @ApiModelProperty("来源类型(0-手工,1-自动)")
-    private int type;
+    private Integer type;
 
     @ApiModelProperty("remark")
     private String remark;
@@ -75,7 +75,7 @@ public class PressureResourceRelateDsVO extends TenantBaseEntity {
     @ApiModelProperty("关联数据信息")
     private List<PressureResourceDsVO> dsList;
 
-    private int size;
+    private Integer size;
 }
 
 

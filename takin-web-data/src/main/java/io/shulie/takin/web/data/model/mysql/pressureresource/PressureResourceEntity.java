@@ -30,15 +30,15 @@ public class PressureResourceEntity extends TenantBaseEntity {
 
     @ApiModelProperty("来源类型(0-手工,1-自动)")
     @Column(name = "`type`")
-    private int type;
+    private Integer type;
 
     @ApiModelProperty("隔离方式(0-未设置 1-影子库 2-影子库/影子表 3-影子表)")
     @Column(name = "`isolate_type`")
-    private int isolateType;
+    private Integer isolateType;
 
     @ApiModelProperty("状态(0-未开始 1-已开始)")
     @Column(name = "`status`")
-    private int status;
+    private Integer status;
 
     @ApiModelProperty("来源的Id")
     @Column(name = "`source_id`")

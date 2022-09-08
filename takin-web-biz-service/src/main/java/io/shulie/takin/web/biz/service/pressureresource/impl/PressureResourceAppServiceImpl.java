@@ -114,7 +114,12 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
 
         PressureResourceRelateAppEntity updateEntity = new PressureResourceRelateAppEntity();
         updateEntity.setId(input.getId());
-        updateEntity.setJoinPressure(input.getJoinPressure());
+        if (input.getJoinPressure() != null) {
+            updateEntity.setJoinPressure(input.getJoinPressure());
+        }
+        if (input.getNodeNum() != null) {
+            updateEntity.setNodeNum(input.getNodeNum());
+        }
         updateEntity.setGmtModified(new Date());
         pressureResourceRelateAppMapper.updateById(updateEntity);
     }

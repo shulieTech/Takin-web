@@ -741,7 +741,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                         appNames);
 
                 // 异常的应用
-                Set<Long> errorApplicationIdSet = new HashSet<>(20);
+                Map<Long,String> errorApplicationIdMap = new HashMap<>(20);
                 // 正常的应用
                 Set<Long> normalApplicationIdSet = new HashSet<>(20);
 
@@ -760,13 +760,13 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                             || (amdbApplication = amdbApplicationMap.get(applicationName)) == null
                             || !Objects.equals(amdbApplication.getInstanceInfo().getInstanceOnlineAmount(), nodeNum)) {
                         // amdbApplicationMap 不存在, map.get 不存在, 或者节点数不一致
-                        errorApplicationIdSet.add(applicationId);
+                        errorApplicationIdMap.put(applicationId,"应用节点数不一致");
 
                     } else if (!amdbApplicationMap.isEmpty()
                             && (amdbApplication = amdbApplicationMap.get(applicationName)) != null
                             && amdbApplication.getAppIsException()) {
                         // map 存在, map.get 存在, amdb应用为异常
-                        errorApplicationIdSet.add(applicationId);
+                        errorApplicationIdMap.put(applicationId,null);
 
                     } else if (!amdbApplicationNodeMap.isEmpty()
                             && CollectionUtil.isNotEmpty(
@@ -775,7 +775,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                             .count()
                             > 1) {
                         // 判断agent版本号是否一致
-                        errorApplicationIdSet.add(applicationId);
+                        errorApplicationIdMap.put(applicationId,"判断agent版本号不一致");
 
                     } else {
                         normalApplicationIdSet.add(applicationId);
@@ -783,7 +783,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 }
 
 
-                this.syncApplicationAccessStatus(applicationList,errorApplicationIdSet);
+                this.syncApplicationAccessStatus(applicationList,errorApplicationIdMap);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
@@ -793,22 +793,25 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList,Set<Long> errorApplicationIdSet) {
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList,Map<Long,String> errorApplicationIdMap) {
         if (CollectionUtils.isNotEmpty(applicationList)) {
             for (ApplicationListResult app : applicationList) {
                 Map result = applicationDAO.getStatus(app.getApplicationName());
                 long n = (long) result.get("n");
-                if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
+                if (n != 0 || (errorApplicationIdMap.containsKey(app.getApplicationId()))) {
                     String e = (String) result.get("e");
                     //不知道异常和Ip就别展示出来误导了
                     if (StringUtils.isBlank(e)) {
                         String a = (String) result.get("a");
-                        if (StringUtils.isEmpty(a)) {
+                        if (StringUtils.isEmpty(a) && errorApplicationIdMap.get(app.getApplicationId()) == null) {
                             continue;
                         }
                         e = "探针接入异常";
                         if (StringUtils.isNotEmpty(a)) {
                             e += "，agentId为" + a;
+                        }
+                        if (errorApplicationIdMap.get(app.getApplicationId()) != null){
+                            e += "," + errorApplicationIdMap.get(app.getApplicationId());
                         }
                     }
                     applicationDAO.updateStatus(app.getApplicationId(), e);

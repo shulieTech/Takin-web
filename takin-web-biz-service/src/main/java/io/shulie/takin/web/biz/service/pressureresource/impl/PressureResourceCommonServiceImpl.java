@@ -174,7 +174,6 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     /**
      * 自动梳理关联信息
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public void processAutoPressureResourceRelate(Long resourceId) {
         PressureResourceDetailQueryParam detailQueryParam = new PressureResourceDetailQueryParam();

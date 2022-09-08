@@ -31,8 +31,8 @@ public class PressureResourceDetailInput {
     @ApiModelProperty("extend")
     private String extend;
 
-    @ApiModelProperty("类型-是否虚拟")
-    private int type;
+    @ApiModelProperty("来源类型(0-手工,1-自动)")
+    private Integer type;
 
     @ApiModelProperty("linkId")
     private String linkId;

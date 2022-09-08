@@ -174,7 +174,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             pressureResourceDetailDAO.batchInsert(insertEntitys);
         }
         // 自动梳理出来的不做删除操作
-        if (input.getType() != SourceTypeEnum.AUTO.getCode()) {
+        if (input.getType().intValue() != SourceTypeEnum.AUTO.getCode()) {
             // 删除的,不在newMap里面的,
             List<Long> deleteIds = Lists.newArrayList();
             for (Map.Entry<String, List<PressureResourceDetailEntity>> entry : oldMap.entrySet()) {

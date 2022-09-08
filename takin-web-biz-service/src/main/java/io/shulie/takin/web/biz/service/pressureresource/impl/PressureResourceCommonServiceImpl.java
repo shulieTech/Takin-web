@@ -119,6 +119,9 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 PressureResourceEntity tmpEntity = pageList.getList().get(0);
                 // 设置Id
                 pressureResourceInput.setId(tmpEntity.getId());
+                pressureResourceInput.setType(SourceTypeEnum.AUTO.getCode());
+                pressureResourceInput.setName(sceneName);
+                pressureResourceInput.setSourceId(flowId);
                 insertFlag = false;
             }
             // 处理详情

@@ -24,7 +24,7 @@ public class PressureResourceInput extends TenantBaseEntity {
     private String name;
 
     @ApiModelProperty("来源类型-手工/业务流程")
-    private int type;
+    private Integer type;
 
     @ApiModelProperty("sourceId")
     private Long sourceId;

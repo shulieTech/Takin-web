@@ -815,6 +815,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                         }
                     }
                     applicationDAO.updateStatus(app.getApplicationId(), e);
+                    //说明异常信息是amdb的节点异常，不进行数据添加
+                    if (StringUtils.isBlank(e) && StringUtils.isBlank((String) result.get("a"))){
+                        continue;
+                    }
                     NodeUploadDataDTO param = new NodeUploadDataDTO();
                     param.setApplicationName(app.getApplicationName());
                     param.setAgentId((String) result.get("a"));

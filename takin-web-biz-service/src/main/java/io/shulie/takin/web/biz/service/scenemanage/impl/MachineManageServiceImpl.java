@@ -347,6 +347,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         WebUserExtApi userExtApi = pluginManager.getExtension(WebUserExtApi.class);
         UserExt userExt = userExtApi.traceUser();
         String externalName = userExt.getExternalName();
+        url += ("?projectId=" + WebPluginUtils.traceEnvCode());
         log.info("开始调用获取{}用户的机器信息,用户名为:{}", url, externalName);
         Map<String, String> header = new HashMap<>();
         header.put("X-DEVOPS-UID", externalName);

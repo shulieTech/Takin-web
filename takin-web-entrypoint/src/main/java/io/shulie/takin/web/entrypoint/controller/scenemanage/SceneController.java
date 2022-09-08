@@ -136,10 +136,14 @@ public class SceneController {
                 break;
         }
         executeTimeList.forEach(s->{
-            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
-                setSceneId(sceneId);
-                setExecuteTime(s);
-            }});
+            try {
+                sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+                    setSceneId(sceneId);
+                    setExecuteTime(s);
+                }});
+            }catch (TakinWebException e){
+                e.printStackTrace();
+            }
         });
 
         // 忽略检测的应用
@@ -230,11 +234,15 @@ public class SceneController {
                 break;
         }
         executeTimeList.forEach(s->{
-            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
-                setSceneId(request.getBasicInfo().getSceneId());
-                setExecuteTime(s);
-                setExecuteCron(request.getBasicInfo().getExecuteCron());
-            }});
+            try {
+                sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+                    setSceneId(request.getBasicInfo().getSceneId());
+                    setExecuteTime(s);
+                    setExecuteCron(request.getBasicInfo().getExecuteCron());
+                }});
+            }catch (TakinWebException e) {
+                e.printStackTrace();
+            }
         });
 
         // 先删除

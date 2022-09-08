@@ -373,9 +373,11 @@
         </td>
         <td>${reportItem.totalRequest} </td>
         <td>
+            <#if reportItem.tps??>
             <span class="${(reportItem.tps.result < reportItem.tps.value) ? string('text-red','')}">${reportItem.tps.result}</span>
             /
             ${(reportItem.tps.value == -1)?string("-",reportItem.tps.value)}
+            </#if>
         </td>
         <td>
             <span class="${(reportItem.avgRt.result > reportItem.avgRt.value && reportItem.avgRt.value != -1) ?string('text-red' , '')}">${reportItem.avgRt.result}</span>ms

@@ -31,10 +31,10 @@ public class PressureResourceRelateDsInput extends TenantBaseEntity {
     private String middlewareName;
 
     @ApiModelProperty("状态")
-    private String status;
+    private Integer status;
 
     @ApiModelProperty("来源类型(0-手工,1-自动)")
-    private int type;
+    private Integer type;
 
     @ApiModelProperty("唯一键")
     private String uniqueKey;

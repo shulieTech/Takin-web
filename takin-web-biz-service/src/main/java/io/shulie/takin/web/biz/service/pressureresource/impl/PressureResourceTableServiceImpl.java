@@ -96,6 +96,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         PressureResourceRelateTableEntity updateEntity = new PressureResourceRelateTableEntity();
         updateEntity.setId(updateInput.getId());
         updateEntity.setJoinFlag(updateInput.getJoinFlag());
+        updateEntity.setBusinessTable(updateInput.getBusinessTable());
         updateEntity.setShadowTable(updateInput.getShadowTable());
         updateEntity.setRemark(updateEntity.getRemark());
         updateEntity.setStatus(updateEntity.getStatus());

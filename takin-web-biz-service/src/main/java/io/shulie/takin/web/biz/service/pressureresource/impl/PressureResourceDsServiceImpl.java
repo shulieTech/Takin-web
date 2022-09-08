@@ -21,7 +21,7 @@ import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDA
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelationDsMapper;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateAppEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
@@ -63,7 +63,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
     private PressureResourceRelateTableDAO pressureResourceRelateTableDAO;
 
     @Resource
-    private PressureResourceRelationDsMapper pressureResourceRelationDsMapper;
+    private PressureResourceRelateDsMapper pressureResourceRelateDsMapper;
 
     @Resource
     private PressureResourceMapper pressureResourceMapper;
@@ -103,6 +103,41 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             return tmpEntity;
         }).collect(Collectors.toList());
         pressureResourceRelateDsDAO.add(dsEntitys);
+    }
+
+    @Override
+    public void update(PressureResourceRelateDsInput input) {
+        if (input.getId() == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "参数Id未指定");
+        }
+        // 判断是否存在
+        PressureResourceRelateDsEntity entity = pressureResourceRelateDsMapper.selectById(input.getId());
+        if (entity == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "未查询到指定数据");
+        }
+
+        PressureResourceRelateDsEntity updateEntity = new PressureResourceRelateDsEntity();
+        updateEntity.setId(input.getId());
+        updateEntity.setStatus(input.getStatus());
+        updateEntity.setBusinessDatabase(input.getBusinessDatabase());
+        updateEntity.setBusinessUserName(input.getBusinessUserName());
+        updateEntity.setShadowDatabase(input.getShadowDatabase());
+        updateEntity.setShadowUserName(input.getShadowUserName());
+        updateEntity.setShadowPassword(input.getShadowPassword());
+        //updateEntity.set
+    }
+
+    /**
+     * 删除
+     *
+     * @param dsId
+     */
+    @Override
+    public void del(Long dsId) {
+        if (dsId == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "参数ID未传递!");
+        }
+        pressureResourceRelateDsMapper.deleteById(dsId);
     }
 
     /**
@@ -448,7 +483,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                 // 手工新增
                 dsInput.setType(SourceTypeEnum.MANUAL.getCode());
 
-                pressureResourceRelationDsMapper.insert(dsInput);
+                pressureResourceRelateDsMapper.insert(dsInput);
             } else {
                 // update
                 PressureResourceRelateDsEntity updateEntity = new PressureResourceRelateDsEntity();
@@ -460,7 +495,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                 QueryWrapper<PressureResourceRelateDsEntity> whereWrapper = new QueryWrapper<>();
                 whereWrapper.eq("resource_id", resourceId);
                 whereWrapper.eq("business_database", bussinessDatabase);
-                pressureResourceRelationDsMapper.update(updateEntity, whereWrapper);
+                pressureResourceRelateDsMapper.update(updateEntity, whereWrapper);
             }
         }
     }

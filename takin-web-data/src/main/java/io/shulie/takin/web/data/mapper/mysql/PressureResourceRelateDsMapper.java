@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface PressureResourceRelationDsMapper
+public interface PressureResourceRelateDsMapper
         extends BaseMapper<PressureResourceRelateDsEntity> {
     @InterceptorIgnore(tenantLine = "true")
     @Insert("<script>" +

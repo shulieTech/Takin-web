@@ -2,7 +2,7 @@ package io.shulie.takin.web.data.dao.pressureresource.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelationDsMapper;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
@@ -25,7 +25,7 @@ public class PressureResourceRelateDsDAOImpl implements PressureResourceRelateDs
     private static Logger logger = LoggerFactory.getLogger(PressureResourceRelateDsDAOImpl.class);
 
     @Resource
-    private PressureResourceRelationDsMapper pressureResourceRelationDsMapper;
+    private PressureResourceRelateDsMapper pressureResourceRelateDsMapper;
 
     /**
      * 批量新增
@@ -36,7 +36,7 @@ public class PressureResourceRelateDsDAOImpl implements PressureResourceRelateDs
     public void add(List<PressureResourceRelateDsEntity> dsEntitys) {
         if (CollectionUtils.isNotEmpty(dsEntitys)) {
             dsEntitys.stream().forEach(entity -> {
-                pressureResourceRelationDsMapper.insert(entity);
+                pressureResourceRelateDsMapper.insert(entity);
             });
         }
     }
@@ -49,7 +49,7 @@ public class PressureResourceRelateDsDAOImpl implements PressureResourceRelateDs
     @Override
     public List<PressureResourceRelateDsEntity> queryByParam(PressureResourceDsQueryParam param) {
         QueryWrapper<PressureResourceRelateDsEntity> queryWrapper = this.getWrapper(param);
-        List<PressureResourceRelateDsEntity> resultLists = pressureResourceRelationDsMapper.selectList(queryWrapper);
+        List<PressureResourceRelateDsEntity> resultLists = pressureResourceRelateDsMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(resultLists)) {
             return Collections.emptyList();
         }
@@ -61,7 +61,7 @@ public class PressureResourceRelateDsDAOImpl implements PressureResourceRelateDs
         if (CollectionUtils.isEmpty(list)) {
             return;
         }
-        pressureResourceRelationDsMapper.saveOrUpdate(list);
+        pressureResourceRelateDsMapper.saveOrUpdate(list);
     }
 
     private QueryWrapper<PressureResourceRelateDsEntity> getWrapper(PressureResourceDsQueryParam param) {

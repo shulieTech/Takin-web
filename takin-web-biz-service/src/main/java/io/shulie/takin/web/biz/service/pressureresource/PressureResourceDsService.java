@@ -22,6 +22,16 @@ public interface PressureResourceDsService {
     void add(PressureResourceRelateDsInput input);
 
     /**
+     * 数据源新增
+     */
+    void update(PressureResourceRelateDsInput input);
+
+    /**
+     * 数据源删除
+     */
+    void del(Long dsId);
+
+    /**
      * 数据源视图页面
      */
     PagingList<PressureResourceRelateDsVO> listByDs(PressureResourceRelateDsRequest request);

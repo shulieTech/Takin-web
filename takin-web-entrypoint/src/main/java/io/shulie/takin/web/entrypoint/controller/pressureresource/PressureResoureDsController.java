@@ -47,6 +47,13 @@ public class PressureResoureDsController {
         return ResponseResult.success(pressureResourceDsService.listByDs(request));
     }
 
+    @ApiOperation("链路压测资源-数据源-删除")
+    @RequestMapping(value = "/del", method = RequestMethod.GET)
+    public ResponseResult del(PressureResourceRelateDsInput input) {
+        pressureResourceDsService.del(input.getId());
+        return ResponseResult.success();
+    }
+
     @ApiOperation("链路压测资源-应用视图")
     @RequestMapping(value = "/listByApp", method = RequestMethod.GET)
     public ResponseResult listByApp(PressureResourceRelateDsRequest request) {

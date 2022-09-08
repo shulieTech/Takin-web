@@ -44,7 +44,7 @@ public class PressureResourceRelateAppVO extends TenantBaseEntity {
     private Integer agentNodeNum;
 
     @ApiModelProperty("是否加入压测范围(0-否 1-是)")
-    private int joinPressure;
+    private Integer joinPressure;
 
     @ApiModelProperty("创建时间")
     private Date gmtCreate;

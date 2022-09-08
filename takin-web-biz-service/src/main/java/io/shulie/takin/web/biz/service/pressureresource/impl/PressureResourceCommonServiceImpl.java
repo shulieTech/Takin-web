@@ -3,6 +3,8 @@ package io.shulie.takin.web.biz.service.pressureresource.impl;
 import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
+import io.shulie.amdb.common.enums.NodeTypeEnum;
+import io.shulie.amdb.common.enums.NodeTypeGroupEnum;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
@@ -12,13 +14,11 @@ import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequ
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDetailInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
-import io.shulie.takin.web.biz.service.pressureresource.common.DataSourceUtil;
-import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.*;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
@@ -32,9 +32,12 @@ import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -166,103 +169,131 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     }
 
     /**
-     * 自动梳理关联应用
+     * 自动梳理关联信息
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void processAutoPressureResourceRelate(Long resourceId) {
         PressureResourceDetailQueryParam detailQueryParam = new PressureResourceDetailQueryParam();
         detailQueryParam.setResourceId(resourceId);
         List<PressureResourceDetailEntity> detailEntityList = pressureResourceDetailDAO.getList(detailQueryParam);
         if (CollectionUtils.isNotEmpty(detailEntityList)) {
-            for (int i = 0; i < detailEntityList.size(); i++) {
-                // 获取入口
-                PressureResourceDetailEntity detailEntity = detailEntityList.get(i);
-                // 链路拓扑图查询
-                ApplicationEntranceTopologyQueryRequest request = new ApplicationEntranceTopologyQueryRequest();
-                request.setApplicationName(detailEntity.getAppName());
-                request.setLinkId(detailEntity.getLinkId());
-                request.setMethod(detailEntity.getMethod());
-                request.setRpcType(detailEntity.getRpcType());
-                request.setExtend(detailEntity.getExtend());
-                request.setServiceName(detailEntity.getEntranceUrl());
-                request.setType(EntranceTypeEnum.getEnumByType(detailEntity.getRpcType()));
-                // 拓扑图查询
-                // 大数据查询拓扑图
-                LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
-                        false, request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
-                        request.getRpcType(), request.getExtend());
-                if (applicationEntrancesTopology == null) {
-                    logger.warn("链路拓扑图未梳理完成,{}", detailEntity.getEntranceUrl());
-                    continue;
-                }
-                // 获取应用节点
-                List<LinkNodeDTO> nodeDTOList = applicationEntrancesTopology.getNodes();
-                List<LinkNodeDTO> appNodeList = nodeDTOList.stream().filter(node -> node.getNodeType().equals(ApplicationEntranceTopologyResponse.NodeTypeResponseEnum.APP.getType())).collect(Collectors.toList());
-                if (CollectionUtils.isNotEmpty(appNodeList)) {
+            try {
+                for (int i = 0; i < detailEntityList.size(); i++) {
+                    // 获取入口
+                    PressureResourceDetailEntity detailEntity = detailEntityList.get(i);
+                    // 链路拓扑图查询
+                    ApplicationEntranceTopologyQueryRequest request = new ApplicationEntranceTopologyQueryRequest();
+                    request.setApplicationName(detailEntity.getAppName());
+                    request.setLinkId(detailEntity.getLinkId());
+                    request.setMethod(detailEntity.getMethod());
+                    request.setRpcType(detailEntity.getRpcType());
+                    request.setExtend(detailEntity.getExtend());
+                    request.setServiceName(detailEntity.getEntranceUrl());
+                    request.setType(EntranceTypeEnum.getEnumByType(detailEntity.getRpcType()));
+                    // 拓扑图查询
+                    // 大数据查询拓扑图
+                    LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
+                            false, request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
+                            request.getRpcType(), request.getExtend());
+                    if (applicationEntrancesTopology == null) {
+                        logger.warn("链路拓扑图未梳理完成,{}", detailEntity.getEntranceUrl());
+                        continue;
+                    }
+                    // 获取应用节点
+                    List<LinkNodeDTO> nodeDTOList = applicationEntrancesTopology.getNodes();
+                    List<LinkNodeDTO> appNodeList = nodeDTOList.stream().filter(node -> node.getNodeType().equals(NodeTypeEnum.APP.getType())).collect(Collectors.toList());
                     List<PressureResourceRelateAppEntity> appEntityList = appNodeList.stream().map(appNode -> {
                         PressureResourceRelateAppEntity appEntity = new PressureResourceRelateAppEntity();
                         appEntity.setAppName(appNode.getNodeName());
                         appEntity.setResourceId(resourceId);
                         appEntity.setDetailId(detailEntity.getId());
-                        appEntity.setType(SourceTypeEnum.AUTO.getCode());
                         appEntity.setTenantId(WebPluginUtils.traceTenantId());
                         appEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+                        // 节点数默认为0
+                        appEntity.setNodeNum(0);
+                        appEntity.setJoinPressure(JoinFlagEnum.YES.getCode());
+                        appEntity.setType(SourceTypeEnum.AUTO.getCode());
+                        appEntity.setStatus(1);
 
                         return appEntity;
                     }).collect(Collectors.toList());
-                    // 保存关联应用
-                    pressureResourceRelateAppDAO.saveOrUpdate(appEntityList);
-                }
-                List<LinkEdgeDTO> edgeDTOList = applicationEntrancesTopology.getEdges();
-                // 获取所有的数据库操作信息
-                List<LinkEdgeDTO> dbEdgeList = edgeDTOList.stream().filter(edge -> {
-                    if (edge.getRpcType().equals("4") && edge.getLogType().equals("2")) {
-                        return true;
+                    if (CollectionUtils.isNotEmpty(appNodeList)) {
+                        // 保存关联应用
+                        pressureResourceRelateAppDAO.saveOrUpdate(appEntityList);
                     }
-                    return false;
-                }).collect(Collectors.toList());
-                if (CollectionUtils.isNotEmpty(dbEdgeList)) {
-                    // 按照URL分组
-                    Map<String, List<LinkEdgeDTO>> serviceMap = dbEdgeList.stream().collect(Collectors.groupingBy(dbEdge -> fetchKey(dbEdge)));
+                    List<LinkEdgeDTO> edgeDTOList = applicationEntrancesTopology.getEdges();
+                    // 获取所有的数据库操作信息
+                    List<LinkEdgeDTO> dbEdgeList = edgeDTOList.stream().filter(edge -> {
+                        if (edge.getEagleTypeGroup().equals(NodeTypeGroupEnum.DB.getType())) {
+                            return true;
+                        }
+                        return false;
+                    }).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(dbEdgeList)) {
+                        // 按照URL分组
+                        Map<String, List<LinkEdgeDTO>> serviceMap = dbEdgeList.stream().collect(Collectors.groupingBy(dbEdge -> fetchKey(dbEdge)));
 
-                    List<PressureResourceRelateDsEntity> dsEntityList = Lists.newArrayList();
-                    List<PressureResourceRelateTableEntity> tableEntityList = Lists.newArrayList();
-                    for (Map.Entry<String, List<LinkEdgeDTO>> entry : serviceMap.entrySet()) {
-                        String key = entry.getKey();
-                        PressureResourceRelateDsEntity dsEntity = new PressureResourceRelateDsEntity();
-                        dsEntity.setResourceId(resourceId);
-                        dsEntity.setDetailId(detailEntity.getId());
-                        dsEntity.setAppName(key.split("#")[0]);
-                        dsEntity.setBusinessDatabase(key.split("#")[1]);
-                        dsEntity.setType(SourceTypeEnum.AUTO.getCode());
-                        dsEntity.setTenantId(WebPluginUtils.traceTenantId());
-                        dsEntity.setEnvCode(WebPluginUtils.traceEnvCode());
-                        String uniqueKey = DataSourceUtil.generateKey(dsEntity);
-                        dsEntity.setUniqueKey(uniqueKey);
+                        List<PressureResourceRelateDsEntity> dsEntityList = Lists.newArrayList();
+                        List<PressureResourceRelateTableEntity> tableEntityList = Lists.newArrayList();
+                        for (Map.Entry<String, List<LinkEdgeDTO>> entry : serviceMap.entrySet()) {
+                            String key = entry.getKey();
+                            PressureResourceRelateDsEntity dsEntity = new PressureResourceRelateDsEntity();
+                            dsEntity.setResourceId(resourceId);
+                            dsEntity.setDetailId(detailEntity.getId());
+                            dsEntity.setAppName(key.split("#")[0]);
+                            String db = key.split("#")[1];
+                            String dbName = DbNameUtil.getDbName(db);
+                            if (PtUtils.isShadow(dbName)) {
+                                continue;
+                            }
+                            dsEntity.setBusinessDatabase(db);
+                            dsEntity.setTenantId(WebPluginUtils.traceTenantId());
+                            dsEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+                            dsEntity.setStatus(CheckStatusEnum.CHECK_NO.getCode());
+                            dsEntity.setType(SourceTypeEnum.AUTO.getCode());
+                            dsEntity.setGmtCreate(new Date());
+                            // 生成唯一key,关联表
+                            String uniqueKey = DataSourceUtil.generateKey(dsEntity);
+                            dsEntity.setUniqueKey(uniqueKey);
 
-                        dsEntityList.add(dsEntity);
+                            dsEntityList.add(dsEntity);
 
-                        List<LinkEdgeDTO> value = entry.getValue();
-                        if (CollectionUtils.isNotEmpty(value)) {
-                            for (int k = 0; k < value.size(); k++) {
-                                String method = value.get(i).getMethod();
-                                PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
-                                tableEntity.setResourceId(resourceId);
-                                tableEntity.setBusinessTable(method);
-                                tableEntity.setDsKey(uniqueKey);
-                                tableEntity.setJoinFlag(1);
-                                tableEntity.setGmtCreate(new Date());
-                                tableEntity.setType(SourceTypeEnum.AUTO.getCode());
-                                dsEntity.setTenantId(WebPluginUtils.traceTenantId());
-                                dsEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+                            List<LinkEdgeDTO> value = entry.getValue();
+                            if (CollectionUtils.isNotEmpty(value)) {
+                                for (int k = 0; k < value.size(); k++) {
+                                    String method = value.get(i).getMethod();
+                                    // 过滤掉影子的表
+                                    if (PtUtils.isShadow(method)) {
+                                        continue;
+                                    }
+                                    PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
+                                    tableEntity.setResourceId(resourceId);
+                                    if (StringUtils.isBlank(method)) {
+                                        logger.warn("链路梳理结果错误,表信息未梳理 {}", resourceId);
+                                        continue;
+                                    }
+                                    tableEntity.setBusinessTable(method);
+                                    tableEntity.setDsKey(uniqueKey);
+                                    tableEntity.setGmtCreate(new Date());
 
-                                tableEntityList.add(tableEntity);
+                                    tableEntity.setJoinFlag(JoinFlagEnum.YES.getCode());
+                                    tableEntity.setStatus(CheckStatusEnum.CHECK_NO.getCode());
+                                    tableEntity.setType(SourceTypeEnum.AUTO.getCode());
+                                    tableEntity.setTenantId(WebPluginUtils.traceTenantId());
+                                    tableEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+
+                                    tableEntityList.add(tableEntity);
+                                }
                             }
                         }
+                        pressureResourceRelateDsDAO.saveOrUpdate(dsEntityList);
+                        pressureResourceRelateTableDAO.saveOrUpdate(tableEntityList);
                     }
-                    pressureResourceRelateDsDAO.saveOrUpdate(dsEntityList);
-                    pressureResourceRelateTableDAO.saveOrUpdate(tableEntityList);
                 }
+            } catch (Throwable e) {
+                logger.error(ExceptionUtils.getStackTrace(e));
+                throw new RuntimeException(e);
             }
         }
     }

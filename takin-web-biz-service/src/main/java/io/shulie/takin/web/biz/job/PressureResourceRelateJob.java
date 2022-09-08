@@ -6,10 +6,12 @@ import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +31,7 @@ import java.util.stream.Collectors;
 @Component
 @ElasticSchedulerJob(jobName = "pressureResourceRelateJob",
         isSharding = true,
-        cron = "*/10 * * * * ?",
+        cron = "0 0/1 * * * ? *",
         description = "压测资源准备-压测资源关联应用")
 @Slf4j
 public class PressureResourceRelateJob implements SimpleJob {
@@ -73,9 +76,14 @@ public class PressureResourceRelateJob implements SimpleJob {
                 }
                 try {
                     TenantCommonExt commonExt = new TenantCommonExt();
+                    commonExt.setSource(ContextSourceEnum.JOB.getCode());
                     commonExt.setEnvCode(resource.getEnvCode());
                     commonExt.setTenantId(resource.getTenantId());
-                    String tenantAppKey = WebPluginUtils.getTenantInfo(resource.getTenantId()).getTenantAppKey();
+                    TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
+                    if (tenantInfoExt == null) {
+                        return;
+                    }
+                    String tenantAppKey = tenantInfoExt.getTenantAppKey();
                     commonExt.setTenantAppKey(tenantAppKey);
                     WebPluginUtils.setTraceTenantContext(commonExt);
                     pressureResourceCommonService.processAutoPressureResourceRelate(resource.getId());

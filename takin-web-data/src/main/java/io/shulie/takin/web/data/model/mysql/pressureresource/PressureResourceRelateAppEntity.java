@@ -36,7 +36,7 @@ public class PressureResourceRelateAppEntity extends TenantBaseEntity {
     @Column(name = "`app_name`")
     private String appName;
 
-    @ApiModelProperty("状态")
+    @ApiModelProperty("状态(0-正常-1-不正常)")
     @Column(name = "`status`")
     private Integer status;
 

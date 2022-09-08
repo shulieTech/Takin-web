@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 @ElasticSchedulerJob(jobName = "pressureResourceJob",
         isSharding = true,
-        cron = "*/10 * * * * ?",
+        cron = "0 0/1 * * * ? *",
         description = "压测资源准备自动梳理")
 @Slf4j
 public class PressureResourceJob implements SimpleJob {

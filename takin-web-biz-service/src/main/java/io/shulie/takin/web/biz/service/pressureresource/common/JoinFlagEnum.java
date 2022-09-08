@@ -5,16 +5,14 @@ package io.shulie.takin.web.biz.service.pressureresource.common;
  * @description: TODO
  * @date 2022/9/6 9:48 AM
  */
-public enum IsolateTypeEnum {
-    DEFAULT(0, "无"),
-    SHADOW_DB(1, "影子库"),
-    SHADOW_DB_TABLE(2, "影子库/影子表"),
-    SHADOW_TABLE(3, "影子表");
+public enum JoinFlagEnum {
+    YES(0, "加入"),
+    NO(1, "未加入");
 
     int code;
     String name;
 
-    IsolateTypeEnum(int code, String name) {
+    JoinFlagEnum(int code, String name) {
         this.code = code;
         this.name = name;
     }
@@ -28,12 +26,12 @@ public enum IsolateTypeEnum {
     }
 
     public static String getName(int code) {
-        IsolateTypeEnum[] isolateTypeEnums = IsolateTypeEnum.values();
-        for (IsolateTypeEnum isolateTypeEnum : isolateTypeEnums) {
+        JoinFlagEnum[] isolateTypeEnums = JoinFlagEnum.values();
+        for (JoinFlagEnum isolateTypeEnum : isolateTypeEnums) {
             if (isolateTypeEnum.getCode() == (code)) {
                 return isolateTypeEnum.getName();
             }
         }
-        return IsolateTypeEnum.DEFAULT.getName();
+        return JoinFlagEnum.YES.getName();
     }
 }

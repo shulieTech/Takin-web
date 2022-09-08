@@ -105,6 +105,9 @@ public class PressureResourceServiceImpl implements PressureResourceService {
      * @return
      */
     private List<PressureResourceDetailEntity> convertEntitys(int type, Long resourceId, List<PressureResourceDetailInput> detailInputs) {
+        if (CollectionUtils.isEmpty(detailInputs)) {
+            return Collections.EMPTY_LIST;
+        }
         List<PressureResourceDetailEntity> insertEntityList = detailInputs.stream().map(detail -> {
             PressureResourceDetailEntity detailEntity = new PressureResourceDetailEntity();
             BeanUtils.copyProperties(detail, detailEntity);

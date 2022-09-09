@@ -48,6 +48,10 @@ public class PressureResourceEntity extends TenantBaseEntity {
     @Column(name = "`source_id`")
     private Long sourceId;
 
+    @ApiModelProperty("归属人Id")
+    @Column(name = "user_id")
+    private Long userId;
+
     @Column(name = "`check_time`")
     @ApiModelProperty("检测时间")
     private Date checkTime;

@@ -48,10 +48,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -102,6 +99,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         // 来源Id,业务流程Id
         insertEntity.setSourceId(input.getSourceId());
         insertEntity.setType(input.getType());
+        insertEntity.setUserId(WebPluginUtils.traceUserId());
         insertEntity.setGmtCreate(new Date());
         insertEntity.setGmtModified(new Date());
         Long resourceId = pressureResourceDAO.add(insertEntity);
@@ -169,6 +167,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         updateResourceEntity.setId(input.getId());
         updateResourceEntity.setName(input.getName());
         updateResourceEntity.setGmtModified(new Date());
+        updateResourceEntity.setUserId(input.getUserId());
         pressureResourceMapper.updateById(updateResourceEntity);
 
         // 修改详情
@@ -339,6 +338,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         }
         // 检测时间都是一批的
         extInfo.setCheckTime(entity.getCheckTime());
+        extInfo.setUserName(WebPluginUtils.getUserName(entity.getUserId(), WebPluginUtils.getUserMapByIds(Arrays.asList(entity.getUserId()))));
         return extInfo;
     }
 
@@ -379,6 +379,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         }
         // 检测时间都是一批的
         extInfo.setCheckTime(entity.getCheckTime());
+        extInfo.setUserName(WebPluginUtils.getUserName(entity.getUserId(), WebPluginUtils.getUserMapByIds(Arrays.asList(entity.getUserId()))));
         return extInfo;
     }
 }

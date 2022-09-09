@@ -122,6 +122,8 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 pressureResourceInput.setType(SourceTypeEnum.AUTO.getCode());
                 pressureResourceInput.setCheckStatus(CheckStatusEnum.CHECK_NO.getCode());
                 pressureResourceInput.setSourceId(flowId);
+                // 设置归属人
+                pressureResourceInput.setUserId(flow.getUserId());
             } else {
                 // 修改
                 PressureResourceEntity tmpEntity = pageList.getList().get(0);
@@ -130,6 +132,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 pressureResourceInput.setType(SourceTypeEnum.AUTO.getCode());
                 pressureResourceInput.setName(sceneName);
                 pressureResourceInput.setSourceId(flowId);
+                pressureResourceInput.setUserId(flow.getUserId());
                 insertFlag = false;
             }
             // 处理详情

@@ -38,6 +38,9 @@ public class PressureResourceInput extends TenantBaseEntity {
     @ApiModelProperty("更新时间")
     private Date gmtUpdate;
 
+    @ApiModelProperty("归属人Id")
+    private Long userId;
+
     /**
      * 详情明细
      */

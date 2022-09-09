@@ -6,7 +6,10 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceIso
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceQueryRequest;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceExtInfo;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceInfoVO;
+import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceProcessStatusVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceVO;
+
+import java.util.Map;
 
 /**
  * 压测资源配置
@@ -52,6 +55,13 @@ public interface PressureResourceService {
      * @param isolateInput
      */
     void updateIsolate(PressureResourceIsolateInput isolateInput);
+
+    /**
+     * 处理进度
+     *
+     * @return
+     */
+    Map<String, Integer> progress(Long id);
 
     /**
      * 处理汇总信息-应用

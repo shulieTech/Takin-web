@@ -800,6 +800,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 long n = (long) result.get("n");
                 if (n != 0 || (errorApplicationIdMap.containsKey(app.getApplicationId()))) {
                     String e = (String) result.get("e");
+                    final String oldEx = e;
                     //不知道异常和Ip就别展示出来误导了
                     if (StringUtils.isBlank(e)) {
                         String a = (String) result.get("a");
@@ -816,7 +817,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     }
                     applicationDAO.updateStatus(app.getApplicationId(), e);
                     //说明异常信息是amdb的节点异常，不进行数据添加
-                    if (StringUtils.isBlank(e) && StringUtils.isBlank((String) result.get("a"))){
+                    if (StringUtils.isBlank(oldEx) && StringUtils.isBlank((String) result.get("a"))){
                         continue;
                     }
                     NodeUploadDataDTO param = new NodeUploadDataDTO();

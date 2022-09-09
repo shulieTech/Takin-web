@@ -87,7 +87,7 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
                 if (voResponse.getSuccess()) {
                     ApplicationVo applicationVo = voResponse.getData();
                     vo.setAgentNodeNum(applicationVo.getOnlineNodeNum());
-                    vo.setStatus(applicationVo.getAccessStatus().equals(0) ? 0 : 1);
+                    vo.setStatus(applicationVo.getOnlineNodeNum().equals(vo.getNodeNum()) ? 0 : 1);
                 }
             }
             return vo;

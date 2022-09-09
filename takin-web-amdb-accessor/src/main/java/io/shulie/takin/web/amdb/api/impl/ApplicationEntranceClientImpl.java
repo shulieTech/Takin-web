@@ -197,7 +197,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
     @Override
     public LinkTopologyDTO getApplicationEntrancesTopology(boolean tempActivity, String applicationName, String linkId,
                                                            String serviceName,
-                                                           String method, String rpcType, String extend) {
+                                                           String method, String rpcType, String extend, boolean extFlag) {
         String url;
         if (tempActivity) {
             url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_TOPOLOGY_PATH_TEMP;
@@ -218,6 +218,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         if (extend != null) {
             topologyQueryParam.setExtend(extend);
         }
+        // 是否关联查询出数据库的详情信息,默认false
+        topologyQueryParam.setExtFlag(extFlag);
         topologyQueryParam.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         topologyQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {

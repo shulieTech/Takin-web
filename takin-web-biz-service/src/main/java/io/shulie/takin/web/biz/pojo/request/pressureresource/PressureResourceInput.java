@@ -26,6 +26,9 @@ public class PressureResourceInput extends TenantBaseEntity {
     @ApiModelProperty("来源类型-手工/业务流程")
     private Integer type;
 
+    @ApiModelProperty("检测状态(0-未检测 1-检测中 2-检测完成)")
+    private Integer checkStatus;
+
     @ApiModelProperty("sourceId")
     private Long sourceId;
 

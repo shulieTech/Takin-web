@@ -5,15 +5,15 @@ package io.shulie.takin.web.biz.service.pressureresource.common;
  * @description: TODO
  * @date 2022/9/6 9:48 AM
  */
-public enum CheckStatusEnum {
-    CHECK_NO(0, "未检测"),
-    CHECK_ING(1, "检测中"),
-    CHECK_FIN(2, "检测完成");
+public enum StatusEnum {
+    NO(0, "未检测"),
+    FAIL(1, "检测失败"),
+    SUCCESS(2, "检测成功");
 
     int code;
     String name;
 
-    CheckStatusEnum(int code, String name) {
+    StatusEnum(int code, String name) {
         this.code = code;
         this.name = name;
     }
@@ -27,12 +27,12 @@ public enum CheckStatusEnum {
     }
 
     public static String getName(int code) {
-        CheckStatusEnum[] isolateTypeEnums = CheckStatusEnum.values();
-        for (CheckStatusEnum isolateTypeEnum : isolateTypeEnums) {
+        StatusEnum[] isolateTypeEnums = StatusEnum.values();
+        for (StatusEnum isolateTypeEnum : isolateTypeEnums) {
             if (isolateTypeEnum.getCode() == (code)) {
                 return isolateTypeEnum.getName();
             }
         }
-        return CheckStatusEnum.CHECK_NO.getName();
+        return StatusEnum.NO.getName();
     }
 }

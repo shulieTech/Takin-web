@@ -4,6 +4,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceIsolateInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceQueryRequest;
+import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceExtInfo;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceInfoVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceVO;
 
@@ -51,4 +52,18 @@ public interface PressureResourceService {
      * @param isolateInput
      */
     void updateIsolate(PressureResourceIsolateInput isolateInput);
+
+    /**
+     * 处理汇总信息-应用
+     *
+     * @return
+     */
+    PressureResourceExtInfo appInfo(Long id);
+
+    /**
+     * 处理汇总信息-数据源
+     *
+     * @return
+     */
+    PressureResourceExtInfo dsInfo(Long id);
 }

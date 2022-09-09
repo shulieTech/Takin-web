@@ -1035,7 +1035,7 @@ public class ActivityServiceImpl implements ActivityService {
         String extend = map.get(FeaturesConstants.EXTEND_KEY);
         LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
                 false, linkManageTableEntity.getApplicationName(), null, serviceName, methodName,
-                rpcType, extend);
+                rpcType, extend,false);
         if (applicationEntrancesTopology == null || CollectionUtils.isEmpty(applicationEntrancesTopology.getNodes())) {
             return new ArrayList<>(Collections.singleton(linkManageTableEntity.getApplicationName()));
         }

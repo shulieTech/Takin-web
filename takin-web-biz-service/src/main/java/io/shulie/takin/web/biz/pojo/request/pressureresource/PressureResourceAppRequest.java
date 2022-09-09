@@ -4,6 +4,8 @@ import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author XINGCHEN
  * @description: TODO
@@ -13,6 +15,9 @@ import lombok.Data;
 public class PressureResourceAppRequest extends PageBaseDTO {
     @ApiModelProperty("配置资源ID")
     private Long resourceId;
+
+    @ApiModelProperty("配置资源IDs")
+    private List<Long> resourceIds;
 
     @ApiModelProperty("应用名称")
     private String appName;

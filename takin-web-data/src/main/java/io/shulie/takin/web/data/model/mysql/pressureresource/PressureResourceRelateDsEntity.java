@@ -36,11 +36,11 @@ public class PressureResourceRelateDsEntity extends TenantBaseEntity {
     @Column(name = "`app_name`")
     private String appName;
 
-    @ApiModelProperty("中间件名称")
+    @ApiModelProperty("中间件名称 druid, hikari,c3p0等")
     @Column(name = "`middleware_name`")
     private String middlewareName;
 
-    @ApiModelProperty("中间件类型")
+    @ApiModelProperty("中间件类型 缓存/连接池")
     @Column(name = "`middleware_type`")
     private String middlewareType;
 

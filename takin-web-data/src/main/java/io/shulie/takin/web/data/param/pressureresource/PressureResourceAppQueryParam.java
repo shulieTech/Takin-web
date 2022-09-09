@@ -16,6 +16,9 @@ public class PressureResourceAppQueryParam extends PageBaseDTO {
     @ApiModelProperty("配置资源ID")
     private Long resourceId;
 
+    @ApiModelProperty("配置资源ID")
+    private List<Long> resourceIds;
+
     @ApiModelProperty("应用名称")
     private String appName;
 

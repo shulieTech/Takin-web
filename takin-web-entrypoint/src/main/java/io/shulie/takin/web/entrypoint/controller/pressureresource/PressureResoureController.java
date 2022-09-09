@@ -5,6 +5,7 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInp
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceIsolateInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceQueryRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
+import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
@@ -41,6 +42,7 @@ public class PressureResoureController {
     public ResponseResult create(@RequestBody PressureResourceInput input) {
         // 这里只是页面手工新增入口
         input.setType(SourceTypeEnum.MANUAL.getCode());
+        input.setCheckStatus(CheckStatusEnum.CHECK_NO.getCode());
         pressureResourceService.add(input);
         return ResponseResult.success();
     }
@@ -70,5 +72,17 @@ public class PressureResoureController {
     @RequestMapping(value = "/detailList", method = RequestMethod.GET)
     public ResponseResult detailList(PressureResourceQueryRequest request) {
         return ResponseResult.success(pressureResourceService.detail(request));
+    }
+
+    @ApiOperation("链路压测资源查询-汇总数据-应用")
+    @RequestMapping(value = "/appInfo", method = RequestMethod.GET)
+    public ResponseResult appInfo(PressureResourceQueryRequest request) {
+        return ResponseResult.success(pressureResourceService.appInfo(request.getId()));
+    }
+
+    @ApiOperation("链路压测资源查询-汇总数据-数据源")
+    @RequestMapping(value = "/dsInfo", method = RequestMethod.GET)
+    public ResponseResult dsInfo(PressureResourceQueryRequest request) {
+        return ResponseResult.success(pressureResourceService.dsInfo(request.getId()));
     }
 }

@@ -47,17 +47,17 @@ public class ApplicationBusinessActivityServiceImpl implements ApplicationBusine
     @Override
     public List<String> processAppNameByBusinessActiveId(Long businessActivityId) {
         BusinessLinkManageTableEntity businessLinkManageTableEntity = businessLinkManageTableMapper.selectById(
-            businessActivityId);
+                businessActivityId);
         if (businessLinkManageTableEntity == null) {
             return Lists.newArrayList();
         }
         // 虚拟入口 返回数据
         if (businessLinkManageTableEntity.getType() != null && businessLinkManageTableEntity.getType().equals(
-            BusinessTypeEnum.VIRTUAL_BUSINESS.getType())) {
+                BusinessTypeEnum.VIRTUAL_BUSINESS.getType())) {
             return Lists.newArrayList();
         }
         LinkManageTableEntity linkManageTableEntity = linkManageTableMapper.selectById(
-            businessLinkManageTableEntity.getRelatedTechLink());
+                businessLinkManageTableEntity.getRelatedTechLink());
         if (linkManageTableEntity == null) {
             return Lists.newArrayList();
         }
@@ -72,7 +72,7 @@ public class ApplicationBusinessActivityServiceImpl implements ApplicationBusine
         String extend = map.get(FeaturesConstants.EXTEND_KEY);
         LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
                 false, linkManageTableEntity.getApplicationName(),
-            null, serviceName, methodName, rpcType, extend);
+                null, serviceName, methodName, rpcType, extend, false);
         if (applicationEntrancesTopology == null) {
             return Lists.newArrayList();
         }
@@ -81,8 +81,8 @@ public class ApplicationBusinessActivityServiceImpl implements ApplicationBusine
             return Lists.newArrayList();
         }
         return nodes.stream()
-            .filter(node -> node.getNodeType().equals(NodeTypeEnum.APP.getType()))
-            .map(LinkNodeDTO::getNodeName)
-            .collect(Collectors.toList());
+                .filter(node -> node.getNodeType().equals(NodeTypeEnum.APP.getType()))
+                .map(LinkNodeDTO::getNodeName)
+                .collect(Collectors.toList());
     }
 }

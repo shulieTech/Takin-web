@@ -20,7 +20,7 @@ public interface PressureResourceRelateAppMapper
             "(#{item.resourceId},#{item.detailId},#{item.appName},#{item.status},#{item.nodeNum},#{item.joinPressure}," +
             "#{item.type},#{item.tenantId},#{item.envCode},#{item.gmtCreate})" +
             "</foreach>" +
-            " ON DUPLICATE KEY UPDATE gmt_modified=now()" +
+            " ON DUPLICATE KEY UPDATE status =values(status),gmt_modified=now()" +
             "</script>")
     void saveOrUpdate(@Param("list") List<PressureResourceRelateAppEntity> list);
 }

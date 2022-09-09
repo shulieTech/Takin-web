@@ -1,18 +1,24 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import com.google.common.collect.Maps;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDetailInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceIsolateInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceQueryRequest;
 import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.StatusEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceDetailVO;
+import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceExtInfo;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceInfoVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceVO;
 import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
@@ -20,12 +26,18 @@ import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDetailDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDAO;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceDetailMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateAppEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
+import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
+import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceQueryParam;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -62,6 +74,12 @@ public class PressureResourceServiceImpl implements PressureResourceService {
 
     @Resource
     private PressureResourceDetailMapper pressureResourceDetailMapper;
+
+    @Resource
+    private PressureResourceRelateAppDAO pressureResourceRelateAppDAO;
+
+    @Resource
+    private PressureResourceRelateDsDAO pressureResourceRelateDsDAO;
 
     /**
      * 新增
@@ -290,5 +308,77 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         updateEntity.setIsolateType(isolateInput.getIsolateType());
         updateEntity.setGmtModified(new Date());
         pressureResourceMapper.updateById(updateEntity);
+    }
+
+    /**
+     * 处理页面汇总数据
+     *
+     * @return
+     */
+    @Override
+    public PressureResourceExtInfo appInfo(Long id) {
+        PressureResourceExtInfo extInfo = new PressureResourceExtInfo();
+        extInfo.setTotalSize(0);
+        extInfo.setExceptionSize(0);
+        extInfo.setNormalSize(0);
+
+        PressureResourceEntity entity = pressureResourceMapper.selectById(id);
+        if (entity == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "配置不存在");
+        }
+        PressureResourceAppQueryParam queryParam = new PressureResourceAppQueryParam();
+        queryParam.setResourceId(id);
+        List<PressureResourceRelateAppEntity> appEntityList = pressureResourceRelateAppDAO.queryList(queryParam);
+        if (CollectionUtils.isNotEmpty(appEntityList)) {
+            // 总的应用数
+            extInfo.setTotalSize(appEntityList.size());
+            // 正常的应用数
+            Long normalSize = appEntityList.stream().filter(app -> app.getStatus().equals(0)).count();
+            extInfo.setNormalSize(normalSize.intValue());
+            extInfo.setExceptionSize(appEntityList.size() - normalSize.intValue());
+        }
+        // 检测时间都是一批的
+        extInfo.setCheckTime(entity.getCheckTime());
+        return extInfo;
+    }
+
+    /**
+     * 汇总信息-数据源
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public PressureResourceExtInfo dsInfo(Long id) {
+        PressureResourceExtInfo extInfo = new PressureResourceExtInfo();
+        extInfo.setTotalSize(0);
+        extInfo.setExceptionSize(0);
+        extInfo.setNormalSize(0);
+
+        PressureResourceEntity entity = pressureResourceMapper.selectById(id);
+        if (entity == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "配置不存在");
+        }
+        PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
+        dsQueryParam.setResourceId(id);
+        List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
+
+        if (CollectionUtils.isNotEmpty(dsEntityList)) {
+            // 分组一下
+            Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(ds -> ds.getUniqueKey()));
+            extInfo.setTotalSize(dsMap.size());
+            int normalSize = 0;
+            for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : dsMap.entrySet()) {
+                PressureResourceRelateDsEntity dsEntity = entry.getValue().get(0);
+                if (dsEntity.getStatus().intValue() == StatusEnum.SUCCESS.getCode()) {
+                    normalSize = normalSize + 1;
+                }
+            }
+            extInfo.setNormalSize(normalSize);
+            extInfo.setExceptionSize(extInfo.getTotalSize() - extInfo.getNormalSize());
+        }
+        // 检测时间都是一批的
+        extInfo.setCheckTime(entity.getCheckTime());
+        return extInfo;
     }
 }

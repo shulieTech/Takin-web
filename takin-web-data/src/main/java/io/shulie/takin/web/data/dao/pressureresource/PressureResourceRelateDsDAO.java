@@ -26,5 +26,10 @@ public interface PressureResourceRelateDsDAO {
      */
     List<PressureResourceRelateDsEntity> queryByParam(PressureResourceDsQueryParam param);
 
+    /**
+     * 保存或更新
+     *
+     * @param list
+     */
     void saveOrUpdate(List<PressureResourceRelateDsEntity> list);
 }

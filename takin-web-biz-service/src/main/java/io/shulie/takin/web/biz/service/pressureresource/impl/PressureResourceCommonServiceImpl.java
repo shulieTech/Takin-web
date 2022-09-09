@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import io.shulie.amdb.common.dto.link.topology.AppShadowDatabaseDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
@@ -8,6 +10,7 @@ import io.shulie.amdb.common.enums.NodeTypeGroupEnum;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
+import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequest;
@@ -16,10 +19,12 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInp
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.pressureresource.common.*;
 import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.pressureresource.*;
@@ -83,6 +88,9 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     @Resource
     private ApplicationEntranceClient applicationEntranceClient;
 
+    @Resource
+    private ApplicationService applicationService;
+
     /**
      * 自动处理压测资源准备任务
      */
@@ -112,6 +120,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 // 新增压测准备配置
                 pressureResourceInput.setName(sceneName);
                 pressureResourceInput.setType(SourceTypeEnum.AUTO.getCode());
+                pressureResourceInput.setCheckStatus(CheckStatusEnum.CHECK_NO.getCode());
                 pressureResourceInput.setSourceId(flowId);
             } else {
                 // 修改
@@ -196,7 +205,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     // 大数据查询拓扑图
                     LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
                             false, request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
-                            request.getRpcType(), request.getExtend());
+                            request.getRpcType(), request.getExtend(), true);
                     if (applicationEntrancesTopology == null) {
                         logger.warn("链路拓扑图未梳理完成,{}", detailEntity.getEntranceUrl());
                         continue;
@@ -213,6 +222,19 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                         appEntity.setEnvCode(WebPluginUtils.traceEnvCode());
                         // 节点数默认为0
                         appEntity.setNodeNum(0);
+                        // 默认不正常
+                        appEntity.setStatus(1);
+                        // 通过应用去查询状态
+                        List<ApplicationListResponse> list = applicationService.getApplicationList(appEntity.getAppName());
+                        if (CollectionUtils.isNotEmpty(list)) {
+                            Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(list.get(0).getApplicationId()));
+                            if (voResponse.getSuccess()) {
+                                ApplicationVo applicationVo = voResponse.getData();
+                                // 默认等于探针在线节点数
+                                appEntity.setNodeNum(applicationVo.getOnlineNodeNum());
+                                appEntity.setStatus(0);
+                            }
+                        }
                         appEntity.setJoinPressure(JoinFlagEnum.YES.getCode());
                         appEntity.setType(SourceTypeEnum.AUTO.getCode());
                         appEntity.setStatus(1);
@@ -243,15 +265,26 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                             dsEntity.setResourceId(resourceId);
                             dsEntity.setDetailId(detailEntity.getId());
                             dsEntity.setAppName(key.split("#")[0]);
-                            String db = key.split("#")[1];
-                            String dbName = DbNameUtil.getDbName(db);
+                            String database = key.split("#")[1];
+                            String dbName = DbNameUtil.getDbName(database);
                             if (PtUtils.isShadow(dbName)) {
                                 continue;
                             }
-                            dsEntity.setBusinessDatabase(db);
+                            // 从任意的边里面获取数据源详情信息
+                            LinkEdgeDTO edgeDTO = entry.getValue().get(0);
+                            List<AppShadowDatabaseDTO> dsList = edgeDTO.getDsList();
+                            if (CollectionUtils.isEmpty(dsList)) {
+                                logger.warn("应用数据源未梳理完成,{}", database);
+                            } else {
+                                AppShadowDatabaseDTO appShadowDatabaseDTO = dsList.get(0);
+                                dsEntity.setBusinessUserName(appShadowDatabaseDTO.getTableUser());
+                                dsEntity.setMiddlewareName(appShadowDatabaseDTO.getConnectionPool());
+                                dsEntity.setMiddlewareType(appShadowDatabaseDTO.getMiddlewareType());
+                            }
+                            dsEntity.setBusinessDatabase(database);
                             dsEntity.setTenantId(WebPluginUtils.traceTenantId());
                             dsEntity.setEnvCode(WebPluginUtils.traceEnvCode());
-                            dsEntity.setStatus(CheckStatusEnum.CHECK_NO.getCode());
+                            dsEntity.setStatus(StatusEnum.NO.getCode());
                             dsEntity.setType(SourceTypeEnum.AUTO.getCode());
                             dsEntity.setGmtCreate(new Date());
                             // 生成唯一key,关联表
@@ -279,7 +312,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                                     tableEntity.setGmtCreate(new Date());
 
                                     tableEntity.setJoinFlag(JoinFlagEnum.YES.getCode());
-                                    tableEntity.setStatus(CheckStatusEnum.CHECK_NO.getCode());
+                                    tableEntity.setStatus(StatusEnum.NO.getCode());
                                     tableEntity.setType(SourceTypeEnum.AUTO.getCode());
                                     tableEntity.setTenantId(WebPluginUtils.traceTenantId());
                                     tableEntity.setEnvCode(WebPluginUtils.traceEnvCode());
@@ -299,6 +332,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
         }
     }
 
+    // 应用+数据源
     private String fetchKey(LinkEdgeDTO dbEdge) {
         return dbEdge.getServerAppName() + "#" + dbEdge.getService();
     }

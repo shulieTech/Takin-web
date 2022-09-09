@@ -40,9 +40,17 @@ public class PressureResourceEntity extends TenantBaseEntity {
     @Column(name = "`status`")
     private Integer status;
 
+    @ApiModelProperty("检测状态(0-未检测 1-检测中 2-检测完成)")
+    @Column(name = "`check_status`")
+    private Integer checkStatus;
+
     @ApiModelProperty("来源的Id")
     @Column(name = "`source_id`")
     private Long sourceId;
+
+    @Column(name = "`check_time`")
+    @ApiModelProperty("检测时间")
+    private Date checkTime;
 
     @Column(name = "`gmt_create`")
     @ApiModelProperty("创建时间")

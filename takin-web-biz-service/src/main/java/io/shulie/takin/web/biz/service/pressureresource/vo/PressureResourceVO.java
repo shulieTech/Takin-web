@@ -38,6 +38,12 @@ public class PressureResourceVO {
     @ApiModelProperty("明细条数")
     private Integer detailCount;
 
+    @ApiModelProperty("检测状态(0-未检测 1-检测中 2-检测完成)")
+    private Integer checkStatus;
+
+    @ApiModelProperty("检测时间")
+    private Date checkTime;
+
     @ApiModelProperty("创建时间")
     private Date gmtCreate;
 

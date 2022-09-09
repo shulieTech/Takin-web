@@ -1,15 +1,11 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import com.google.common.collect.Maps;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDetailInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceIsolateInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceQueryRequest;
-import io.shulie.takin.web.biz.service.ActivityService;
-import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.StatusEnum;
@@ -17,12 +13,9 @@ import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceDetai
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceExtInfo;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceInfoVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceVO;
-import io.shulie.takin.web.biz.service.scene.SceneService;
-import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
-import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDetailDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDAO;
@@ -307,6 +300,52 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         updateEntity.setIsolateType(isolateInput.getIsolateType());
         updateEntity.setGmtModified(new Date());
         pressureResourceMapper.updateById(updateEntity);
+    }
+
+    /**
+     * 处理进度
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public Map<String, Integer> progress(Long id) {
+        Map<String, Integer> statusMap = Maps.newHashMap();
+        statusMap.put("APP", 0);
+        statusMap.put("DS", 0);
+        statusMap.put("REMOTECALL", 0);
+
+        // 查看应用状态
+        PressureResourceAppQueryParam appQueryParam = new PressureResourceAppQueryParam();
+        appQueryParam.setResourceId(id);
+        List<PressureResourceRelateAppEntity> appEntityList = pressureResourceRelateAppDAO.queryList(appQueryParam);
+        if (CollectionUtils.isNotEmpty(appEntityList)) {
+            // 判断状态是否都是正常的
+            int normal = appEntityList.stream().filter(app -> app.getStatus().intValue() == 0).collect(Collectors.toList()).size();
+            if (normal == appEntityList.size()) {
+                statusMap.put("APP", 2);
+            }
+            // 存在正常的,进行中
+            if (appEntityList.size() - normal > 0) {
+                statusMap.put("APP", 1);
+            }
+        }
+        // 影子资源检查
+        PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
+        dsQueryParam.setResourceId(id);
+        List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
+        if (CollectionUtils.isNotEmpty(dsEntityList)) {
+            // 判断状态是否都是正常的
+            int normal = dsEntityList.stream().filter(ds -> ds.getStatus().intValue() == 2).collect(Collectors.toList()).size();
+            if (normal == dsEntityList.size()) {
+                statusMap.put("DS", 2);
+            }
+            // 存在正常的,进行中
+            if (dsEntityList.size() - normal > 0) {
+                statusMap.put("DS", 1);
+            }
+        }
+        return statusMap;
     }
 
     /**

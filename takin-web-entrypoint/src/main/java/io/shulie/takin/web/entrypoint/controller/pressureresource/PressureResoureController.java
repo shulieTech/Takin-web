@@ -9,6 +9,7 @@ import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -84,5 +85,13 @@ public class PressureResoureController {
     @RequestMapping(value = "/dsInfo", method = RequestMethod.GET)
     public ResponseResult dsInfo(PressureResourceQueryRequest request) {
         return ResponseResult.success(pressureResourceService.dsInfo(request.getId()));
+    }
+
+    //@ApiModelProperty("类型(1-应用检查，2-影子隔离 3-远程调用 )")
+    //@ApiModelProperty("状态(0-未开始 1-进行中 2-完成)")
+    @ApiOperation("链路压测资源查询-汇总数据-进度")
+    @RequestMapping(value = "/progress", method = RequestMethod.GET)
+    public ResponseResult progress(PressureResourceQueryRequest request) {
+        return ResponseResult.success(pressureResourceService.progress(request.getId()));
     }
 }

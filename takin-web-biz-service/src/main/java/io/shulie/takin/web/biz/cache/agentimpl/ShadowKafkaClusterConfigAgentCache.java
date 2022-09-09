@@ -18,10 +18,8 @@ import org.springframework.stereotype.Component;
 public class ShadowKafkaClusterConfigAgentCache extends AbstractAgentConfigCache<List<DsServerVO>> {
 
     public static final String CACHE_NAME = "t:a:c:shadow:kafka";
-
     @Autowired
     private DsService dsService;
-
     public ShadowKafkaClusterConfigAgentCache(@Autowired RedisTemplate redisTemplate) {
         super(CACHE_NAME, redisTemplate);
     }

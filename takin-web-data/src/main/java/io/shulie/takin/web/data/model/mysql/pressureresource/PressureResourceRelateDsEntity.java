@@ -40,6 +40,10 @@ public class PressureResourceRelateDsEntity extends TenantBaseEntity {
     @Column(name = "`middleware_name`")
     private String middlewareName;
 
+    @ApiModelProperty("中间件类型")
+    @Column(name = "`middleware_type`")
+    private String middlewareType;
+
     @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
     @Column(name = "`status`")
     private Integer status;

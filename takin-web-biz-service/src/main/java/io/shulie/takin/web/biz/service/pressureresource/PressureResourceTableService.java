@@ -26,6 +26,13 @@ public interface PressureResourceTableService {
     void update(PressureResourceRelateTableInput updateInput);
 
     /**
+     * 批量新增或取消
+     *
+     * @param updateInput
+     */
+    void batchUpdate(PressureResourceRelateTableInput updateInput);
+
+    /**
      * 删除
      *
      * @param id

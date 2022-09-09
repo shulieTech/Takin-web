@@ -9,6 +9,7 @@ import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -49,6 +50,13 @@ public class PressureResoureTableController {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult update(@RequestBody PressureResourceRelateTableInput input) {
         pressureResourceTableService.update(input);
+        return ResponseResult.success();
+    }
+
+    @ApiOperation("链路压测资源-影子表-修改加入状态")
+    @RequestMapping(value = "/batchUpdate", method = RequestMethod.POST)
+    public ResponseResult batchUpdate(@RequestBody PressureResourceRelateTableInput input) {
+        pressureResourceTableService.batchUpdate(input);
         return ResponseResult.success();
     }
 

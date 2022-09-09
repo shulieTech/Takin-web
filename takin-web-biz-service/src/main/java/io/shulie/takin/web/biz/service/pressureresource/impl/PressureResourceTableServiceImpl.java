@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableRequest;
@@ -102,6 +103,24 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         updateEntity.setStatus(updateEntity.getStatus());
         updateEntity.setExtInfo(updateEntity.getExtInfo());
         pressureResourceRelateTableMapper.updateById(updateEntity);
+    }
+
+    /**
+     * 批量加入或取消
+     *
+     * @param updateInput
+     */
+    @Override
+    public void batchUpdate(PressureResourceRelateTableInput updateInput) {
+        if (CollectionUtils.isEmpty(updateInput.getIds())) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "参数未传递");
+        }
+        PressureResourceRelateTableEntity updateEntity = new PressureResourceRelateTableEntity();
+        updateEntity.setJoinFlag(updateInput.getJoinFlag());
+
+        QueryWrapper<PressureResourceRelateTableEntity> updateWrapper = new QueryWrapper<>();
+        updateWrapper.in("id", updateInput.getIds());
+        pressureResourceRelateTableMapper.update(updateEntity, updateWrapper);
     }
 
     @Override

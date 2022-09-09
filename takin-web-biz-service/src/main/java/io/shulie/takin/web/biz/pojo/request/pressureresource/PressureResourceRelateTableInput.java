@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author xingchen
@@ -20,6 +21,9 @@ public class PressureResourceRelateTableInput extends TenantBaseEntity {
     @ApiModelProperty("ID")
     private Long id;
 
+    @ApiModelProperty("ids")
+    private List<Long> ids;
+
     @ApiModelProperty("资源配置Id")
     private Long resourceId;
 
@@ -29,8 +33,8 @@ public class PressureResourceRelateTableInput extends TenantBaseEntity {
     @ApiModelProperty("数据源")
     private String database;
 
-    @ApiModelProperty("状态")
-    private String status;
+    @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
+    private Integer status;
 
     @ApiModelProperty("业务表")
     private String businessTable;

@@ -32,10 +32,10 @@ public class PressureResourceRelateAppVO extends TenantBaseEntity {
 
     @ApiModelProperty("状态 0-正常 1-不正常")
     @Column(name = "`status`")
-    private int status;
+    private Integer status;
 
     @ApiModelProperty("隔离方式(0-无 1-影子库 2-影子库/影子表 3-影子表)")
-    private int isolateType;
+    private Integer isolateType;
 
     @ApiModelProperty("节点数")
     private Integer nodeNum;

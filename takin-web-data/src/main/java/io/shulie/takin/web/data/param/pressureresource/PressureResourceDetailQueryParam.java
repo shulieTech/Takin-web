@@ -14,4 +14,6 @@ public class PressureResourceDetailQueryParam {
     private Long resourceId;
 
     private List<Long> resourceIds;
+
+    private String linkId;
 }

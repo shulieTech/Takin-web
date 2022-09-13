@@ -86,6 +86,9 @@ public class PressureResourceRelateAppDAOImpl implements PressureResourceRelateA
         if (param.getDetailId() != null) {
             queryWrapper.eq("detail_id", param.getDetailId());
         }
+        if (CollectionUtils.isNotEmpty(param.getDetailIds())) {
+            queryWrapper.in("detail_id", param.getDetailIds());
+        }
         if (param.getResourceId() != null) {
             queryWrapper.eq("resource_id", param.getResourceId());
         }

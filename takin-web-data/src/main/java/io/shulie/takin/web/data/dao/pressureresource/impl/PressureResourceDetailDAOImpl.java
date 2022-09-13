@@ -6,6 +6,7 @@ import io.shulie.takin.web.data.mapper.mysql.PressureResourceDetailMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -56,6 +57,9 @@ public class PressureResourceDetailDAOImpl implements PressureResourceDetailDAO 
         }
         if (CollectionUtils.isNotEmpty(param.getResourceIds())) {
             queryWrapper.in("resource_id", param.getResourceIds());
+        }
+        if (StringUtils.isNotBlank(param.getLinkId())) {
+            queryWrapper.eq("link_id", param.getLinkId());
         }
         return queryWrapper;
     }

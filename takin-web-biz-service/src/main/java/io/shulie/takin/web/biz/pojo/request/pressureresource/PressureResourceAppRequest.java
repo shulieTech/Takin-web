@@ -23,9 +23,9 @@ public class PressureResourceAppRequest extends PageBaseDTO {
     private String appName;
 
     @ApiModelProperty("入口")
-    private String entranceUrl;
+    private String entry;
 
-    @ApiModelProperty("状态(0 不正常-1正常)")
+    @ApiModelProperty("状态(0正常-1不正常)")
     private Integer status;
 
     @ApiModelProperty("是否加入压测范围(0-否 1-是)")

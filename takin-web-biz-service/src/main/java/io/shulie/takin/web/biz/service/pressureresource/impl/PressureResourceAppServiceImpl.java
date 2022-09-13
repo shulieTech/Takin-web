@@ -11,13 +11,17 @@ import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelat
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDetailDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateAppMapper;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateAppEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
+import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +44,9 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
 
     @Resource
     private PressureResourceRelateAppDAO pressureResourceRelateAppDAO;
+
+    @Resource
+    private PressureResourceDetailDAO pressureResourceDetailDAO;
 
     @Resource
     private PressureResourceRelateAppMapper pressureResourceRelateAppMapper;
@@ -65,6 +72,16 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
         }
         PressureResourceAppQueryParam param = new PressureResourceAppQueryParam();
         BeanUtils.copyProperties(request, param);
+        if (StringUtils.isNotBlank(request.getEntry())) {
+            // 通过entry获取详情Id
+            PressureResourceDetailQueryParam queryParam = new PressureResourceDetailQueryParam();
+            queryParam.setLinkId(request.getEntry());
+            List<PressureResourceDetailEntity> detailEntityList = pressureResourceDetailDAO.getList(queryParam);
+            if (CollectionUtils.isNotEmpty(detailEntityList)) {
+                List<Long> detailIds = detailEntityList.stream().map(detail -> detail.getId()).distinct().collect(Collectors.toList());
+                param.setDetailIds(detailIds);
+            }
+        }
 
         PagingList<PressureResourceRelateAppEntity> pageList = pressureResourceRelateAppDAO.pageList(param);
         if (pageList.isEmpty()) {

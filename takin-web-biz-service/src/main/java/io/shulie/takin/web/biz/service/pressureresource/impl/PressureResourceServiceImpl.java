@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDetailInput;
@@ -22,10 +23,9 @@ import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDA
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceDetailMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateAppEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapper;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
+import io.shulie.takin.web.data.model.mysql.pressureresource.*;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
@@ -58,6 +58,12 @@ public class PressureResourceServiceImpl implements PressureResourceService {
 
     @Resource
     private PressureResourceMapper pressureResourceMapper;
+
+    @Resource
+    private PressureResourceRelateDsMapper pressureResourceRelateDsMapper;
+
+    @Resource
+    private PressureResourceRelateTableMapper pressureResourceRelateTableMapper;
 
     @Resource
     private PressureResourceDetailDAO pressureResourceDetailDAO;
@@ -103,6 +109,29 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             List<PressureResourceDetailEntity> insertEntityList = convertEntitys(input.getType(), resourceId, detailInputs);
             pressureResourceDetailDAO.batchInsert(insertEntityList);
         }
+    }
+
+    @Override
+    public void delete(Long resourceId) {
+        if (resourceId == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "参数未传递");
+        }
+        // 删除主表
+        pressureResourceMapper.deleteById(resourceId);
+        // 删除详情
+        QueryWrapper<PressureResourceDetailEntity> detailWrapper = new QueryWrapper<>();
+        detailWrapper.eq("resource_id", resourceId);
+        pressureResourceDetailMapper.delete(detailWrapper);
+
+        // 删除数据源
+        QueryWrapper<PressureResourceRelateDsEntity> dsWrapper = new QueryWrapper<>();
+        dsWrapper.eq("resource_id", resourceId);
+        pressureResourceRelateDsMapper.delete(dsWrapper);
+
+        // 删除表
+        QueryWrapper<PressureResourceRelateTableEntity> tableWrapper = new QueryWrapper<>();
+        tableWrapper.eq("resource_id", resourceId);
+        pressureResourceRelateTableMapper.delete(tableWrapper);
     }
 
     /**

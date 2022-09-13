@@ -25,7 +25,7 @@ public class PressureResourceAppQueryParam extends PageBaseDTO {
     @ApiModelProperty("入口")
     private String entranceUrl;
 
-    @ApiModelProperty("状态(0 不正常-1正常)")
+    @ApiModelProperty("状态(0-正常 1-不正常)")
     private Integer status;
 
     @ApiModelProperty("是否加入压测范围(0-否 1-是)")
@@ -35,6 +35,8 @@ public class PressureResourceAppQueryParam extends PageBaseDTO {
     private Long detailId;
 
     private List<String> appNames;
+
+    private List<Long> detailIds;
 }
 
 

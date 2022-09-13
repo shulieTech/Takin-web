@@ -27,6 +27,14 @@ public interface PressureResourceService {
     void add(PressureResourceInput input);
 
     /**
+     * 新增
+     *
+     * @param id
+     */
+    void delete(Long id);
+
+
+    /**
      * 修改
      *
      * @param input

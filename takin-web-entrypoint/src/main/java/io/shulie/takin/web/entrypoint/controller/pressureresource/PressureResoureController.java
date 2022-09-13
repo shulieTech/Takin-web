@@ -56,6 +56,13 @@ public class PressureResoureController {
         return ResponseResult.success();
     }
 
+    @ApiOperation("链路压测资源删除")
+    @RequestMapping(value = "/del", method = RequestMethod.GET)
+    public ResponseResult del(PressureResourceInput input) {
+        pressureResourceService.delete(input.getId());
+        return ResponseResult.success();
+    }
+
     @ApiOperation("设置数据隔离方式")
     @RequestMapping(value = "/updateIsolate", method = RequestMethod.POST)
     public ResponseResult updateIsolate(@RequestBody PressureResourceIsolateInput input) {

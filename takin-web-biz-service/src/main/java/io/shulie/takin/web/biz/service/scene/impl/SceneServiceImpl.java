@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.cloud.common.utils.CommonUtil;
@@ -30,6 +31,7 @@ import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequ
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
@@ -40,6 +42,7 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchRespons
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
@@ -61,8 +64,10 @@ import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
 import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
@@ -134,6 +139,8 @@ public class SceneServiceImpl implements SceneService {
     private ApplicationBusinessActivityService applicationBusinessActivityService;
     @Resource
     private ApplicationDAO applicationDAO;
+    @Resource
+    private PressureResourceMapper pressureResourceMapper;
 
     @Override
     public List<SceneLinkRelateResult> nodeLinkToBusinessActivity(List<ScriptNode> nodes, Long sceneId) {
@@ -726,6 +733,16 @@ public class SceneServiceImpl implements SceneService {
         sceneUpdateParam.setSceneLevel(businessFlowUpdateRequest.getSceneLevel());
         sceneUpdateParam.setIsCore(businessFlowUpdateRequest.getIsCore());
         sceneDao.update(sceneUpdateParam);
+
+        // 同步更新压测准备
+        if (StringUtils.isNotBlank(businessFlowUpdateRequest.getSceneName())) {
+            PressureResourceEntity entity = new PressureResourceEntity();
+            entity.setName(businessFlowUpdateRequest.getSceneName());
+            entity.setGmtModified(new Date());
+            QueryWrapper<PressureResourceEntity> updateWrapper = new QueryWrapper<>();
+            updateWrapper.eq("source_id", businessFlowUpdateRequest.getId());
+            pressureResourceMapper.update(entity, updateWrapper);
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)

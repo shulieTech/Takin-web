@@ -7,7 +7,6 @@ import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
-import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
@@ -19,7 +18,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -42,8 +40,8 @@ public class PressureResourceRelateJob implements SimpleJob {
     private PressureResourceDAO pressureResourceDAO;
 
     @Resource
-    @Qualifier("pressureResouceThreadPool")
-    private ThreadPoolExecutor pressureResouceThreadPool;
+    @Qualifier("pressureResourceThreadPool")
+    private ThreadPoolExecutor pressureResourceThreadPool;
 
     @Resource
     private DistributedLock distributedLock;
@@ -69,7 +67,7 @@ public class PressureResourceRelateJob implements SimpleJob {
             if (distributedLock.checkLock(lockKey)) {
                 continue;
             }
-            pressureResouceThreadPool.execute(() -> {
+            pressureResourceThreadPool.execute(() -> {
                 boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
                 if (!tryLock) {
                     return;

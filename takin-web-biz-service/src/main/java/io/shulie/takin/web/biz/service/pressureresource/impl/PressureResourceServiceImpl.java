@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.pressureresource.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDetailInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceIsolateInput;
@@ -14,9 +15,11 @@ import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceDetai
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceExtInfo;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceInfoVO;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceVO;
+import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDetailDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDAO;
@@ -26,10 +29,14 @@ import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.*;
+import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
+import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
+import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceQueryParam;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
@@ -77,6 +84,9 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     @Resource
     private PressureResourceRelateDsDAO pressureResourceRelateDsDAO;
 
+    @Resource
+    private SceneDAO sceneDAO;
+
     /**
      * 新增
      *
@@ -109,6 +119,12 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             List<PressureResourceDetailEntity> insertEntityList = convertEntitys(input.getType(), resourceId, detailInputs);
             pressureResourceDetailDAO.batchInsert(insertEntityList);
         }
+
+        // 新增业务流程
+        SceneCreateParam sceneCreateParam = new SceneCreateParam();
+        sceneCreateParam.setSceneName(input.getName());
+        sceneCreateParam.setType(1);
+        sceneDAO.insert(sceneCreateParam);
     }
 
     @Override
@@ -199,6 +215,26 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         updateResourceEntity.setUserId(input.getUserId());
         pressureResourceMapper.updateById(updateResourceEntity);
 
+        // 新增业务流程
+        // 按名字查询链路
+        SceneQueryParam sceneQueryParam = new SceneQueryParam();
+        sceneQueryParam.setSceneName(input.getName());
+        List<SceneResult> list = sceneDAO.selectListByName(sceneQueryParam);
+        if (CollectionUtils.isEmpty(list)) {
+            SceneCreateParam sceneCreateParam = new SceneCreateParam();
+            sceneCreateParam.setSceneName(input.getName());
+            sceneCreateParam.setUserId(WebPluginUtils.traceUserId());
+            sceneCreateParam.setType(1);
+            sceneDAO.insert(sceneCreateParam);
+        } else {
+            SceneUpdateParam updateParam = new SceneUpdateParam();
+            updateParam.setSceneName(input.getName());
+            updateParam.setUpdateTime(new Date());
+            updateParam.setId(list.get(0).getId());
+            updateParam.setUserId(WebPluginUtils.traceUserId());
+            sceneDAO.update(updateParam);
+        }
+
         // 修改详情
         PressureResourceDetailQueryParam detailParam = new PressureResourceDetailQueryParam();
         detailParam.setResourceId(input.getId());
@@ -239,7 +275,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     }
 
     private String fetchKey(PressureResourceDetailEntity ele) {
-        return String.format("%s|%s|%s|%s|%s", ele.getEntranceUrl(), ele.getMethod(), ele.getAppName(), ele.getRpcType(), ele.getExtend());
+        return String.format("%s|%s|%s|%s|%s|%s", ele.getEntranceUrl(), ele.getMethod(), ele.getAppName(), ele.getRpcType(), ele.getExtend());
     }
 
     /**

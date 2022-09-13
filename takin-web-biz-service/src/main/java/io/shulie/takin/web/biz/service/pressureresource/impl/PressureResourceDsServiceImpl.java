@@ -11,6 +11,7 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRel
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
 import io.shulie.takin.web.biz.service.pressureresource.common.DbNameUtil;
 import io.shulie.takin.web.biz.service.pressureresource.common.IsolateTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.JoinFlagEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.*;
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
@@ -152,6 +153,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         PressureResourceDsQueryParam param = new PressureResourceDsQueryParam();
         param.setResourceId(request.getResourceId());
         param.setQueryBussinessDatabase(request.getQueryBusinessDataBase());
+        param.setStatus(request.getStatus());
 
         List<PressureResourceRelateDsEntity> dsList = pressureResourceRelateDsDAO.queryByParam(param);
         // 相同数据源合并
@@ -179,10 +181,13 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             List<PressureResourceRelateAppEntity> appEntitys = pressureResourceRelateAppDAO.queryList(appQueryParam);
             if (CollectionUtils.isNotEmpty(appEntitys)) {
                 Map<String, List<PressureResourceRelateAppEntity>> appMap = appEntitys.stream().collect(Collectors.groupingBy(app -> app.getAppName()));
-                List<PressureResourceRelateAppVO> appVOList = appNames.stream().filter(app -> appNames.contains(app)).map(app -> {
+                List<PressureResourceRelateAppVO> appVOList = appNames.stream().map(app -> {
                     PressureResourceRelateAppVO appVO = new PressureResourceRelateAppVO();
                     appVO.setAppName(app);
-                    appVO.setJoinPressure(appMap.get(app).get(0).getJoinPressure());
+                    appVO.setJoinPressure(JoinFlagEnum.NO.getCode());
+                    if (appMap.containsKey(app)) {
+                        appVO.setJoinPressure(appMap.get(app).get(0).getJoinPressure());
+                    }
                     return appVO;
                 }).collect(Collectors.toList());
                 tmpVO.setAppList(appVOList);

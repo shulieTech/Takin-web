@@ -83,6 +83,9 @@ public class PressureResourceRelateDsDAOImpl implements PressureResourceRelateDs
         if (param.getResourceId() != null) {
             queryWrapper.eq("resource_id", param.getResourceId());
         }
+        if (param.getStatus() != null) {
+            queryWrapper.eq("status", param.getStatus());
+        }
         return queryWrapper;
     }
 }

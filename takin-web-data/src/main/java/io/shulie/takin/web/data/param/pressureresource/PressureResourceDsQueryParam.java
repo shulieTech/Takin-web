@@ -21,4 +21,7 @@ public class PressureResourceDsQueryParam {
 
     @ApiModelProperty("应用名称,模糊查询")
     private String queryAppName;
+
+    @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
+    private Integer status;
 }

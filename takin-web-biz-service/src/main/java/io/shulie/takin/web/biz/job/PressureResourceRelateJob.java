@@ -68,11 +68,11 @@ public class PressureResourceRelateJob implements SimpleJob {
                 continue;
             }
             pressureResourceThreadPool.execute(() -> {
-                boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
-                if (!tryLock) {
-                    return;
-                }
                 try {
+                    boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
+                    if (!tryLock) {
+                        return;
+                    }
                     TenantCommonExt commonExt = new TenantCommonExt();
                     commonExt.setSource(ContextSourceEnum.JOB.getCode());
                     commonExt.setEnvCode(resource.getEnvCode());

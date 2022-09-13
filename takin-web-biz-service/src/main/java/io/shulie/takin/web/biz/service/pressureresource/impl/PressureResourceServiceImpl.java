@@ -116,6 +116,13 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (resourceId == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "参数未传递");
         }
+        PressureResourceEntity resourceEntity = pressureResourceMapper.selectById(resourceId);
+        if (resourceEntity == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "数据不存在");
+        }
+        if (resourceEntity.getType().intValue() == SourceTypeEnum.AUTO.getCode()) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "此链路自动新增,无法删除");
+        }
         // 删除主表
         pressureResourceMapper.deleteById(resourceId);
         // 删除详情

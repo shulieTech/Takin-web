@@ -179,7 +179,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             List<PressureResourceRelateAppEntity> appEntitys = pressureResourceRelateAppDAO.queryList(appQueryParam);
             if (CollectionUtils.isNotEmpty(appEntitys)) {
                 Map<String, List<PressureResourceRelateAppEntity>> appMap = appEntitys.stream().collect(Collectors.groupingBy(app -> app.getAppName()));
-                List<PressureResourceRelateAppVO> appVOList = appNames.stream().map(app -> {
+                List<PressureResourceRelateAppVO> appVOList = appNames.stream().filter(app -> appNames.contains(app)).map(app -> {
                     PressureResourceRelateAppVO appVO = new PressureResourceRelateAppVO();
                     appVO.setAppName(app);
                     appVO.setJoinPressure(appMap.get(app).get(0).getJoinPressure());

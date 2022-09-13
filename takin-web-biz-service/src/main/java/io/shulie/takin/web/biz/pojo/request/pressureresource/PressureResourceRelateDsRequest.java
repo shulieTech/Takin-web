@@ -32,7 +32,7 @@ public class PressureResourceRelateDsRequest extends PageBaseDTO {
     private String queryBusinessDataBase;
 
     @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
-    private String status;
+    private Integer status;
 
     @ApiModelProperty("业务数据源")
     private String businessDataBase;

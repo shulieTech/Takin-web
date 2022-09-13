@@ -275,7 +275,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     }
 
     private String fetchKey(PressureResourceDetailEntity ele) {
-        return String.format("%s|%s|%s|%s|%s|%s", ele.getEntranceUrl(), ele.getMethod(), ele.getAppName(), ele.getRpcType(), ele.getExtend());
+        return String.format("%s|%s|%s|%s|%s", ele.getEntranceUrl(), ele.getMethod(), ele.getAppName(), ele.getRpcType(), ele.getExtend());
     }
 
     /**

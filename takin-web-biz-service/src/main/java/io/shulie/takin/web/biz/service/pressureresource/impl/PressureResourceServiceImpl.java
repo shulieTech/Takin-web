@@ -172,6 +172,12 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         QueryWrapper<PressureResourceRelateTableEntity> tableWrapper = new QueryWrapper<>();
         tableWrapper.eq("resource_id", resourceId);
         pressureResourceRelateTableMapper.delete(tableWrapper);
+
+        // 删除流程
+        SceneUpdateParam updateParam = new SceneUpdateParam();
+        updateParam.setId(resourceEntity.getSourceId());
+        updateParam.setIsDeleted(1);
+        sceneDAO.update(updateParam);
     }
 
     /**

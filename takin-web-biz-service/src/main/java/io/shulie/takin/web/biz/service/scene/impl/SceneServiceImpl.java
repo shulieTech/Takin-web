@@ -362,6 +362,7 @@ public class SceneServiceImpl implements SceneService {
             return result;
         }
         if (StringUtils.isBlank(sceneResult.getScriptJmxNode())) {
+            result.setId(sceneResult.getId());
             return result;
         }
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);

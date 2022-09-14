@@ -761,8 +761,8 @@ public class SceneServiceImpl implements SceneService {
         ScriptManageDeployResult scriptManageDeployResult = scriptManageDao.selectScriptManageDeployById(oldScriptDeployId);
         if (scriptManageDeployResult == null) {
             scriptManageDeployResult = new ScriptManageDeployResult();
-            scriptManageDeployResult.setId(1L);
             scriptManageDeployResult.setName(testPlanName);
+            oldScriptDeployId = 1L;
         }
 
         ScriptManageDeployDetailResponse result = scriptManageService.getScriptManageDeployDetail(oldScriptDeployId);

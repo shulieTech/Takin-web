@@ -23,6 +23,6 @@ public class PressureResourceTableQueryParam extends PageBaseDTO {
     @ApiModelProperty("状态,等值查询")
     private Integer status;
 
-    @ApiModelProperty("数据源Id")
-    private String dsId;
+    @ApiModelProperty("数据源key")
+    private String dsKey;
 }

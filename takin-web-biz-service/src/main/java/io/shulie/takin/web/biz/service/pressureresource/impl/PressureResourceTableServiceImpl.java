@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableRequest;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceTableService;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateTableVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
@@ -40,6 +42,9 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
     @Resource
     private PressureResourceRelateTableMapper pressureResourceRelateTableMapper;
 
+    @Resource
+    private PressureResourceDsService pressureResourceDsService;
+
     /**
      * 新增
      *
@@ -50,7 +55,8 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         // 判断业务表是否存在
         PressureResourceTableQueryParam queryParam = new PressureResourceTableQueryParam();
         queryParam.setBusinessTableName(input.getBusinessTable());
-        queryParam.setDsId(input.getDsId());
+        String dsKey = pressureResourceDsService.getDsKey(input.getDsId());
+        queryParam.setDsKey(dsKey);
         List<PressureResourceRelateTableEntity> tableList = pressureResourceRelateTableDAO.queryList(queryParam);
         if (CollectionUtils.isNotEmpty(tableList)) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "业务表已存在");
@@ -63,7 +69,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         tableEntity.setJoinFlag(input.getJoinFlag());
         tableEntity.setType(input.getType());
         tableEntity.setGmtCreate(new Date());
-        tableEntity.setDsKey(input.getDsId());
+        tableEntity.setDsKey(dsKey);
         pressureResourceRelateTableDAO.add(Arrays.asList(tableEntity));
     }
 
@@ -141,6 +147,10 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
     public PagingList<PressureResourceRelateTableVO> pageList(PressureResourceRelateTableRequest request) {
         PressureResourceTableQueryParam param = new PressureResourceTableQueryParam();
         BeanUtils.copyProperties(request, param);
+        if (request.getDsId() != null) {
+            String dsKey = pressureResourceDsService.getDsKey(request.getDsId());
+            param.setDsKey(dsKey);
+        }
         PagingList<PressureResourceRelateTableEntity> pageList = pressureResourceRelateTableDAO.pageList(param);
 
         if (pageList.isEmpty()) {

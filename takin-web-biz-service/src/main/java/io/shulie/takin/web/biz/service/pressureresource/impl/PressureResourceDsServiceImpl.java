@@ -107,6 +107,12 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
     }
 
     @Override
+    public String getDsKey(Long dsId) {
+        PressureResourceRelateDsEntity entity = pressureResourceRelateDsMapper.selectById(dsId);
+        return entity.getUniqueKey();
+    }
+
+    @Override
     public void update(PressureResourceRelateDsInput input) {
         if (input.getId() == null) {
             throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "参数Id未指定");
@@ -170,9 +176,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             tmpVO.setResourceId(String.valueOf(tmpList.get(0).getResourceId()));
             if (StringUtils.isNotBlank(tmpVO.getBusinessDatabase())) {
                 String bussinessDatabase = tmpVO.getBusinessDatabase();
-                if (bussinessDatabase.indexOf("/") > 0) {
-                    tmpVO.setDatabase(bussinessDatabase.substring(bussinessDatabase.indexOf("/") + 1));
-                }
+                tmpVO.setDatabase(DbNameUtil.getDbName(bussinessDatabase));
             }
             // 通过应用获取是否加入压测范围
             PressureResourceAppQueryParam appQueryParam = new PressureResourceAppQueryParam();

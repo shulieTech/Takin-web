@@ -102,8 +102,8 @@ public class PressureResourceRelateTableDAOImpl implements PressureResourceRelat
         if (param.getStatus() != null) {
             queryWrapper.eq("status", param.getStatus());
         }
-        if (StringUtils.isNotBlank(param.getDsId())) {
-            queryWrapper.eq("ds_key", param.getDsId());
+        if (StringUtils.isNotBlank(param.getDsKey())) {
+            queryWrapper.eq("ds_key", param.getDsKey());
         }
         if (param.getResourceId() != null) {
             queryWrapper.eq("resource_id", param.getResourceId());

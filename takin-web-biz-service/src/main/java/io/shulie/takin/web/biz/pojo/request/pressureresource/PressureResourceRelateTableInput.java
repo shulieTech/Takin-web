@@ -27,8 +27,11 @@ public class PressureResourceRelateTableInput extends TenantBaseEntity {
     @ApiModelProperty("资源配置Id")
     private Long resourceId;
 
+    @ApiModelProperty("数据源配置key")
+    private String dsKey;
+
     @ApiModelProperty("数据源配置Id")
-    private String dsId;
+    private Long dsId;
 
     @ApiModelProperty("数据源")
     private String database;

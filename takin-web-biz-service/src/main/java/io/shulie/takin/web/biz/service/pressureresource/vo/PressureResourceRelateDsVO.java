@@ -61,6 +61,9 @@ public class PressureResourceRelateDsVO extends TenantBaseEntity {
     @ApiModelProperty("remark")
     private String remark;
 
+    @ApiModelProperty("唯一键")
+    private String uniqueKey;
+
     @ApiModelProperty("创建时间")
     private Date gmtCreate;
 

@@ -24,6 +24,11 @@ public interface PressureResourceDsService {
     /**
      * 数据源新增
      */
+    String getDsKey(Long dsId);
+
+    /**
+     * 数据源新增
+     */
     void update(PressureResourceRelateDsInput input);
 
     /**

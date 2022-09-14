@@ -24,6 +24,9 @@ public class PressureResourceRelateTableRequest extends PageBaseDTO {
     @ApiModelProperty("数据源ID")
     private Long dsId;
 
+    @ApiModelProperty("数据源Key")
+    private String dsKey;
+
     @ApiModelProperty("查询的业务表名")
     private String queryBusinessTableName;
 

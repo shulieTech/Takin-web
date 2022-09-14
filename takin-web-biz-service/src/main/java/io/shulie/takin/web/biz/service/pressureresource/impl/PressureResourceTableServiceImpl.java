@@ -50,7 +50,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         // 判断业务表是否存在
         PressureResourceTableQueryParam queryParam = new PressureResourceTableQueryParam();
         queryParam.setBusinessTableName(input.getBusinessTable());
-        queryParam.setDsKey(input.getDsId());
+        queryParam.setDsId(input.getDsId());
         List<PressureResourceRelateTableEntity> tableList = pressureResourceRelateTableDAO.queryList(queryParam);
         if (CollectionUtils.isNotEmpty(tableList)) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "业务表已存在");

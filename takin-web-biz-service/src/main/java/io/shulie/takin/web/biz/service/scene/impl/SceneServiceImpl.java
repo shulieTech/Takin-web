@@ -953,7 +953,7 @@ public class SceneServiceImpl implements SceneService {
     public ResponseResult<Long> getBusinessFlowListSize(BusinessFlowPageQueryRequest r) {
         ScenePageQueryParam queryParam = new ScenePageQueryParam();
         queryParam.setStartTime(r.getStartTime());
-        queryParam.setEndTime(r.getStopTime());
+        queryParam.setEndTime(r.getEndTime());
         WebPluginUtils.fillQueryParam(queryParam);
         long num = sceneDao.selectPageListSize(queryParam);
         return ResponseResult.success(num);

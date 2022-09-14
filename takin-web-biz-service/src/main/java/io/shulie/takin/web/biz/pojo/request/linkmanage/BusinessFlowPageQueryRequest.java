@@ -19,5 +19,5 @@ public class BusinessFlowPageQueryRequest extends PagingDevice {
     private LocalDate startTime;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate stopTime;
+    private LocalDate endTime;
 }

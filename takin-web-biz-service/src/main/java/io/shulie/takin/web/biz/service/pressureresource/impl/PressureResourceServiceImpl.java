@@ -126,7 +126,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         }
 
         // 手工的新增流程
-        if (input.getType() == SourceTypeEnum.MANUAL.getCode()) {
+        if (input.getType().intValue() == SourceTypeEnum.MANUAL.getCode()) {
             // 新增业务流程
             SceneCreateParam sceneCreateParam = new SceneCreateParam();
             sceneCreateParam.setSceneName(input.getName());

@@ -807,7 +807,9 @@ public class SceneServiceImpl implements SceneService {
             updateFileManageRequests.add(scriptFile);
             updateFileManageRequests.addAll(LinkManageConvert.INSTANCE.ofFileManageResponseList(dataFileManageResponseList));
             // 将最新的附件信息处理合并到一起
-            updateFileManageRequests.addAll(LinkManageConvert.INSTANCE.ofFileManageResponseList(result.getAttachmentManageResponseList()));
+            if (CollectionUtils.isNotEmpty(result.getAttachmentManageResponseList())) {
+                updateFileManageRequests.addAll(LinkManageConvert.INSTANCE.ofFileManageResponseList(result.getAttachmentManageResponseList()));
+            }
             updateRequest.setFileManageUpdateRequests(updateFileManageRequests);
         }
         // 设置插件信息

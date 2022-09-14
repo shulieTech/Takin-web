@@ -765,7 +765,10 @@ public class SceneServiceImpl implements SceneService {
         }
 
         ScriptManageDeployDetailResponse result = scriptManageService.getScriptManageDeployDetail(oldScriptDeployId);
-        List<FileManageResponse> fileManageResponseList = result.getFileManageResponseList();
+        List<FileManageResponse> fileManageResponseList = Lists.newArrayList();
+        if (result == null) {
+            fileManageResponseList = result.getFileManageResponseList();
+        }
         ScriptManageDeployUpdateRequest updateRequest = new ScriptManageDeployUpdateRequest();
         updateRequest.setId(oldScriptDeployId);
         updateRequest.setMVersion(ScriptMVersionEnum.SCRIPT_M_1.getCode());

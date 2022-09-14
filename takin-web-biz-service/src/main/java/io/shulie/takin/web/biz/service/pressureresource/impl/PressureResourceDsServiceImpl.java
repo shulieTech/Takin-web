@@ -352,9 +352,9 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             tableQueryParam.setResourceId(resource.getId());
             List<PressureResourceRelateTableEntity> tableEntityList = pressureResourceRelateTableDAO.queryList(tableQueryParam);
             // 按照数据源分组下
+            Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getId())));
             if (CollectionUtils.isNotEmpty(tableEntityList)) {
                 Map<String, List<PressureResourceRelateTableEntity>> tableEntityMap = tableEntityList.stream().collect(Collectors.groupingBy(item -> item.getDsKey()));
-                Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getId())));
                 for (Map.Entry<String, List<PressureResourceRelateTableEntity>> entry : tableEntityMap.entrySet()) {
                     String dsId = entry.getKey();
                     PressureResourceRelateDsEntity tmpDs = dsMap.get(dsId).stream().findFirst().orElse(new PressureResourceRelateDsEntity());
@@ -370,6 +370,14 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                         }).collect(Collectors.toList());
                         shadowTableExcelVOList.addAll(list);
                     }
+                }
+            } else {
+                for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : dsMap.entrySet()) {
+                    ShadowTableExcelVO excelVO = new ShadowTableExcelVO();
+                    excelVO.setBusinessDatabase(entry.getValue().get(0).getBusinessDatabase());
+                    excelVO.setDatabase(DbNameUtil.getDbName(excelVO.getBusinessDatabase()));
+                    excelVO.setIsolateType(IsolateTypeEnum.getName(resource.getIsolateType()));
+                    shadowTableExcelVOList.add(excelVO);
                 }
             }
         }

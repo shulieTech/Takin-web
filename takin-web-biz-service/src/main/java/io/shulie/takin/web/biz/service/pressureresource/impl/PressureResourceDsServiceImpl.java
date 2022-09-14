@@ -345,13 +345,13 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         dsQueryParam.setResourceId(resource.getId());
         List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
         List<ExcelSheetVO<?>> sheets = new ArrayList<>();
+        List<ShadowTableExcelVO> shadowTableExcelVOList = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(dsEntityList)) {
             // 查询影子表
             PressureResourceTableQueryParam tableQueryParam = new PressureResourceTableQueryParam();
             tableQueryParam.setResourceId(resource.getId());
             List<PressureResourceRelateTableEntity> tableEntityList = pressureResourceRelateTableDAO.queryList(tableQueryParam);
             // 按照数据源分组下
-            List<ShadowTableExcelVO> shadowTableExcelVOList = Lists.newArrayList();
             if (CollectionUtils.isNotEmpty(tableEntityList)) {
                 Map<String, List<PressureResourceRelateTableEntity>> tableEntityMap = tableEntityList.stream().collect(Collectors.groupingBy(item -> item.getDsKey()));
                 Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getId())));
@@ -372,13 +372,13 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                     }
                 }
             }
-            ExcelSheetVO<ShadowTableExcelVO> shadowTableSheet = new ExcelSheetVO<>();
-            shadowTableSheet.setData(shadowTableExcelVOList);
-            shadowTableSheet.setExcelModelClass(ShadowTableExcelVO.class);
-            shadowTableSheet.setSheetName("隔离方案-" + IsolateTypeEnum.getName(resource.getIsolateType()));
-            shadowTableSheet.setSheetNum(1);
-            sheets.add(shadowTableSheet);
         }
+        ExcelSheetVO<ShadowTableExcelVO> shadowTableSheet = new ExcelSheetVO<>();
+        shadowTableSheet.setData(shadowTableExcelVOList);
+        shadowTableSheet.setExcelModelClass(ShadowTableExcelVO.class);
+        shadowTableSheet.setSheetName("隔离方案-" + IsolateTypeEnum.getName(resource.getIsolateType()));
+        shadowTableSheet.setSheetNum(1);
+        sheets.add(shadowTableSheet);
         try {
             ExcelUtils.exportExcelManySheet(response, resource.getName(), sheets);
         } catch (Exception e) {

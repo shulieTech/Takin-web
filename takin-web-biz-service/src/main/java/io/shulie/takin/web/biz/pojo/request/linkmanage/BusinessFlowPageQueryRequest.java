@@ -15,9 +15,9 @@ public class BusinessFlowPageQueryRequest extends PagingDevice {
     @ApiModelProperty("业务流程名称")
     private String businessFlowName;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDate startTime;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDate endTime;
 }

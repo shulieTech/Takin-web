@@ -159,4 +159,15 @@ public class SceneDAOImpl implements SceneDAO {
             sceneEntityPage.getRecords());
         return PagingList.of(sceneResultList, sceneEntityPage.getTotal());
     }
+
+    @Override
+    public long selectPageListSize(ScenePageQueryParam queryParam) {
+        LambdaQueryWrapper<SceneEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if (CollectionUtils.isNotEmpty(queryParam.getUserIdList())) {
+            lambdaQueryWrapper.in(SceneEntity::getUserId, queryParam.getUserIdList());
+        }
+        lambdaQueryWrapper.between(SceneEntity::getUpdateTime,queryParam.getStartTime(),queryParam.getEndTime());
+        lambdaQueryWrapper.eq(SceneEntity::getIsDeleted, 0);
+        return sceneMapper.selectCount(lambdaQueryWrapper);
+    }
 }

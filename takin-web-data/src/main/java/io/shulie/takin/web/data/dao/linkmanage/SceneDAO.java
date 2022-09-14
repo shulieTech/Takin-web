@@ -38,4 +38,6 @@ public interface SceneDAO {
      * @return
      */
     PagingList<SceneResult> selectPageList(ScenePageQueryParam queryParam);
+
+    long selectPageListSize(ScenePageQueryParam queryParam);
 }

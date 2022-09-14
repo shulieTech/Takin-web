@@ -7,7 +7,6 @@ import javax.annotation.Resource;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
@@ -20,6 +19,7 @@ import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringPar
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SynchronizeRequest;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
 import io.shulie.takin.web.biz.convert.linkmanage.LinkManageConvert;
@@ -59,7 +59,6 @@ import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
 import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
-import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
@@ -72,7 +71,6 @@ import io.shulie.takin.web.data.param.scene.SceneLinkRelateSaveParam;
 import io.shulie.takin.web.data.param.scene.ScenePageQueryParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResult;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
@@ -84,7 +82,6 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -950,5 +947,15 @@ public class SceneServiceImpl implements SceneService {
         businessFlowParseRequest.setPluginList(pluginList);
 
         parseScriptAndSave(businessFlowParseRequest);
+    }
+
+    @Override
+    public ResponseResult<Long> getBusinessFlowListSize(BusinessFlowPageQueryRequest r) {
+        ScenePageQueryParam queryParam = new ScenePageQueryParam();
+        queryParam.setStartTime(r.getStartTime());
+        queryParam.setEndTime(r.getStopTime());
+        WebPluginUtils.fillQueryParam(queryParam);
+        long num = sceneDao.selectPageListSize(queryParam);
+        return ResponseResult.success(num);
     }
 }

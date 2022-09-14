@@ -4,13 +4,13 @@ import java.util.List;
 
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.*;
-import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
@@ -76,4 +76,6 @@ public interface SceneService {
     List<ApplicationDetailResult> getAppsByFlowId(Long flowId);
 
     void saveThreadGroup(BusinessFlowThreadRequest businessFlowThreadRequest);
+
+    ResponseResult<Long> getBusinessFlowListSize(BusinessFlowPageQueryRequest r);
 }

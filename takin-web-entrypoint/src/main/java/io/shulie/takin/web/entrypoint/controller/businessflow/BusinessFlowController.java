@@ -219,4 +219,14 @@ public class BusinessFlowController {
         return sceneService.getBusinessFlowList(queryRequest);
     }
 
+    @GetMapping("/scene/list/size")
+    @ApiOperation("业务流程列表查询")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public ResponseResult<Long> getBusinessFlowListSize(@Valid BusinessFlowPageQueryRequest r) {
+        return sceneService.getBusinessFlowListSize(r);
+    }
+
 }

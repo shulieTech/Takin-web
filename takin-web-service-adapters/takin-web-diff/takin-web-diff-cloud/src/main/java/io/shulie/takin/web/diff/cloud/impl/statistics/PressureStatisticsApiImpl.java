@@ -1,13 +1,17 @@
 package io.shulie.takin.web.diff.cloud.impl.statistics;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.shulie.takin.cloud.entrypoint.statistics.CloudPressureStatisticsApi;
+import io.shulie.takin.cloud.sdk.model.request.statistics.FullRequest;
 import io.shulie.takin.cloud.sdk.model.request.statistics.PressureTotalReq;
+import io.shulie.takin.cloud.sdk.model.response.statistics.FullResponse;
 import io.shulie.takin.cloud.sdk.model.response.statistics.PressureListTotalResp;
 import io.shulie.takin.cloud.sdk.model.response.statistics.PressurePieTotalResp;
 import io.shulie.takin.cloud.sdk.model.response.statistics.ReportTotalResp;
 import io.shulie.takin.web.diff.api.statistics.PressureStatisticsApi;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,16 +27,54 @@ public class PressureStatisticsApiImpl implements PressureStatisticsApi {
 
     @Override
     public PressurePieTotalResp getPressurePieTotal(PressureTotalReq req) {
-        return cloudPressureStatisticsApi.getPressurePieTotal(req);
+        FullRequest f = new FullRequest();
+        BeanUtils.copyProperties(req,f);
+        f.setEnvCode(req.getEnvCode());
+        f.setTenantId(req.getTenantId());
+        FullResponse response = cloudPressureStatisticsApi.full(f);
+        int runnableCount = response.getScene().getRunableCount();
+        int runningCount = response.getScene().getRunningCount();
+        int count = response.getScene().getCount();
+        PressurePieTotalResp resp = new PressurePieTotalResp();
+        resp.setTotal(count);
+        List<PressurePieTotalResp.PressurePieTotal> ps = new ArrayList();
+        PressurePieTotalResp.PressurePieTotal t = new PressurePieTotalResp.PressurePieTotal();
+        t.setType("待启动");
+        t.setValue(runnableCount);
+        ps.add(t);
+        PressurePieTotalResp.PressurePieTotal t1 = new PressurePieTotalResp.PressurePieTotal();
+        t1.setType("压测中");
+        t1.setValue(runningCount);
+        ps.add(t1);
+        return resp;
     }
 
     @Override
     public ReportTotalResp getReportTotal(PressureTotalReq req) {
-        return cloudPressureStatisticsApi.getReportTotal(req);
+        FullRequest f = new FullRequest();
+        BeanUtils.copyProperties(req,f);
+        f.setEnvCode(req.getEnvCode());
+        f.setTenantId(req.getTenantId());
+        FullResponse response = cloudPressureStatisticsApi.full(f);
+        int success = response.getReport().getConclusionTrueCount();
+        int fail = response.getReport().getConclusionFalseCount();
+        int count = response.getReport().getCount();
+        ReportTotalResp reportTotalResp = new ReportTotalResp();
+        reportTotalResp.setCount(count);
+        reportTotalResp.setFail(fail);
+        reportTotalResp.setSuccess(success);
+        return reportTotalResp;
     }
 
     @Override
     public List<PressureListTotalResp> getPressureListTotal(PressureTotalReq req) {
+        FullRequest f = new FullRequest();
+        BeanUtils.copyProperties(req,f);
+        f.setEnvCode(req.getEnvCode());
+        f.setTenantId(req.getTenantId());
+        FullResponse response = cloudPressureStatisticsApi.full(f);
+
+
         return cloudPressureStatisticsApi.getPressureListTotal(req);
     }
 }

@@ -1,5 +1,7 @@
 package io.shulie.takin.web.diff.cloud.impl.statistics;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +33,13 @@ public class PressureStatisticsApiImpl implements PressureStatisticsApi {
         BeanUtils.copyProperties(req,f);
         f.setEnvCode(req.getEnvCode());
         f.setTenantId(req.getTenantId());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            f.setEndTime(sdf.parse(req.getEndTime()).getTime());
+            f.setStartTime(sdf.parse(req.getStartTime()).getTime());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
         FullResponse response = cloudPressureStatisticsApi.full(f);
         int runnableCount = response.getScene().getRunableCount();
         int runningCount = response.getScene().getRunningCount();
@@ -55,6 +64,13 @@ public class PressureStatisticsApiImpl implements PressureStatisticsApi {
         BeanUtils.copyProperties(req,f);
         f.setEnvCode(req.getEnvCode());
         f.setTenantId(req.getTenantId());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            f.setEndTime(sdf.parse(req.getEndTime()).getTime());
+            f.setStartTime(sdf.parse(req.getStartTime()).getTime());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
         FullResponse response = cloudPressureStatisticsApi.full(f);
         int success = response.getReport().getConclusionTrueCount();
         int fail = response.getReport().getConclusionFalseCount();
@@ -68,13 +84,6 @@ public class PressureStatisticsApiImpl implements PressureStatisticsApi {
 
     @Override
     public List<PressureListTotalResp> getPressureListTotal(PressureTotalReq req) {
-        FullRequest f = new FullRequest();
-        BeanUtils.copyProperties(req,f);
-        f.setEnvCode(req.getEnvCode());
-        f.setTenantId(req.getTenantId());
-        FullResponse response = cloudPressureStatisticsApi.full(f);
-
-
         return cloudPressureStatisticsApi.getPressureListTotal(req);
     }
 }

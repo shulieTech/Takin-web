@@ -76,4 +76,5 @@ public class SceneCreateParam extends ContextExt {
      */
     private Integer totalNodeNum;
 
+    private String features;
 }

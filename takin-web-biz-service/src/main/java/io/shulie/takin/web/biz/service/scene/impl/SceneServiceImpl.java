@@ -313,6 +313,10 @@ public class SceneServiceImpl implements SceneService {
     public SceneCreateParam saveBusinessFlow(Integer source, String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
                                              List<PluginConfigCreateRequest> pluginList, boolean isPressureResource, Long extId) {
         //保存业务流程
+        if (isPressureResource) {
+            SceneResult sceneResult = sceneDao.getSceneDetail(extId);
+            testName = sceneResult.getSceneName();
+        }
         SceneCreateParam sceneCreateParam = new SceneCreateParam();
         sceneCreateParam.setSceneName(testName);
         sceneCreateParam.setId(extId);
@@ -359,6 +363,9 @@ public class SceneServiceImpl implements SceneService {
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
         sceneUpdateParam.setId(sceneCreateParam.getId());
         sceneUpdateParam.setScriptDeployId(scriptManageId);
+        if (isPressureResource) {
+            sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
+        }
         sceneDao.update(sceneUpdateParam);
         return sceneCreateParam;
     }

@@ -7,6 +7,8 @@ import javax.annotation.Resource;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -286,9 +288,14 @@ public class SceneServiceImpl implements SceneService {
             }
             testPlanName = testPlan.get(0).getTestName();
         }
+        boolean isPressureResouce = false;
+        if (businessFlowParseRequest.getId() != null) {
+            SceneResult sceneResult = sceneDao.getSceneDetail(businessFlowParseRequest.getId());
+            isPressureResouce = sceneResult.isPressureResource();
+        }
         String businessFlowName = null;
-        if (businessFlowParseRequest.getId() == null) {
-            SceneCreateParam createParam = saveBusinessFlow(businessFlowParseRequest.getSource(), testPlanName, data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
+        if (isPressureResouce || businessFlowParseRequest.getId() == null) {
+            SceneCreateParam createParam = saveBusinessFlow(businessFlowParseRequest.getSource(), testPlanName, data, fileManageCreateRequest, businessFlowParseRequest.getPluginList(), isPressureResouce, businessFlowParseRequest.getId());
             businessFlowParseRequest.setId(createParam.getId());
             businessFlowName = createParam.getSceneName();
         } else {
@@ -304,27 +311,29 @@ public class SceneServiceImpl implements SceneService {
 
     @Transactional(rollbackFor = Exception.class)
     public SceneCreateParam saveBusinessFlow(Integer source, String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
-                                             List<PluginConfigCreateRequest> pluginList) {
-        SceneQueryParam sceneQueryParam = new SceneQueryParam();
-        sceneQueryParam.setSceneName(testName);
-        List<SceneResult> sceneResultList = sceneDao.selectListByName(sceneQueryParam);
-        if (CollectionUtils.isNotEmpty(sceneResultList)) {
-            testName = testName + "_" + DateUtil.formatDateTime(new Date());
-        }
+                                             List<PluginConfigCreateRequest> pluginList, boolean isPressureResource, Long extId) {
         //保存业务流程
         SceneCreateParam sceneCreateParam = new SceneCreateParam();
         sceneCreateParam.setSceneName(testName);
-        sceneCreateParam.setLinkRelateNum(0);
-        sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
-        sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
-        if (source != null) {
-            sceneCreateParam.setType(source);
-        } else {
-            sceneCreateParam.setType(SceneTypeEnum.JMETER_UPLOAD_SCENE.getType());
+        sceneCreateParam.setId(extId);
+        if (!isPressureResource) {
+            SceneQueryParam sceneQueryParam = new SceneQueryParam();
+            sceneQueryParam.setSceneName(testName);
+            List<SceneResult> sceneResultList = sceneDao.selectListByName(sceneQueryParam);
+            if (CollectionUtils.isNotEmpty(sceneResultList)) {
+                testName = testName + "_" + DateUtil.formatDateTime(new Date());
+            }
+            sceneCreateParam.setLinkRelateNum(0);
+            sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
+            sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
+            if (source != null) {
+                sceneCreateParam.setType(source);
+            } else {
+                sceneCreateParam.setType(SceneTypeEnum.JMETER_UPLOAD_SCENE.getType());
+            }
+            WebPluginUtils.fillCloudUserData(sceneCreateParam);
+            sceneDao.insert(sceneCreateParam);
         }
-        WebPluginUtils.fillCloudUserData(sceneCreateParam);
-        sceneDao.insert(sceneCreateParam);
-
         //新增脚本文件
         ScriptManageDeployCreateRequest createRequest = new ScriptManageDeployCreateRequest();
         //脚本文件名称去重
@@ -760,18 +769,10 @@ public class SceneServiceImpl implements SceneService {
         Long oldScriptDeployId = sceneResult.getScriptDeployId();
         ScriptManageDeployResult scriptManageDeployResult = scriptManageDao.selectScriptManageDeployById(oldScriptDeployId);
         if (scriptManageDeployResult == null) {
-            scriptManageDeployResult = new ScriptManageDeployResult();
-            scriptManageDeployResult.setName(testPlanName);
-            oldScriptDeployId = 1L;
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到业务流程对应的脚本！");
         }
-
         ScriptManageDeployDetailResponse result = scriptManageService.getScriptManageDeployDetail(oldScriptDeployId);
-        List<FileManageResponse> fileManageResponseList = Lists.newArrayList();
-        if (result == null) {
-            result = new ScriptManageDeployDetailResponse();
-        } else {
-            fileManageResponseList = result.getFileManageResponseList();
-        }
+        List<FileManageResponse> fileManageResponseList = fileManageResponseList = result.getFileManageResponseList();
         ScriptManageDeployUpdateRequest updateRequest = new ScriptManageDeployUpdateRequest();
         updateRequest.setId(oldScriptDeployId);
         updateRequest.setMVersion(ScriptMVersionEnum.SCRIPT_M_1.getCode());

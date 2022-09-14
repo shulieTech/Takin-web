@@ -40,6 +40,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.mortbay.util.ajax.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -100,7 +101,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PressureResourceEntity entity = pressureResourceDAO.queryByName(input.getName());
         if (entity != null) {
             // 业务流程名字可重复，这里处理下
-            if (input.getSourceId() != null) {
+            if (input.getType().intValue() == SourceTypeEnum.AUTO.getCode()) {
                 input.setName(input.getName() + "_" + DateUtil.formatDateTime(new Date()));
             } else {
                 throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, input.getName() + "已存在");
@@ -124,17 +125,23 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             pressureResourceDetailDAO.batchInsert(insertEntityList);
         }
 
-        // 新增业务流程
-        SceneCreateParam sceneCreateParam = new SceneCreateParam();
-        sceneCreateParam.setSceneName(input.getName());
-        sceneCreateParam.setType(1);
-        Long sourceId = sceneDAO.insert(sceneCreateParam);
+        // 手工的新增流程
+        if (input.getType() == SourceTypeEnum.MANUAL.getCode()) {
+            // 新增业务流程
+            SceneCreateParam sceneCreateParam = new SceneCreateParam();
+            sceneCreateParam.setSceneName(input.getName());
+            sceneCreateParam.setType(1);
+            Map<String, String> features = Maps.newHashMap();
+            features.put("PR", "PressureResource");
+            sceneCreateParam.setFeatures(JSON.toString(features));
+            Long sourceId = sceneDAO.insert(sceneCreateParam);
 
-        // 更新sourceId
-        PressureResourceEntity updateResource = new PressureResourceEntity();
-        updateResource.setId(resourceId);
-        updateResource.setSourceId(sourceId);
-        pressureResourceMapper.updateById(updateResource);
+            // 更新sourceId
+            PressureResourceEntity updateResource = new PressureResourceEntity();
+            updateResource.setId(resourceId);
+            updateResource.setSourceId(sourceId);
+            pressureResourceMapper.updateById(updateResource);
+        }
     }
 
     @Override

@@ -292,7 +292,7 @@ public class SceneServiceImpl implements SceneService {
             businessFlowParseRequest.setId(createParam.getId());
             businessFlowName = createParam.getSceneName();
         } else {
-            SceneResult sceneResult = updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null, data, businessFlowParseRequest.getPluginList());
+            SceneResult sceneResult = updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null, data, businessFlowParseRequest.getPluginList(), testPlanName);
             businessFlowName = sceneResult.getSceneName();
         }
 
@@ -415,7 +415,7 @@ public class SceneServiceImpl implements SceneService {
 
     @Override
     public BusinessFlowDetailResponse uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest) {
-        updateBusinessFlow(businessFlowDataFileRequest.getId(), null, businessFlowDataFileRequest, null, businessFlowDataFileRequest.getPluginList());
+        updateBusinessFlow(businessFlowDataFileRequest.getId(), null, businessFlowDataFileRequest, null, businessFlowDataFileRequest.getPluginList(), "");
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
         result.setId(businessFlowDataFileRequest.getId());
         return result;
@@ -751,7 +751,7 @@ public class SceneServiceImpl implements SceneService {
     @Transactional(rollbackFor = Exception.class)
     public SceneResult updateBusinessFlow(Long businessFlowId, FileManageUpdateRequest scriptFile,
                                           BusinessFlowDataFileRequest businessFlowDataFileRequest, List<ScriptNode> data,
-                                          List<PluginConfigCreateRequest> pluginList) {
+                                          List<PluginConfigCreateRequest> pluginList, String testPlanName) {
         SceneResult sceneResult = sceneDao.getSceneDetail(businessFlowId);
         if (sceneResult == null) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到对应的业务流程！");
@@ -760,7 +760,8 @@ public class SceneServiceImpl implements SceneService {
         Long oldScriptDeployId = sceneResult.getScriptDeployId();
         ScriptManageDeployResult scriptManageDeployResult = scriptManageDao.selectScriptManageDeployById(oldScriptDeployId);
         if (scriptManageDeployResult == null) {
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到业务流程对应的脚本！");
+            scriptManageDeployResult = new ScriptManageDeployResult();
+            scriptManageDeployResult.setName(testPlanName);
         }
 
         ScriptManageDeployDetailResponse result = scriptManageService.getScriptManageDeployDetail(oldScriptDeployId);

@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 @Component
 @ElasticSchedulerJob(jobName = "pressureResourceRelateJob",
         isSharding = true,
-        cron = "0 0/1 * * * ? *",
+        cron = "0/10 * * * * ? *",
         description = "压测资源准备-压测资源关联应用")
 @Slf4j
 public class PressureResourceRelateJob implements SimpleJob {
@@ -48,6 +49,7 @@ public class PressureResourceRelateJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
+        //test();
         // 查询所有压测资源准备配置
         List<PressureResourceEntity> resourceList = pressureResourceDAO.getAll();
         if (CollectionUtils.isEmpty(resourceList)) {
@@ -58,6 +60,7 @@ public class PressureResourceRelateJob implements SimpleJob {
         List<PressureResourceEntity> filterList = resourceList.stream().filter(resouce ->
                         resouce.getId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem())
                 .collect(Collectors.toList());
+
         if (CollectionUtils.isEmpty(filterList)) {
             return;
         }
@@ -91,5 +94,20 @@ public class PressureResourceRelateJob implements SimpleJob {
 
             });
         }
+    }
+
+    private void test() {
+        TenantCommonExt commonExt = new TenantCommonExt();
+        commonExt.setSource(ContextSourceEnum.JOB.getCode());
+        commonExt.setEnvCode("test");
+        commonExt.setTenantId(2L);
+        TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(commonExt.getTenantId());
+        if (tenantInfoExt == null) {
+            return;
+        }
+        String tenantAppKey = tenantInfoExt.getTenantAppKey();
+        commonExt.setTenantAppKey(tenantAppKey);
+        WebPluginUtils.setTraceTenantContext(commonExt);
+        pressureResourceCommonService.processAutoPressureResourceRelate(1L);
     }
 }

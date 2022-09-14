@@ -8,6 +8,7 @@ import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
@@ -44,6 +45,7 @@ public class PressureResoureController {
         // 这里只是页面手工新增入口
         input.setType(SourceTypeEnum.MANUAL.getCode());
         input.setCheckStatus(CheckStatusEnum.CHECK_NO.getCode());
+        input.setUserId(WebPluginUtils.traceUserId());
         pressureResourceService.add(input);
         return ResponseResult.success();
     }

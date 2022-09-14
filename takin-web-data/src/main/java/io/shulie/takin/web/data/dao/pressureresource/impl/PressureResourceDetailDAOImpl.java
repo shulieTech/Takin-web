@@ -42,9 +42,7 @@ public class PressureResourceDetailDAOImpl implements PressureResourceDetailDAO 
         if (CollectionUtils.isEmpty(insertList)) {
             return;
         }
-        insertList.stream().forEach(insert -> {
-            pressureResourceDetailMapper.insert(insert);
-        });
+        pressureResourceDetailMapper.saveOrUpdate(insertList);
     }
 
     private QueryWrapper<PressureResourceDetailEntity> getWrapper(PressureResourceDetailQueryParam param) {

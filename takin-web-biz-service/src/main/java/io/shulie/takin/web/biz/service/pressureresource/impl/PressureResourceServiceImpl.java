@@ -113,7 +113,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         // 来源Id,业务流程Id
         insertEntity.setSourceId(input.getSourceId());
         insertEntity.setType(input.getType());
-        insertEntity.setUserId(WebPluginUtils.traceUserId());
+        insertEntity.setUserId(input.getUserId());
         insertEntity.setGmtCreate(new Date());
         insertEntity.setGmtModified(new Date());
         Long resourceId = pressureResourceDAO.add(insertEntity);

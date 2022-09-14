@@ -49,7 +49,7 @@ public class ThreadPoolConfig {
 
     @Bean(name = "pressureResourceThreadPool")
     public ThreadPoolExecutor pressureResouceThreadPool() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("pressureResourceJob-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("pressureResourceThreadPool-%d").build();
         return new ThreadPoolExecutor(20, 40, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }

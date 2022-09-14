@@ -100,7 +100,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PressureResourceEntity entity = pressureResourceDAO.queryByName(input.getName());
         if (entity != null) {
             // 业务流程名字可重复，这里处理下
-            if (input.getSourceId() == null) {
+            if (input.getSourceId() != null) {
                 input.setName(input.getName() + "_" + DateUtil.formatDateTime(new Date()));
             } else {
                 throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, input.getName() + "已存在");

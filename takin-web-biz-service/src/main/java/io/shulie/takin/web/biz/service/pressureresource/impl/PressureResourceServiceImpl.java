@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -98,6 +99,9 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         }
         PressureResourceEntity entity = pressureResourceDAO.queryByName(input.getName());
         if (entity != null) {
+            if (input.getSourceId() == null) {
+                input.setName(input.getName() + "_" + DateUtil.formatDateTime(new Date()));
+            }
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, input.getName() + "已存在");
         }
         // 压测资源配置

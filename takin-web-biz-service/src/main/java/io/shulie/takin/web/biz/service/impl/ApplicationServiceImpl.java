@@ -1382,9 +1382,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         queryApplicationParam.setUpdateStartTime(request.getUpdateStartTime());
         queryApplicationParam.setUpdateEndTime(request.getUpdateEndTime());
         IPage<ApplicationListResult> applicationListResultPage = applicationDAO.pageByParam(queryApplicationParam);
+      
         if (org.springframework.util.CollectionUtils.isEmpty(applicationListResultPage.getRecords())) {
             return PagingList.empty();
         }
+
         List<ApplicationListResult> records = applicationListResultPage.getRecords();
         List<ApplicationListResponseV2> responseList = records.stream().map(result -> {
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);

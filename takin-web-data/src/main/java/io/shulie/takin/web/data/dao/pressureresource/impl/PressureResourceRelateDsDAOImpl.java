@@ -61,7 +61,9 @@ public class PressureResourceRelateDsDAOImpl implements PressureResourceRelateDs
         if (CollectionUtils.isEmpty(list)) {
             return;
         }
-        pressureResourceRelateDsMapper.saveOrUpdate(list);
+        list.stream().forEach(dsEntity -> {
+            pressureResourceRelateDsMapper.saveOrUpdate(dsEntity);
+        });
     }
 
     private QueryWrapper<PressureResourceRelateDsEntity> getWrapper(PressureResourceDsQueryParam param) {

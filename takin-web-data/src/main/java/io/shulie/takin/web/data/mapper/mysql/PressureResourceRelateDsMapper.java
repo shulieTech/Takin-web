@@ -14,15 +14,22 @@ public interface PressureResourceRelateDsMapper
     @InterceptorIgnore(tenantLine = "true")
     @Insert("<script>" +
             "insert into t_pressure_resource_relate_ds(" +
-            "resource_id,detail_id,app_name,middleware_name,status,type,business_database,business_user_name," +
+            "resource_id,detail_id,app_name,middleware_name,middlewareName,status,type,business_database,business_user_name," +
             "shadow_database,shadow_user_name,shadow_password,ext_info,unique_key,remark,tenant_id,env_code,gmt_create)" +
             "values " +
-            "<foreach collection='list' item='item' index='index' separator=','>" +
-            "(#{item.resourceId},#{item.detailId},#{item.appName},#{item.middlewareName},#{item.status},#{item.type}," +
+            "(#{item.resourceId},#{item.detailId},#{item.appName},#{item.middlewareName},#{item.middlewareType},#{item.status},#{item.type}," +
             "#{item.businessDatabase},#{item.businessUserName},#{item.shadowDatabase},#{item.shadowUserName}," +
             "#{item.shadowPassword},#{item.extInfo},#{item.uniqueKey},#{item.remark},#{item.tenantId},#{item.envCode},#{item.gmtCreate})" +
-            "</foreach>" +
             " ON DUPLICATE KEY UPDATE gmt_modified=now()" +
+            "<if test=\"item.middlewareName !=null and item.middlewareName !=''\"> " +
+            "   ,middleware_name =values(middleware_name)" +
+            "</if>" +
+            "<if test=\"item.middlewareType !=null and item.middlewareType !=''\"> " +
+            "   ,middleware_type =values(middleware_type)" +
+            "</if>" +
+            "<if test=\"item.businessUserName !=null and item.businessUserName !=''\"> " +
+            "   ,business_user_name =values(business_user_name)" +
+            "</if>" +
             "</script>")
-    void saveOrUpdate(@Param("list") List<PressureResourceRelateDsEntity> list);
+    void saveOrUpdate(@Param("item") PressureResourceRelateDsEntity item);
 }

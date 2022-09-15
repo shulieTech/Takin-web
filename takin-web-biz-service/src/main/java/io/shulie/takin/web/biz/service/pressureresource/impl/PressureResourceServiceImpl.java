@@ -228,6 +228,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (nameEntity != null && !nameEntity.getId().equals(input.getId())) {
             if (input.getType().intValue() == SourceTypeEnum.MANUAL.getCode()) {
                 throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, input.getName() + "已存在");
+            } else {
+                input.setName(input.getName() + DateUtil.formatDateTime(new Date()));
             }
         }
         PressureResourceEntity updateResourceEntity = new PressureResourceEntity();

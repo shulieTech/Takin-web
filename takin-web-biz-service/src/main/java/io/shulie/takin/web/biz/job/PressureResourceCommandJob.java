@@ -43,8 +43,8 @@ public class PressureResourceCommandJob implements SimpleJob {
     private PressureResourceCommandService pressureResourceCommandService;
 
     @Resource
-    @Qualifier("pressureResouceThreadPool")
-    private ThreadPoolExecutor pressureResouceThreadPool;
+    @Qualifier("pressureResourceThreadPool")
+    private ThreadPoolExecutor pressureResourceThreadPool;
 
     @Resource
     private DistributedLock distributedLock;
@@ -57,12 +57,12 @@ public class PressureResourceCommandJob implements SimpleJob {
             log.warn("当前压测资源准备配置为空,暂不处理!!!");
             return;
         }
-        resourceList.forEach(resource ->{
+        resourceList.forEach(resource -> {
             String lockKey = JobRedisUtils.getRedisJobResource(1L, "command", resource.getId());
             if (distributedLock.checkLock(lockKey)) {
                 return;
             }
-            pressureResouceThreadPool.execute(() -> {
+            pressureResourceThreadPool.execute(() -> {
                 boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
                 if (!tryLock) {
                     return;

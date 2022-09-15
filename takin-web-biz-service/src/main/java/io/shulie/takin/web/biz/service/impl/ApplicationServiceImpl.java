@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.impl;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -20,10 +21,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.Hutool;
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.date.*;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -67,6 +71,7 @@ import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.application.*;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
+import io.shulie.takin.web.biz.pojo.output.application.ApplicationErrorOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationListByUpgradeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
@@ -79,6 +84,7 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoRe
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
 import io.shulie.takin.web.biz.pojo.vo.application.ApplicationDsManageExportVO;
 import io.shulie.takin.web.biz.service.*;
+import io.shulie.takin.web.biz.service.application.ApplicationErrorService;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
@@ -184,6 +190,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private TAppMiddlewareInfoMapper tAppMiddlewareInfoMapper;
+
     @Autowired
     private ActivityService activityService;
     @Autowired
@@ -286,6 +293,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Qualifier("agentDataThreadPool")
     private ThreadPoolExecutor agentDataThreadPool;
 
+    @Autowired
+    private ApplicationErrorService applicationErrorService;
+
+    @Value("${takin.redis.error.expire:90}")
+    private Integer errorExpireTime;
 
     @PostConstruct
     public void init() {
@@ -525,12 +537,26 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return Response.success(new ApplicationVo());
         }
 
+        //判断是否有异常信息来获取状态，t_application_mnt中的不准
+        ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
+        queryInput.setApplicationId(tApplicationMnt.getApplicationId());
+
+        List<ApplicationErrorOutput> errors = applicationErrorService.list(queryInput);
+        // 判断下时间
+        if (CollectionUtil.isNotEmpty(errors)) {
+            // 错误信息已被倒序排序，这里去第一个错误信息,超过1分半的则忽略 2022-09-01 18:11:31
+            String time = errors.get(0).getTime();
+            DateTime dateTime = DateUtil.parse(time, DatePattern.NORM_DATETIME_FORMAT);
+            if (DateUtil.between(DateTime.now(), dateTime, DateUnit.SECOND) < errorExpireTime) {
+                tApplicationMnt.setAccessStatus(3);
+            }
+        }
+
         // 取应用节点数信息
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(
                 Collections.singletonList(tApplicationMnt.getApplicationName()));
         ApplicationResult applicationResult = CollectionUtils.isEmpty(applicationResultList)
                 ? null : applicationResultList.get(0);
-
         // 取应用节点版本信息
         ApplicationNodeQueryParam queryParam = new ApplicationNodeQueryParam();
         queryParam.setCurrent(0);
@@ -1356,7 +1382,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         queryApplicationParam.setUpdateStartTime(request.getUpdateStartTime());
         queryApplicationParam.setUpdateEndTime(request.getUpdateEndTime());
         IPage<ApplicationListResult> applicationListResultPage = applicationDAO.pageByParam(queryApplicationParam);
-        if (applicationListResultPage.getTotal() == 0) {
+      
+        if (org.springframework.util.CollectionUtils.isEmpty(applicationListResultPage.getRecords())) {
             return PagingList.empty();
         }
 
@@ -1376,7 +1403,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public PagingList<ApplicationListByUpgradeResponse> listApplicationByUpgrade(ApplicationListByUpgradeRequest request) {
+    public PagingList<ApplicationListByUpgradeResponse> listApplicationByUpgrade(ApplicationListByUpgradeRequest
+                                                                                         request) {
         QueryApplicationByUpgradeParam param = BeanUtil.copyProperties(request, QueryApplicationByUpgradeParam.class);
         param.setTenantId(WebPluginUtils.traceTenantId());
         param.setEnvCode(WebPluginUtils.traceEnvCode());
@@ -1551,7 +1579,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(
-            List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current,
+            List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize,
+            int current,
             int total, String nameActivity) {
         if (CollectionUtils.isEmpty(data)) {
             return null;
@@ -1757,7 +1786,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         agentConfigCacheManager.evict(application.getApplicationName());
     }
 
-    private void saveRemoteCallFromImport(ApplicationDetailResult detailResult, Map<String, ArrayList<ArrayList<String>>> configMap) {
+    private void saveRemoteCallFromImport(ApplicationDetailResult
+                                                  detailResult, Map<String, ArrayList<ArrayList<String>>> configMap) {
         // map 取出数据
         ArrayList<ArrayList<String>> importRemoteCall;
         if ((importRemoteCall = configMap.get(AppConfigSheetEnum.REMOTE_CALL.getDesc())) == null) {
@@ -1834,7 +1864,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
     }
 
-    private void saveBlacklistFromImport(Long applicationId, Map<String, ArrayList<ArrayList<String>>> configMap) {
+    private void saveBlacklistFromImport(Long
+                                                 applicationId, Map<String, ArrayList<ArrayList<String>>> configMap) {
         // map 取出数据
         ArrayList<ArrayList<String>> importBlackLists;
         if ((importBlackLists = configMap.get(AppConfigSheetEnum.BLACK.getDesc())) == null) {
@@ -1881,7 +1912,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      *
      * @param applicationId 应用id
      */
-    private void saveWhiteListFromImport(Long applicationId, Map<String, ArrayList<ArrayList<String>>> configMap) {
+    private void saveWhiteListFromImport(Long
+                                                 applicationId, Map<String, ArrayList<ArrayList<String>>> configMap) {
         // map 取出数据
         ArrayList<ArrayList<String>> importWhiteLists;
         if ((importWhiteLists = configMap.get(AppConfigSheetEnum.WHITE.getDesc())) == null) {
@@ -2267,7 +2299,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      * @param shadowMqConsumers 影子消费者实例列表
      * @return 导出实例列表
      */
-    private List<ShadowConsumerExcelVO> shadowConsumer2ExcelModel(List<ShadowMqConsumerEntity> shadowMqConsumers) {
+    private List<ShadowConsumerExcelVO> shadowConsumer2ExcelModel
+    (List<ShadowMqConsumerEntity> shadowMqConsumers) {
         if (CollectionUtils.isEmpty(shadowMqConsumers)) {
             return Collections.emptyList();
         }

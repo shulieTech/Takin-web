@@ -361,7 +361,7 @@ public class SceneServiceImpl implements SceneService {
         sceneUpdateParam.setScriptDeployId(scriptManageId);
         if (isPressureResource) {
             sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
-            sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
+            sceneUpdateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
         }
         sceneDao.update(sceneUpdateParam);
         return sceneCreateParam;

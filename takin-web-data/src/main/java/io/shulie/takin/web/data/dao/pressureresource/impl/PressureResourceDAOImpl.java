@@ -69,6 +69,13 @@ public class PressureResourceDAOImpl implements PressureResourceDAO {
         return pressureResourceMapper.getAll();
     }
 
+    @Override
+    public void delete(Long sourceId) {
+        QueryWrapper<PressureResourceEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("source_id", sourceId);
+        pressureResourceMapper.delete(queryWrapper);
+    }
+
     private QueryWrapper<PressureResourceEntity> getWrapper(PressureResourceQueryParam param) {
         QueryWrapper<PressureResourceEntity> queryWrapper = new QueryWrapper<>();
         if (param == null) {

@@ -42,4 +42,7 @@ public interface PressureResourceDAO {
      * @return
      */
     List<PressureResourceEntity> getAll();
+
+
+    void delete(Long sourceId);
 }

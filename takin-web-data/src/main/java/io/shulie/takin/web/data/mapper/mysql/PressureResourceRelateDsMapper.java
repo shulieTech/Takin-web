@@ -14,7 +14,7 @@ public interface PressureResourceRelateDsMapper
     @InterceptorIgnore(tenantLine = "true")
     @Insert("<script>" +
             "insert into t_pressure_resource_relate_ds(" +
-            "resource_id,detail_id,app_name,middleware_name,middlewareName,status,type,business_database,business_user_name," +
+            "resource_id,detail_id,app_name,middleware_name,middleware_type,status,type,business_database,business_user_name," +
             "shadow_database,shadow_user_name,shadow_password,ext_info,unique_key,remark,tenant_id,env_code,gmt_create)" +
             "values " +
             "(#{item.resourceId},#{item.detailId},#{item.appName},#{item.middlewareName},#{item.middlewareType},#{item.status},#{item.type}," +

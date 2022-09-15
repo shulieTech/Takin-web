@@ -332,7 +332,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                 ShadowDbExcelVO excelVO = new ShadowDbExcelVO();
                 excelVO.setBusinessDatabase(entity.getBusinessDatabase());
                 excelVO.setShadowDatabase(entity.getShadowDatabase());
-                excelVO.setIsolateType(IsolateTypeEnum.getName(resource.getType()));
+                excelVO.setIsolateType(IsolateTypeEnum.getName(resource.getIsolateType()));
                 excelVO.setShadowUsername(entity.getShadowUserName());
                 excelVO.setShadowPassword(entity.getShadowPassword());
                 return excelVO;

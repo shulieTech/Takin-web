@@ -15,4 +15,8 @@ public interface PressureResourceMapper
     @InterceptorIgnore(tenantLine = "true")
     @Select("select * from t_pressure_resource where is_delete=0")
     List<PressureResourceEntity> getAll();
+
+    @InterceptorIgnore(tenantLine = "true")
+    @Select("select * from t_pressure_resource where id = #{id} and is_delete=0")
+    PressureResourceEntity queryByIdNoTenant(@Param("id") Long id);
 }

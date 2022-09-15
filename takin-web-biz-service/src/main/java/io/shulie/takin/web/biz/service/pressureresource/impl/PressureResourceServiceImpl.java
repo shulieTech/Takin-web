@@ -131,9 +131,6 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             SceneCreateParam sceneCreateParam = new SceneCreateParam();
             sceneCreateParam.setSceneName(input.getName());
             sceneCreateParam.setType(1);
-            Map<String, String> features = Maps.newHashMap();
-            features.put("PR", "PressureResource");
-            sceneCreateParam.setFeatures(JSON.toString(features));
             Long sourceId = sceneDAO.insert(sceneCreateParam);
 
             // 更新sourceId
@@ -229,7 +226,9 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         param.setName(input.getName());
         PressureResourceEntity nameEntity = pressureResourceDAO.queryByName(input.getName());
         if (nameEntity != null && !nameEntity.getId().equals(input.getId())) {
-            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, input.getName() + "已存在");
+            if (input.getType().intValue() == SourceTypeEnum.MANUAL.getCode()) {
+                throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, input.getName() + "已存在");
+            }
         }
         PressureResourceEntity updateResourceEntity = new PressureResourceEntity();
         updateResourceEntity.setId(input.getId());
@@ -246,8 +245,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             SceneUpdateParam updateParam = new SceneUpdateParam();
             updateParam.setSceneName(input.getName());
             updateParam.setUpdateTime(new Date());
-            updateParam.setId(list.get(0).getId());
-            updateParam.setUserId(WebPluginUtils.traceUserId());
+            updateParam.setId(input.getSourceId());
+            updateParam.setUserId(input.getUserId());
             sceneDAO.update(updateParam);
         }
         // 修改详情

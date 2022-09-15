@@ -15,6 +15,7 @@ import io.shulie.takin.web.biz.service.pressureresource.common.JoinFlagEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.*;
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
@@ -30,6 +31,8 @@ import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRel
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -286,10 +289,21 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
      */
     @Override
     public void export(HttpServletResponse response, Long resourceId) {
-        PressureResourceEntity resourceEntity = pressureResourceMapper.selectById(resourceId);
+        PressureResourceEntity resourceEntity = pressureResourceMapper.queryByIdNoTenant(resourceId);
         if (resourceEntity == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "资源配置未获取到");
         }
+        TenantInfoExt tenantInfo = WebPluginUtils.getTenantInfo(resourceEntity.getTenantId());
+        String tenantCode = "";
+        String tenantAppKey = "";
+        if (tenantInfo != null) {
+            tenantCode = tenantInfo.getTenantCode();
+            tenantAppKey = tenantInfo.getTenantAppKey();
+        }
+        // 复制上下文
+        WebPluginUtils.setTraceTenantContext(resourceEntity.getTenantId(),
+                tenantAppKey, resourceEntity.getEnvCode(), tenantCode, ContextSourceEnum.HREF.getCode());
+
         // 判断隔离方式
         if (resourceEntity.getIsolateType() == IsolateTypeEnum.SHADOW_TABLE.getCode()) {
             // 影子表导出
@@ -356,7 +370,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             tableQueryParam.setResourceId(resource.getId());
             List<PressureResourceRelateTableEntity> tableEntityList = pressureResourceRelateTableDAO.queryList(tableQueryParam);
             // 按照数据源分组下
-            Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getId())));
+            Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getUniqueKey())));
             if (CollectionUtils.isNotEmpty(tableEntityList)) {
                 Map<String, List<PressureResourceRelateTableEntity>> tableEntityMap = tableEntityList.stream().collect(Collectors.groupingBy(item -> item.getDsKey()));
                 for (Map.Entry<String, List<PressureResourceRelateTableEntity>> entry : tableEntityMap.entrySet()) {

@@ -292,6 +292,7 @@ public class SceneServiceImpl implements SceneService {
         if (businessFlowParseRequest.getId() != null) {
             SceneResult sceneResult = sceneDao.getSceneDetail(businessFlowParseRequest.getId());
             isPressureResouce = sceneResult.isPressureResource();
+            testPlanName = sceneResult.getSceneName();
         }
         String businessFlowName = null;
         if (isPressureResouce || businessFlowParseRequest.getId() == null) {
@@ -312,11 +313,6 @@ public class SceneServiceImpl implements SceneService {
     @Transactional(rollbackFor = Exception.class)
     public SceneCreateParam saveBusinessFlow(Integer source, String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
                                              List<PluginConfigCreateRequest> pluginList, boolean isPressureResource, Long extId) {
-        //保存业务流程
-        if (isPressureResource) {
-            SceneResult sceneResult = sceneDao.getSceneDetail(extId);
-            testName = sceneResult.getSceneName();
-        }
         SceneCreateParam sceneCreateParam = new SceneCreateParam();
         sceneCreateParam.setSceneName(testName);
         sceneCreateParam.setId(extId);
@@ -365,6 +361,7 @@ public class SceneServiceImpl implements SceneService {
         sceneUpdateParam.setScriptDeployId(scriptManageId);
         if (isPressureResource) {
             sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
+            sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
         }
         sceneDao.update(sceneUpdateParam);
         return sceneCreateParam;

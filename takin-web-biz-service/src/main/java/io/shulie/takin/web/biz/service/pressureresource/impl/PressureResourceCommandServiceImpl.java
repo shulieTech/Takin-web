@@ -234,6 +234,9 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
 
 
     private TakinCommand mapping(PressureResourceEntity resource,PressureResourceRelateDsEntity dsEntity,List<PressureResourceRelateTableEntity> tableEntities){
+        if(!StringUtils.hasText(dsEntity.getBusinessDatabase()) || !StringUtils.hasText(dsEntity.getBusinessUserName()) || !StringUtils.hasText(dsEntity.getAppName())){
+            return null;
+        }
         TakinCommand takinCommand = new TakinCommand();
         takinCommand.setCommandId(commandId(resource.getId(), dsEntity.getId()));
         takinCommand.setAppName(dsEntity.getAppName());
@@ -245,7 +248,6 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         //命令
         JdbcTableCompareCommand tableCompareCommand = new JdbcTableCompareCommand();
         tableCompareCommand.setShadowType(resource.getIsolateType());
-
         DataSourceEntity bizDataSource = new DataSourceEntity();
         bizDataSource.setUrl(dsEntity.getBusinessDatabase());
         bizDataSource.setUserName(dsEntity.getBusinessUserName());

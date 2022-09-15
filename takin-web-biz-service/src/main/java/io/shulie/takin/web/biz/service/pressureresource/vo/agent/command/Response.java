@@ -11,7 +11,8 @@ import lombok.Data;
 @Data
 @Builder
 public class Response<T> {
-
+    public Response() {
+    }
 
     /**
      * 200正常 401 未获取到登录信息  500异常
@@ -42,27 +43,25 @@ public class Response<T> {
     private T data;
 
 
-    public static<T> Response<T> success(T data){
+    public static <T> Response<T> success(T data) {
         return Response.<T>builder().code(200).message("Success").data(data).build();
     }
 
-    public static<T> Response<T> success(T data, String message){
+    public static <T> Response<T> success(T data, String message) {
         return Response.<T>builder().code(200).message(message).data(data).build();
     }
 
-    public static<T> Response<T> error(String message){
-        return Response.error(SERVER_ERROR,message);
+    public static <T> Response<T> error(String message) {
+        return Response.error(SERVER_ERROR, message);
     }
 
-    public static<T> Response<T> authError(String message){
-        return Response.error(AUTH_ERROR,message);
+    public static <T> Response<T> authError(String message) {
+        return Response.error(AUTH_ERROR, message);
     }
 
-    public static<T> Response<T> error(Integer code, String message){
+    public static <T> Response<T> error(Integer code, String message) {
         return Response.<T>builder().code(code).message(message).data(null).build();
     }
-
-
 
 
 }

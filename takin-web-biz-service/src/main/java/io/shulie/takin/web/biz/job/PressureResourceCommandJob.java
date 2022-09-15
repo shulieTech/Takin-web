@@ -76,8 +76,10 @@ public class PressureResourceCommandJob implements SimpleJob {
                     if (tenantInfoExt == null) {
                         return;
                     }
+                    String tenantCode = tenantInfoExt.getTenantCode();
                     String tenantAppKey = tenantInfoExt.getTenantAppKey();
                     commonExt.setTenantAppKey(tenantAppKey);
+                    commonExt.setTenantCode(tenantCode);
                     WebPluginUtils.setTraceTenantContext(commonExt);
                     pressureResourceCommandService.pushCommand(resource.getId());
                 } finally {

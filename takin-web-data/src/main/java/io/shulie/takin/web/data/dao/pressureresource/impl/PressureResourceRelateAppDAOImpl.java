@@ -63,7 +63,9 @@ public class PressureResourceRelateAppDAOImpl implements PressureResourceRelateA
         if (CollectionUtils.isEmpty(list)) {
             return;
         }
-        pressureResourceRelateAppMapper.saveOrUpdate(list);
+        list.stream().forEach(appEntity -> {
+            pressureResourceRelateAppMapper.saveOrUpdate(appEntity);
+        });
     }
 
     private QueryWrapper<PressureResourceRelateAppEntity> getWrapper(PressureResourceAppQueryParam param) {

@@ -24,4 +24,21 @@ public class DataSourceUtil {
                 dsEntity.getEnvCode());
         return MD5Util.getMD5(key);
     }
+
+    /**
+     * 数据源唯一
+     *
+     * @return
+     */
+    public static String generateDsKey(Long resourceId,
+                                       String businessDatabase,
+                                       Long tenantId,
+                                       String envCode) {
+        String key = String.format("%d-%s-%d-%s",
+                resourceId,
+                businessDatabase,
+                tenantId,
+                envCode);
+        return MD5Util.getMD5(key);
+    }
 }

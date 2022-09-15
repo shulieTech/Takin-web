@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.dao.pressureresource.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,7 +26,8 @@ import java.util.List;
  * @date 2022/9/1 8:38 PM
  */
 @Service
-public class PressureResourceRelateTableDAOImpl implements PressureResourceRelateTableDAO {
+public class PressureResourceRelateTableDAOImpl
+        implements PressureResourceRelateTableDAO {
     private static Logger logger = LoggerFactory.getLogger(PressureResourceRelateTableDAOImpl.class);
 
     @Resource
@@ -84,7 +87,9 @@ public class PressureResourceRelateTableDAOImpl implements PressureResourceRelat
         if (CollectionUtils.isEmpty(tableEntitys)) {
             return;
         }
-        pressureResourceRelateTableMapper.saveOrUpdate(tableEntitys);
+        tableEntitys.stream().forEach(table -> {
+            pressureResourceRelateTableMapper.saveOrUpdate(table);
+        });
     }
 
     private QueryWrapper<PressureResourceRelateTableEntity> getWrapper(PressureResourceTableQueryParam param) {

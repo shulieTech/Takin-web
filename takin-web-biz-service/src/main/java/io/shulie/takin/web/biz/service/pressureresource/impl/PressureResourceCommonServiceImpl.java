@@ -193,8 +193,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
      */
     @Override
     public void processAutoPressureResourceRelate(Long resourceId) {
-        processRemoteCall(null);
-
+        //processRemoteCall(null);
         PressureResourceDetailQueryParam detailQueryParam = new PressureResourceDetailQueryParam();
         detailQueryParam.setResourceId(resourceId);
         List<PressureResourceDetailEntity> detailEntityList = pressureResourceDetailDAO.getList(detailQueryParam);
@@ -207,7 +206,6 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     Pair<List<PressureResourceRelateDsEntity>, List<PressureResourceRelateTableEntity>> pair = processDsAndTable(detailEntity);
                     // 远程调用梳理
                     List<PressureResourceRelateRemoteCallEntity> remoteCallEntityList = processRemoteCall(detailEntity);
-
                     pressureResourceRelateDsDAO.saveOrUpdate(pair.getLeft());
                     pressureResourceRelateTableDAO.saveOrUpdate(pair.getRight());
                     pressureResourceRelateRemoteCallDAO.saveOrUpdate(remoteCallEntityList);
@@ -324,7 +322,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     dsEntity.setType(SourceTypeEnum.AUTO.getCode());
                     dsEntity.setGmtCreate(new Date());
                     // 生成唯一key,关联表
-                    String uniqueKey = DataSourceUtil.generateKey(dsEntity);
+                    String uniqueKey = DataSourceUtil.generateDsKey(resourceId, database, dsEntity.getTenantId(), dsEntity.getEnvCode());
                     dsEntity.setUniqueKey(uniqueKey);
 
                     dsEntityList.add(dsEntity);
@@ -377,11 +375,12 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
 
         // 查询trace日志
         TraceInfoQueryDTO traceInfoQueryDTO = new TraceInfoQueryDTO();
-        // 查询agent上报的日志
         traceInfoQueryDTO.setRpcType(detailEntity.getRpcType());
+        // 查询agent上报的日志
         traceInfoQueryDTO.setQueryType(1);
         traceInfoQueryDTO.setSortField("startDate");
         traceInfoQueryDTO.setSortType("desc");
+        traceInfoQueryDTO.setPageSize(5);
         EntranceRuleDTO entranceRuleDTO = new EntranceRuleDTO();
         entranceRuleDTO.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
         entranceRuleDTO.setAppName(detailEntity.getAppName());
@@ -393,6 +392,9 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             return Collections.emptyList();
         }
         //
+        entryTraceInfoDTOPagingList.getList().stream().forEach(entry -> {
+
+        });
         return Collections.emptyList();
     }
 

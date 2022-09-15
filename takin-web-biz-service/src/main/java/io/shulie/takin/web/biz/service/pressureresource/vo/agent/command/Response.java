@@ -14,6 +14,12 @@ public class Response<T> {
     public Response() {
     }
 
+    public Response(Integer code, String message, T data) {
+        this.code = code;
+        this.message = message;
+        this.data = data;
+    }
+
     /**
      * 200正常 401 未获取到登录信息  500异常
      */

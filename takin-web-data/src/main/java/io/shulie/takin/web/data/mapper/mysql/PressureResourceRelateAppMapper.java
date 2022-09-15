@@ -16,11 +16,12 @@ public interface PressureResourceRelateAppMapper
             "resource_id,detail_id,app_name,status,node_num,join_pressure,type," +
             "tenant_id,env_code,gmt_create)" +
             "values " +
-            "<foreach collection='list' item='item' index='index' separator=','>" +
             "(#{item.resourceId},#{item.detailId},#{item.appName},#{item.status},#{item.nodeNum},#{item.joinPressure}," +
             "#{item.type},#{item.tenantId},#{item.envCode},#{item.gmtCreate})" +
-            "</foreach>" +
-            " ON DUPLICATE KEY UPDATE status =values(status),gmt_modified=now()" +
+            " ON DUPLICATE KEY UPDATE gmt_modified=now()" +
+            "<if test=\"item.status !=null and item.status !=''\">" +
+            " ,status = values(status)" +
+            "</if>" +
             "</script>")
-    void saveOrUpdate(@Param("list") List<PressureResourceRelateAppEntity> list);
+    void saveOrUpdate(@Param("item") PressureResourceRelateAppEntity item);
 }

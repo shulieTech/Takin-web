@@ -3,16 +3,14 @@ package io.shulie.takin.web.biz.service.pressureresource.impl;
 import cn.hutool.core.collection.ListUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Lists;
+import com.pamirs.takin.common.util.MD5Util;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.ExtInfo;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateDsInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateDsRequest;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableInput;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
-import io.shulie.takin.web.biz.service.pressureresource.common.DbNameUtil;
-import io.shulie.takin.web.biz.service.pressureresource.common.IsolateTypeEnum;
-import io.shulie.takin.web.biz.service.pressureresource.common.JoinFlagEnum;
-import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.*;
 import io.shulie.takin.web.biz.service.pressureresource.vo.*;
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
@@ -441,6 +439,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             input.setBusinessTable(businessTable);
             input.setShadowTable(shadowTable);
 
+            // 导入数据
             tableList.add(input);
         }
         // 按照URL分组
@@ -455,10 +454,12 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             queryParam.setBussinessDatabase(database);
             List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(queryParam);
             if (CollectionUtils.isEmpty(dsEntityList)) {
-                throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "数据源不存在");
+                // TODO,新增数据源
+                continue;
             }
-            // 获取数据源Id
-            String dsKey = dsEntityList.get(0).getUniqueKey();
+            // 根据dsKey去更新 dsKey = resource_id + business_database
+            String dsKey = DataSourceUtil.generateDsKey(resourceId, database, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode());
+
             List<PressureResourceRelateTableInput> inputs = entry.getValue();
             for (int i = 0; i < inputs.size(); i++) {
                 PressureResourceRelateTableInput input = inputs.get(i);
@@ -467,10 +468,12 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                 entity.setDsKey(dsKey);
                 entity.setBusinessTable(input.getBusinessTable());
                 entity.setShadowTable(input.getShadowTable());
-                entity.setJoinFlag(0);
+                entity.setJoinFlag(JoinFlagEnum.NO.getCode());
                 entity.setType(SourceTypeEnum.MANUAL.getCode());
+                entity.setStatus(StatusEnum.NO.getCode());
                 entity.setGmtCreate(new Date());
-
+                entity.setTenantId(WebPluginUtils.traceTenantId());
+                entity.setEnvCode(WebPluginUtils.traceEnvCode());
                 tableEntityList.add(entity);
             }
         }

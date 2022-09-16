@@ -4,8 +4,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import cn.hutool.core.collection.ListUtil;
 import com.google.common.collect.Lists;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntrancesAllQueryRequest;
@@ -99,6 +102,15 @@ public class ApplicationEntranceController {
                 }).distinct().collect(Collectors.toList());
     }
 
+
+    @GetMapping(value = "/pageList")
+    @ApiOperation("获得入口服务列表page")
+    public ResponseResult getApplicationEntrances_page(
+            ApplicationEntrancesAllQueryRequest request) {
+        List<ApplicationEntrancesResponse> list = this.getApplicationEntrances_all(request);
+        List<ApplicationEntrancesResponse> pageList = ListUtil.page(request.getCurrentPage(), request.getPageSize(), list);
+        return ResponseResult.success(PagingList.of(pageList, list.size()));
+    }
 
     @GetMapping(value = "/list")
     @ApiOperation("获得入口服务列表all")

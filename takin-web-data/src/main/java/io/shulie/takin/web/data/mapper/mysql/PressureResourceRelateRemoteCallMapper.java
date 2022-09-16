@@ -13,12 +13,12 @@ public interface PressureResourceRelateRemoteCallMapper
     @InterceptorIgnore(tenantLine = "true")
     @Insert("<script>" +
             "insert into t_pressure_resource_relate_remote_call(" +
-            "resource_id,detail_id,interface_name,interface_type,server_app_name,app_name,type,pass" +
+            "resource_id,detail_id,interface_name,interface_type,server_app_name,app_name,type,rpcId,pass" +
             "mock_return_value,user_id,is_synchronize,md5,interface_child_type,remark,manual_tag," +
             "tenant_id,env_code,gmt_create)" +
             "values " +
             "(#{item.resourceId},#{item.detailId},#{item.interfaceName},#{item.interfaceType},#{item.serverAppName}," +
-            "#{item.appName},#{item.type},#{item.pass},#{item.mockReturnValue},#{item.userId},#{item.isSynchronize},#{item.md5}," +
+            "#{item.appName},#{item.type},#{item.rpcId},#{item.pass},#{item.mockReturnValue},#{item.userId},#{item.isSynchronize},#{item.md5}," +
             "#{item.interfaceChildType},#{item.remark},#{item.manualTag},#{item.tenantId},#{item.envCode},#{item.gmtCreate})" +
             " ON DUPLICATE KEY UPDATE gmt_modified=now()" +
             "<if test=\"item.serverAppName !=null and item.serverAppName !=''\"> " +

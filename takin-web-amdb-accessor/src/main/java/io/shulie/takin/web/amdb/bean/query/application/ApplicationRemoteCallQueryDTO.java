@@ -16,7 +16,7 @@ public class ApplicationRemoteCallQueryDTO {
     @JsonProperty("currentPage")
     private Integer currentPage;
     @JsonProperty("linkId")
-    private Integer linkId;
+    private String linkId;
     @JsonProperty("methodName")
     private String methodName;
     @JsonProperty("middlewareName")

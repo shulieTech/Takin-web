@@ -29,5 +29,6 @@ public class ApplicationRemoteCallDTO {
     private String upAppName;
     @JsonProperty("defaultWhiteInfo")
     private String defaultWhiteInfo;
+    private String rpcId;
 
 }

@@ -410,6 +410,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             callEntity.setAppName(item.getAppName());
             callEntity.setStatus(StatusEnum.NO.getCode());
             callEntity.setPass(1);
+            callEntity.setRpcId(item.getRpcId());
             callEntity.setInterfaceName(RemoteCallUtils.getInterfaceNameByRpcName(item.getMiddlewareName(), item.getServiceName(), item.getMethodName()));
             callEntity.setInterfaceType(appRemoteCallService.getInterfaceType(item.getMethodName(), voList));
             if (!childEntityMap.containsKey(item.getMiddlewareDetail())) {

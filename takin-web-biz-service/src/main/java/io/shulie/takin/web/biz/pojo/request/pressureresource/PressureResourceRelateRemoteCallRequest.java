@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.pojo.request.pressureresource;
 
-import io.shulie.surge.data.common.doc.annotation.Id;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,6 +13,9 @@ import lombok.ToString;
 @Data
 @ToString(callSuper = true)
 public class PressureResourceRelateRemoteCallRequest extends PageBaseDTO {
+    @ApiModelProperty("resourceId")
+    private Long resourceId;
+
     @ApiModelProperty("远程调用服务Id")
     private Long id;
 

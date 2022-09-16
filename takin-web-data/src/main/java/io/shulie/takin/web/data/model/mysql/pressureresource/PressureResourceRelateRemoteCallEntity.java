@@ -65,7 +65,7 @@ public class PressureResourceRelateRemoteCallEntity extends TenantBaseEntity {
     private Integer pass;
 
     @ApiModelProperty("rpcId")
-    @Column(name = "`rpcId`")
+    @Column(name = "`rpc_id`")
     private String rpcId;
 
     @ApiModelProperty("mock返回值")

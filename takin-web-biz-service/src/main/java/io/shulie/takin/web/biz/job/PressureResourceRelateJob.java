@@ -48,7 +48,6 @@ public class PressureResourceRelateJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        test();
         // 查询所有压测资源准备配置
         List<PressureResourceEntity> resourceList = pressureResourceDAO.getAll();
         if (CollectionUtils.isEmpty(resourceList)) {
@@ -93,20 +92,5 @@ public class PressureResourceRelateJob implements SimpleJob {
 
             });
         }
-    }
-
-    private void test() {
-        TenantCommonExt commonExt = new TenantCommonExt();
-        commonExt.setSource(ContextSourceEnum.JOB.getCode());
-        commonExt.setEnvCode("test");
-        commonExt.setTenantId(2L);
-        TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(commonExt.getTenantId());
-        if (tenantInfoExt == null) {
-            return;
-        }
-        String tenantAppKey = tenantInfoExt.getTenantAppKey();
-        commonExt.setTenantAppKey(tenantAppKey);
-        WebPluginUtils.setTraceTenantContext(commonExt);
-        pressureResourceCommonService.processAutoPressureResourceRelate(1L);
     }
 }

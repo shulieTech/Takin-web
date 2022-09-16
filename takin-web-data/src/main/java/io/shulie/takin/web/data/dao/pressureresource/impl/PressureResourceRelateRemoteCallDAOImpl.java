@@ -51,7 +51,7 @@ public class PressureResourceRelateRemoteCallDAOImpl implements PressureResource
     public PagingList<PressureResourceRelateRemoteCallEntity> pageList(PressureResourceRemoteCallQueryParam param) {
         QueryWrapper<PressureResourceRelateRemoteCallEntity> queryWrapper = this.getWrapper(param);
         Page<PressureResourceRelateRemoteCallEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
-        queryWrapper.orderByAsc("rpcId");
+        queryWrapper.orderByAsc("rpc_id");
         IPage<PressureResourceRelateRemoteCallEntity> pageList = pressureResourceRelateRemoteCallMapper.selectPage(page, queryWrapper);
         if (pageList.getRecords().isEmpty()) {
             return PagingList.empty();
@@ -67,6 +67,9 @@ public class PressureResourceRelateRemoteCallDAOImpl implements PressureResource
         // 模糊查询
         if (StringUtils.isNotBlank(param.getQueryInterfaceName())) {
             queryWrapper.like("interface_name", param.getQueryInterfaceName());
+        }
+        if (param.getResourceId() != null) {
+            queryWrapper.eq("resource_id", param.getResourceId());
         }
         if (param.getInterfaceChildType() != null) {
             queryWrapper.eq("interface_child_type", param.getInterfaceChildType());

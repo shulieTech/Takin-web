@@ -165,7 +165,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         List<PressureResourceRelateDsEntity> dsList = pressureResourceRelateDsDAO.queryByParam(param);
         // 相同数据源合并
         List<PressureResourceRelateDsVO> listVO = Lists.newArrayList();
-        Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsList.stream().filter(app -> StringUtils.isBlank(app.getAppName())).collect(Collectors.groupingBy(ds -> ds.getBusinessDatabase()));
+        Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsList.stream().filter(app -> StringUtils.isNotBlank(app.getAppName())).collect(Collectors.groupingBy(ds -> ds.getBusinessDatabase()));
         for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : dsMap.entrySet()) {
             List<PressureResourceRelateDsEntity> tmpList = entry.getValue();
             List<String> appNames = tmpList.stream().map(ds -> ds.getAppName()).collect(Collectors.toList());

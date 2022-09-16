@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
+import com.pamirs.pradar.log.parser.trace.RpcBased;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.amdb.common.dto.link.topology.AppShadowDatabaseDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
@@ -8,11 +10,14 @@ import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
 import io.shulie.amdb.common.enums.EdgeTypeGroupEnum;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
+import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
@@ -24,19 +29,27 @@ import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.pressureresource.common.*;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
+import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
+import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
+import io.shulie.takin.web.data.dao.application.InterfaceTypeChildDAO;
+import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.dao.pressureresource.*;
+import io.shulie.takin.web.data.model.mysql.InterfaceTypeChildEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.*;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceQueryParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
+import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -95,10 +108,22 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     private ApplicationEntranceClient applicationEntranceClient;
 
     @Resource
-    private TraceClient traceClient;
+    private ApplicationClient applicationClient;
 
     @Resource
     private ApplicationService applicationService;
+
+    @Resource
+    private DictionaryDataDAO dictionaryDataDAO;
+
+    @Resource
+    private InterfaceTypeChildDAO interfaceTypeChildDAO;
+
+    @Resource
+    private AppRemoteCallService appRemoteCallService;
+
+    @Resource
+    private AppRemoteCallDAO appRemoteCallDAO;
 
     /**
      * 自动处理压测资源准备任务
@@ -193,7 +218,6 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
      */
     @Override
     public void processAutoPressureResourceRelate(Long resourceId) {
-        //processRemoteCall(null);
         PressureResourceDetailQueryParam detailQueryParam = new PressureResourceDetailQueryParam();
         detailQueryParam.setResourceId(resourceId);
         List<PressureResourceDetailEntity> detailEntityList = pressureResourceDetailDAO.getList(detailQueryParam);
@@ -367,34 +391,52 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
      * @return
      */
     private List<PressureResourceRelateRemoteCallEntity> processRemoteCall(PressureResourceDetailEntity detailEntity) {
-        detailEntity = new PressureResourceDetailEntity();
-        detailEntity.setAppName("druid_test");
-        detailEntity.setEntranceUrl("/druid/mysql/save");
-        detailEntity.setMethod("GET");
-        detailEntity.setRpcType("0");
-
-        // 查询trace日志
-        TraceInfoQueryDTO traceInfoQueryDTO = new TraceInfoQueryDTO();
-        traceInfoQueryDTO.setRpcType(detailEntity.getRpcType());
-        // 查询agent上报的日志
-        traceInfoQueryDTO.setQueryType(1);
-        traceInfoQueryDTO.setSortField("startDate");
-        traceInfoQueryDTO.setSortType("desc");
-        traceInfoQueryDTO.setPageSize(5);
-        EntranceRuleDTO entranceRuleDTO = new EntranceRuleDTO();
-        entranceRuleDTO.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
-        entranceRuleDTO.setAppName(detailEntity.getAppName());
-        entranceRuleDTO.setEntrance(detailEntity.getMethod() + "|" + detailEntity.getEntranceUrl() + "|" + detailEntity.getRpcType());
-        traceInfoQueryDTO.setEntranceRuleDTOS(Arrays.asList(entranceRuleDTO));
-
-        PagingList<EntryTraceInfoDTO> entryTraceInfoDTOPagingList = traceClient.listEntryTraceInfo(traceInfoQueryDTO);
-        if (entryTraceInfoDTOPagingList.isEmpty()) {
+        // 通过linkId去查询远程调用
+        ApplicationRemoteCallQueryDTO callQueryDTO = new ApplicationRemoteCallQueryDTO();
+        callQueryDTO.setLinkId(detailEntity.getLinkId());
+        PagingList<ApplicationRemoteCallDTO> pageList = applicationClient.listApplicationRemoteCalls(callQueryDTO);
+        if (pageList.isEmpty()) {
             return Collections.emptyList();
         }
-        //
-        entryTraceInfoDTOPagingList.getList().stream().forEach(entry -> {
+        // 数据字段增加后，也在枚举中增加下
+        List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
+        Map<String, InterfaceTypeChildEntity> childEntityMap = interfaceTypeChildDAO.selectToMapWithNameKey();
+        List<ApplicationRemoteCallDTO> list = pageList.getList();
+        // 保存
+        list.stream().map(item -> {
+            PressureResourceRelateRemoteCallEntity callEntity = new PressureResourceRelateRemoteCallEntity();
+            callEntity.setResourceId(detailEntity.getResourceId());
+            callEntity.setDetailId(detailEntity.getId());
+            callEntity.setAppName(item.getAppName());
+            callEntity.setStatus(StatusEnum.NO.getCode());
+            callEntity.setPass(1);
+            callEntity.setInterfaceName(RemoteCallUtils.getInterfaceNameByRpcName(item.getMiddlewareName(), item.getServiceName(), item.getMethodName()));
+            callEntity.setInterfaceType(appRemoteCallService.getInterfaceType(item.getMethodName(), voList));
+            if (!childEntityMap.containsKey(item.getMiddlewareDetail())) {
+                callEntity.setInterfaceChildType(item.getMiddlewareName());
+            } else {
+                callEntity.setInterfaceChildType(item.getMiddlewareDetail());
+            }
+            callEntity.setMd5(RemoteCallUtils.buildRemoteCallName(callEntity.getAppName(), callEntity.getInterfaceName(), callEntity.getInterfaceType()));
+            callEntity.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
+            callEntity.setManualTag(0);
+            callEntity.setTenantId(WebPluginUtils.traceTenantId());
+            callEntity.setEnvCode(WebPluginUtils.traceEnvCode());
 
-        });
+            // 通过MD5去查询本地远程调用数据
+            AppRemoteCallResult appRemoteCallResult = appRemoteCallDAO.queryOne(callEntity.getAppName(), callEntity.getInterfaceType(), callEntity.getInterfaceName());
+            if (appRemoteCallResult != null) {
+                callEntity.setServerAppName(appRemoteCallResult.getServerAppName());
+                callEntity.setType(appRemoteCallResult.getType());
+                callEntity.setIsSynchronize(appRemoteCallResult.getIsSynchronize() ? 0 : 1);
+                // 是否放行 - 调用方和非调用方为非http类型的，默认自动放行，开关：开；其余的为关
+                // 0 http 2 feign 1 double
+                if (callEntity.getInterfaceType().intValue() != 0 || callEntity.getInterfaceType() != 2) {
+                    callEntity.setPass(0);
+                }
+            }
+            return callEntity;
+        }).collect(Collectors.toList());
         return Collections.emptyList();
     }
 

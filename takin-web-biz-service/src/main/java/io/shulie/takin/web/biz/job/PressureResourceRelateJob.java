@@ -48,7 +48,7 @@ public class PressureResourceRelateJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        //test();
+        test();
         // 查询所有压测资源准备配置
         List<PressureResourceEntity> resourceList = pressureResourceDAO.getAll();
         if (CollectionUtils.isEmpty(resourceList)) {

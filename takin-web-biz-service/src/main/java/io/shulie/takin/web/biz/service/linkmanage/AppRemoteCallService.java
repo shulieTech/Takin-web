@@ -19,6 +19,7 @@ package io.shulie.takin.web.biz.service.linkmanage;
 import java.util.List;
 import java.util.Map;
 
+import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
@@ -104,6 +105,7 @@ public interface AppRemoteCallService {
 
     /**
      * 批量配置白名单
+     *
      * @param request
      */
     void batchConfig(AppRemoteCallConfigRequest request);
@@ -125,18 +127,21 @@ public interface AppRemoteCallService {
 
     /**
      * 获取服务端应用的接口
+     *
      * @return
      */
-    Map<Long,List<AppRemoteCallResult>> getListGroupByAppId();
+    Map<Long, List<AppRemoteCallResult>> getListGroupByAppId();
 
     /**
      * 根据id批量逻辑删除
+     *
      * @param ids
      */
     void batchLogicDelByIds(List<Long> ids);
 
     /**
      * 批量保存
+     *
      * @param list
      */
     void batchSave(List<AppRemoteCallResult> list);
@@ -159,4 +164,13 @@ public interface AppRemoteCallService {
      * 更新
      */
     void batchUpdateV2(AppRemoteCallBatchUpdateV2Request request);
+
+    /**
+     * 接口类型
+     *
+     * @param methodName
+     * @param voList
+     * @return
+     */
+    Integer getInterfaceType(String methodName, List<TDictionaryVo> voList);
 }

@@ -165,7 +165,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         List<PressureResourceRelateDsEntity> dsList = pressureResourceRelateDsDAO.queryByParam(param);
         // 相同数据源合并
         List<PressureResourceRelateDsVO> listVO = Lists.newArrayList();
-        Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsList.stream().collect(Collectors.groupingBy(ds -> ds.getBusinessDatabase()));
+        Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsList.stream().filter(app -> StringUtils.isBlank(app.getAppName())).collect(Collectors.groupingBy(ds -> ds.getBusinessDatabase()));
         for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : dsMap.entrySet()) {
             List<PressureResourceRelateDsEntity> tmpList = entry.getValue();
             List<String> appNames = tmpList.stream().map(ds -> ds.getAppName()).collect(Collectors.toList());
@@ -185,9 +185,9 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             appQueryParam.setResourceId(request.getResourceId());
             List<PressureResourceRelateAppEntity> appEntitys = pressureResourceRelateAppDAO.queryList(appQueryParam);
             if (CollectionUtils.isNotEmpty(appEntitys)) {
-                Map<String, List<PressureResourceRelateAppEntity>> appMap = appEntitys.stream().collect(Collectors.groupingBy(app -> app.getAppName()));
+                Map<String, List<PressureResourceRelateAppEntity>> appMap = appEntitys.stream()
+                        .collect(Collectors.groupingBy(app -> app.getAppName()));
                 List<PressureResourceRelateAppVO> appVOList = appNames.stream()
-                        .filter(app -> StringUtils.isBlank(app))
                         .map(app -> {
                             PressureResourceRelateAppVO appVO = new PressureResourceRelateAppVO();
                             appVO.setAppName(app);

@@ -43,10 +43,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -170,6 +167,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             List<PressureResourceRelateDsEntity> tmpList = entry.getValue();
             List<String> appNames = tmpList.stream().map(ds -> ds.getAppName()).collect(Collectors.toList());
             PressureResourceRelateDsVO tmpVO = new PressureResourceRelateDsVO();
+            tmpVO.setAppList(Collections.EMPTY_LIST);
             BeanUtils.copyProperties(tmpList.get(0), tmpVO);
             tmpVO.setDatabase(DbNameUtil.getDbName(tmpList.get(0).getBusinessDatabase()));
 

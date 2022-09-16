@@ -394,6 +394,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
         // 通过linkId去查询远程调用
         ApplicationRemoteCallQueryDTO callQueryDTO = new ApplicationRemoteCallQueryDTO();
         callQueryDTO.setLinkId(detailEntity.getLinkId());
+        callQueryDTO.setQueryTye("2");
         PagingList<ApplicationRemoteCallDTO> pageList = applicationClient.listApplicationRemoteCalls(callQueryDTO);
         if (pageList.isEmpty()) {
             return Collections.emptyList();

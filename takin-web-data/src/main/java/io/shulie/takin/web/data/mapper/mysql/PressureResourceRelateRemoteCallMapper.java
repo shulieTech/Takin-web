@@ -13,7 +13,7 @@ public interface PressureResourceRelateRemoteCallMapper
     @InterceptorIgnore(tenantLine = "true")
     @Insert("<script>" +
             "insert into t_pressure_resource_relate_remote_call(" +
-            "resource_id,detail_id,interface_name,interface_type,server_app_name,app_name,type,rpcId,pass" +
+            "resource_id,detail_id,interface_name,interface_type,server_app_name,app_name,type,rpc_id,pass" +
             "mock_return_value,user_id,is_synchronize,md5,interface_child_type,remark,manual_tag," +
             "tenant_id,env_code,gmt_create)" +
             "values " +

@@ -51,7 +51,7 @@ public class PressureResourceRelateRemoteCallDAOImpl implements PressureResource
     public PagingList<PressureResourceRelateRemoteCallEntity> pageList(PressureResourceRemoteCallQueryParam param) {
         QueryWrapper<PressureResourceRelateRemoteCallEntity> queryWrapper = this.getWrapper(param);
         Page<PressureResourceRelateRemoteCallEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
-        queryWrapper.orderByDesc("gmt_modified");
+        queryWrapper.orderByAsc("rpcId");
         IPage<PressureResourceRelateRemoteCallEntity> pageList = pressureResourceRelateRemoteCallMapper.selectPage(page, queryWrapper);
         if (pageList.getRecords().isEmpty()) {
             return PagingList.empty();

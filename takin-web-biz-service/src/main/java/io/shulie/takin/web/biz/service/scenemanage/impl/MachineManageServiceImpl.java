@@ -84,7 +84,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private Integer dockerStartTimeout;
 
     private SymmetricCrypto des;
-    private final static ExecutorService THREAD_POOL = new ThreadPoolExecutor(4, 20,
+    private final static ExecutorService THREAD_POOL = new ThreadPoolExecutor(20, 40,
             300L, TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(100), new ThreadFactoryBuilder()
             .setNameFormat("machine-manage-exec-%d").build(), new ThreadPoolExecutor.AbortPolicy());
@@ -347,11 +347,12 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         WebUserExtApi userExtApi = pluginManager.getExtension(WebUserExtApi.class);
         UserExt userExt = userExtApi.traceUser();
         String externalName = userExt.getExternalName();
-        url += ("?projectId=" + WebPluginUtils.traceEnvCode());
-        log.info("开始调用获取{}用户的机器信息,用户名为:{}", url, externalName);
+        String sendUrl = url;
+        sendUrl += ("?projectId=" + WebPluginUtils.traceEnvCode());
+        log.info("开始调用获取{}用户的机器信息,用户名为:{}", sendUrl, externalName);
         Map<String, String> header = new HashMap<>();
         header.put("X-DEVOPS-UID", externalName);
-        String result = HttpClientUtil.sendGet(url, header);
+        String result = HttpClientUtil.sendGet(sendUrl, header);
         log.info("获取到结果为:{}", result);
         if (StringUtil.isNotEmpty(result)) {
             List<MachineManageEntity> manageEntities = new ArrayList<>();

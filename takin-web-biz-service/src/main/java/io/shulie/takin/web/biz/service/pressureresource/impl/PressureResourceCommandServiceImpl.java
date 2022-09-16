@@ -49,8 +49,6 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     private PressureResourceRelateDsMapper resourceDsMapper;
     @Resource
     private PressureResourceRelateTableMapper resourceTableMapper;
-    @Resource
-    private PressureResourceRelateDsDAO resourceRelateDsDAO;
 
 
     /**

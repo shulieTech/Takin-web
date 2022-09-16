@@ -9,6 +9,7 @@ import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.IsolateTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.PressureResourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.*;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
@@ -24,10 +25,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +49,8 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     private PressureResourceRelateDsMapper resourceDsMapper;
     @Resource
     private PressureResourceRelateTableMapper resourceTableMapper;
+    @Resource
+    private PressureResourceRelateDsDAO resourceRelateDsDAO;
 
 
     /**
@@ -80,7 +80,8 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         List<TakinCommand> list = new ArrayList<>();
         //遍历dsMap
         dsMap.forEach((appName,appDsList) ->{
-            List<TakinCommand> collect = appDsList.stream().map(dsEntity -> mapping(resource, dsEntity, tableMap.get(dsEntity.getUniqueKey()))).collect(Collectors.toList());
+            List<TakinCommand> collect = appDsList.stream().map(dsEntity -> mapping(resource, dsEntity, tableMap.get(dsEntity.getUniqueKey())))
+                    .filter(Objects::nonNull).collect(Collectors.toList());
             list.addAll(collect);
         });
 
@@ -106,11 +107,13 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         switch (ackType){
             case TakinAck.COMMAND:
                 //配置校验响应
-                processCommandAck(takinAck);
+                TakinCommandAck takinCommandAck = JSON.parseObject(JSON.toJSONString(takinAck.getAck()), TakinCommandAck.class);
+                processCommandAck(takinCommandAck);
                 break;
             case TakinAck.CONFIG:
                 //配置生效响应
-                processConfigAck(takinAck);
+                TakinConfigAck takinConfigAck = JSON.parseObject(JSON.toJSONString(takinAck.getAck()), TakinConfigAck.class);
+                processConfigAck(takinConfigAck);
                 break;
             default:break;
 
@@ -121,19 +124,22 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
 
     /**
      * 配置生效响应
-     * @param takinAck
+     * @param configAck
      */
-    private void processConfigAck(TakinAck<TakinConfigAck> takinAck) {
-        TakinConfigAck configAck = takinAck.getAck();
+    private void processConfigAck(TakinConfigAck configAck) {
         long resourceId = Long.parseLong(configAck.getConfigId());
         boolean success = configAck.isSuccess();
         PressureResourceTypeEnum resourceTypeEnum = PressureResourceTypeEnum.getByCode(configAck.getConfigType());
         switch (resourceTypeEnum) {
             case DATABASE:
-                //更新ds
-
-
-
+                String remark = success ? "配置生效" : configAck.getResponse();
+                //更新ds 记录失败原因
+                List<PressureResourceRelateDsEntity> dsEntities = resourceDsMapper.selectList(new QueryWrapper<PressureResourceRelateDsEntity>().lambda()
+                        .eq(PressureResourceRelateDsEntity::getResourceId, resourceId));
+                dsEntities.forEach(dsEntity -> {
+                    dsEntity.setRemark(dsEntity.getRemark() + ";" + remark);
+                    resourceDsMapper.updateById(dsEntity);
+                });
                 break;
             case WHITELIST:
                 break;
@@ -145,10 +151,9 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
 
     /**
      * 压测配置校验响应处理
-     * @param takinAck
+     * @param commandAck
      */
-    private void processCommandAck(TakinAck<TakinCommandAck> takinAck){
-        TakinCommandAck commandAck = takinAck.getAck();
+    private void processCommandAck(TakinCommandAck commandAck){
         String commandId = commandAck.getCommandId();
         Long resourceId = getResourceId(commandId);
         Long subId = getSubId(commandId);

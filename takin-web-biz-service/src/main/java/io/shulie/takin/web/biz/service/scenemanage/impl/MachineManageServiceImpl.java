@@ -531,7 +531,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 deployStatusMap.remove(request.getId());
                 manageDAOById.setStatus(2);
                 manageDAOById.setUpdateTime(new Date());
+                log.info("部署完成更新状态，" + manageDAOById.getId());
                 machineManageDAO.updateById(manageDAOById);
+                log.info("部署完成更新状态完成" + manageDAOById.getId());
             }
         });
         return null;

@@ -176,7 +176,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
                 PressureResourceRelateDsEntity updateDs = new PressureResourceRelateDsEntity();
                 updateDs.setId(subId);
                 updateDs.setStatus(commandAck.isSuccess() ? 2 : 1);
-                updateDs.setRemark(commandAck.getResponse());
+                updateDs.setRemark(commandAck.isSuccess()? "影子资源连通" : commandAck.getResponse());
                 resourceDsMapper.updateById(updateDs);
                 //下发数据库配置
                 if(commandAck.isSuccess()){
@@ -232,6 +232,14 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         dataSourceConfig.setShadowUrl(dsEntity.getShadowDatabase());
         dataSourceConfig.setShadowUsername(dsEntity.getShadowUserName());
         dataSourceConfig.setShadowPassword(dsEntity.getShadowPassword());
+        if(!shadowType.equals(IsolateTypeEnum.SHADOW_TABLE.getCode())){
+            //非影子表模式 无表配置
+            return dataSourceConfig;
+        }
+        List<PressureResourceRelateTableEntity> tableEntities = resourceTableMapper.selectList(new QueryWrapper<PressureResourceRelateTableEntity>().lambda()
+                .eq(PressureResourceRelateTableEntity::getResourceId, dsEntity.getResourceId()));
+        List<String> bizTables = tableEntities.stream().map(PressureResourceRelateTableEntity::getBusinessTable).collect(Collectors.toList());
+        dataSourceConfig.setBizTables(bizTables);
         return dataSourceConfig;
     }
 

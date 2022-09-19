@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.pressureresource.vo.agent.command;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class DataSourceConfig implements Serializable {
 
@@ -33,6 +34,13 @@ public class DataSourceConfig implements Serializable {
      * 影子库密码
      */
     private String shadowPassword;
+
+
+    /**
+     * 业务表名称
+     */
+    private List<String> bizTables;
+
 
     public String getUrl() {
         return url;
@@ -80,5 +88,13 @@ public class DataSourceConfig implements Serializable {
 
     public void setShadowType(int shadowType) {
         this.shadowType = shadowType;
+    }
+
+    public List<String> getBizTables() {
+        return bizTables;
+    }
+
+    public void setBizTables(List<String> bizTables) {
+        this.bizTables = bizTables;
     }
 }

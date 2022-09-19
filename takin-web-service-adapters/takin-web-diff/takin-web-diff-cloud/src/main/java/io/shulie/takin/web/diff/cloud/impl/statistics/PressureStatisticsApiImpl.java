@@ -3,7 +3,9 @@ package io.shulie.takin.web.diff.cloud.impl.statistics;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import io.shulie.takin.cloud.entrypoint.statistics.CloudPressureStatisticsApi;
 import io.shulie.takin.cloud.sdk.model.request.statistics.FullRequest;
@@ -16,6 +18,8 @@ import io.shulie.takin.web.diff.api.statistics.PressureStatisticsApi;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * @author 无涯
@@ -84,6 +88,30 @@ public class PressureStatisticsApiImpl implements PressureStatisticsApi {
 
     @Override
     public List<PressureListTotalResp> getPressureListTotal(PressureTotalReq req) {
-        return cloudPressureStatisticsApi.getPressureListTotal(req);
+        FullRequest f = new FullRequest();
+        BeanUtils.copyProperties(req,f);
+        f.setEnvCode(req.getEnvCode());
+        f.setTenantId(req.getTenantId());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            f.setEndTime(sdf.parse(req.getEndTime()).getTime());
+            f.setStartTime(sdf.parse(req.getStartTime()).getTime());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        FullResponse full = cloudPressureStatisticsApi.full(f);
+        List<FullResponse.TopItem> topList = full.getTopList();
+        return topList.stream().map(t -> {
+                    PressureListTotalResp r = new PressureListTotalResp();
+                    r.setCount(t.getReportCount());
+                    r.setSuccess(t.getReportConclusionTrueCount());
+                    r.setFail(t.getReportConclusionFalseCount());
+                    r.setGmtCreate(sdf.format(new Date(t.getSceneCreateTime())));
+                    r.setName(t.getSceneName());
+                    r.setId(t.getSceneId());
+                    r.setCreateName(String.valueOf(t.getSceneCreateUserId()));
+                    return r;
+                }
+                ).collect(Collectors.toList());
     }
 }

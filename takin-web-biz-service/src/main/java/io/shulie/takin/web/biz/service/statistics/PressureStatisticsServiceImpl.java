@@ -22,6 +22,7 @@ import io.shulie.takin.web.biz.pojo.output.statistics.PressurePieTotalOutput;
 import io.shulie.takin.web.biz.pojo.output.statistics.PressurePieTotalOutput.PressurePieTotal;
 import io.shulie.takin.web.biz.pojo.output.statistics.ReportTotalOutput;
 import io.shulie.takin.web.biz.pojo.output.statistics.ScriptLabelListTotalOutput;
+import io.shulie.takin.web.data.mapper.mysql.UserMapper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.statistics.StatisticsManageDao;
 import io.shulie.takin.web.data.result.statistics.PressureListTotalResult;
@@ -45,6 +46,9 @@ public class PressureStatisticsServiceImpl implements PressureStatisticsService 
 
     @Resource
     private StatisticsManageDao statisticsManageDao;
+
+    @Resource
+    private UserMapper userMapper;
 
     @Override
     public PressurePieTotalOutput getPressurePieTotal(PressureTotalInput input) {
@@ -104,6 +108,7 @@ public class PressureStatisticsServiceImpl implements PressureStatisticsService 
             case "0":
                 //  压测场景次数统计   获取标签信息
                 List<PressureListTotalResp> resp = pressureStatisticsApi.getPressureListTotal(req);
+                resp.forEach(r-> r.setCreateName(userMapper.getNameById(Long.valueOf(r.getCreateName()))));
                 outputs = StatisticsConvert.ofListCloud(resp);
                 List<Long> ids = outputs.stream().map(PressureListTotalOutput::getId).collect(Collectors.toList());
                 // 获取标签

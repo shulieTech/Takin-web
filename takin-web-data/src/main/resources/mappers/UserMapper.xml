@@ -7,9 +7,4 @@
         FROM t_tro_user
         WHERE `name` = #{userName}
     </select>
-    <select id="getNameById" resultType="java.lang.String">
-        SELECT `name`
-        FROM t_tro_user
-        WHERE `id` = #{id}
-    </select>
 </mapper>

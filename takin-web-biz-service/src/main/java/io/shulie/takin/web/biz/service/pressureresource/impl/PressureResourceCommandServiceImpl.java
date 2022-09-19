@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.IsolateTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.JoinFlagEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.PressureResourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.*;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
@@ -69,7 +70,8 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         List<PressureResourceRelateDsEntity> dsEntities = resourceDsMapper.selectList(new QueryWrapper<PressureResourceRelateDsEntity>().lambda()
                 .eq(PressureResourceRelateDsEntity::getResourceId, resourceId));
         List<PressureResourceRelateTableEntity> tableEntities = resourceTableMapper.selectList(new QueryWrapper<PressureResourceRelateTableEntity>().lambda()
-                .eq(PressureResourceRelateTableEntity::getResourceId, resourceId));
+                .eq(PressureResourceRelateTableEntity::getResourceId, resourceId)
+                .eq(PressureResourceRelateTableEntity::getJoinFlag, JoinFlagEnum.YES.getCode()));
         //appName分组
         Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateDsEntity::getAppName));
         //dsKey分组
@@ -237,7 +239,12 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             return dataSourceConfig;
         }
         List<PressureResourceRelateTableEntity> tableEntities = resourceTableMapper.selectList(new QueryWrapper<PressureResourceRelateTableEntity>().lambda()
-                .eq(PressureResourceRelateTableEntity::getResourceId, dsEntity.getResourceId()));
+                .eq(PressureResourceRelateTableEntity::getResourceId, dsEntity.getResourceId())
+                .eq(PressureResourceRelateTableEntity::getJoinFlag, JoinFlagEnum.YES.getCode()));
+        if(CollectionUtils.isEmpty(tableEntities)){
+            dataSourceConfig.setDisabled(true);
+            return dataSourceConfig;
+        }
         List<String> bizTables = tableEntities.stream().map(PressureResourceRelateTableEntity::getBusinessTable).collect(Collectors.toList());
         dataSourceConfig.setBizTables(bizTables);
         return dataSourceConfig;
@@ -246,6 +253,11 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
 
     private TakinCommand mapping(PressureResourceEntity resource,PressureResourceRelateDsEntity dsEntity,List<PressureResourceRelateTableEntity> tableEntities){
         if(!StringUtils.hasText(dsEntity.getBusinessDatabase()) || !StringUtils.hasText(dsEntity.getBusinessUserName()) || !StringUtils.hasText(dsEntity.getAppName())){
+            return null;
+        }
+        if(IsolateTypeEnum.SHADOW_TABLE.getCode() ==  resource.getIsolateType() && CollectionUtils.isEmpty(tableEntities)){
+            //影子表模式无影子表 不再下发校验命令 推送禁用配置
+            pushPressureDatabaseConfig(resource);
             return null;
         }
         TakinCommand takinCommand = new TakinCommand();

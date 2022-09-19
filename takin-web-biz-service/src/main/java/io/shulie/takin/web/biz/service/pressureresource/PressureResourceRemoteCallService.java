@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.service.pressureresource;
 
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceCheckVO;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMockInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateRemoteCallRequest;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateRemoteCallVO;
@@ -35,4 +37,12 @@ public interface PressureResourceRemoteCallService {
      * @return
      */
     Integer getServiceAvgRt(Long id);
+
+    /**
+     * 获取服务响应时间
+     *
+     * @param mockInfo
+     * @return
+     */
+    PressureResourceCheckVO check(MockInfo mockInfo);
 }

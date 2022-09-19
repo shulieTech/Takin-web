@@ -1,8 +1,10 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
+import bsh.Interpreter;
 import com.alibaba.fastjson.JSON;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceCheckVO;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMockInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateRemoteCallRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceRemoteCallService;
@@ -103,5 +105,49 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
     @Override
     public Integer getServiceAvgRt(Long id) {
         return 0;
+    }
+
+    /**
+     * 校验
+     *
+     * @param mockInfo
+     * @return
+     */
+    @Override
+    public PressureResourceCheckVO check(MockInfo mockInfo) {
+        PressureResourceCheckVO checkVO = new PressureResourceCheckVO();
+        checkVO.setSuccess(true);
+
+        if (StringUtils.isBlank(mockInfo.getMockValue())) {
+            checkVO.setRemark("mock数据为空!");
+            checkVO.setSuccess(false);
+            return checkVO;
+        }
+        if (mockInfo.getType().equals("0")) {
+            try {
+                JSON.parseObject(mockInfo.getMockValue());
+            } catch (Throwable e) {
+                checkVO.setSuccess(false);
+                checkVO.setRemark(e.getMessage());
+            }
+        } else {
+            try {
+                // 处理所有的import
+                String mockValue = mockInfo.getMockValue();
+                String[] values = mockValue.split("\n");
+                for (int i = 0; i < values.length; i++) {
+                    String val = values[i];
+                    if (val.startsWith("import")) {
+
+                    }
+                }
+                Interpreter interpreter = new Interpreter();
+                interpreter.eval(mockInfo.getMockValue());
+            } catch (Throwable e) {
+                checkVO.setRemark(e.getMessage());
+                checkVO.setSuccess(false);
+            }
+        }
+        return checkVO;
     }
 }

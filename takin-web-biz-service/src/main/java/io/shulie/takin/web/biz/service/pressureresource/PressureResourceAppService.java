@@ -25,4 +25,13 @@ public interface PressureResourceAppService {
      * 修改
      */
     void update(PressureResourceAppInput input);
+
+    /**
+     * 处理忽略应用
+     *
+     * @param joinFlag
+     * @param resourceId
+     * @param appName
+     */
+    void processIgnoreApp(Integer joinFlag, Long resourceId, String appName);
 }

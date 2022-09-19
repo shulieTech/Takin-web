@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class SceneExcludedApplicationDAOImpl
-    implements SceneExcludedApplicationDAO, MPUtil<SceneExcludedApplicationEntity> {
+        implements SceneExcludedApplicationDAO, MPUtil<SceneExcludedApplicationEntity> {
 
     @Autowired
     private SceneExcludedApplicationMapper sceneExcludedApplicationMapper;
@@ -28,20 +28,37 @@ public class SceneExcludedApplicationDAOImpl
     @Override
     public boolean saveBatch(List<CreateSceneExcludedApplicationParam> createSceneExcludedApplicationParams) {
         return SqlHelper.retBool(sceneExcludedApplicationMapper.insertBatch(
-            createSceneExcludedApplicationParams));
+                createSceneExcludedApplicationParams));
     }
 
     @Override
     public List<Long> listApplicationIdsBySceneId(Long sceneId) {
         return sceneExcludedApplicationMapper.selectObjs(this.getLambdaQueryWrapper()
-            .select(SceneExcludedApplicationEntity::getApplicationId)
-            .eq(SceneExcludedApplicationEntity::getSceneId, sceneId)).stream()
-            .map(obj -> Long.valueOf(obj.toString())).collect(Collectors.toList());
+                        .select(SceneExcludedApplicationEntity::getApplicationId)
+                        .eq(SceneExcludedApplicationEntity::getSceneId, sceneId)).stream()
+                .map(obj -> Long.valueOf(obj.toString())).collect(Collectors.toList());
     }
 
     @Override
     public void removeBySceneId(Long sceneId) {
         sceneExcludedApplicationMapper.delete(this.getLambdaQueryWrapper().eq(SceneExcludedApplicationEntity::getSceneId, sceneId));
+    }
+
+    @Override
+    public void removeBySceneIdAndAppId(Long sceneId, Long appId) {
+        sceneExcludedApplicationMapper.delete(this.getLambdaQueryWrapper()
+                .eq(SceneExcludedApplicationEntity::getSceneId, sceneId)
+                .eq(SceneExcludedApplicationEntity::getApplicationId, appId));
+
+    }
+
+    @Override
+    public SceneExcludedApplicationEntity query(Long sceneId, Long appId) {
+        return sceneExcludedApplicationMapper.selectOne(this.getLambdaQueryWrapper()
+                .select(SceneExcludedApplicationEntity::getApplicationId)
+                .eq(SceneExcludedApplicationEntity::getSceneId, sceneId)
+                .eq(SceneExcludedApplicationEntity::getApplicationId, appId)
+                .last("limit 1"));
     }
 
 }

@@ -59,6 +59,7 @@ public class PressureStatisticsApiImpl implements PressureStatisticsApi {
         t1.setType("压测中");
         t1.setValue(runningCount);
         ps.add(t1);
+        resp.setData(ps);
         return resp;
     }
 

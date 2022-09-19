@@ -35,6 +35,11 @@ public class DataSourceConfig implements Serializable {
      */
     private String shadowPassword;
 
+    /**
+     * 启用 或 禁用
+     */
+    private boolean disabled;
+
 
     /**
      * 业务表名称
@@ -88,6 +93,15 @@ public class DataSourceConfig implements Serializable {
 
     public void setShadowType(int shadowType) {
         this.shadowType = shadowType;
+    }
+
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     public List<String> getBizTables() {

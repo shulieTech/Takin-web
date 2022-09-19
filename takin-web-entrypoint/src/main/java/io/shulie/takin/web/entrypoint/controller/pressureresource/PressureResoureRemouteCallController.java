@@ -1,6 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.pressureresource;
 
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMockInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateRemoteCallRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceRemoteCallService;
@@ -47,6 +48,12 @@ public class PressureResoureRemouteCallController {
     @RequestMapping(value = "/avgRt", method = RequestMethod.GET)
     public ResponseResult avgRt(PressureResourceRelateRemoteCallRequest input) {
         return ResponseResult.success(pressureResourceRemoteCallService.getServiceAvgRt(input.getId()));
+    }
+
+    @ApiOperation("链路压测资源-远程调用-校验脚本")
+    @RequestMapping(value = "/mockcheck", method = RequestMethod.POST)
+    public ResponseResult check(@RequestBody MockInfo input) {
+        return ResponseResult.success(pressureResourceRemoteCallService.check(input));
     }
 
 }

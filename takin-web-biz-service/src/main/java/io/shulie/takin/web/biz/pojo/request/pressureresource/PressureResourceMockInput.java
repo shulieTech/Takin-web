@@ -12,6 +12,8 @@ import lombok.ToString;
 @Data
 @ToString(callSuper = true)
 public class PressureResourceMockInput {
+    private Long resourceId;
+
     @ApiModelProperty(value = "远程调用Id")
     private Long id;
 

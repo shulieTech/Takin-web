@@ -2,6 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.pressureresource;
 
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.common.constant.ApiUrls;
@@ -33,11 +34,15 @@ public class PressureResoureDsController {
     @Resource
     private PressureResourceDsService pressureResourceDsService;
 
+    @Resource
+    private PressureResourceCommonService pressureResourceCommonService;
+
     @ApiOperation("链路压测资源-数据源-新增")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseResult create(@RequestBody PressureResourceRelateDsInput input) {
         input.setType(SourceTypeEnum.MANUAL.getCode());
         pressureResourceDsService.add(input);
+        pressureResourceCommonService.pushRedis(input.getResourceId());
         return ResponseResult.success();
     }
 
@@ -64,6 +69,7 @@ public class PressureResoureDsController {
     @RequestMapping(value = "/import", method = RequestMethod.POST)
     public ResponseResult importDsConfig(@RequestParam MultipartFile file, @RequestParam Long resourceId) {
         pressureResourceDsService.importDsConfig(file, resourceId);
+        pressureResourceCommonService.pushRedis(resourceId);
         return ResponseResult.success();
     }
 

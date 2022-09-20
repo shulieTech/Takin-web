@@ -20,6 +20,11 @@ public interface PressureResourceCommonService {
      */
     void processAutoPressureResourceRelate(Long resourceId);
 
+    /**
+     * 推送变更到Redis
+     *
+     * @param resoureIds
+     */
     void pushRedis(Long... resoureIds);
 
     List<Long> getResourceIdsFormRedis();

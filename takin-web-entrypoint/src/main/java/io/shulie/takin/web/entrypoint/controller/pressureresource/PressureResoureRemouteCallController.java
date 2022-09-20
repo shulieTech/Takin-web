@@ -4,6 +4,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMockInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateRemoteCallRequest;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceRemoteCallService;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
@@ -31,6 +32,9 @@ public class PressureResoureRemouteCallController {
     @Resource
     private PressureResourceRemoteCallService pressureResourceRemoteCallService;
 
+    @Resource
+    private PressureResourceCommonService pressureResourceCommonService;
+
     @ApiOperation("链路压测资源-远程调用列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ResponseResult list(PressureResourceRelateRemoteCallRequest request) {
@@ -41,6 +45,7 @@ public class PressureResoureRemouteCallController {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult mock(@RequestBody PressureResourceMockInput input) {
         pressureResourceRemoteCallService.update(input);
+        pressureResourceCommonService.pushRedis(input.getResourceId());
         return ResponseResult.success();
     }
 

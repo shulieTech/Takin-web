@@ -3,13 +3,16 @@ package io.shulie.takin.web.entrypoint.controller.pressureresource;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableRequest;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceTableService;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -32,11 +35,15 @@ public class PressureResoureTableController {
     @Resource
     private PressureResourceTableService pressureResourceTableService;
 
+    @Resource
+    private PressureResourceCommonService pressureResourceCommonService;
+
     @ApiOperation("链路压测资源-影子表新增")
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     public ResponseResult save(@RequestBody PressureResourceRelateTableInput input) {
         input.setType(SourceTypeEnum.MANUAL.getCode());
         pressureResourceTableService.save(input);
+        pressureResourceCommonService.pushRedis(input.getResourceId());
         return ResponseResult.success();
     }
 
@@ -50,6 +57,7 @@ public class PressureResoureTableController {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult update(@RequestBody PressureResourceRelateTableInput input) {
         pressureResourceTableService.update(input);
+        pressureResourceCommonService.pushRedis(input.getResourceId());
         return ResponseResult.success();
     }
 
@@ -57,6 +65,7 @@ public class PressureResoureTableController {
     @RequestMapping(value = "/batchUpdate", method = RequestMethod.POST)
     public ResponseResult batchUpdate(@RequestBody PressureResourceRelateTableInput input) {
         pressureResourceTableService.batchUpdate(input);
+        pressureResourceCommonService.pushRedis(input.getResourceId());
         return ResponseResult.success();
     }
 

@@ -94,6 +94,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             PressureResourceRelateDsEntity tmpEntity = new PressureResourceRelateDsEntity();
 
             BeanUtils.copyProperties(input, tmpEntity);
+            tmpEntity.setUniqueKey(DataSourceUtil.generateDsKey(tmpEntity.getResourceId(), tmpEntity.getBusinessDatabase()));
             tmpEntity.setAppName(appName);
             tmpEntity.setGmtCreate(new Date());
 
@@ -458,8 +459,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                 continue;
             }
             // 根据dsKey去更新 dsKey = resource_id + business_database
-            String dsKey = DataSourceUtil.generateDsKey(resourceId, database, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode());
-
+            String dsKey = DataSourceUtil.generateDsKey(resourceId, database);
             List<PressureResourceRelateTableInput> inputs = entry.getValue();
             for (int i = 0; i < inputs.size(); i++) {
                 PressureResourceRelateTableInput input = inputs.get(i);

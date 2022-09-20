@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Sets;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.amdb.common.dto.link.topology.AppShadowDatabaseDTO;
@@ -254,11 +255,16 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
 
     @Override
     public List<Long> getResourceIdsFormRedis() {
-        Object obj = redisTemplate.opsForSet().pop(TAKIN_RESOURCE_MODIFY_KEY);
-        if (Objects.isNull(obj)) {
-            return Collections.EMPTY_LIST;
+        Set set = Sets.newHashSet();
+        try {
+            set = redisTemplate.opsForSet().members(TAKIN_RESOURCE_MODIFY_KEY);
+            if (set.isEmpty()) {
+                return Collections.EMPTY_LIST;
+            }
+        } catch (Throwable e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
         }
-        return Lists.newArrayList();
+        return new ArrayList<>(set);
     }
 
     /**
@@ -371,7 +377,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     dsEntity.setType(SourceTypeEnum.AUTO.getCode());
                     dsEntity.setGmtCreate(new Date());
                     // 生成唯一key,关联表
-                    String uniqueKey = DataSourceUtil.generateDsKey(resourceId, database, dsEntity.getTenantId(), dsEntity.getEnvCode());
+                    String uniqueKey = DataSourceUtil.generateDsKey(resourceId, database);
                     dsEntity.setUniqueKey(uniqueKey);
 
                     dsEntityList.add(dsEntity);

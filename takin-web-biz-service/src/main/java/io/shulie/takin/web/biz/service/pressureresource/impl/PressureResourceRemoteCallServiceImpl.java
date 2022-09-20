@@ -9,6 +9,7 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMoc
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateRemoteCallRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceRemoteCallService;
 import io.shulie.takin.web.biz.service.pressureresource.common.PassEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.dy.DynamicCompilerUtil;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateRemoteCallVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -132,17 +133,11 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
             }
         } else {
             try {
-                // 处理所有的import
-                String mockValue = mockInfo.getMockValue();
-                String[] values = mockValue.split("\n");
-                for (int i = 0; i < values.length; i++) {
-                    String val = values[i];
-                    if (val.startsWith("import")) {
-
-                    }
+                String remark = DynamicCompilerUtil.check(mockInfo.getMockValue());
+                if (StringUtils.isNotBlank(remark)) {
+                    checkVO.setRemark(remark);
+                    checkVO.setSuccess(false);
                 }
-                Interpreter interpreter = new Interpreter();
-                interpreter.eval(mockInfo.getMockValue());
             } catch (Throwable e) {
                 checkVO.setRemark(e.getMessage());
                 checkVO.setSuccess(false);

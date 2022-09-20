@@ -42,6 +42,9 @@ public class PressureResourceRelateDsInput extends TenantBaseEntity {
     @ApiModelProperty("业务数据源")
     private String businessDatabase;
 
+    @ApiModelProperty("detailId")
+    private Long detailId;
+
     @ApiModelProperty("业务数据源用户名")
     private String businessUserName;
 

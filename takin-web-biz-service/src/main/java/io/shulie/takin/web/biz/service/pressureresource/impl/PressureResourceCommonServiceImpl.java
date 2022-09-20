@@ -34,13 +34,13 @@ import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
-import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.InterfaceTypeChildDAO;
 import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.dao.pressureresource.*;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.model.mysql.InterfaceTypeChildEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.*;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
@@ -92,6 +92,9 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
 
     @Resource
     private PressureResourceDAO pressureResourceDAO;
+
+    @Resource
+    private PressureResourceMapper pressureResourceMapper;
 
     @Resource
     private PressureResourceRelateAppDAO pressureResourceRelateAppDAO;
@@ -267,6 +270,11 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
         return new ArrayList<>(set);
     }
 
+    @Override
+    public void delResourceIdToRedis(Long resourceId) {
+        redisTemplate.opsForSet().remove(TAKIN_RESOURCE_MODIFY_KEY, resourceId);
+    }
+
     /**
      * 通过链路拓扑图来处理关联应用,关联数据源,关联表
      *
@@ -297,7 +305,16 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
         if (applicationEntrancesTopology != null) {
             // 获取应用节点
             List<LinkNodeDTO> nodeDTOList = applicationEntrancesTopology.getNodes();
-            List<LinkNodeDTO> appNodeList = nodeDTOList.stream().filter(node -> node.getNodeType().equals(NodeTypeEnum.APP.getType())).collect(Collectors.toList());
+            List<LinkNodeDTO> appNodeList = nodeDTOList.stream()
+                    .filter(node -> {
+                        if (node.getNodeType().equals(NodeTypeEnum.APP.getType())) {
+                            return true;
+                        }
+                        if (node.getNodeName().equals("UNKNOWN")) {
+                            return false;
+                        }
+                        return false;
+                    }).collect(Collectors.toList());
             List<PressureResourceRelateAppEntity> appEntityList = Lists.newArrayList();
             if (CollectionUtils.isNotEmpty(appNodeList)) {
                 appEntityList = appNodeList.stream().map(appNode -> {
@@ -476,5 +493,29 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     // 应用+数据源
     private String fetchKey(LinkEdgeDTO dbEdge) {
         return dbEdge.getServerAppName() + "#" + dbEdge.getService();
+    }
+
+    /**
+     * 同步修改数据源配置到应用上
+     *
+     * @param resouceId
+     */
+    @Override
+    public void syncDs(Long resouceId) {
+        // 读取resourceId
+        PressureResourceEntity resourceEntity = pressureResourceMapper.selectById(resouceId);
+        // 判断隔离方式
+        if (resourceEntity == null) {
+            return;
+        }
+        int isolateType = resourceEntity.getIsolateType().intValue();
+        if (isolateType == IsolateTypeEnum.DEFAULT.getCode()) {
+            logger.warn("{}格式方式未设置,暂不同步", resourceEntity.getName());
+            return;
+        }
+        // 影子库
+        if (isolateType == IsolateTypeEnum.SHADOW_DB_TABLE.getCode()) {
+
+        }
     }
 }

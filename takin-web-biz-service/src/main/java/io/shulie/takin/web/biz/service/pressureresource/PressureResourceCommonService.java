@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.pressureresource;
 
+import java.util.List;
+
 /**
  * 压测资源配置
  *
@@ -17,4 +19,8 @@ public interface PressureResourceCommonService {
      * 自动处理压测准备-应用自动梳理
      */
     void processAutoPressureResourceRelate(Long resourceId);
+
+    void pushRedis(Long... resoureIds);
+
+    List<Long> getResourceIdsFormRedis();
 }

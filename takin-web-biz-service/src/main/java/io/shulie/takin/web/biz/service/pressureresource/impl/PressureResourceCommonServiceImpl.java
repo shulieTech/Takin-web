@@ -33,6 +33,7 @@ import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
@@ -55,13 +56,13 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -123,6 +124,12 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
 
     @Resource
     private AppRemoteCallDAO appRemoteCallDAO;
+
+    @Autowired
+    @Qualifier("redisTemplate")
+    private RedisTemplate redisTemplate;
+
+    private static String TAKIN_RESOURCE_MODIFY_KEY = "TAKIN:RESOURCE:MODIFY:KEY";
 
     /**
      * 自动处理压测资源准备任务
@@ -238,6 +245,20 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    @Override
+    public void pushRedis(Long... resoureIds) {
+        redisTemplate.opsForSet().add(TAKIN_RESOURCE_MODIFY_KEY, resoureIds);
+    }
+
+    @Override
+    public List<Long> getResourceIdsFormRedis() {
+        Object obj = redisTemplate.opsForSet().pop(TAKIN_RESOURCE_MODIFY_KEY);
+        if (Objects.isNull(obj)) {
+            return Collections.EMPTY_LIST;
+        }
+        return Lists.newArrayList();
     }
 
     /**

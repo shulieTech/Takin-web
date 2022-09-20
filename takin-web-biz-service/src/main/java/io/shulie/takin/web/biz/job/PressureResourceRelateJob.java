@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +59,6 @@ public class PressureResourceRelateJob implements SimpleJob {
         List<PressureResourceEntity> filterList = resourceList.stream().filter(resouce ->
                         resouce.getId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem())
                 .collect(Collectors.toList());
-
         if (CollectionUtils.isEmpty(filterList)) {
             return;
         }

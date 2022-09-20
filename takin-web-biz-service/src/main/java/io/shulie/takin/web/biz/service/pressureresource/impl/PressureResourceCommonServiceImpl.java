@@ -1,6 +1,6 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
-import com.pamirs.pradar.log.parser.trace.RpcBased;
+import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.amdb.common.dto.link.topology.AppShadowDatabaseDTO;
@@ -12,13 +12,9 @@ import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
-import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
-import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
@@ -62,7 +58,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -323,6 +322,11 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     dsEntity.setResourceId(resourceId);
                     dsEntity.setDetailId(detailEntity.getId());
                     dsEntity.setAppName(key.split("#")[0]);
+                    if ("null".equals(dsEntity.getAppName())) {
+                        // TODO 暂时打印下日志
+                        logger.error("关联数据源名称为空 key,{} value,{}", entry.getValue(), JSON.toJSONString(entry.getValue()));
+                        continue;
+                    }
                     String database = key.split("#")[1];
                     String dbName = DbNameUtil.getDbName(database);
                     if (PtUtils.isShadow(dbName)) {
@@ -404,7 +408,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
         Map<String, InterfaceTypeChildEntity> childEntityMap = interfaceTypeChildDAO.selectToMapWithNameKey();
         List<ApplicationRemoteCallDTO> list = pageList.getList();
         // 保存
-        list.stream().map(item -> {
+        List<PressureResourceRelateRemoteCallEntity> callEntityList = list.stream().map(item -> {
             PressureResourceRelateRemoteCallEntity callEntity = new PressureResourceRelateRemoteCallEntity();
             callEntity.setResourceId(detailEntity.getResourceId());
             callEntity.setDetailId(detailEntity.getId());
@@ -413,7 +417,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             callEntity.setPass(1);
             callEntity.setRpcId(item.getRpcId());
             callEntity.setInterfaceName(RemoteCallUtils.getInterfaceNameByRpcName(item.getMiddlewareName(), item.getServiceName(), item.getMethodName()));
-            callEntity.setInterfaceType(appRemoteCallService.getInterfaceType(item.getMethodName(), voList));
+            callEntity.setInterfaceType(appRemoteCallService.getInterfaceType(item.getMiddlewareName(), voList));
             if (!childEntityMap.containsKey(item.getMiddlewareDetail())) {
                 callEntity.setInterfaceChildType(item.getMiddlewareName());
             } else {
@@ -434,12 +438,12 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 // 是否放行 - 调用方和非调用方为非http类型的，默认自动放行，开关：开；其余的为关
                 // 0 http 2 feign 1 double
                 if (callEntity.getInterfaceType().intValue() != 0 || callEntity.getInterfaceType() != 2) {
-                    callEntity.setPass(0);
+                    callEntity.setPass(PassEnum.PASS_YES.getCode());
                 }
             }
             return callEntity;
         }).collect(Collectors.toList());
-        return Collections.emptyList();
+        return callEntityList;
     }
 
     // 应用+数据源

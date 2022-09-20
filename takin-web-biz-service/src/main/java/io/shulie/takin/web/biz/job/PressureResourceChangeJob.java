@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * 压测资源关联应用
  */
 @Component
-@ElasticSchedulerJob(jobName = "pressureResourceCommandJob",
+@ElasticSchedulerJob(jobName = "PressureResourceChangeJob",
         isSharding = true,
         cron = "0 0/1 * * * ? *",
         description = "配置资源修改立即触发")

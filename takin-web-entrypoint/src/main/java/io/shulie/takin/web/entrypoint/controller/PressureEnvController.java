@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(ApiUrls.TAKIN_API_URL + "sys")
 public class PressureEnvController {
 
-    /*@Resource
+    @Resource
     private PressureEnvInspectionJob envInspectionJob;
 
     @GetMapping("pressure/state")
     public ResponseResult<String> pressureState() {
         return ResponseResult.success(envInspectionJob.reduceSumming());
-    }*/
+    }
 
 }

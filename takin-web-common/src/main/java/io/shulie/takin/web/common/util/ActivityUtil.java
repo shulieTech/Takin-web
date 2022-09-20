@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import lombok.Data;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -36,23 +37,31 @@ public class ActivityUtil {
      * @return linkId 链路id
      */
     public static String createLinkId(String serviceName, String methodName, String appName, String rpcType, String extend) {
-        StringBuilder tags = new StringBuilder();
-        tags.append(serviceName)
-            .append("|").append(methodName)
-            .append("|").append(appName)
-            .append("|").append(rpcType);
-        if (StringUtils.isNotBlank(extend)) {
-            tags.append("|").append(extend);
+        StringBuffer tags = new StringBuffer();
+        tags.append(objectToString(serviceName, ""))
+                .append("|")
+                .append(objectToString(methodName, ""))
+                .append("|")
+                .append(objectToString(appName, ""))
+                .append("|")
+                .append(objectToString(rpcType, ""))
+                .append("|")
+                .append(objectToString(extend, ""));
+        // 保持跟amdb生成的md5一致
+        return MD5Tool.md5(tags.toString());
+    }
+
+    private static String objectToString(Object value, String defaultStr) {
+        if (value == null || "null".equalsIgnoreCase(value.toString())) {
+            return "";
         }
-        try {
-            return MD5Tool.getMD5(tags.toString());
-        } catch (Exception e) {
-            return UUID.randomUUID().toString();
-        }
+        return ObjectUtils.toString(value);
     }
 
     public static String buildEntrance(String methodName, String serviceName, String rpcType) {
-        if (StrUtil.isBlank(methodName)) {methodName = "METHOD_NAME";}
+        if (StrUtil.isBlank(methodName)) {
+            methodName = "METHOD_NAME";
+        }
         /*
         if (RpcTypeEnum.MQ.getValue().equals(rpcType)) {
             return StringUtils.join(Lists.newArrayList(serviceName, rpcType), "|");
@@ -110,11 +119,11 @@ public class ActivityUtil {
 
     public static String toEntrance(EntranceJoinEntity entranceJoinEntity) {
         return StringUtils.join(
-            Lists.newArrayList(
-                entranceJoinEntity.getMethodName(),
-                entranceJoinEntity.getServiceName(),
-                entranceJoinEntity.getRpcType()
-            ), "|"
+                Lists.newArrayList(
+                        entranceJoinEntity.getMethodName(),
+                        entranceJoinEntity.getServiceName(),
+                        entranceJoinEntity.getRpcType()
+                ), "|"
         );
     }
 
@@ -166,7 +175,7 @@ public class ActivityUtil {
      */
     public static EntranceJoinEntity getEntranceJoinEntityByEntranceAndType(String entrance, Integer type) {
         return ActivityUtil.isNormalBusiness(type) ? ActivityUtil.covertEntrance(entrance)
-            : ActivityUtil.covertVirtualEntranceV2(entrance);
+                : ActivityUtil.covertVirtualEntranceV2(entrance);
     }
 
     @Data

@@ -153,7 +153,7 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
         updateEntity.setId(input.getId());
         if (input.getJoinPressure() != null) {
             updateEntity.setJoinPressure(input.getJoinPressure());
-            this.processIgnoreApp(updateEntity.getJoinPressure(), updateEntity.getResourceId(), updateEntity.getAppName());
+            this.processIgnoreApp(updateEntity.getJoinPressure(), entity.getResourceId(), entity.getAppName());
         }
         if (input.getNodeNum() != null) {
             updateEntity.setNodeNum(input.getNodeNum());

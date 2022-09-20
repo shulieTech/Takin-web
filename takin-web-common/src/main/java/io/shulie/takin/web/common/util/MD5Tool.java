@@ -3,6 +3,7 @@ package io.shulie.takin.web.common.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.MessageDigest;
+import java.util.Locale;
 
 public class MD5Tool {
     public static void main(String[] args) throws Exception {
@@ -14,7 +15,7 @@ public class MD5Tool {
 
     /**
      * 逻辑:
-     *
+     * <p>
      * 1.获取md5对象,通过"信息摘要"获取实例构造("MD5").
      * 2.md5对象对("字符串的"字节形式"-得到的数组)进行摘要",那么会返回一个"摘要的字节数组"
      * 3.摘要字节数组中的"每个二进制值"字节形式,"转成十六进制形式",然后再把这些值给拼接起来,就是MD5值了
@@ -50,7 +51,7 @@ public class MD5Tool {
      * 3.其实还是通过mdt.digest();获取到字节数组,但是前期必须要有一个方法必须是md5.update(),即"信息摘要对象"要先更新
      * 4."信息摘要更新"里面有(byte[] input),说明是读取流获取到的数组,所以我们就用这个方法.
      * 5.所以最终的逻辑就是:
-     *
+     * <p>
      * 1.获取文件的读取流
      * 2.不停的读取流中的"内容"放入字符串,放一部分就"更新"一部分.直到全部完毕
      * 3.然后调用md5.digest();就会得到有内容的字节数组,剩下的就和上边一样了.
@@ -76,5 +77,24 @@ public class MD5Tool {
             MD5 += s;
         }
         return MD5;
+    }
+
+    public static String md5(String text) {
+        MessageDigest md5 = null;
+        try {
+            md5 = MessageDigest.getInstance("MD5");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return text;
+        }
+
+        byte[] byteArray = Bytes.toBytes(text);
+        byte[] md5Bytes = md5.digest(byteArray);
+        StringBuffer hexValue = new StringBuffer();
+        for (int i = 0; i < md5Bytes.length; i++) {
+            int val = ((int) md5Bytes[i]) & 0xff;
+            hexValue.append(String.format("%02X", val).toLowerCase(Locale.ROOT));
+        }
+        return hexValue.toString();
     }
 }

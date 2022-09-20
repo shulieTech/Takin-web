@@ -5,6 +5,7 @@ import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
@@ -22,7 +23,6 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * 压测资源关联应用
@@ -30,13 +30,13 @@ import java.util.stream.Collectors;
 @Component
 @ElasticSchedulerJob(jobName = "pressureResourceCommandJob",
         isSharding = true,
-        cron = "0/10 * * * * ?",
-        description = "下发验证命令")
+        cron = "0 0/1 * * * ? *",
+        description = "配置资源修改立即触发")
 @Slf4j
-public class PressureResourceCommandJob implements SimpleJob {
+public class PressureResourceChangeJob implements SimpleJob {
 
     @Resource
-    private PressureResourceDAO pressureResourceDAO;
+    private PressureResourceCommonService pressureResourceCommonService;
 
     @Autowired
     private PressureResourceCommandService pressureResourceCommandService;
@@ -51,13 +51,12 @@ public class PressureResourceCommandJob implements SimpleJob {
     @Override
     public void execute(ShardingContext shardingContext) {
         // 查询所有压测资源准备配置
-        List<PressureResourceEntity> resourceList = pressureResourceDAO.getAll();
-        if (CollectionUtils.isEmpty(resourceList)) {
-            log.warn("当前压测资源准备配置为空,暂不处理!!!");
+        List<Long> resourceIds = pressureResourceCommonService.getResourceIdsFormRedis();
+        if (CollectionUtils.isEmpty(resourceIds)) {
             return;
         }
-        resourceList.forEach(resource -> {
-            String lockKey = JobRedisUtils.getRedisJobResource(1L, "command", resource.getId());
+        resourceIds.forEach(resourceId -> {
+            String lockKey = JobRedisUtils.getRedisJobResource(1L, "command", resourceId);
             if (distributedLock.checkLock(lockKey)) {
                 return;
             }
@@ -67,20 +66,7 @@ public class PressureResourceCommandJob implements SimpleJob {
                     return;
                 }
                 try {
-                    TenantCommonExt commonExt = new TenantCommonExt();
-                    commonExt.setSource(ContextSourceEnum.JOB.getCode());
-                    commonExt.setEnvCode(resource.getEnvCode());
-                    commonExt.setTenantId(resource.getTenantId());
-                    TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
-                    if (tenantInfoExt == null) {
-                        return;
-                    }
-                    String tenantCode = tenantInfoExt.getTenantCode();
-                    String tenantAppKey = tenantInfoExt.getTenantAppKey();
-                    commonExt.setTenantAppKey(tenantAppKey);
-                    commonExt.setTenantCode(tenantCode);
-                    WebPluginUtils.setTraceTenantContext(commonExt);
-                    pressureResourceCommandService.pushCommand(resource.getId());
+                    pressureResourceCommandService.pushCommand(resourceId);
                 } finally {
                     distributedLock.unLockSafely(lockKey);
                 }

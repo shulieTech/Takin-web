@@ -255,6 +255,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         if(!StringUtils.hasText(dsEntity.getBusinessDatabase()) || !StringUtils.hasText(dsEntity.getBusinessUserName()) || !StringUtils.hasText(dsEntity.getAppName())){
             return null;
         }
+        TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
         if(IsolateTypeEnum.SHADOW_TABLE.getCode() ==  resource.getIsolateType() && CollectionUtils.isEmpty(tableEntities)){
             //影子表模式无影子表 不再下发校验命令 推送禁用配置
             pushPressureDatabaseConfig(resource);
@@ -265,8 +266,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         takinCommand.setAppName(dsEntity.getAppName());
         takinCommand.setAgentSpecification(TakinCommand.SIMULATOR_AGENT);
         takinCommand.setEnvCode(resource.getEnvCode());
-        String tenantCode = WebPluginUtils.traceTenantCode();
-        takinCommand.setTenantCode(tenantCode);
+        takinCommand.setTenantCode(tenantInfoExt.getTenantCode());
         takinCommand.setCommandType(PressureResourceTypeEnum.DATABASE.getCode());
         //命令
         JdbcTableCompareCommand tableCompareCommand = new JdbcTableCompareCommand();

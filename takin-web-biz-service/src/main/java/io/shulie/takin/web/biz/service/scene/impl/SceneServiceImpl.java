@@ -956,9 +956,10 @@ public class SceneServiceImpl implements SceneService {
 
     @Override
     public ResponseResult<Long> getBusinessFlowListSize(BusinessFlowPageQueryRequest r) {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         ScenePageQueryParam queryParam = new ScenePageQueryParam();
-        queryParam.setStartTime(LocalDate.parse(r.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        queryParam.setEndTime(LocalDate.parse(r.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        queryParam.setStartTime(r.getStartTime());
+        queryParam.setEndTime(r.getEndTime());
         WebPluginUtils.fillQueryParam(queryParam);
         long num = sceneDao.selectPageListSize(queryParam);
         return ResponseResult.success(num);

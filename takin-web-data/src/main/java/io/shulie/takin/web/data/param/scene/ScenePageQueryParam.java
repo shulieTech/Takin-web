@@ -17,11 +17,11 @@ public class ScenePageQueryParam extends AuthQueryParamCommonExt {
     /**
      * 创建时间
      */
-    private LocalDate startTime;
+    private String startTime;
 
     /**
      * 更新时间
      */
-    private LocalDate endTime;
+    private String endTime;
 
 }

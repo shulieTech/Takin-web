@@ -105,8 +105,8 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         MockInfo mockInfo = mockInput.getMockInfo();
         if (mockInfo != null) {
             update.setMockReturnValue(JSON.toJSONString(mockInfo));
-            // 设置了mock,默认不放行
-            update.setPass(PassEnum.PASS_NO.getCode());
+            // 设置了mock,默认放行
+            update.setPass(PassEnum.PASS_YES.getCode());
         } else {
             update.setPass(mockInput.getPass());
         }

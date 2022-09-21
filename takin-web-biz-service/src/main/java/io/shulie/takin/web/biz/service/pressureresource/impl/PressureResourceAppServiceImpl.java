@@ -120,11 +120,9 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
                 Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(list.get(0).getApplicationId()));
                 if (voResponse.getSuccess()) {
                     ApplicationVo applicationVo = voResponse.getData();
-                    vo.setAgentNodeNum(applicationVo.getOnlineNodeNum());
-                    vo.setStatus(applicationVo.getOnlineNodeNum().equals(vo.getNodeNum()) ? 0 : 1);
-                    if (vo.getNodeNum().intValue() == 0) {
-                        vo.setStatus(1);
-                    }
+                    // 默认等于探针在线节点数
+                    vo.setNodeNum(applicationVo.getOnlineNodeNum());
+                    vo.setStatus(applicationVo.getAccessStatus().equals("0") ? 0 : 1);
                 }
             }
             return vo;

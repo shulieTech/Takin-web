@@ -36,8 +36,7 @@ import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
-import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
-import io.shulie.takin.web.data.dao.application.InterfaceTypeChildDAO;
+import io.shulie.takin.web.data.dao.application.*;
 import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.dao.pressureresource.*;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
@@ -132,6 +131,15 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     @Autowired
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
+
+    @Resource
+    private ApplicationDsDbManageDAO dsDbManageDAO;
+
+    @Resource
+    private ApplicationDsDAO applicationDsDAO;
+
+    @Autowired
+    private ApplicationDsCacheManageDAO dsCacheManageDAO;
 
     private static String TAKIN_RESOURCE_MODIFY_KEY = "TAKIN:RESOURCE:MODIFY:KEY";
 
@@ -307,11 +315,8 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             List<LinkNodeDTO> nodeDTOList = applicationEntrancesTopology.getNodes();
             List<LinkNodeDTO> appNodeList = nodeDTOList.stream()
                     .filter(node -> {
-                        if (node.getNodeType().equals(NodeTypeEnum.APP.getType())) {
+                        if (node.getNodeType().equals(NodeTypeEnum.APP.getType()) && !"UNKNOWN".equals(node.getNodeName())) {
                             return true;
-                        }
-                        if (node.getNodeName().equals("UNKNOWN")) {
-                            return false;
                         }
                         return false;
                     }).collect(Collectors.toList());
@@ -515,7 +520,54 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
         }
         // 影子库
         if (isolateType == IsolateTypeEnum.SHADOW_DB_TABLE.getCode()) {
-
+            processShadowDatabase(resourceEntity);
         }
+    }
+
+    /**
+     * 同步影子库
+     *
+     * @param resourceEntity
+     */
+    private void processShadowDatabase(PressureResourceEntity resourceEntity) {
+        // 1、查询影子库信息
+        //Long resourceId = resourceEntity.getId();
+        //PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
+        //dsQueryParam.setResourceId(resourceId);
+        //List<PressureResourceRelateDsEntity> dsList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
+        //// 处理应用关联的数据源
+        //if (CollectionUtils.isEmpty(dsList)) {
+        //    return;
+        //}
+        //// 按应用分组
+        //Map<String, List<PressureResourceRelateDsEntity>> dsAppNameMap = dsList.stream()
+        //        .filter(ds -> StringUtils.isNotBlank(ds.getAppName()))
+        //        .collect(Collectors.groupingBy(PressureResourceRelateDsEntity::getAppName));
+//
+        //List<AppShadowDatabaseDTO> appShadowDatabaseDTOList = Lists.newArrayList();
+        //for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : dsAppNameMap.entrySet()) {
+        //    // 根据应用名查询应用Id
+        //    ApplicationDetailResult applicationDetailResult = applicationService.queryTApplicationMntByName(entry.getKey());
+        //    List<PressureResourceRelateDsEntity> tmpDsList = entry.getValue();
+        //    for (int i = 0; i < tmpDsList.size(); i++) {
+        //        PressureResourceRelateDsEntity dsEntity = dsList.get(i);
+        //        AppShadowDatabaseDTO appShadowDatabaseDTO = new AppShadowDatabaseDTO();
+        //        appShadowDatabaseDTO.setAppName(dsEntity.getAppName());
+        //        appShadowDatabaseDTO.setConnectionPool(dsEntity.getMiddlewareName());
+        //        appShadowDatabaseDTO.setMiddlewareType(dsEntity.getMiddlewareType());
+        //        appShadowDatabaseDTO.setDataSource(dsEntity.getBusinessDatabase());
+        //        appShadowDatabaseDTO.setTableUser(dsEntity.getBusinessUserName());
+        //        appShadowDatabaseDTO.setShadowDataSource(dsEntity.getShadowDatabase());
+        //        appShadowDatabaseDTO.setType("_2");
+        //        appShadowDatabaseDTOList.add(appShadowDatabaseDTO);
+        //    }
+//
+        //    ApplicationDsQueryParam queryParam = new ApplicationDsQueryParam();
+        //    queryParam.setApplicationId(applicationDetailResult.getApplicationId());
+        //    queryParam.setSourceId(resourceId);
+        //    queryParam.setIsDeleted(0);
+        //    WebPluginUtils.fillQueryParam(queryParam);
+        //    //filterAndSave(appShadowDatabaseDTOList, applicationDetailResult.getApplicationId(), queryParam);
+        //}
     }
 }

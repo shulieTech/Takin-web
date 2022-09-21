@@ -94,7 +94,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             PressureResourceRelateDsEntity tmpEntity = new PressureResourceRelateDsEntity();
 
             BeanUtils.copyProperties(input, tmpEntity);
-            tmpEntity.setUniqueKey(DataSourceUtil.generateDsKey(tmpEntity.getResourceId(), tmpEntity.getBusinessDatabase()));
+            tmpEntity.setUniqueKey(DataSourceUtil.generateDsUniqueKey(tmpEntity.getResourceId(), tmpEntity.getAppName(), tmpEntity.getBusinessDatabase()));
             tmpEntity.setAppName(appName);
             tmpEntity.setGmtCreate(new Date());
 
@@ -108,7 +108,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
     @Override
     public String getDsKey(Long dsId) {
         PressureResourceRelateDsEntity entity = pressureResourceRelateDsMapper.selectById(dsId);
-        return entity.getUniqueKey();
+        return DataSourceUtil.generateDsKey(entity.getResourceId(), entity.getBusinessDatabase());
     }
 
     @Override
@@ -516,7 +516,6 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                 dsInput.setShadowPassword(password);
                 // 手工新增
                 dsInput.setType(SourceTypeEnum.MANUAL.getCode());
-
                 pressureResourceRelateDsMapper.insert(dsInput);
             } else {
                 // update

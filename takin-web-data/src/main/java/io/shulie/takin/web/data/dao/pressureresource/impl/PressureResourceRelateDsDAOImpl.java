@@ -64,12 +64,6 @@ public class PressureResourceRelateDsDAOImpl implements PressureResourceRelateDs
         list.stream().forEach(dsEntity -> {
             pressureResourceRelateDsMapper.saveOrUpdate(dsEntity);
         });
-
-        // 处理完成,同步数据到原有库的影子库表里面
-        list.stream().forEach(dsEntity -> {
-            String appName = dsEntity.getAppName();
-            // 通过appName获取appId
-        });
     }
 
     private QueryWrapper<PressureResourceRelateDsEntity> getWrapper(PressureResourceDsQueryParam param) {

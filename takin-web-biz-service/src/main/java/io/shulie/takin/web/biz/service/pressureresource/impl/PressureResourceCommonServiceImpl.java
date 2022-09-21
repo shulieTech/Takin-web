@@ -266,21 +266,16 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
 
     @Override
     public List<Long> getResourceIdsFormRedis() {
-        Set set = Sets.newHashSet();
+        List list = Lists.newArrayList();
         try {
-            set = redisTemplate.opsForSet().members(TAKIN_RESOURCE_MODIFY_KEY);
-            if (set.isEmpty()) {
+            list = redisTemplate.opsForSet().pop(TAKIN_RESOURCE_MODIFY_KEY, 20);
+            if (CollectionUtils.isEmpty(list)) {
                 return Collections.EMPTY_LIST;
             }
         } catch (Throwable e) {
             logger.error(ExceptionUtils.getStackTrace(e));
         }
-        return new ArrayList<>(set);
-    }
-
-    @Override
-    public void delResourceIdToRedis(Long resourceId) {
-        redisTemplate.opsForSet().remove(TAKIN_RESOURCE_MODIFY_KEY, resourceId);
+        return list;
     }
 
     /**
@@ -490,6 +485,8 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     callEntity.setPass(PassEnum.PASS_YES.getCode());
                 }
             }
+            // 重新设置下远程调用类型,兼容下原有的类型
+            callEntity.setType(RemoteCallUtil.getType(callEntity));
             return callEntity;
         }).collect(Collectors.toList());
         return callEntityList;

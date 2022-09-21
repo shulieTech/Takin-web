@@ -9,6 +9,7 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMoc
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateRemoteCallRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceRemoteCallService;
 import io.shulie.takin.web.biz.service.pressureresource.common.PassEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.RemoteCallUtil;
 import io.shulie.takin.web.biz.service.pressureresource.common.dy.DynamicCompilerUtil;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateRemoteCallVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -94,6 +95,7 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
             update.setPass(mockInput.getPass());
         }
         update.setGmtModified(new Date());
+        update.setType(RemoteCallUtil.getType(update));
         pressureResourceRelateRemoteCallMapper.updateById(update);
     }
 

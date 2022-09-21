@@ -14,10 +14,14 @@ import io.shulie.takin.web.biz.service.pressureresource.common.dy.DynamicCompile
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateRemoteCallVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDetailDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateRemoteCallDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateRemoteCallMapper;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntity;
+import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceRemoteCallQueryParam;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +49,9 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
     @Resource
     private PressureResourceRelateRemoteCallMapper pressureResourceRelateRemoteCallMapper;
 
+    @Resource
+    private PressureResourceDetailDAO pressureResourceDetailDAO;
+
     /**
      * @param request
      * @return
@@ -53,6 +60,15 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
     public PagingList<PressureResourceRelateRemoteCallVO> pageList(PressureResourceRelateRemoteCallRequest request) {
         PressureResourceRemoteCallQueryParam param = new PressureResourceRemoteCallQueryParam();
         BeanUtils.copyProperties(request, param);
+        if (StringUtils.isNotBlank(request.getEntry())) {
+            PressureResourceDetailQueryParam queryParam = new PressureResourceDetailQueryParam();
+            queryParam.setLinkId(request.getEntry());
+            List<PressureResourceDetailEntity> list = pressureResourceDetailDAO.getList(queryParam);
+            if (CollectionUtils.isNotEmpty(list)) {
+                String url = list.get(0).getEntranceUrl();
+                param.setQueryInterfaceName(url);
+            }
+        }
         PagingList<PressureResourceRelateRemoteCallEntity> pageList = pressureResourceRelateRemoteCallDAO.pageList(param);
 
         if (pageList.isEmpty()) {

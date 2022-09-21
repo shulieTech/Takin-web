@@ -1,5 +1,10 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -952,8 +957,8 @@ public class SceneServiceImpl implements SceneService {
     @Override
     public ResponseResult<Long> getBusinessFlowListSize(BusinessFlowPageQueryRequest r) {
         ScenePageQueryParam queryParam = new ScenePageQueryParam();
-        queryParam.setStartTime(r.getStartTime());
-        queryParam.setEndTime(r.getEndTime());
+        queryParam.setStartTime(LocalDate.parse(r.getStartTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        queryParam.setEndTime(LocalDate.parse(r.getEndTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         WebPluginUtils.fillQueryParam(queryParam);
         long num = sceneDao.selectPageListSize(queryParam);
         return ResponseResult.success(num);

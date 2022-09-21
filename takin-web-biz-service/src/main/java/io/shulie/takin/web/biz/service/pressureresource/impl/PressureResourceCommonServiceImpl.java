@@ -460,7 +460,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             callEntity.setDetailId(detailEntity.getId());
             callEntity.setAppName(item.getAppName());
             callEntity.setStatus(StatusEnum.NO.getCode());
-            callEntity.setPass(1);
+            callEntity.setPass(PassEnum.PASS_NO.getCode());
             callEntity.setRpcId(item.getRpcId());
             callEntity.setInterfaceName(RemoteCallUtils.getInterfaceNameByRpcName(item.getMiddlewareName(), item.getServiceName(), item.getMethodName()));
             callEntity.setInterfaceType(appRemoteCallService.getInterfaceType(item.getMiddlewareName(), voList));
@@ -469,13 +469,13 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             } else {
                 callEntity.setInterfaceChildType(item.getMiddlewareDetail());
             }
-            callEntity.setMd5(RemoteCallUtils.buildRemoteCallName(callEntity.getAppName(), callEntity.getInterfaceName(), callEntity.getInterfaceType()));
+            callEntity.setMd5(RemoteCallUtils.buildRemoteCallName(String.format("%d-%s", callEntity.getResourceId(), callEntity.getAppName()), callEntity.getInterfaceName(), callEntity.getInterfaceType()));
             callEntity.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
             callEntity.setManualTag(0);
             callEntity.setTenantId(WebPluginUtils.traceTenantId());
             callEntity.setEnvCode(WebPluginUtils.traceEnvCode());
 
-            // 通过MD5去查询本地远程调用数据
+            // 通过服务查询本地的远程调用信息
             AppRemoteCallResult appRemoteCallResult = appRemoteCallDAO.queryOne(callEntity.getAppName(), callEntity.getInterfaceType(), callEntity.getInterfaceName());
             if (appRemoteCallResult != null) {
                 callEntity.setServerAppName(appRemoteCallResult.getServerAppName());

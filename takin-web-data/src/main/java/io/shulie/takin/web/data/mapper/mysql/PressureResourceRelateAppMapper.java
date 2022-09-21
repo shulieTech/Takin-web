@@ -19,7 +19,7 @@ public interface PressureResourceRelateAppMapper
             "(#{item.resourceId},#{item.detailId},#{item.appName},#{item.status},#{item.nodeNum},#{item.joinPressure}," +
             "#{item.type},#{item.tenantId},#{item.envCode},#{item.gmtCreate})" +
             " ON DUPLICATE KEY UPDATE gmt_modified=now()" +
-            "<if test=\"item.status !=null and item.status !=''\">" +
+            "<if test=\"item.status !=null\">" +
             " ,status = values(status)" +
             "</if>" +
             "</script>")

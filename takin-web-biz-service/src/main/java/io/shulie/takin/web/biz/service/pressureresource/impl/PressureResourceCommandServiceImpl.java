@@ -4,18 +4,30 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
+import io.shulie.takin.common.beans.component.SelectVO;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.IsolateTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.JoinFlagEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.PressureResourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.*;
+import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
+import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
+import io.shulie.takin.web.data.dao.application.InterfaceTypeMainDAO;
+import io.shulie.takin.web.data.dao.application.RemoteCallConfigDAO;
+import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapper;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateRemoteCallMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
+import io.shulie.takin.web.data.model.mysql.InterfaceTypeMainEntity;
+import io.shulie.takin.web.data.model.mysql.RemoteCallConfigEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -50,6 +62,14 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     private PressureResourceRelateDsMapper resourceDsMapper;
     @Resource
     private PressureResourceRelateTableMapper resourceTableMapper;
+    @Resource
+    private PressureResourceRelateRemoteCallMapper remoteCallMapper;
+    @Resource
+    private DictionaryDataDAO dictionaryDataDAO;
+    @Resource
+    private RemoteCallConfigDAO remoteCallConfigDAO;
+    @Resource
+    private InterfaceTypeMainDAO interfaceTypeMainDAO;
 
 
     /**
@@ -63,14 +83,30 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         if(resource == null){
             return;
         }
+        //下发数据源校验命令
+        pushDataSourceCommands(resource);
+        //下发白名单配置
+        pushWhitelistConfigs(resource);
+    }
+
+
+    /**
+     * 压测数据源命令
+     * @param resource
+     * @return
+     */
+    private void pushDataSourceCommands(PressureResourceEntity resource){
         if(resource.getIsolateType() == IsolateTypeEnum.DEFAULT.getCode()){
             //未配置隔离类型
             return;
         }
         List<PressureResourceRelateDsEntity> dsEntities = resourceDsMapper.selectList(new QueryWrapper<PressureResourceRelateDsEntity>().lambda()
-                .eq(PressureResourceRelateDsEntity::getResourceId, resourceId));
+                .eq(PressureResourceRelateDsEntity::getResourceId, resource.getId()));
+        if(CollectionUtils.isEmpty(dsEntities)){
+            return;
+        }
         List<PressureResourceRelateTableEntity> tableEntities = resourceTableMapper.selectList(new QueryWrapper<PressureResourceRelateTableEntity>().lambda()
-                .eq(PressureResourceRelateTableEntity::getResourceId, resourceId)
+                .eq(PressureResourceRelateTableEntity::getResourceId, resource.getId())
                 .eq(PressureResourceRelateTableEntity::getJoinFlag, JoinFlagEnum.YES.getCode()));
         //appName分组
         Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateDsEntity::getAppName));
@@ -84,7 +120,6 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
                     .filter(Objects::nonNull).collect(Collectors.toList());
             list.addAll(collect);
         });
-
         //下发命令
         String url = joinUrl(agentManagerHost, PUSH_COMMAND_URL);
         String post = HttpUtil.post(url,JSON.toJSONString(list));
@@ -95,10 +130,81 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         }
         //更新数据库
         PressureResourceEntity update = new PressureResourceEntity();
-        update.setId(resourceId);
+        update.setId(resource.getId());
         update.setStatus(CheckStatusEnum.CHECK_ING.getCode());
         resourceMapper.updateById(update);
     }
+
+
+    private void pushWhitelistConfigs(PressureResourceEntity resource){
+        List<PressureResourceRelateRemoteCallEntity> remoteCallEntities = remoteCallMapper.selectList(new QueryWrapper<PressureResourceRelateRemoteCallEntity>().lambda()
+                .eq(PressureResourceRelateRemoteCallEntity::getResourceId, resource.getId()));
+        if(CollectionUtils.isEmpty(remoteCallEntities)){
+            return;
+        }
+        //group by appName
+        Map<String, List<PressureResourceRelateRemoteCallEntity>> appMap = remoteCallEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateRemoteCallEntity::getAppName));
+
+        TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
+        List<TakinConfig> configList = new ArrayList<>();
+        //遍历dsMap
+        appMap.forEach((appName,remoteCallList) ->{
+            TakinConfig takinConfig = new TakinConfig();
+            takinConfig.setConfigId(resource.getId().toString());
+            takinConfig.setAppName(appName);
+            takinConfig.setAgentSpecification(TakinCommand.SIMULATOR_AGENT);
+            takinConfig.setEnvCode(resource.getEnvCode());
+            takinConfig.setTenantCode(tenantInfoExt.getTenantCode());
+            takinConfig.setConfigType(PressureResourceTypeEnum.WHITELIST.getCode());
+            List<AgentRemoteCallVO.RemoteCall> collect = remoteCallList.stream().map(this::mapping)
+                    .filter(Objects::nonNull).collect(Collectors.toList());
+            takinConfig.setConfigParam(JSON.toJSONString(collect));
+            configList.add(takinConfig);
+        });
+        //推送配置
+        String url = joinUrl(agentManagerHost, PUSH_CONFIG_URL);
+        HttpUtil.post(url,JSON.toJSONString(configList));
+    }
+
+
+    private AgentRemoteCallVO.RemoteCall mapping(PressureResourceRelateRemoteCallEntity remoteCallEntity){
+        if(!StringUtils.hasText(remoteCallEntity.getServerAppName()) || remoteCallEntity.getType() == 0 || remoteCallEntity.getIsDeleted() == 1){
+            return null;
+        }
+        List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
+        Map<Integer, RemoteCallConfigEntity> entityMap = remoteCallConfigDAO.selectToMapWithOrderKey();
+
+        AgentRemoteCallVO.RemoteCall remoteCall = new AgentRemoteCallVO.RemoteCall();
+        remoteCall.setINTERFACE_NAME(remoteCallEntity.getInterfaceName());
+        remoteCall.setTYPE(getSelectVO(remoteCallEntity.getInterfaceType(), voList).getLabel().toLowerCase());
+        remoteCall.setCheckType(entityMap.get(remoteCallEntity.getType()).getCheckType());
+        if (!StringUtils.hasText(remoteCallEntity.getMockReturnValue())) {
+            return null;
+        }
+        MockInfo mockInfo = JSON.parseObject(remoteCallEntity.getMockReturnValue(), MockInfo.class);
+        remoteCall.setContent(mockInfo.getMockValue());
+        return remoteCall;
+    }
+
+    private SelectVO getSelectVO(Integer interfaceType, List<TDictionaryVo> voList) {
+        InterfaceTypeMainEntity mainEntity = interfaceTypeMainDAO.selectByOrder(interfaceType);
+        if (mainEntity == null) {
+            String type = String.valueOf(interfaceType);
+            if (org.apache.commons.collections4.CollectionUtils.isEmpty(voList)) {
+                return new SelectVO("数据字典未找到类型", type);
+            }
+            List<TDictionaryVo> dictionaryVoList = voList.stream().filter(t -> type.equals(t.getValueCode())).collect(Collectors.toList());
+            if (org.apache.commons.collections4.CollectionUtils.isEmpty(dictionaryVoList)) {
+                return new SelectVO("数据字典未找到类型", type);
+            }
+            TDictionaryVo vos = dictionaryVoList.get(0);
+            return new SelectVO(vos.getValueName(), type);
+        } else {
+            return new SelectVO(mainEntity.getName(), String.valueOf(mainEntity.getValueOrder()));
+        }
+    }
+
+
 
     @Override
     public void processAck(TakinAck takinAck) {

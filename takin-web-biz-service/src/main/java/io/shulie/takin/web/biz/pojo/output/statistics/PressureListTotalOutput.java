@@ -16,4 +16,5 @@ public class PressureListTotalOutput {
     private Integer count;
     private Integer success;
     private Integer fail;
+    private String lastTime;
 }

@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Component
 @ElasticSchedulerJob(jobName = "pressureResourceCommandJob",
         isSharding = true,
-        cron = "0/10 * * * * ?",
+        cron = "* 0/1 * * * ?",
         description = "下发验证命令")
 @Slf4j
 public class PressureResourceCommandJob implements SimpleJob {
@@ -56,7 +56,14 @@ public class PressureResourceCommandJob implements SimpleJob {
             log.warn("当前压测资源准备配置为空,暂不处理!!!");
             return;
         }
-        resourceList.forEach(resource -> {
+        // 按配置Id分片
+        List<PressureResourceEntity> filterList = resourceList.stream().filter(resouce ->
+                        resouce.getId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem())
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(filterList)) {
+            return;
+        }
+        filterList.forEach(resource -> {
             String lockKey = JobRedisUtils.getRedisJobResource(1L, "command", resource.getId());
             if (distributedLock.checkLock(lockKey)) {
                 return;

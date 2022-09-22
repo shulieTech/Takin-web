@@ -2673,7 +2673,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             vo.setExceptionInfo(exceptionMsg);
         }
         // 设置下在线节点数
-        if (Objects.isNull(applicationResult) || applicationResult.getInstanceInfo() != null) {
+        if (Objects.isNull(applicationResult) || applicationResult.getInstanceInfo() == null) {
             vo.setOnlineNodeNum(0);
         } else {
             vo.setOnlineNodeNum(applicationResult.getInstanceInfo().getInstanceOnlineAmount());

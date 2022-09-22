@@ -2661,7 +2661,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 || applicationNodeResultList.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count() > 1) {
             vo.setAccessStatus(3);
             vo.setExceptionInfo("agent状态:" + param.getAccessStatus() + ",节点状态: 3");
-            vo.setOnlineNodeNum(0);
         } else {
             vo.setAccessStatus(param.getAccessStatus());
             String exceptionMsg = "agent状态:" + param.getAccessStatus();
@@ -2672,11 +2671,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 exceptionMsg = exceptionMsg + ",节点状态: 3";
             }
             vo.setExceptionInfo(exceptionMsg);
-            if (applicationResult.getInstanceInfo() != null) {
-                vo.setOnlineNodeNum(applicationResult.getInstanceInfo().getInstanceOnlineAmount());
-            } else {
-                vo.setOnlineNodeNum(0);
-            }
+        }
+        // 设置下在线节点数
+        if (Objects.isNull(applicationResult) || applicationResult.getInstanceInfo() != null) {
+            vo.setOnlineNodeNum(0);
+        } else {
+            vo.setOnlineNodeNum(applicationResult.getInstanceInfo().getInstanceOnlineAmount());
         }
         vo.setUserId(param.getUserId());
         WebPluginUtils.fillQueryResponse(vo);

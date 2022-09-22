@@ -374,7 +374,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                             ApplicationVo applicationVo = voResponse.getData();
                             // 默认等于探针在线节点数
                             appEntity.setNodeNum(applicationVo.getOnlineNodeNum());
-                            appEntity.setStatus(applicationVo.getAccessStatus().equals("0") ? 0 : 1);
+                            appEntity.setStatus(applicationVo.getAccessStatus().equals(0) ? 0 : 1);
                         }
                     }
                     appEntity.setJoinPressure(JoinFlagEnum.YES.getCode());

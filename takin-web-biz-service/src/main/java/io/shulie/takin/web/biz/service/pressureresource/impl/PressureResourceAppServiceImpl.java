@@ -111,7 +111,9 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
             BeanUtils.copyProperties(configDto, vo);
             // 设置主表隔离方式
             vo.setIsolateType(resourceEntity.getIsolateType());
+            // 默认是0
             vo.setAgentNodeNum(0);
+            // 默认不正常
             vo.setStatus(1);
             vo.setId(String.valueOf(configDto.getId()));
             // 获取应用信息
@@ -121,7 +123,7 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
                 if (voResponse.getSuccess()) {
                     ApplicationVo applicationVo = voResponse.getData();
                     // 默认等于探针在线节点数
-                    vo.setNodeNum(applicationVo.getOnlineNodeNum());
+                    vo.setAgentNodeNum(applicationVo.getOnlineNodeNum());
                     vo.setStatus(applicationVo.getAccessStatus().equals("0") ? 0 : 1);
                 }
             }

@@ -28,4 +28,7 @@ public class ApplicationQueryRequestV2 extends PageBaseDTO {
 
     @ApiModelProperty("更新时间结束")
     private String updateEndTime;
+
+    @ApiModelProperty("全量操作的时候，不要状态")
+    private boolean all = false;
 }

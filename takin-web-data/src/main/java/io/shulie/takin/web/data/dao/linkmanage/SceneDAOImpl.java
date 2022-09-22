@@ -156,6 +156,9 @@ public class SceneDAOImpl implements SceneDAO {
         if (param.getIgnoreType() != null) {
             lambdaQueryWrapper.ne(SceneEntity::getType, param.getIgnoreType());
         }
+        if (param.getQueryGmtModified() != null) {
+            lambdaQueryWrapper.ge(SceneEntity::getUpdateTime, param.getQueryGmtModified());
+        }
         lambdaQueryWrapper.eq(SceneEntity::getIsDeleted, 0);
         lambdaQueryWrapper.orderByDesc(SceneEntity::getUpdateTime);
         Page<SceneEntity> sceneEntityPage = sceneMapper.selectPage(page, lambdaQueryWrapper);

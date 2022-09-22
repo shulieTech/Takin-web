@@ -271,12 +271,13 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         // 数据校验
         // 保存到DB
         int isolateType = resourceEntity.getIsolateType();
+        String keyName = IsolateTypeEnum.getKeyName(isolateType);
         // 影子表单独处理
         if (isolateType == IsolateTypeEnum.SHADOW_TABLE.getCode()) {
-            processShadowTable(resourceId, stringArrayListHashMap);
+            processShadowTable(keyName, resourceId, stringArrayListHashMap);
         } else {
             // 影子库处理
-            processShadowDB(resourceId, stringArrayListHashMap);
+            processShadowDB(keyName, resourceId, stringArrayListHashMap);
         }
     }
 
@@ -340,7 +341,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         ExcelSheetVO<ShadowDbExcelVO> shadowDbSheet = new ExcelSheetVO<>();
         shadowDbSheet.setData(shadowDbExcelVOList);
         shadowDbSheet.setExcelModelClass(ShadowDbExcelVO.class);
-        shadowDbSheet.setSheetName("隔离方案-" + IsolateTypeEnum.getName(resource.getIsolateType()));
+        shadowDbSheet.setSheetName(IsolateTypeEnum.getKeyName(resource.getIsolateType()));
         shadowDbSheet.setSheetNum(1);
         sheets.add(shadowDbSheet);
         try {
@@ -401,7 +402,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         ExcelSheetVO<ShadowTableExcelVO> shadowTableSheet = new ExcelSheetVO<>();
         shadowTableSheet.setData(shadowTableExcelVOList);
         shadowTableSheet.setExcelModelClass(ShadowTableExcelVO.class);
-        shadowTableSheet.setSheetName("隔离方案-" + IsolateTypeEnum.getName(resource.getIsolateType()));
+        shadowTableSheet.setSheetName(IsolateTypeEnum.getKeyName(resource.getIsolateType()));
         shadowTableSheet.setSheetNum(1);
         sheets.add(shadowTableSheet);
         try {
@@ -417,8 +418,8 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
      * @param resourceId
      * @param stringArrayListHashMap
      */
-    private void processShadowTable(Long resourceId, Map<String, ArrayList<ArrayList<String>>> stringArrayListHashMap) {
-        ArrayList<ArrayList<String>> isolateType_ShadowTable = stringArrayListHashMap.get("隔离方案-影子表");
+    private void processShadowTable(String keyName, Long resourceId, Map<String, ArrayList<ArrayList<String>>> stringArrayListHashMap) {
+        ArrayList<ArrayList<String>> isolateType_ShadowTable = stringArrayListHashMap.get(keyName);
         if (CollectionUtils.isEmpty(isolateType_ShadowTable)) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "隔离方案为空");
         }
@@ -487,10 +488,10 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
      * @param resourceId
      * @param stringArrayListHashMap
      */
-    private void processShadowDB(Long resourceId, Map<String, ArrayList<ArrayList<String>>> stringArrayListHashMap) {
-        ArrayList<ArrayList<String>> isolateType_Shadowdb = stringArrayListHashMap.get("隔离方案-影子库");
+    private void processShadowDB(String keyName, Long resourceId, Map<String, ArrayList<ArrayList<String>>> stringArrayListHashMap) {
+        ArrayList<ArrayList<String>> isolateType_Shadowdb = stringArrayListHashMap.get(keyName);
         if (CollectionUtils.isEmpty(isolateType_Shadowdb)) {
-            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "隔离方案");
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "隔离方案为空");
         }
         // 解析列表值
         for (int i = 1; i < isolateType_Shadowdb.size(); i++) {

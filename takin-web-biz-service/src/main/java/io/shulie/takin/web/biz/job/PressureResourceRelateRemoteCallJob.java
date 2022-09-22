@@ -18,22 +18,21 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * 压测资源关联应用,数据源,表
+ * 压测资源关联远程调用
  */
 @Component
-@ElasticSchedulerJob(jobName = "pressureResourceRelateJob",
+@ElasticSchedulerJob(jobName = "pressureResourceRelateRemoteCallJob",
         isSharding = true,
         cron = "0 0/1 * * * ? *",
-        description = "压测资源准备-压测资源关联应用,数据源,表")
+        description = "压测资源准备-压测资源关联远程调用")
 @Slf4j
-public class PressureResourceRelateJob implements SimpleJob {
+public class PressureResourceRelateRemoteCallJob implements SimpleJob {
     @Resource
     private PressureResourceCommonService pressureResourceCommonService;
 
@@ -86,7 +85,7 @@ public class PressureResourceRelateJob implements SimpleJob {
                     commonExt.setTenantAppKey(tenantAppKey);
                     WebPluginUtils.setTraceTenantContext(commonExt);
 
-                    pressureResourceCommonService.processAutoPressureResourceRelate(resource);
+                    pressureResourceCommonService.processAutoPressureResourceRelate_remoteCall(resource);
                 } finally {
                     distributedLock.unLockSafely(lockKey);
                 }

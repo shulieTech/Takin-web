@@ -1,12 +1,14 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import bsh.Interpreter;
+import cn.hutool.core.collection.ListUtil;
 import com.alibaba.fastjson.JSON;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceCheckVO;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMockInput;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateRemoteCallRequest;
+import io.shulie.takin.web.amdb.api.TraceClient;
+import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
+import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
+import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceRemoteCallService;
 import io.shulie.takin.web.biz.service.pressureresource.common.PassEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.RemoteCallUtil;
@@ -29,6 +31,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -51,6 +54,9 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
 
     @Resource
     private PressureResourceDetailDAO pressureResourceDetailDAO;
+
+    @Resource
+    private TraceClient traceClient;
 
     /**
      * @param request
@@ -122,8 +128,35 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
      * @return
      */
     @Override
-    public Integer getServiceAvgRt(Long id) {
-        return 0;
+    public MockDetailVO mockDetail(Long id) {
+        MockDetailVO mockDetailVO = new MockDetailVO();
+        mockDetailVO.setRequest(Collections.emptyList());
+        mockDetailVO.setResponseTime("0");
+        // 远程调用服务Id
+        PressureResourceRelateRemoteCallEntity call = pressureResourceRelateRemoteCallMapper.selectById(id);
+        if (call == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "数据未找到");
+        }
+        TraceInfoQueryDTO traceInfoQueryDTO = new TraceInfoQueryDTO();
+        traceInfoQueryDTO.setAppName(call.getAppName());
+        traceInfoQueryDTO.setQueryType(1);
+        EntranceRuleDTO entranceRuleDTO = new EntranceRuleDTO();
+        entranceRuleDTO.setAppName(call.getAppName());
+        entranceRuleDTO.setEntrance(call.getInterfaceName());
+        traceInfoQueryDTO.setEntranceRuleDTOS(Arrays.asList(entranceRuleDTO));
+        traceInfoQueryDTO.setPageNum(0);
+        traceInfoQueryDTO.setPageSize(20);
+        PagingList<EntryTraceInfoDTO> pageList = traceClient.listEntryTraceInfo(traceInfoQueryDTO);
+        if (pageList.isEmpty()) {
+            return mockDetailVO;
+        }
+        Double avg = pageList.getList().stream().mapToLong(EntryTraceInfoDTO::getCost).average().orElse(0D);
+        mockDetailVO.setResponseTime(String.valueOf(Math.floor(avg)));
+        List<String> requests = pageList.getList().stream().map(mock -> mock.getRequest()).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(requests)) {
+            mockDetailVO.setRequest(ListUtil.sub(requests, 1, 2));
+        }
+        return mockDetailVO;
     }
 
     /**

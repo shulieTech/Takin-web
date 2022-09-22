@@ -36,4 +36,10 @@ public enum IsolateTypeEnum {
         }
         return IsolateTypeEnum.DEFAULT.getName();
     }
+
+    private static String keyPre = "隔离方案-";
+
+    public static String getKeyName(int code) {
+        return keyPre + getName(code);
+    }
 }

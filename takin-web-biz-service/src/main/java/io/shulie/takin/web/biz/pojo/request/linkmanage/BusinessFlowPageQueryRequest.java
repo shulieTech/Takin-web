@@ -5,10 +5,15 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 @ApiModel("业务流程列表查询--入参")
 public class BusinessFlowPageQueryRequest extends PagingDevice {
 
     @ApiModelProperty("业务流程名称")
     private String businessFlowName;
+
+    @ApiModelProperty("过滤时间范围")
+    private Date queryGmtModified;
 }

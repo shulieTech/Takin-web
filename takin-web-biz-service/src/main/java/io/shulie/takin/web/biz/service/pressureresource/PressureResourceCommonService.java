@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.pressureresource;
 
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
+
 import java.util.List;
 
 /**
@@ -16,9 +18,14 @@ public interface PressureResourceCommonService {
     void processAutoPressureResource();
 
     /**
-     * 自动处理压测准备-应用自动梳理
+     * 自动处理压测准备-关联应用-数据库-表
      */
-    void processAutoPressureResourceRelate(Long resourceId);
+    void processAutoPressureResourceRelate(PressureResourceEntity resource);
+
+    /**
+     * 自动处理压测准备-远程调用自动梳理
+     */
+    void processAutoPressureResourceRelate_remoteCall(PressureResourceEntity resource);
 
     /**
      * 推送变更到Redis

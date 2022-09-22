@@ -370,7 +370,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             tableQueryParam.setResourceId(resource.getId());
             List<PressureResourceRelateTableEntity> tableEntityList = pressureResourceRelateTableDAO.queryList(tableQueryParam);
             // 按照数据源分组下
-            Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(item -> String.valueOf(item.getUniqueKey())));
+            Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(item -> DataSourceUtil.generateDsKey(item.getResourceId(), item.getBusinessDatabase())));
             if (CollectionUtils.isNotEmpty(tableEntityList)) {
                 Map<String, List<PressureResourceRelateTableEntity>> tableEntityMap = tableEntityList.stream().collect(Collectors.groupingBy(item -> item.getDsKey()));
                 for (Map.Entry<String, List<PressureResourceRelateTableEntity>> entry : tableEntityMap.entrySet()) {
@@ -406,7 +406,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         shadowTableSheet.setSheetNum(1);
         sheets.add(shadowTableSheet);
         try {
-            ExcelUtils.exportExcelManySheet(response, resource.getName(), sheets);
+            ExcelUtils.exportExcelManySheet(response, resource.getName() + "-隔离方案", sheets);
         } catch (Exception e) {
             logger.error("配置导出错误: {}", ExceptionUtils.getStackTrace(e));
         }

@@ -7,12 +7,9 @@ import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonSe
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceTableService;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.common.constant.ApiUrls;
-import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -29,7 +26,7 @@ import javax.annotation.Resource;
  */
 @RestController
 @RequestMapping(value = ApiUrls.TAKIN_API_URL + "/pressureResource/table")
-@Api(tags = "接口: 数据源隔离")
+@Api(tags = "接口: 关联表")
 @Slf4j
 public class PressureResoureTableController {
     @Resource

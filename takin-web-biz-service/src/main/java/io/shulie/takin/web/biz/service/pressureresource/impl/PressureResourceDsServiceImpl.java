@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.service.pressureresource.impl;
 import cn.hutool.core.collection.ListUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.common.util.MD5Util;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.ExtInfo;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateDsInput;

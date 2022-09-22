@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
-import bsh.Interpreter;
 import cn.hutool.core.collection.ListUtil;
 import com.alibaba.fastjson.JSON;
 import io.shulie.takin.common.beans.page.PagingList;

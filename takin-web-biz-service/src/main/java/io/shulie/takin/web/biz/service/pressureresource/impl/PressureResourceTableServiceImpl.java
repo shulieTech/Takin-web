@@ -9,7 +9,6 @@ import io.shulie.takin.web.biz.service.pressureresource.PressureResourceTableSer
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateTableVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;

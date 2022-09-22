@@ -26,7 +26,7 @@ import javax.annotation.Resource;
  */
 @RestController
 @RequestMapping(value = ApiUrls.TAKIN_API_URL + "/pressureResource/remotecall")
-@Api(tags = "接口: 数据源隔离")
+@Api(tags = "接口: 远程调用")
 @Slf4j
 public class PressureResoureRemouteCallController {
     @Resource

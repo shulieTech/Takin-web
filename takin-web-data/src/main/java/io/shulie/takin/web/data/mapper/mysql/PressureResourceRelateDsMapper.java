@@ -2,12 +2,9 @@ package io.shulie.takin.web.data.mapper.mysql;
 
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateAppEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
-
-import java.util.List;
 
 public interface PressureResourceRelateDsMapper
         extends BaseMapper<PressureResourceRelateDsEntity> {

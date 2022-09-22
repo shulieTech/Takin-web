@@ -6,8 +6,6 @@ import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRel
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
 public interface PressureResourceRelateAppMapper
         extends BaseMapper<PressureResourceRelateAppEntity> {
     @InterceptorIgnore(tenantLine = "true")

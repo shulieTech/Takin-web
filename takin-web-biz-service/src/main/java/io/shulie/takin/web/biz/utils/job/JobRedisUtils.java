@@ -41,8 +41,8 @@ public class JobRedisUtils {
         return String.format(REDIS_JOB_REPORT,tenantId,envCode,reportId);
     }
 
-    public static String getRedisJobResource(Long tenantId,String envCode,Long reportId) {
-        return String.format(REDIS_JOB_REPORT,tenantId,envCode,reportId);
+    public static String getRedisJobResource(Long tenantId,String envCode,String key) {
+        return String.format(REDIS_JOB_REPORT,tenantId,envCode,key);
     }
 
     /**

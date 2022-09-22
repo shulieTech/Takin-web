@@ -64,7 +64,7 @@ public class PressureResourceRelateJob implements SimpleJob {
         }
         for (int i = 0; i < filterList.size(); i++) {
             PressureResourceEntity resource = filterList.get(i);
-            String lockKey = JobRedisUtils.getRedisJobResource(1L, "default", resource.getId());
+            String lockKey = JobRedisUtils.getRedisJobResource(1L, "default", "PressureResourceRelateJob" + resource.getId());
             if (distributedLock.checkLock(lockKey)) {
                 continue;
             }

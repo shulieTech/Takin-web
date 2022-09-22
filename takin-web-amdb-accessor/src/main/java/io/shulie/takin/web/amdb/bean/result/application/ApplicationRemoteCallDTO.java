@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 public class ApplicationRemoteCallDTO {
     @JsonProperty("appName")
     private String appName;
+    @JsonProperty("appId")
+    private Long appId;
     @JsonProperty("extend")
     private String extend;
     @JsonProperty("methodName")

@@ -526,6 +526,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
                 updateEntity.setShadowPassword(password);
                 updateEntity.setGmtModified(new Date());
 
+                // 直接走批量更新，会将所有应用关联的数据源全部更新掉
                 QueryWrapper<PressureResourceRelateDsEntity> whereWrapper = new QueryWrapper<>();
                 whereWrapper.eq("resource_id", resourceId);
                 whereWrapper.eq("business_database", bussinessDatabase);

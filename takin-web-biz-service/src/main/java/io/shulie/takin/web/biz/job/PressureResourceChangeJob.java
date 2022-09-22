@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 @ElasticSchedulerJob(jobName = "PressureResourceChangeJob",
         isSharding = true,
-        cron = "0 0/1 * * * ? *",
+        cron = "0/10 * * * * ? *",
         description = "配置资源修改立即触发")
 @Slf4j
 public class PressureResourceChangeJob implements SimpleJob {
@@ -56,7 +56,7 @@ public class PressureResourceChangeJob implements SimpleJob {
             return;
         }
         resourceIds.forEach(resourceId -> {
-            String lockKey = JobRedisUtils.getRedisJobResource(1L, "command", resourceId);
+            String lockKey = JobRedisUtils.getRedisJobResource(1L, "change", String.valueOf(resourceId));
             if (distributedLock.checkLock(lockKey)) {
                 return;
             }

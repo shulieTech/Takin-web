@@ -134,6 +134,7 @@ import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.dom4j.DocumentException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -402,9 +403,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public Long getAccessErrorNum() {
-        ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
-        requestV2.setAccessStatus(3);
-        return this.pageApplication(requestV2).getTotal();
+        try {
+            ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
+            requestV2.setAccessStatus(3);
+            Long total = this.pageApplication(requestV2).getTotal();
+            return total;
+        } catch (Throwable e) {
+            log.error(ExceptionUtils.getStackTrace(e));
+        }
+        return 0L;
     }
 
 //    @Override

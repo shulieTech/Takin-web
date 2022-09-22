@@ -56,7 +56,7 @@ public class PressureResourceChangeJob implements SimpleJob {
             return;
         }
         resourceIds.forEach(resourceId -> {
-            String lockKey = JobRedisUtils.getRedisJobResource(1L, "change", String.valueOf(resourceId));
+            String lockKey = JobRedisUtils.getRedisJobResource(1L, "change", resourceId);
             if (distributedLock.checkLock(lockKey)) {
                 return;
             }

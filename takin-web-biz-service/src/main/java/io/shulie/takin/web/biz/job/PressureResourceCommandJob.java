@@ -57,7 +57,7 @@ public class PressureResourceCommandJob implements SimpleJob {
             return;
         }
         resourceList.forEach(resource -> {
-            String lockKey = JobRedisUtils.getRedisJobResource(1L, "command", String.valueOf(resource.getId()));
+            String lockKey = JobRedisUtils.getRedisJobResource(1L, "command", resource.getId());
             if (distributedLock.checkLock(lockKey)) {
                 return;
             }

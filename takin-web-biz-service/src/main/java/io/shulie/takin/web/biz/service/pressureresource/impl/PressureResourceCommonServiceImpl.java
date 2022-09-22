@@ -432,7 +432,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     dsEntity.setStatus(StatusEnum.NO.getCode());
                     dsEntity.setType(SourceTypeEnum.AUTO.getCode());
                     dsEntity.setGmtCreate(new Date());
-                    // 生成唯一key,关联表
+                    // 生成唯一key,按应用区分
                     dsEntity.setUniqueKey(DataSourceUtil.generateDsUniqueKey(resourceId, appName, database));
                     // 这里生成的dskey是关联表的,表里面是不区分应用的
                     String dsKey = DataSourceUtil.generateDsKey(resourceId, database);

@@ -27,7 +27,7 @@ public class DataSourceUtil {
     }
 
     /**
-     * 数据源唯一
+     * 数据源关联表的时候,按数据源拆分
      *
      * @return
      */
@@ -40,6 +40,14 @@ public class DataSourceUtil {
         return MD5Util.getMD5(key);
     }
 
+    /**
+     * 关联数据源存储的时候,按应用拆分
+     *
+     * @param resourceId
+     * @param appName
+     * @param businessDatabase
+     * @return
+     */
     public static String generateDsUniqueKey(Long resourceId, String appName, String businessDatabase) {
         String key = String.format("%d-%s-%s-%d-%s",
                 resourceId,

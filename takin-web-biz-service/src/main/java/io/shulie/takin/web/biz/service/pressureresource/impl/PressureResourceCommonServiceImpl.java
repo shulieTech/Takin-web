@@ -442,28 +442,36 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     if (!isolateType.equals(IsolateTypeEnum.DEFAULT.getCode())) {
                         if (CollectionUtils.isNotEmpty(value)) {
                             for (int k = 0; k < value.size(); k++) {
+                                // 存在逗号分割的数据
                                 String method = value.get(k).getMethod();
-                                // 过滤掉影子的表
-                                if (PtUtils.isShadow(method)) {
-                                    continue;
-                                }
-                                PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
-                                tableEntity.setResourceId(resourceId);
                                 if (StringUtils.isBlank(method)) {
-                                    logger.warn("链路梳理结果错误,表信息未梳理 {}", resourceId);
                                     continue;
                                 }
-                                tableEntity.setBusinessTable(method);
-                                tableEntity.setDsKey(uniqueKey);
-                                tableEntity.setGmtCreate(new Date());
+                                String[] tables = method.split(",");
+                                for (int j = 0; j < tables.length; j++) {
+                                    String tableName = tables[j];
+                                    // 过滤掉影子的表
+                                    if (PtUtils.isShadow(tableName)) {
+                                        continue;
+                                    }
+                                    PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
+                                    tableEntity.setResourceId(resourceId);
+                                    if (StringUtils.isBlank(tableName)) {
+                                        logger.warn("链路梳理结果错误,表信息未梳理 {}", resourceId);
+                                        continue;
+                                    }
+                                    tableEntity.setBusinessTable(tableName);
+                                    tableEntity.setDsKey(uniqueKey);
+                                    tableEntity.setGmtCreate(new Date());
 
-                                tableEntity.setJoinFlag(JoinFlagEnum.YES.getCode());
-                                tableEntity.setStatus(StatusEnum.NO.getCode());
-                                tableEntity.setType(SourceTypeEnum.AUTO.getCode());
-                                tableEntity.setTenantId(WebPluginUtils.traceTenantId());
-                                tableEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+                                    tableEntity.setJoinFlag(JoinFlagEnum.YES.getCode());
+                                    tableEntity.setStatus(StatusEnum.NO.getCode());
+                                    tableEntity.setType(SourceTypeEnum.AUTO.getCode());
+                                    tableEntity.setTenantId(WebPluginUtils.traceTenantId());
+                                    tableEntity.setEnvCode(WebPluginUtils.traceEnvCode());
 
-                                tableEntityList.add(tableEntity);
+                                    tableEntityList.add(tableEntity);
+                                }
                             }
                         }
                     }

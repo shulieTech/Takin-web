@@ -179,7 +179,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         remoteCall.setTYPE(getSelectVO(remoteCallEntity.getInterfaceType(), voList).getLabel().toLowerCase());
         remoteCall.setCheckType(entityMap.get(remoteCallEntity.getType()).getCheckType());
         if (!StringUtils.hasText(remoteCallEntity.getMockReturnValue())) {
-            return null;
+            return remoteCall;
         }
         MockInfo mockInfo = JSON.parseObject(remoteCallEntity.getMockReturnValue(), MockInfo.class);
         remoteCall.setContent(mockInfo.getMockValue());

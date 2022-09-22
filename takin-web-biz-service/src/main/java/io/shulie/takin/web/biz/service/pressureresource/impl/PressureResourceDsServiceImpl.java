@@ -373,19 +373,21 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             if (CollectionUtils.isNotEmpty(tableEntityList)) {
                 Map<String, List<PressureResourceRelateTableEntity>> tableEntityMap = tableEntityList.stream().collect(Collectors.groupingBy(item -> item.getDsKey()));
                 for (Map.Entry<String, List<PressureResourceRelateTableEntity>> entry : tableEntityMap.entrySet()) {
-                    String dsId = entry.getKey();
-                    PressureResourceRelateDsEntity tmpDs = dsMap.get(dsId).stream().findFirst().orElse(new PressureResourceRelateDsEntity());
-                    if (tmpDs != null && tmpDs.getId() != null) {
-                        List<ShadowTableExcelVO> list = entry.getValue().stream().map(table -> {
-                            ShadowTableExcelVO excelVO = new ShadowTableExcelVO();
-                            excelVO.setBusinessDatabase(tmpDs.getBusinessDatabase());
-                            excelVO.setDatabase(DbNameUtil.getDbName(tmpDs.getBusinessDatabase()));
-                            excelVO.setIsolateType(IsolateTypeEnum.getName(resource.getIsolateType()));
-                            excelVO.setShadowTable(table.getShadowTable());
-                            excelVO.setBusinessTable(table.getBusinessTable());
-                            return excelVO;
-                        }).collect(Collectors.toList());
-                        shadowTableExcelVOList.addAll(list);
+                    List<PressureResourceRelateDsEntity> dsList = dsMap.get(entry.getKey());
+                    if (CollectionUtils.isNotEmpty(dsList)) {
+                        PressureResourceRelateDsEntity tmpDs = dsList.get(0);
+                        if (tmpDs != null && tmpDs.getId() != null) {
+                            List<ShadowTableExcelVO> list = entry.getValue().stream().map(table -> {
+                                ShadowTableExcelVO excelVO = new ShadowTableExcelVO();
+                                excelVO.setBusinessDatabase(tmpDs.getBusinessDatabase());
+                                excelVO.setDatabase(DbNameUtil.getDbName(tmpDs.getBusinessDatabase()));
+                                excelVO.setIsolateType(IsolateTypeEnum.getName(resource.getIsolateType()));
+                                excelVO.setShadowTable(table.getShadowTable());
+                                excelVO.setBusinessTable(table.getBusinessTable());
+                                return excelVO;
+                            }).collect(Collectors.toList());
+                            shadowTableExcelVOList.addAll(list);
+                        }
                     }
                 }
             } else {

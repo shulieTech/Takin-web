@@ -1,7 +1,6 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Sets;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.amdb.common.dto.link.topology.AppShadowDatabaseDTO;
@@ -62,7 +61,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -266,21 +268,16 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
 
     @Override
     public List<Long> getResourceIdsFormRedis() {
-        Set set = Sets.newHashSet();
+        List list = Lists.newArrayList();
         try {
-            set = redisTemplate.opsForSet().members(TAKIN_RESOURCE_MODIFY_KEY);
-            if (set.isEmpty()) {
+            list = redisTemplate.opsForSet().pop(TAKIN_RESOURCE_MODIFY_KEY, 20);
+            if (CollectionUtils.isEmpty(list)) {
                 return Collections.EMPTY_LIST;
             }
         } catch (Throwable e) {
             logger.error(ExceptionUtils.getStackTrace(e));
         }
-        return new ArrayList<>(set);
-    }
-
-    @Override
-    public void delResourceIdToRedis(Long resourceId) {
-        redisTemplate.opsForSet().remove(TAKIN_RESOURCE_MODIFY_KEY, resourceId);
+        return list;
     }
 
     /**
@@ -341,7 +338,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                             ApplicationVo applicationVo = voResponse.getData();
                             // 默认等于探针在线节点数
                             appEntity.setNodeNum(applicationVo.getOnlineNodeNum());
-                            appEntity.setStatus(0);
+                            appEntity.setStatus(applicationVo.getAccessStatus().equals("0") ? 0 : 1);
                         }
                     }
                     appEntity.setJoinPressure(JoinFlagEnum.YES.getCode());
@@ -463,7 +460,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             callEntity.setDetailId(detailEntity.getId());
             callEntity.setAppName(item.getAppName());
             callEntity.setStatus(StatusEnum.NO.getCode());
-            callEntity.setPass(1);
+            callEntity.setPass(PassEnum.PASS_NO.getCode());
             callEntity.setRpcId(item.getRpcId());
             callEntity.setInterfaceName(RemoteCallUtils.getInterfaceNameByRpcName(item.getMiddlewareName(), item.getServiceName(), item.getMethodName()));
             callEntity.setInterfaceType(appRemoteCallService.getInterfaceType(item.getMiddlewareName(), voList));
@@ -472,13 +469,13 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             } else {
                 callEntity.setInterfaceChildType(item.getMiddlewareDetail());
             }
-            callEntity.setMd5(RemoteCallUtils.buildRemoteCallName(callEntity.getAppName(), callEntity.getInterfaceName(), callEntity.getInterfaceType()));
+            callEntity.setMd5(RemoteCallUtils.buildRemoteCallName(String.format("%d-%s", callEntity.getResourceId(), callEntity.getAppName()), callEntity.getInterfaceName(), callEntity.getInterfaceType()));
             callEntity.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
             callEntity.setManualTag(0);
             callEntity.setTenantId(WebPluginUtils.traceTenantId());
             callEntity.setEnvCode(WebPluginUtils.traceEnvCode());
 
-            // 通过MD5去查询本地远程调用数据
+            // 通过服务查询本地的远程调用信息
             AppRemoteCallResult appRemoteCallResult = appRemoteCallDAO.queryOne(callEntity.getAppName(), callEntity.getInterfaceType(), callEntity.getInterfaceName());
             if (appRemoteCallResult != null) {
                 callEntity.setServerAppName(appRemoteCallResult.getServerAppName());
@@ -490,6 +487,8 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     callEntity.setPass(PassEnum.PASS_YES.getCode());
                 }
             }
+            // 重新设置下远程调用类型,兼容下原有的类型
+            callEntity.setType(RemoteCallUtil.getType(callEntity));
             return callEntity;
         }).collect(Collectors.toList());
         return callEntityList;

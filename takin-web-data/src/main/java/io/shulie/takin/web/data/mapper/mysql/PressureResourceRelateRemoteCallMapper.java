@@ -23,10 +23,10 @@ public interface PressureResourceRelateRemoteCallMapper
             "<if test=\"item.serverAppName !=null and item.serverAppName !=''\"> " +
             "   ,server_app_name =values(server_app_name)" +
             "</if>" +
-            "<if test=\"item.type !=null and item.type !=''\"> " +
+            "<if test=\"item.type !=null\"> " +
             "   ,type =values(type)" +
             "</if>" +
-            "<if test=\"item.pass !=null and item.pass !=''\"> " +
+            "<if test=\"item.pass !=null\"> " +
             "   ,pass =values(pass)" +
             "</if>" +
             "</script>")

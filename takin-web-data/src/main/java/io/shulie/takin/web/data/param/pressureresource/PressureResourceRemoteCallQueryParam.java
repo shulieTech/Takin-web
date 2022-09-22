@@ -11,6 +11,7 @@ import lombok.Data;
  */
 @Data
 public class PressureResourceRemoteCallQueryParam extends PageBaseDTO {
+    @ApiModelProperty("resourceId")
     private Long resourceId;
 
     @ApiModelProperty("查询的接口名")
@@ -24,4 +25,7 @@ public class PressureResourceRemoteCallQueryParam extends PageBaseDTO {
 
     @ApiModelProperty("状态")
     private Integer status;
+
+    @ApiModelProperty("linkId")
+    private String linkId;
 }

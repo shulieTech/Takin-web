@@ -9,14 +9,19 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMoc
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateRemoteCallRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceRemoteCallService;
 import io.shulie.takin.web.biz.service.pressureresource.common.PassEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.RemoteCallUtil;
 import io.shulie.takin.web.biz.service.pressureresource.common.dy.DynamicCompilerUtil;
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateRemoteCallVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDetailDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateRemoteCallDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateRemoteCallMapper;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntity;
+import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceRemoteCallQueryParam;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +49,9 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
     @Resource
     private PressureResourceRelateRemoteCallMapper pressureResourceRelateRemoteCallMapper;
 
+    @Resource
+    private PressureResourceDetailDAO pressureResourceDetailDAO;
+
     /**
      * @param request
      * @return
@@ -52,6 +60,15 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
     public PagingList<PressureResourceRelateRemoteCallVO> pageList(PressureResourceRelateRemoteCallRequest request) {
         PressureResourceRemoteCallQueryParam param = new PressureResourceRemoteCallQueryParam();
         BeanUtils.copyProperties(request, param);
+        if (StringUtils.isNotBlank(request.getEntry())) {
+            PressureResourceDetailQueryParam queryParam = new PressureResourceDetailQueryParam();
+            queryParam.setLinkId(request.getEntry());
+            List<PressureResourceDetailEntity> list = pressureResourceDetailDAO.getList(queryParam);
+            if (CollectionUtils.isNotEmpty(list)) {
+                String url = list.get(0).getEntranceUrl();
+                param.setQueryInterfaceName(url);
+            }
+        }
         PagingList<PressureResourceRelateRemoteCallEntity> pageList = pressureResourceRelateRemoteCallDAO.pageList(param);
 
         if (pageList.isEmpty()) {
@@ -88,12 +105,13 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         MockInfo mockInfo = mockInput.getMockInfo();
         if (mockInfo != null) {
             update.setMockReturnValue(JSON.toJSONString(mockInfo));
-            // 设置了mock,默认不放行
-            update.setPass(PassEnum.PASS_NO.getCode());
+            // 设置了mock,默认放行
+            update.setPass(PassEnum.PASS_YES.getCode());
         } else {
             update.setPass(mockInput.getPass());
         }
         update.setGmtModified(new Date());
+        update.setType(RemoteCallUtil.getType(update));
         pressureResourceRelateRemoteCallMapper.updateById(update);
     }
 

@@ -31,9 +31,19 @@ public class DataSourceUtil {
      *
      * @return
      */
-    public static String generateDsKey(Long resourceId,String businessDatabase) {
+    public static String generateDsKey(Long resourceId, String businessDatabase) {
         String key = String.format("%d-%s-%d-%s",
                 resourceId,
+                businessDatabase,
+                WebPluginUtils.traceTenantId(),
+                WebPluginUtils.traceEnvCode());
+        return MD5Util.getMD5(key);
+    }
+
+    public static String generateDsUniqueKey(Long resourceId, String appName, String businessDatabase) {
+        String key = String.format("%d-%s-%s-%d-%s",
+                resourceId,
+                appName,
                 businessDatabase,
                 WebPluginUtils.traceTenantId(),
                 WebPluginUtils.traceEnvCode());

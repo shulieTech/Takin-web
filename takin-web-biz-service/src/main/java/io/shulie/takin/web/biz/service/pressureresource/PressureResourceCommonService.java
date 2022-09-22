@@ -33,11 +33,6 @@ public interface PressureResourceCommonService {
     List<Long> getResourceIdsFormRedis();
 
     /**
-     * 从Redis里面获取数据
-     */
-    void delResourceIdToRedis(Long id);
-
-    /**
      * 修改以后同步数据源相关到应用里面
      *
      * @param resouceId

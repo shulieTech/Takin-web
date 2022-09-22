@@ -45,7 +45,6 @@ public class PressureResoureRemouteCallController {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult mock(@RequestBody PressureResourceMockInput input) {
         pressureResourceRemoteCallService.update(input);
-        pressureResourceCommonService.pushRedis(input.getResourceId());
         return ResponseResult.success();
     }
 

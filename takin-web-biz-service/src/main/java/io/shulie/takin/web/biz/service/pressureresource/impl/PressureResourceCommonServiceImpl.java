@@ -139,7 +139,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
 
     private static String TAKIN_RESOURCE_MODIFY_KEY = "TAKIN:RESOURCE:MODIFY:KEY";
 
-    @Value("${takin.resource.interval:-1}")
+    @Value("${takin.job.resource.interval:2}")
     private int takinResourceInterval;
 
     /**

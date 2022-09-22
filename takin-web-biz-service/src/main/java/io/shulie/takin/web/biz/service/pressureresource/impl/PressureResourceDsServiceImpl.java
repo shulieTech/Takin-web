@@ -421,7 +421,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
     private void processShadowTable(String keyName, Long resourceId, Map<String, ArrayList<ArrayList<String>>> stringArrayListHashMap) {
         ArrayList<ArrayList<String>> isolateType_ShadowTable = stringArrayListHashMap.get(keyName);
         if (CollectionUtils.isEmpty(isolateType_ShadowTable)) {
-            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "隔离方案为空");
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "sheet列未找到数据");
         }
         // 解析数据
         List<PressureResourceRelateTableInput> tableList = Lists.newArrayList();
@@ -491,7 +491,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
     private void processShadowDB(String keyName, Long resourceId, Map<String, ArrayList<ArrayList<String>>> stringArrayListHashMap) {
         ArrayList<ArrayList<String>> isolateType_Shadowdb = stringArrayListHashMap.get(keyName);
         if (CollectionUtils.isEmpty(isolateType_Shadowdb)) {
-            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "隔离方案为空");
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "sheet列未找到数据");
         }
         // 解析列表值
         for (int i = 1; i < isolateType_Shadowdb.size(); i++) {

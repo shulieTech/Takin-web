@@ -97,6 +97,9 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
             if (CollectionUtils.isNotEmpty(detailEntityList)) {
                 List<Long> detailIds = detailEntityList.stream().map(detail -> detail.getId()).distinct().collect(Collectors.toList());
                 param.setDetailIds(detailIds);
+            } else {
+                // 没有找到详情,直接返回空
+                return PagingList.of(Collections.emptyList(), 0);
             }
         }
 

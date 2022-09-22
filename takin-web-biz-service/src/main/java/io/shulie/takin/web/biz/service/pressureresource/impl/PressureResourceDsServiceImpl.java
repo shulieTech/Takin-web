@@ -406,7 +406,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         shadowTableSheet.setSheetNum(1);
         sheets.add(shadowTableSheet);
         try {
-            ExcelUtils.exportExcelManySheet(response, resource.getName() + "-隔离方案", sheets);
+            ExcelUtils.exportExcelManySheet(response, resource.getName() + "_隔离方案", sheets);
         } catch (Exception e) {
             logger.error("配置导出错误: {}", ExceptionUtils.getStackTrace(e));
         }

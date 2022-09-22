@@ -64,10 +64,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -269,13 +266,22 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
         List<PressureResourceDetailEntity> detailEntityList = getPressureResourceDetailList(resource.getId());
         if (CollectionUtils.isNotEmpty(detailEntityList)) {
             try {
+                List<PressureResourceRelateRemoteCallEntity> allEntitys = Lists.newArrayList();
                 // 根据详情来处理
                 for (int i = 0; i < detailEntityList.size(); i++) {
                     // 获取入口
                     PressureResourceDetailEntity detailEntity = detailEntityList.get(i);
                     // 远程调用梳理
                     List<PressureResourceRelateRemoteCallEntity> remoteCallEntityList = processRemoteCall(detailEntity);
-                    pressureResourceRelateRemoteCallDAO.saveOrUpdate(remoteCallEntityList);
+                    allEntitys.addAll(remoteCallEntityList);
+                }
+                if (CollectionUtils.isNotEmpty(allEntitys)) {
+                    // 去重
+                    List<PressureResourceRelateRemoteCallEntity> insertList = allEntitys.stream().collect(
+                            Collectors.collectingAndThen(
+                                    Collectors.toCollection(
+                                            () -> new TreeSet<>(Comparator.comparing(p -> p.getMd5()))), ArrayList::new));
+                    pressureResourceRelateRemoteCallDAO.saveOrUpdate(insertList);
                 }
             } catch (Throwable e) {
                 logger.error(ExceptionUtils.getStackTrace(e));

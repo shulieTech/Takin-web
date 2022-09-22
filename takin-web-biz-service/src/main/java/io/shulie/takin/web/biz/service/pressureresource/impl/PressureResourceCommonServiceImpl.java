@@ -400,20 +400,21 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
 
                 for (Map.Entry<String, List<LinkEdgeDTO>> entry : serviceMap.entrySet()) {
                     String key = entry.getKey();
-                    PressureResourceRelateDsEntity dsEntity = new PressureResourceRelateDsEntity();
-                    dsEntity.setResourceId(resourceId);
-                    dsEntity.setDetailId(detailEntity.getId());
-                    dsEntity.setAppName(key.split("#")[0]);
-                    if ("null".equals(dsEntity.getAppName())) {
+                    String appName = key.split("#")[0];
+                    String database = key.split("#")[1];
+                    if ("null".equals(appName)) {
                         // TODO 暂时打印下日志
                         logger.error("关联数据源名称为空 key,{} value,{}", entry.getValue());
                         continue;
                     }
-                    String database = key.split("#")[1];
                     String dbName = DbNameUtil.getDbName(database);
                     if (PtUtils.isShadow(dbName)) {
                         continue;
                     }
+                    PressureResourceRelateDsEntity dsEntity = new PressureResourceRelateDsEntity();
+                    dsEntity.setResourceId(resourceId);
+                    dsEntity.setDetailId(detailEntity.getId());
+                    dsEntity.setAppName(appName);
                     // 从任意的边里面获取数据源详情信息
                     LinkEdgeDTO edgeDTO = entry.getValue().get(0);
                     List<AppShadowDatabaseDTO> dsList = edgeDTO.getDsList();
@@ -432,9 +433,9 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     dsEntity.setType(SourceTypeEnum.AUTO.getCode());
                     dsEntity.setGmtCreate(new Date());
                     // 生成唯一key,关联表
-                    String uniqueKey = DataSourceUtil.generateDsKey(resourceId, database);
-                    dsEntity.setUniqueKey(uniqueKey);
-
+                    dsEntity.setUniqueKey(DataSourceUtil.generateDsUniqueKey(resourceId, appName, database));
+                    // 这里生成的dskey是关联表的,表里面是不区分应用的
+                    String dsKey = DataSourceUtil.generateDsKey(resourceId, database);
                     dsEntityList.add(dsEntity);
 
                     List<LinkEdgeDTO> value = entry.getValue();
@@ -454,16 +455,15 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                                     if (PtUtils.isShadow(tableName)) {
                                         continue;
                                     }
-                                    PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
-                                    tableEntity.setResourceId(resourceId);
                                     if (StringUtils.isBlank(tableName)) {
                                         logger.warn("链路梳理结果错误,表信息未梳理 {}", resourceId);
                                         continue;
                                     }
+                                    PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
+                                    tableEntity.setResourceId(resourceId);
                                     tableEntity.setBusinessTable(tableName);
-                                    tableEntity.setDsKey(uniqueKey);
+                                    tableEntity.setDsKey(dsKey);
                                     tableEntity.setGmtCreate(new Date());
-
                                     tableEntity.setJoinFlag(JoinFlagEnum.YES.getCode());
                                     tableEntity.setStatus(StatusEnum.NO.getCode());
                                     tableEntity.setType(SourceTypeEnum.AUTO.getCode());

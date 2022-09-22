@@ -4,6 +4,8 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
@@ -158,7 +160,13 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             takinConfig.setConfigType(PressureResourceTypeEnum.WHITELIST.getCode());
             List<AgentRemoteCallVO.RemoteCall> collect = remoteCallList.stream().map(this::mapping)
                     .filter(Objects::nonNull).collect(Collectors.toList());
-            takinConfig.setConfigParam(JSON.toJSONString(collect));
+            String configParam = "";
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                configParam = mapper.writeValueAsString(collect);
+            } catch (JsonProcessingException e) {
+            }
+            takinConfig.setConfigParam(configParam);
             configList.add(takinConfig);
         });
         //推送配置

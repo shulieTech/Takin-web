@@ -493,6 +493,8 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
         ApplicationRemoteCallQueryDTO callQueryDTO = new ApplicationRemoteCallQueryDTO();
         callQueryDTO.setLinkId(detailEntity.getLinkId());
         callQueryDTO.setQueryTye("2");
+        callQueryDTO.setPageSize(1000);
+        callQueryDTO.setCurrentPage(0);
         PagingList<ApplicationRemoteCallDTO> pageList = applicationClient.listApplicationRemoteCalls(callQueryDTO);
         if (pageList.isEmpty()) {
             return Collections.emptyList();

@@ -45,6 +45,15 @@ public class PressureResourceDetailDAOImpl implements PressureResourceDetailDAO 
         pressureResourceDetailMapper.saveOrUpdate(insertList);
     }
 
+    @Override
+    public void updateEntranceName(PressureResourceDetailEntity detailEntity) {
+        PressureResourceDetailEntity update = new PressureResourceDetailEntity();
+        update.setEntranceName(detailEntity.getEntranceName());
+        QueryWrapper<PressureResourceDetailEntity> updateWrapper = new QueryWrapper<>();
+        updateWrapper.eq("link_id", detailEntity.getLinkId());
+        pressureResourceDetailMapper.update(update, updateWrapper);
+    }
+
     private QueryWrapper<PressureResourceDetailEntity> getWrapper(PressureResourceDetailQueryParam param) {
         QueryWrapper<PressureResourceDetailEntity> queryWrapper = new QueryWrapper<>();
         if (param == null) {

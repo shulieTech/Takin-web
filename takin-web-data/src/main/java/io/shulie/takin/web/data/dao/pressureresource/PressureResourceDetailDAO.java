@@ -25,4 +25,6 @@ public interface PressureResourceDetailDAO {
      * @param insertList
      */
     void batchInsert(List<PressureResourceDetailEntity> insertList);
+
+    void updateEntranceName(PressureResourceDetailEntity detailEntity);
 }

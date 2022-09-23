@@ -202,6 +202,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             detailEntity.setLinkId(linkId);
             detailEntity.setGmtCreate(new Date());
             detailEntity.setGmtModified(new Date());
+            detailEntity.setTenantId(WebPluginUtils.traceTenantId());
+            detailEntity.setEnvCode(WebPluginUtils.traceEnvCode());
             return detailEntity;
         }).collect(Collectors.toList());
         return insertEntityList;
@@ -212,6 +214,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
      *
      * @param input
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void update(PressureResourceInput input) {
         if (input.getId() == null) {
@@ -235,20 +238,20 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PressureResourceEntity updateResourceEntity = new PressureResourceEntity();
         updateResourceEntity.setId(input.getId());
         updateResourceEntity.setName(input.getName());
-        updateResourceEntity.setGmtModified(new Date());
+        // 系统自动扫描的,不要更新时间,排序有影响
+        if (input.getType().equals(SourceTypeEnum.AUTO.getCode())) {
+            updateResourceEntity.setGmtModified(new Date());
+        }
         updateResourceEntity.setUserId(input.getUserId());
         pressureResourceMapper.updateById(updateResourceEntity);
 
-        // 按名字查询链路
-        SceneQueryParam sceneQueryParam = new SceneQueryParam();
-        sceneQueryParam.setSceneName(input.getName());
-        List<SceneResult> list = sceneDAO.selectListByName(sceneQueryParam);
-        if (CollectionUtils.isNotEmpty(list)) {
+        // 使用原始名字去查询
+        SceneResult sceneResult = sceneDAO.getSceneDetail(entity.getSourceId());
+        if (sceneResult != null && !sceneResult.getSceneName().equals(input.getName())) {
             SceneUpdateParam updateParam = new SceneUpdateParam();
+            updateParam.setId(sceneResult.getId());
             updateParam.setSceneName(input.getName());
             updateParam.setUpdateTime(new Date());
-            updateParam.setId(input.getSourceId());
-            updateParam.setUserId(input.getUserId());
             sceneDAO.update(updateParam);
         }
         // 修改详情
@@ -261,15 +264,29 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         Map<String, List<PressureResourceDetailEntity>> oldMap = oldList.stream().collect(Collectors.groupingBy(ele -> fetchKey(ele)));
         //判断需要新增的,不在oldMap里面的
         List<PressureResourceDetailEntity> insertEntitys = Lists.newArrayList();
+        List<PressureResourceDetailEntity> updateEntitys = Lists.newArrayList();
         for (Map.Entry<String, List<PressureResourceDetailEntity>> entry : newMap.entrySet()) {
             String tmpKey = entry.getKey();
             if (!oldMap.containsKey(tmpKey)) {
                 // 相同URL和请求方式只有一个
                 insertEntitys.add(entry.getValue().get(0));
+            } else {
+                // 判断下名字是否被修改
+                PressureResourceDetailEntity old = oldMap.get(tmpKey).get(0);
+                PressureResourceDetailEntity neww = newMap.get(tmpKey).get(0);
+                if (old != null && StringUtils.isNotBlank(old.getEntranceName()) && !old.getEntranceName().equals(neww.getEntranceName())) {
+                    updateEntitys.add(neww);
+                }
             }
         }
         if (CollectionUtils.isNotEmpty(insertEntitys)) {
             pressureResourceDetailDAO.batchInsert(insertEntitys);
+        }
+        if (CollectionUtils.isNotEmpty(updateEntitys)) {
+            // 修改名称
+            updateEntitys.stream().forEach(tmp -> {
+                pressureResourceDetailDAO.updateEntranceName(tmp);
+            });
         }
         // 自动梳理出来的不做删除操作
         if (input.getType().intValue() != SourceTypeEnum.AUTO.getCode()) {
@@ -288,6 +305,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
                 pressureResourceDetailMapper.deleteBatchIds(deleteIds);
             }
         }
+        // 修改的
+
     }
 
     private String fetchKey(PressureResourceDetailEntity ele) {

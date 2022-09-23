@@ -376,6 +376,7 @@ public class SceneServiceImpl implements SceneService {
         }
         if (StringUtils.isBlank(sceneResult.getScriptJmxNode())) {
             result.setId(sceneResult.getId());
+            result.setBusinessProcessName(sceneResult.getSceneName());
             return result;
         }
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);

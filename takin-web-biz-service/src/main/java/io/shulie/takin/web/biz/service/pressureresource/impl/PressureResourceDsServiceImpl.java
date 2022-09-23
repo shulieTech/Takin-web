@@ -429,14 +429,18 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         for (int i = 0; i < isolateType_ShadowTable.size(); i++) {
             ArrayList<String> mess = isolateType_ShadowTable.get(i);
             // 业务数据源地址
-            String bussinessDatabase = mess.get(0);
-            // 业务库
-            String shadowDatabase = mess.get(2);
-            // 业务表
-            String businessTable = mess.get(3);
-            // 影子表
-            String shadowTable = mess.get(4);
-
+            String bussinessDatabase = "";
+            String businessTable = "";
+            String shadowTable = "";
+            try {
+                bussinessDatabase = mess.get(0);
+                // 业务表
+                businessTable = mess.get(3);
+                // 影子表
+                shadowTable = mess.get(4);
+            } catch (Throwable e) {
+                throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "文件缺少必填项,请检查!");
+            }
             PressureResourceRelateTableInput input = new PressureResourceRelateTableInput();
             input.setDatabase(bussinessDatabase);
             input.setBusinessTable(businessTable);
@@ -497,12 +501,24 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         // 解析列表值
         for (int i = 1; i < isolateType_Shadowdb.size(); i++) {
             ArrayList<String> mess = isolateType_Shadowdb.get(i);
+            // 至少要填三列
+            if (mess.size() < 3) {
+                throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "缺少数据,请检查文件是否正确");
+            }
             // 获取每列值
             String bussinessDatabase = mess.get(0);
             String shadowDatabase = mess.get(2);
-            String userName = mess.get(3);
-            String password = mess.get(4);
-
+            String userName = "";
+            String password = "";
+            try {
+                // 账号密码可以不填写
+                userName = mess.get(3);
+                password = mess.get(4);
+            } catch (Throwable e) {
+            }
+            if (StringUtils.isBlank(shadowDatabase)) {
+                throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "业务数据源为空!");
+            }
             // 按业务数据源查询，是否存在
             PressureResourceDsQueryParam queryParam = new PressureResourceDsQueryParam();
             queryParam.setResourceId(resourceId);

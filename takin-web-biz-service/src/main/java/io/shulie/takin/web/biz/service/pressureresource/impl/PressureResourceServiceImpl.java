@@ -242,7 +242,10 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PressureResourceEntity updateResourceEntity = new PressureResourceEntity();
         updateResourceEntity.setId(input.getId());
         updateResourceEntity.setName(input.getName());
-        updateResourceEntity.setGmtModified(new Date());
+        // 系统自动扫描的,不要更新时间,排序有影响
+        if (input.getType().equals(SourceTypeEnum.AUTO.getCode())) {
+            updateResourceEntity.setGmtModified(new Date());
+        }
         updateResourceEntity.setUserId(input.getUserId());
         pressureResourceMapper.updateById(updateResourceEntity);
 

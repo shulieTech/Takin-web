@@ -12,6 +12,7 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.common.*;
 import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.*;
+import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.InterfaceTypeMainDAO;
@@ -157,7 +158,9 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             takinConfig.setEnvCode(resource.getEnvCode());
             takinConfig.setTenantCode(tenantInfoExt.getTenantCode());
             takinConfig.setConfigType(PressureResourceTypeEnum.WHITELIST.getCode());
-            List<AgentRemoteCallVO.RemoteCall> collect = remoteCallList.stream().map(this::mapping)
+            List<AgentRemoteCallVO.RemoteCall> collect = remoteCallList.stream()
+                    .filter(remoteCallEntity -> !AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType().equals(remoteCallEntity.getType()))
+                    .map(this::mapping)
                     .filter(Objects::nonNull).collect(Collectors.toList());
             String configParam = "";
             try {

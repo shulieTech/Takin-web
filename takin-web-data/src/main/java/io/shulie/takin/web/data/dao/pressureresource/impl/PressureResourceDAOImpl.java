@@ -48,7 +48,7 @@ public class PressureResourceDAOImpl implements PressureResourceDAO {
     public PagingList<PressureResourceEntity> pageList(PressureResourceQueryParam param) {
         QueryWrapper<PressureResourceEntity> queryWrapper = this.getWrapper(param);
         Page<PressureResourceEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
-        queryWrapper.orderByDesc("gmt_modified");
+        queryWrapper.orderByDesc("gmt_create");
         IPage<PressureResourceEntity> pageList = pressureResourceMapper.selectPage(page, queryWrapper);
         if (pageList.getRecords().isEmpty()) {
             return PagingList.empty();

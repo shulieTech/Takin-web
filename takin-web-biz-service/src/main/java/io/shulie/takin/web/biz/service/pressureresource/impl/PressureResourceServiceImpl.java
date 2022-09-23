@@ -268,15 +268,29 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         Map<String, List<PressureResourceDetailEntity>> oldMap = oldList.stream().collect(Collectors.groupingBy(ele -> fetchKey(ele)));
         //判断需要新增的,不在oldMap里面的
         List<PressureResourceDetailEntity> insertEntitys = Lists.newArrayList();
+        List<PressureResourceDetailEntity> updateEntitys = Lists.newArrayList();
         for (Map.Entry<String, List<PressureResourceDetailEntity>> entry : newMap.entrySet()) {
             String tmpKey = entry.getKey();
             if (!oldMap.containsKey(tmpKey)) {
                 // 相同URL和请求方式只有一个
                 insertEntitys.add(entry.getValue().get(0));
+            } else {
+                // 判断下名字是否被修改
+                PressureResourceDetailEntity old = oldMap.get(tmpKey).get(0);
+                PressureResourceDetailEntity neww = newMap.get(tmpKey).get(0);
+                if (!old.getEntranceName().equals(neww.getEntranceName())) {
+                    updateEntitys.add(neww);
+                }
             }
         }
         if (CollectionUtils.isNotEmpty(insertEntitys)) {
             pressureResourceDetailDAO.batchInsert(insertEntitys);
+        }
+        if (CollectionUtils.isNotEmpty(updateEntitys)) {
+            // 修改名称
+            updateEntitys.stream().forEach(tmp -> {
+                pressureResourceDetailDAO.updateEntranceName(tmp);
+            });
         }
         // 自动梳理出来的不做删除操作
         if (input.getType().intValue() != SourceTypeEnum.AUTO.getCode()) {
@@ -295,10 +309,12 @@ public class PressureResourceServiceImpl implements PressureResourceService {
                 pressureResourceDetailMapper.deleteBatchIds(deleteIds);
             }
         }
+        // 修改的
+
     }
 
     private String fetchKey(PressureResourceDetailEntity ele) {
-        return String.format("%s|%s|%s|%s|%s|%s", ele.getEntranceName(), ele.getEntranceUrl(), ele.getMethod(), ele.getAppName(), ele.getRpcType(), ele.getExtend());
+        return String.format("%s|%s|%s|%s|%s", ele.getEntranceUrl(), ele.getMethod(), ele.getAppName(), ele.getRpcType(), ele.getExtend());
     }
 
     /**

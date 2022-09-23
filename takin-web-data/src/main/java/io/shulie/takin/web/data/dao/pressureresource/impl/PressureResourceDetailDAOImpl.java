@@ -42,9 +42,16 @@ public class PressureResourceDetailDAOImpl implements PressureResourceDetailDAO 
         if (CollectionUtils.isEmpty(insertList)) {
             return;
         }
-        insertList.stream().forEach(entity -> {
-            pressureResourceDetailMapper.saveOrUpdate(entity);
-        });
+        pressureResourceDetailMapper.saveOrUpdate(insertList);
+    }
+
+    @Override
+    public void updateEntranceName(PressureResourceDetailEntity detailEntity) {
+        PressureResourceDetailEntity update = new PressureResourceDetailEntity();
+        update.setEntranceName(detailEntity.getEntranceName());
+        QueryWrapper<PressureResourceDetailEntity> updateWrapper = new QueryWrapper<>();
+        updateWrapper.eq("link_id", detailEntity.getLinkId());
+        pressureResourceDetailMapper.update(update, updateWrapper);
     }
 
     private QueryWrapper<PressureResourceDetailEntity> getWrapper(PressureResourceDetailQueryParam param) {

@@ -17,12 +17,11 @@ public interface PressureResourceDetailMapper
             "resource_id,app_name,entrance_url,entrance_name,method,rpc_type,extend,type," +
             "link_id,tenant_id,env_code,gmt_create)" +
             "values " +
+            "<foreach collection='list' item='item' index='index' separator=','>" +
             "(#{item.resourceId},#{item.appName},#{item.entranceUrl},#{item.entranceName},#{item.method},#{item.rpcType},#{item.extend}," +
             "#{item.type},#{item.linkId},#{item.tenantId},#{item.envCode},#{item.gmtCreate})" +
+            "</foreach>" +
             " ON DUPLICATE KEY UPDATE gmt_modified=now()" +
-            "<if test=\"item.entranceName !=null and item.entranceName !=''\"> " +
-            "   ,entrance_name =values(entrance_name)" +
-            "</if>" +
             "</script>")
-    void saveOrUpdate(@Param("item") PressureResourceDetailEntity item);
+    void saveOrUpdate(@Param("list") List<PressureResourceDetailEntity> list);
 }

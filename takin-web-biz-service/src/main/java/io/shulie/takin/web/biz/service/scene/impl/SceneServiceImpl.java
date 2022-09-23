@@ -651,6 +651,7 @@ public class SceneServiceImpl implements SceneService {
                 if (user != null) {
                     r.setUserName(user.getName());
                 }
+                WebPluginUtils.fillQueryResponse(r);
             });
         }
         return PagingList.of(responses, pageList.getTotal());

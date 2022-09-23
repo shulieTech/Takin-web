@@ -151,7 +151,9 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_warn_detail",
         "t_pressure_task_variety",
         "t_pressure_task_callback",
-        "t_interface_performance_result"
+        "t_interface_performance_result",
+        "t_tro_dept_level_name",
+        "t_tenant_resource"
     };
 
     private String[] tableArrWithoutUserId = new String[] {

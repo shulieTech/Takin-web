@@ -241,14 +241,14 @@ public class PressureResourceServiceImpl implements PressureResourceService {
 
         // 按名字查询链路
         SceneQueryParam sceneQueryParam = new SceneQueryParam();
-        sceneQueryParam.setSceneName(input.getName());
+        // 使用原始名字去查询
+        sceneQueryParam.setSceneName(nameEntity.getName());
         List<SceneResult> list = sceneDAO.selectListByName(sceneQueryParam);
         if (CollectionUtils.isNotEmpty(list)) {
             SceneUpdateParam updateParam = new SceneUpdateParam();
+            updateParam.setId(input.getSourceId());
             updateParam.setSceneName(input.getName());
             updateParam.setUpdateTime(new Date());
-            updateParam.setId(input.getSourceId());
-            updateParam.setUserId(input.getUserId());
             sceneDAO.update(updateParam);
         }
         // 修改详情

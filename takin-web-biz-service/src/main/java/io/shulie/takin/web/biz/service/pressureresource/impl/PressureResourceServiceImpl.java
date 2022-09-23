@@ -281,7 +281,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
                 // 判断下名字是否被修改
                 PressureResourceDetailEntity old = oldMap.get(tmpKey).get(0);
                 PressureResourceDetailEntity neww = newMap.get(tmpKey).get(0);
-                if (!old.getEntranceName().equals(neww.getEntranceName())) {
+                if (old != null && StringUtils.isNotBlank(old.getEntranceName()) && !old.getEntranceName().equals(neww.getEntranceName())) {
                     updateEntitys.add(neww);
                 }
             }

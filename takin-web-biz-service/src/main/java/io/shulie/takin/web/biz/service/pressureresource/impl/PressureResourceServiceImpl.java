@@ -253,7 +253,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         SceneResult sceneResult = sceneDAO.getSceneDetail(entity.getSourceId());
         if (sceneResult != null && !sceneResult.getSceneName().equals(input.getName())) {
             SceneUpdateParam updateParam = new SceneUpdateParam();
-            updateParam.setId(input.getSourceId());
+            updateParam.setId(sceneResult.getId());
             updateParam.setSceneName(input.getName());
             updateParam.setUpdateTime(new Date());
             sceneDAO.update(updateParam);

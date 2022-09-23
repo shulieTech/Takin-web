@@ -10,10 +10,7 @@ import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
-import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
-import io.shulie.takin.web.biz.service.pressureresource.common.IsolateTypeEnum;
-import io.shulie.takin.web.biz.service.pressureresource.common.JoinFlagEnum;
-import io.shulie.takin.web.biz.service.pressureresource.common.PressureResourceTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.*;
 import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.*;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
@@ -118,8 +115,10 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         List<TakinCommand> list = new ArrayList<>();
         //遍历dsMap
         dsMap.forEach((appName,appDsList) ->{
-            List<TakinCommand> collect = appDsList.stream().map(dsEntity -> mapping(resource, dsEntity, tableMap.get(dsEntity.getUniqueKey())))
-                    .filter(Objects::nonNull).collect(Collectors.toList());
+            List<TakinCommand> collect = appDsList.stream().map(dsEntity -> {
+                        String dsKey = DataSourceUtil.generateDsKey(dsEntity.getResourceId(), dsEntity.getBusinessDatabase());
+                        return mapping(resource, dsEntity, tableMap.get(dsKey));
+                    }).filter(Objects::nonNull).collect(Collectors.toList());
             list.addAll(collect);
         });
         //下发命令
@@ -352,8 +351,9 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             //非影子表模式 无表配置
             return dataSourceConfig;
         }
+        String dsKey = DataSourceUtil.generateDsKey(dsEntity.getResourceId(), dsEntity.getBusinessDatabase());
         List<PressureResourceRelateTableEntity> tableEntities = resourceTableMapper.selectList(new QueryWrapper<PressureResourceRelateTableEntity>().lambda()
-                .eq(PressureResourceRelateTableEntity::getResourceId, dsEntity.getResourceId())
+                .eq(PressureResourceRelateTableEntity::getDsKey, dsKey)
                 .eq(PressureResourceRelateTableEntity::getJoinFlag, JoinFlagEnum.YES.getCode()));
         if(CollectionUtils.isEmpty(tableEntities)){
             dataSourceConfig.setDisabled(true);

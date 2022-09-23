@@ -502,7 +502,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         for (int i = 1; i < isolateType_Shadowdb.size(); i++) {
             ArrayList<String> mess = isolateType_Shadowdb.get(i);
             // 至少要填三列
-            if (mess.size() > 2) {
+            if (mess.size() < 3) {
                 throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "缺少数据,请检查文件是否正确");
             }
             // 获取每列值

@@ -202,6 +202,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             detailEntity.setLinkId(linkId);
             detailEntity.setGmtCreate(new Date());
             detailEntity.setGmtModified(new Date());
+            detailEntity.setTenantId(WebPluginUtils.traceTenantId());
+            detailEntity.setEnvCode(WebPluginUtils.traceEnvCode());
             return detailEntity;
         }).collect(Collectors.toList());
         return insertEntityList;
@@ -212,6 +214,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
      *
      * @param input
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void update(PressureResourceInput input) {
         if (input.getId() == null) {
@@ -225,12 +228,16 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PressureResourceQueryParam param = new PressureResourceQueryParam();
         param.setName(input.getName());
         PressureResourceEntity nameEntity = pressureResourceDAO.queryByName(input.getName());
+        String oldName = "";
         if (nameEntity != null && !nameEntity.getId().equals(input.getId())) {
             if (input.getType().intValue() == SourceTypeEnum.MANUAL.getCode()) {
                 throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, input.getName() + "已存在");
             } else {
                 input.setName(input.getName() + DateUtil.formatDateTime(new Date()));
             }
+            oldName = nameEntity.getName();
+        } else {
+            oldName = input.getName();
         }
         PressureResourceEntity updateResourceEntity = new PressureResourceEntity();
         updateResourceEntity.setId(input.getId());
@@ -242,7 +249,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         // 按名字查询链路
         SceneQueryParam sceneQueryParam = new SceneQueryParam();
         // 使用原始名字去查询
-        sceneQueryParam.setSceneName(nameEntity.getName());
+        sceneQueryParam.setSceneName(oldName);
         List<SceneResult> list = sceneDAO.selectListByName(sceneQueryParam);
         if (CollectionUtils.isNotEmpty(list)) {
             SceneUpdateParam updateParam = new SceneUpdateParam();
@@ -291,7 +298,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     }
 
     private String fetchKey(PressureResourceDetailEntity ele) {
-        return String.format("%s|%s|%s|%s|%s", ele.getEntranceUrl(), ele.getMethod(), ele.getAppName(), ele.getRpcType(), ele.getExtend());
+        return String.format("%s|%s|%s|%s|%s|%s", ele.getEntranceName(), ele.getEntranceUrl(), ele.getMethod(), ele.getAppName(), ele.getRpcType(), ele.getExtend());
     }
 
     /**

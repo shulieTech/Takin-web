@@ -249,12 +249,9 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         updateResourceEntity.setUserId(input.getUserId());
         pressureResourceMapper.updateById(updateResourceEntity);
 
-        // 按名字查询链路
-        SceneQueryParam sceneQueryParam = new SceneQueryParam();
         // 使用原始名字去查询
-        sceneQueryParam.setSceneName(oldName);
-        List<SceneResult> list = sceneDAO.selectListByName(sceneQueryParam);
-        if (CollectionUtils.isNotEmpty(list)) {
+        SceneResult sceneResult = sceneDAO.getSceneDetail(entity.getSourceId());
+        if (sceneResult != null && !sceneResult.getSceneName().equals(input.getName())) {
             SceneUpdateParam updateParam = new SceneUpdateParam();
             updateParam.setId(input.getSourceId());
             updateParam.setSceneName(input.getName());

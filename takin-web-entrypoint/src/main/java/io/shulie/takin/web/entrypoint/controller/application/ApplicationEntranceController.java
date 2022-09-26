@@ -117,7 +117,7 @@ public class ApplicationEntranceController {
     public List<ApplicationEntrancesResponse> getApplicationEntrances_all(
             ApplicationEntrancesAllQueryRequest request) {
         List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-                request.getApplicationName(), null, request.getServiceName(), 1, 5000);
+                request.getApplicationName(), null, request.getServiceName(), 1, 1000);
         if (CollectionUtils.isEmpty(applicationEntrances)) {
             return Lists.newArrayList();
         }

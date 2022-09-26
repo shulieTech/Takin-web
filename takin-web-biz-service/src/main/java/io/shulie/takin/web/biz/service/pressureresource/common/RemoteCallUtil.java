@@ -30,27 +30,20 @@ public class RemoteCallUtil {
         if (call == null) {
             return 0;
         }
-        if (call.getPass() == null) {
-            return 0;
-        }
-        if (call.getPass().intValue() == PassEnum.PASS_NO.getCode()) {
-            return 0;
-        }
-        // 假如是通过,而且mock有值的话，判断下是什么类型
-        if (call.getPass().intValue() == PassEnum.PASS_YES.getCode()) {
-            if (StringUtils.isBlank(call.getMockReturnValue())) {
-                return 1; // 白名单
+        // 假如存在mock的话,判断是什么mock值
+        if (StringUtils.isNotBlank(call.getMockReturnValue())) {
+            MockInfo mockInfo = JSON.parseObject(call.getMockReturnValue(), MockInfo.class);
+            // json格式
+            if ("0".equals(mockInfo.getType())) {
+                return 4; // 返回值mock
             }
-            if (StringUtils.isNotBlank(call.getMockReturnValue())) {
-                MockInfo mockInfo = JSON.parseObject(call.getMockReturnValue(), MockInfo.class);
-                // json格式
-                if ("0".equals(mockInfo.getType())) {
-                    return 4; // 返回值mock
-                }
-                if ("1".equals(mockInfo.getType())) {
-                    return 2; // Groovy脚本mock
-                }
+            if ("1".equals(mockInfo.getType())) {
+                return 2; // Groovy脚本mock
             }
+        }
+        // 有设置是否通过,而且是未通过的情况，且mock没有值,则为未配置
+        if (call.getPass() != null && call.getPass().intValue() == PassEnum.PASS_YES.getCode()) {
+            return 1;
         }
         return 0;
     }

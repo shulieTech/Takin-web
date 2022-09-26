@@ -120,9 +120,9 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
             vo.setStatus(1);
             vo.setId(String.valueOf(configDto.getId()));
             // 获取应用信息
-            List<ApplicationListResponse> list = applicationService.getApplicationList(vo.getAppName());
-            if (CollectionUtils.isNotEmpty(list)) {
-                Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(list.get(0).getApplicationId()));
+            Long appId = applicationService.queryApplicationIdByAppName(vo.getAppName());
+            if (appId != null) {
+                Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
                 if (voResponse.getSuccess()) {
                     ApplicationVo applicationVo = voResponse.getData();
                     // 默认等于探针在线节点数

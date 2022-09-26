@@ -534,6 +534,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 callEntity.setInterfaceChildType(item.getMiddlewareDetail());
             }
             callEntity.setMd5(RemoteCallUtils.buildRemoteCallName(String.format("%d-%s", callEntity.getResourceId(), callEntity.getAppName()), callEntity.getInterfaceName(), callEntity.getInterfaceType()));
+            // 默认未配置
             callEntity.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
             callEntity.setManualTag(0);
             callEntity.setTenantId(WebPluginUtils.traceTenantId());

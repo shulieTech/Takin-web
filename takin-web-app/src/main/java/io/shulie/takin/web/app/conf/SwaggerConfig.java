@@ -451,6 +451,25 @@ public class SwaggerConfig {
             ;
     }
 
+    /**
+     * 权限改造
+     * @return
+     */
+    @Bean
+    public Docket api_deptAuth() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .pathProvider(this.pathProvider())
+                .groupName("部门权限改造")
+                .select()
+                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+                .paths(getRegex("/api/(dept|role).*"))
+                .build()
+                .directModelSubstitute(LocalDate.class, String.class)
+                .useDefaultResponseMessages(false)
+                .apiInfo(apiInfo()).enable(swaggerEnable)
+                ;
+    }
+
 
 
     /**

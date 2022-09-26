@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
-@RequestMapping("api/workbench")
+@RequestMapping("api/takinworkbench")
 @Api(tags = "WorkBenchController", value = "工作台接口")
 @Slf4j
 public class WorkBenchController {

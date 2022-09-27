@@ -130,7 +130,7 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
                         ApplicationVo applicationVo = voResponse.getData();
                         // 默认等于探针在线节点数
                         vo.setNodeNum(applicationVo.getOnlineNodeNum());
-                        vo.setStatus(applicationVo.getAccessStatus().equals(0) ? 0 : 1);
+                        vo.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
                     }
                 } catch (Throwable e) {
                     e.printStackTrace();

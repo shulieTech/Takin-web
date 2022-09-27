@@ -370,17 +370,12 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     // 通过应用去查询状态
                     Long appId = applicationService.queryApplicationIdByAppName(appEntity.getAppName());
                     if (appId != null) {
-                        CompletableFuture<Response<ApplicationVo>> future = CompletableFuture.supplyAsync(() -> applicationService.getApplicationInfo(String.valueOf(appId)));
-                        try {
-                            Response<ApplicationVo> voResponse = future.get();
-                            if (voResponse.getSuccess()) {
-                                ApplicationVo applicationVo = voResponse.getData();
-                                // 默认等于探针在线节点数
-                                appEntity.setNodeNum(applicationVo.getOnlineNodeNum() == null ? 0 : applicationVo.getOnlineNodeNum());
-                                appEntity.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
-                            }
-                        } catch (Throwable e) {
-                            e.printStackTrace();
+                        Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
+                        if (voResponse.getSuccess()) {
+                            ApplicationVo applicationVo = voResponse.getData();
+                            // 默认等于探针在线节点数
+                            appEntity.setNodeNum(applicationVo.getOnlineNodeNum() == null ? 0 : applicationVo.getOnlineNodeNum());
+                            appEntity.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
                         }
                     }
                     appEntity.setJoinPressure(JoinFlagEnum.YES.getCode());

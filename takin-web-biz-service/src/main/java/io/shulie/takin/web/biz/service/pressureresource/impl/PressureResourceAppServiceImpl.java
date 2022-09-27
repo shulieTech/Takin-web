@@ -122,17 +122,12 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
             // 获取应用信息
             Long appId = applicationService.queryApplicationIdByAppName(vo.getAppName());
             if (appId != null) {
-                CompletableFuture<Response<ApplicationVo>> future = CompletableFuture.supplyAsync(() -> applicationService.getApplicationInfo(String.valueOf(appId)));
-                try {
-                    Response<ApplicationVo> voResponse = future.get();
-                    if (voResponse.getSuccess()) {
-                        ApplicationVo applicationVo = voResponse.getData();
-                        // 默认等于探针在线节点数
-                        vo.setAgentNodeNum(applicationVo.getOnlineNodeNum() == null ? 0 : 1);
-                        vo.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
+                Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
+                if (voResponse.getSuccess()) {
+                    ApplicationVo applicationVo = voResponse.getData();
+                    // 默认等于探针在线节点数
+                    vo.setAgentNodeNum(applicationVo.getOnlineNodeNum() == null ? 0 : 1);
+                    vo.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
                 }
             }
             return vo;

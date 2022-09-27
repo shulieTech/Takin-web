@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -122,12 +123,17 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
             // 获取应用信息
             Long appId = applicationService.queryApplicationIdByAppName(vo.getAppName());
             if (appId != null) {
-                Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
-                if (voResponse.getSuccess()) {
-                    ApplicationVo applicationVo = voResponse.getData();
-                    // 默认等于探针在线节点数
-                    vo.setAgentNodeNum(applicationVo.getOnlineNodeNum());
-                    vo.setStatus(applicationVo.getAccessStatus().equals(0) ? 0 : 1);
+                CompletableFuture<Response<ApplicationVo>> future = CompletableFuture.supplyAsync(() -> applicationService.getApplicationInfo(String.valueOf(appId)));
+                try {
+                    Response<ApplicationVo> voResponse = future.get();
+                    if (voResponse.getSuccess()) {
+                        ApplicationVo applicationVo = voResponse.getData();
+                        // 默认等于探针在线节点数
+                        vo.setNodeNum(applicationVo.getOnlineNodeNum());
+                        vo.setStatus(applicationVo.getAccessStatus().equals(0) ? 0 : 1);
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
                 }
             }
             return vo;

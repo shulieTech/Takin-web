@@ -65,6 +65,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -367,14 +368,19 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     // 默认不正常
                     appEntity.setStatus(1);
                     // 通过应用去查询状态
-                    List<ApplicationListResponse> list = applicationService.getApplicationList(appEntity.getAppName());
-                    if (CollectionUtils.isNotEmpty(list)) {
-                        Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(list.get(0).getApplicationId()));
-                        if (voResponse.getSuccess()) {
-                            ApplicationVo applicationVo = voResponse.getData();
-                            // 默认等于探针在线节点数
-                            appEntity.setNodeNum(applicationVo.getOnlineNodeNum());
-                            appEntity.setStatus(applicationVo.getAccessStatus().equals(0) ? 0 : 1);
+                    Long appId = applicationService.queryApplicationIdByAppName(appEntity.getAppName());
+                    if (appId != null) {
+                        CompletableFuture<Response<ApplicationVo>> future = CompletableFuture.supplyAsync(() -> applicationService.getApplicationInfo(String.valueOf(appId)));
+                        try {
+                            Response<ApplicationVo> voResponse = future.get();
+                            if (voResponse.getSuccess()) {
+                                ApplicationVo applicationVo = voResponse.getData();
+                                // 默认等于探针在线节点数
+                                appEntity.setNodeNum(applicationVo.getOnlineNodeNum());
+                                appEntity.setStatus(applicationVo.getAccessStatus().equals(0) ? 0 : 1);
+                            }
+                        } catch (Throwable e) {
+                            e.printStackTrace();
                         }
                     }
                     appEntity.setJoinPressure(JoinFlagEnum.YES.getCode());

@@ -15,8 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -1401,10 +1400,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
             // 非全量查询的时候，增加不需要处理状态
             if (!request.isAll()) {
-                // 跟应用详情再对比下,同步下状态
-                Response<ApplicationVo> vo = this.getApplicationInfo(response.getId());
-                if (vo.getSuccess() && vo.getData() != null) {
-                    response.setAccessStatus(vo.getData().getAccessStatus());
+                // 跟应用详情再对比下,同步下状态,这个接口真慢
+                CompletableFuture<Response<ApplicationVo>> future = CompletableFuture.supplyAsync(() -> this.getApplicationInfo(response.getId()));
+                try {
+                    Response<ApplicationVo> vo = future.get();
+                    if (vo.getSuccess() && vo.getData() != null) {
+                        response.setAccessStatus(vo.getData().getAccessStatus());
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
                 }
             }
             return response;

@@ -5,7 +5,6 @@ import io.shulie.takin.cloud.common.bean.scenemanage.SceneManageQueryBean;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceAppInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceAppRequest;
 import io.shulie.takin.web.biz.service.ApplicationService;

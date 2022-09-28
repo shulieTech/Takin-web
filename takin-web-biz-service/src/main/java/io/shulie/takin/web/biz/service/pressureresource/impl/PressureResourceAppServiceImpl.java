@@ -126,7 +126,7 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
                 Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
                 if (voResponse.getSuccess()) {
                     ApplicationVo applicationVo = voResponse.getData();
-                    vo.setNodeNum(applicationVo.getNodeNum());
+                    vo.setNodeNum(applicationVo.getNodeNum() == null ? 0 : applicationVo.getNodeNum());
                     vo.setAgentNodeNum(applicationVo.getOnlineNodeNum() == null ? 0 : applicationVo.getOnlineNodeNum());
                     vo.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
                     vo.setRemark(applicationVo.getExceptionInfo());

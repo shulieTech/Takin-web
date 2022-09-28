@@ -428,7 +428,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         List<PressureResourceRelateAppEntity> appEntityList = pressureResourceRelateAppDAO.queryList(appQueryParam);
         if (CollectionUtils.isNotEmpty(appEntityList)) {
             // 判断状态是否都是正常的
-            int normal = appEntityList.stream().filter(app -> app.getStatus().intValue() == 0).collect(Collectors.toList()).size();
+            int normal = appEntityList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
             if (normal == appEntityList.size()) {
                 statusMap.put("APP", 2);
             }
@@ -443,7 +443,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
         if (CollectionUtils.isNotEmpty(dsEntityList)) {
             // 判断状态是否都是正常的
-            int normal = dsEntityList.stream().filter(ds -> ds.getStatus().intValue() == 2).collect(Collectors.toList()).size();
+            int normal = dsEntityList.stream().filter(ds -> ds.getStatus() == 2).collect(Collectors.toList()).size();
             if (normal == dsEntityList.size()) {
                 statusMap.put("DS", 2);
             }
@@ -478,7 +478,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             // 总的应用数
             extInfo.setTotalSize(appEntityList.size());
             // 正常的应用数
-            Long normalSize = appEntityList.stream().filter(app -> app.getStatus().equals(0)).count();
+            Long normalSize = appEntityList.stream().filter(app -> app.getStatus() == 0).count();
             extInfo.setNormalSize(normalSize.intValue());
             extInfo.setExceptionSize(appEntityList.size() - normalSize.intValue());
         }
@@ -516,7 +516,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             int normalSize = 0;
             for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : dsMap.entrySet()) {
                 PressureResourceRelateDsEntity dsEntity = entry.getValue().get(0);
-                if (dsEntity.getStatus().intValue() != StatusEnum.FAIL.getCode()) {
+                if (dsEntity.getStatus().intValue() == StatusEnum.SUCCESS.getCode()) {
                     normalSize = normalSize + 1;
                 }
             }

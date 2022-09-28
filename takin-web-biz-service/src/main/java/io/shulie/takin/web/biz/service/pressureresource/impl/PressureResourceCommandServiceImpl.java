@@ -137,7 +137,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         //更新数据库
         PressureResourceEntity update = new PressureResourceEntity();
         update.setId(resource.getId());
-        update.setStatus(CheckStatusEnum.CHECK_ING.getCode());
+        update.setCheckStatus(CheckStatusEnum.CHECK_ING.getCode());
         resourceMapper.updateById(update);
     }
 

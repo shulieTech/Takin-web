@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Component
 @ElasticSchedulerJob(jobName = "pressureResourceCommandJob",
         isSharding = true,
-        cron = "* 0/1 * * * ?",
+        cron = "* 0/10 * * * ?",
         description = "下发验证命令")
 @Slf4j
 public class PressureResourceCommandJob implements SimpleJob {

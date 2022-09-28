@@ -12,13 +12,12 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.common.*;
 import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.*;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
-import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.InterfaceTypeMainDAO;
 import io.shulie.takin.web.data.dao.application.RemoteCallConfigDAO;
 import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
-import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateRemoteCallMapper;
@@ -29,6 +28,7 @@ import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEnt
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -244,6 +244,12 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
      */
     private void processConfigAck(TakinConfigAck configAck) {
         long resourceId = Long.parseLong(configAck.getConfigId());
+        PressureResourceEntity resource = resourceMapper.queryByIdNoTenant(resourceId);
+        if(resource == null){
+            return;
+        }
+        //设置租户上下文
+        setTraceTenantContext(resource);
         boolean success = configAck.isSuccess();
         PressureResourceTypeEnum resourceTypeEnum = PressureResourceTypeEnum.getByCode(configAck.getConfigType());
         switch (resourceTypeEnum) {
@@ -265,6 +271,24 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     }
 
 
+    private void setTraceTenantContext(PressureResourceEntity resource){
+        //设置租户上下文
+        TenantCommonExt commonExt = new TenantCommonExt();
+        commonExt.setSource(ContextSourceEnum.JOB.getCode());
+        commonExt.setEnvCode(resource.getEnvCode());
+        commonExt.setTenantId(resource.getTenantId());
+        TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
+        if (tenantInfoExt == null) {
+            return;
+        }
+        String tenantCode = tenantInfoExt.getTenantCode();
+        String tenantAppKey = tenantInfoExt.getTenantAppKey();
+        commonExt.setTenantAppKey(tenantAppKey);
+        commonExt.setTenantCode(tenantCode);
+        WebPluginUtils.setTraceTenantContext(commonExt);
+    }
+
+
     /**
      * 压测配置校验响应处理
      * @param commandAck
@@ -274,10 +298,13 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         Long resourceId = getResourceId(commandId);
         Long subId = getSubId(commandId);
 
-        PressureResourceEntity resource = resourceMapper.selectById(resourceId);
+        PressureResourceEntity resource = resourceMapper.queryByIdNoTenant(resourceId);
         if(resource == null){
             return;
         }
+        //设置租户上下文
+        setTraceTenantContext(resource);
+
         PressureResourceEntity update = new PressureResourceEntity();
         update.setId(resourceId);
         update.setCheckTime(new Date());

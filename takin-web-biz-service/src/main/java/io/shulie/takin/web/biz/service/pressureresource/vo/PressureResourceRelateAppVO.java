@@ -51,4 +51,7 @@ public class PressureResourceRelateAppVO extends TenantBaseEntity {
 
     @ApiModelProperty("更新时间")
     private Date gmtModified;
+
+    @ApiModelProperty("异常备注")
+    private String remark;
 }

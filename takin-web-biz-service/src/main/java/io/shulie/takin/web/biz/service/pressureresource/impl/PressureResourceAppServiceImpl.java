@@ -116,6 +116,7 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
             vo.setIsolateType(resourceEntity.getIsolateType());
             // 默认是0
             vo.setAgentNodeNum(0);
+            vo.setNodeNum(0);
             // 默认不正常
             vo.setStatus(1);
             vo.setId(String.valueOf(configDto.getId()));
@@ -125,8 +126,10 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
                 Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
                 if (voResponse.getSuccess()) {
                     ApplicationVo applicationVo = voResponse.getData();
+                    vo.setNodeNum(applicationVo.getNodeNum());
                     vo.setAgentNodeNum(applicationVo.getOnlineNodeNum() == null ? 0 : applicationVo.getOnlineNodeNum());
                     vo.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
+                    vo.setRemark(applicationVo.getExceptionInfo());
                 }
             }
             return vo;

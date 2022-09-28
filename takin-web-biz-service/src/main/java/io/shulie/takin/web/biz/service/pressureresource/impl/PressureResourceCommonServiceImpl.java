@@ -371,8 +371,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                         Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
                         if (voResponse.getSuccess()) {
                             ApplicationVo applicationVo = voResponse.getData();
-                            // 默认等于探针在线节点数
-                            appEntity.setNodeNum(applicationVo.getOnlineNodeNum() == null ? 0 : applicationVo.getOnlineNodeNum());
+                            appEntity.setNodeNum(applicationVo.getNodeNum() == null ? 0 : applicationVo.getNodeNum());
                             appEntity.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
                         }
                     }
@@ -385,61 +384,63 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 // 保存关联应用
                 pressureResourceRelateAppDAO.saveOrUpdate(appEntityList);
             }
-            List<LinkEdgeDTO> edgeDTOList = applicationEntrancesTopology.getEdges();
-            // 获取所有的数据库操作信息
-            List<LinkEdgeDTO> dbEdgeList = edgeDTOList.stream().filter(edge -> {
-                if (edge.getEagleTypeGroup().equals(EdgeTypeGroupEnum.DB.getType())) {
-                    return true;
-                }
-                return false;
-            }).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(dbEdgeList)) {
-                // 按照URL分组
-                Map<String, List<LinkEdgeDTO>> serviceMap = dbEdgeList.stream().collect(Collectors.groupingBy(dbEdge -> fetchKey(dbEdge)));
 
-                for (Map.Entry<String, List<LinkEdgeDTO>> entry : serviceMap.entrySet()) {
-                    String key = entry.getKey();
-                    String appName = key.split("#")[0];
-                    String database = key.split("#")[1];
-                    if ("null".equals(appName)) {
-                        // TODO 暂时打印下日志
-                        logger.error("关联数据源名称为空 key,{} value,{}", entry.getValue());
-                        continue;
+            // 隔离方案未设置,暂时不处理
+            if (!(isolateType == IsolateTypeEnum.DEFAULT.getCode())) {
+                List<LinkEdgeDTO> edgeDTOList = applicationEntrancesTopology.getEdges();
+                // 获取所有的数据库操作信息
+                List<LinkEdgeDTO> dbEdgeList = edgeDTOList.stream().filter(edge -> {
+                    if (edge.getEagleTypeGroup().equals(EdgeTypeGroupEnum.DB.getType())) {
+                        return true;
                     }
-                    String dbName = DbNameUtil.getDbName(database);
-                    if (PtUtils.isShadow(dbName)) {
-                        continue;
-                    }
-                    PressureResourceRelateDsEntity dsEntity = new PressureResourceRelateDsEntity();
-                    dsEntity.setResourceId(resourceId);
-                    dsEntity.setDetailId(detailEntity.getId());
-                    dsEntity.setAppName(appName);
-                    // 从任意的边里面获取数据源详情信息
-                    LinkEdgeDTO edgeDTO = entry.getValue().get(0);
-                    List<AppShadowDatabaseDTO> dsList = edgeDTO.getDsList();
-                    if (CollectionUtils.isEmpty(dsList)) {
-                        logger.warn("应用数据源未梳理完成,{}", database);
-                    } else {
-                        AppShadowDatabaseDTO appShadowDatabaseDTO = dsList.get(0);
-                        dsEntity.setBusinessUserName(appShadowDatabaseDTO.getTableUser());
-                        dsEntity.setMiddlewareName(appShadowDatabaseDTO.getConnectionPool());
-                        dsEntity.setMiddlewareType(appShadowDatabaseDTO.getMiddlewareType());
-                    }
-                    dsEntity.setBusinessDatabase(database);
-                    dsEntity.setTenantId(WebPluginUtils.traceTenantId());
-                    dsEntity.setEnvCode(WebPluginUtils.traceEnvCode());
-                    dsEntity.setStatus(StatusEnum.NO.getCode());
-                    dsEntity.setType(SourceTypeEnum.AUTO.getCode());
-                    dsEntity.setGmtCreate(new Date());
-                    // 生成唯一key,按应用区分
-                    dsEntity.setUniqueKey(DataSourceUtil.generateDsUniqueKey(resourceId, appName, database));
-                    // 这里生成的dskey是关联表的,表里面是不区分应用的
-                    String dsKey = DataSourceUtil.generateDsKey(resourceId, database);
-                    dsEntityList.add(dsEntity);
+                    return false;
+                }).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(dbEdgeList)) {
+                    // 按照URL分组
+                    Map<String, List<LinkEdgeDTO>> serviceMap = dbEdgeList.stream().collect(Collectors.groupingBy(dbEdge -> fetchKey(dbEdge)));
 
-                    List<LinkEdgeDTO> value = entry.getValue();
-                    // 没有设置隔离类型的话,暂时不处理关联表信息,减少没必要的数据梳理
-                    if (!isolateType.equals(IsolateTypeEnum.DEFAULT.getCode())) {
+                    for (Map.Entry<String, List<LinkEdgeDTO>> entry : serviceMap.entrySet()) {
+                        String key = entry.getKey();
+                        String appName = key.split("#")[0];
+                        String database = key.split("#")[1];
+                        if ("null".equals(appName)) {
+                            // TODO 暂时打印下日志
+                            logger.error("关联数据源名称为空 key,{} value,{}", entry.getValue());
+                            continue;
+                        }
+                        String dbName = DbNameUtil.getDbName(database);
+                        if (PtUtils.isShadow(dbName)) {
+                            continue;
+                        }
+                        PressureResourceRelateDsEntity dsEntity = new PressureResourceRelateDsEntity();
+                        dsEntity.setResourceId(resourceId);
+                        dsEntity.setDetailId(detailEntity.getId());
+                        dsEntity.setAppName(appName);
+                        // 从任意的边里面获取数据源详情信息
+                        LinkEdgeDTO edgeDTO = entry.getValue().get(0);
+                        List<AppShadowDatabaseDTO> dsList = edgeDTO.getDsList();
+                        if (CollectionUtils.isEmpty(dsList)) {
+                            logger.warn("应用数据源未梳理完成,{}", database);
+                        } else {
+                            AppShadowDatabaseDTO appShadowDatabaseDTO = dsList.get(0);
+                            dsEntity.setBusinessUserName(appShadowDatabaseDTO.getTableUser());
+                            dsEntity.setMiddlewareName(appShadowDatabaseDTO.getConnectionPool());
+                            dsEntity.setMiddlewareType(appShadowDatabaseDTO.getMiddlewareType());
+                        }
+                        dsEntity.setBusinessDatabase(database);
+                        dsEntity.setTenantId(WebPluginUtils.traceTenantId());
+                        dsEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+                        dsEntity.setStatus(StatusEnum.NO.getCode());
+                        dsEntity.setType(SourceTypeEnum.AUTO.getCode());
+                        dsEntity.setGmtCreate(new Date());
+                        // 生成唯一key,按应用区分
+                        dsEntity.setUniqueKey(DataSourceUtil.generateDsUniqueKey(resourceId, appName, database));
+                        // 这里生成的dskey是关联表的,表里面是不区分应用的
+                        String dsKey = DataSourceUtil.generateDsKey(resourceId, database);
+                        dsEntityList.add(dsEntity);
+
+                        List<LinkEdgeDTO> value = entry.getValue();
+                        // 没有设置隔离类型的话,暂时不处理关联表信息,减少没必要的数据梳理
                         if (CollectionUtils.isNotEmpty(value)) {
                             for (int k = 0; k < value.size(); k++) {
                                 // 存在逗号分割的数据
@@ -461,6 +462,8 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                                     PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
                                     tableEntity.setResourceId(resourceId);
                                     tableEntity.setBusinessTable(tableName);
+                                    // 系统自动处理影子表
+                                    tableEntity.setShadowTable("PT_" + tableName);
                                     tableEntity.setDsKey(dsKey);
                                     tableEntity.setGmtCreate(new Date());
                                     tableEntity.setJoinFlag(JoinFlagEnum.YES.getCode());
@@ -474,7 +477,6 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                             }
                         }
                     }
-
                 }
             }
         }

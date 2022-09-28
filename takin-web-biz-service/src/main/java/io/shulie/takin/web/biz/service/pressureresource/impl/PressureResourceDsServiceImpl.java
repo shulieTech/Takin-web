@@ -517,7 +517,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             } catch (Throwable e) {
             }
             if (StringUtils.isBlank(shadowDatabase)) {
-                throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "业务数据源为空!");
+                throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "影子数据源为空!");
             }
             // 按业务数据源查询，是否存在
             PressureResourceDsQueryParam queryParam = new PressureResourceDsQueryParam();

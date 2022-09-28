@@ -13,7 +13,6 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.common.*;
 import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.*;
-import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
 import io.shulie.takin.web.data.dao.application.InterfaceTypeMainDAO;
@@ -29,7 +28,6 @@ import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEnt
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;

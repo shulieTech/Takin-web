@@ -89,6 +89,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         }
         PressureResourceRelateTableRequest tableRequest = new PressureResourceRelateTableRequest();
         tableRequest.setBusinessTableName(updateInput.getBusinessTable());
+        tableRequest.setDsId(updateInput.getDsId());
         PagingList<PressureResourceRelateTableVO> pageList = this.pageList(tableRequest);
         if (!pageList.isEmpty()) {
             List<PressureResourceRelateTableVO> list = pageList.getList();

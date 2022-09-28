@@ -4,17 +4,12 @@ import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDetailInput;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceIsolateInput;
-import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceAppService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.StatusEnum;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceDetailVO;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceExtInfo;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceInfoVO;
-import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceVO;
+import io.shulie.takin.web.biz.service.pressureresource.vo.*;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
@@ -86,6 +81,9 @@ public class PressureResourceServiceImpl implements PressureResourceService {
 
     @Resource
     private SceneDAO sceneDAO;
+
+    @Resource
+    private PressureResourceAppService pressureResourceAppService;
 
     /**
      * 新增
@@ -423,17 +421,18 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         statusMap.put("REMOTECALL", 0);
 
         // 查看应用状态
-        PressureResourceAppQueryParam appQueryParam = new PressureResourceAppQueryParam();
-        appQueryParam.setResourceId(id);
-        List<PressureResourceRelateAppEntity> appEntityList = pressureResourceRelateAppDAO.queryList(appQueryParam);
-        if (CollectionUtils.isNotEmpty(appEntityList)) {
+        PressureResourceAppRequest appRequest = new PressureResourceAppRequest();
+        appRequest.setResourceId(id);
+        PagingList<PressureResourceRelateAppVO> pageList = pressureResourceAppService.appCheckList(appRequest);
+        if (!pageList.isEmpty()) {
+            List<PressureResourceRelateAppVO> appVOList = pageList.getList();
             // 判断状态是否都是正常的
-            int normal = appEntityList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
-            if (normal == appEntityList.size()) {
+            int normal = appVOList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
+            if (normal == appVOList.size()) {
                 statusMap.put("APP", 2);
             }
             // 存在正常的,进行中
-            if (appEntityList.size() - normal > 0) {
+            if (appVOList.size() - normal > 0) {
                 statusMap.put("APP", 1);
             }
         }
@@ -471,16 +470,17 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (entity == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "配置不存在");
         }
-        PressureResourceAppQueryParam queryParam = new PressureResourceAppQueryParam();
-        queryParam.setResourceId(id);
-        List<PressureResourceRelateAppEntity> appEntityList = pressureResourceRelateAppDAO.queryList(queryParam);
-        if (CollectionUtils.isNotEmpty(appEntityList)) {
+        PressureResourceAppRequest appRequest = new PressureResourceAppRequest();
+        appRequest.setResourceId(id);
+        PagingList<PressureResourceRelateAppVO> pageList = pressureResourceAppService.appCheckList(appRequest);
+        if (!pageList.isEmpty()) {
+            List<PressureResourceRelateAppVO> appVOList = pageList.getList();
             // 总的应用数
-            extInfo.setTotalSize(appEntityList.size());
+            extInfo.setTotalSize(appVOList.size());
             // 正常的应用数
-            Long normalSize = appEntityList.stream().filter(app -> app.getStatus() == 0).count();
+            Long normalSize = appVOList.stream().filter(app -> app.getStatus() == 0).count();
             extInfo.setNormalSize(normalSize.intValue());
-            extInfo.setExceptionSize(appEntityList.size() - normalSize.intValue());
+            extInfo.setExceptionSize(appVOList.size() - normalSize.intValue());
         }
         // 检测时间都是一批的
         extInfo.setCheckTime(entity.getCheckTime());
@@ -516,7 +516,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             int normalSize = 0;
             for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : dsMap.entrySet()) {
                 PressureResourceRelateDsEntity dsEntity = entry.getValue().get(0);
-                if (dsEntity.getStatus().intValue() == StatusEnum.SUCCESS.getCode()) {
+                if (dsEntity.getStatus() == StatusEnum.SUCCESS.getCode()) {
                     normalSize = normalSize + 1;
                 }
             }

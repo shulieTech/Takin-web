@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceAppService;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.StatusEnum;
@@ -22,11 +23,12 @@ import io.shulie.takin.web.data.mapper.mysql.PressureResourceDetailMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
-import io.shulie.takin.web.data.model.mysql.pressureresource.*;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
-import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
-import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceQueryParam;
@@ -35,7 +37,6 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.mortbay.util.ajax.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -84,6 +85,9 @@ public class PressureResourceServiceImpl implements PressureResourceService {
 
     @Resource
     private PressureResourceAppService pressureResourceAppService;
+
+    @Resource
+    private PressureResourceDsService pressureResourceDsService;
 
     /**
      * 新增
@@ -472,15 +476,18 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         }
         PressureResourceAppRequest appRequest = new PressureResourceAppRequest();
         appRequest.setResourceId(id);
+        appRequest.setPageSize(500);
         PagingList<PressureResourceRelateAppVO> pageList = pressureResourceAppService.appCheckList(appRequest);
         if (!pageList.isEmpty()) {
             List<PressureResourceRelateAppVO> appVOList = pageList.getList();
-            // 总的应用数
-            extInfo.setTotalSize(appVOList.size());
-            // 正常的应用数
-            Long normalSize = appVOList.stream().filter(app -> app.getStatus() == 0).count();
-            extInfo.setNormalSize(normalSize.intValue());
-            extInfo.setExceptionSize(appVOList.size() - normalSize.intValue());
+            if (CollectionUtils.isNotEmpty(appVOList)) {
+                // 总的应用数
+                extInfo.setTotalSize(appVOList.size());
+                // 正常的应用数
+                Long normalSize = appVOList.stream().filter(app -> app.getStatus() == 0).count();
+                extInfo.setNormalSize(normalSize.intValue());
+                extInfo.setExceptionSize(appVOList.size() - normalSize.intValue());
+            }
         }
         // 检测时间都是一批的
         extInfo.setCheckTime(entity.getCheckTime());
@@ -505,23 +512,18 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (entity == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "配置不存在");
         }
-        PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
-        dsQueryParam.setResourceId(id);
-        List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
-
-        if (CollectionUtils.isNotEmpty(dsEntityList)) {
-            // 分组一下
-            Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntityList.stream().collect(Collectors.groupingBy(ds -> ds.getUniqueKey()));
-            extInfo.setTotalSize(dsMap.size());
-            int normalSize = 0;
-            for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : dsMap.entrySet()) {
-                PressureResourceRelateDsEntity dsEntity = entry.getValue().get(0);
-                if (dsEntity.getStatus() == StatusEnum.SUCCESS.getCode()) {
-                    normalSize = normalSize + 1;
-                }
+        PressureResourceRelateDsRequest dsRequest = new PressureResourceRelateDsRequest();
+        dsRequest.setResourceId(id);
+        dsRequest.setPageSize(2000);
+        PagingList<PressureResourceRelateDsVO> pageList = pressureResourceDsService.listByDs(dsRequest);
+        if (!pageList.isEmpty()) {
+            List<PressureResourceRelateDsVO> resourceRelateDsVOS = pageList.getList();
+            if (CollectionUtils.isNotEmpty(resourceRelateDsVOS)) {
+                extInfo.setTotalSize(resourceRelateDsVOS.size());
+                Long normalSize = resourceRelateDsVOS.stream().filter(ds -> ds.getStatus() == 2).count();
+                extInfo.setNormalSize(normalSize.intValue());
+                extInfo.setExceptionSize(extInfo.getTotalSize() - extInfo.getNormalSize());
             }
-            extInfo.setNormalSize(normalSize);
-            extInfo.setExceptionSize(extInfo.getTotalSize() - extInfo.getNormalSize());
         }
         // 检测时间都是一批的
         extInfo.setCheckTime(entity.getCheckTime());

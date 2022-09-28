@@ -516,7 +516,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             int normalSize = 0;
             for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : dsMap.entrySet()) {
                 PressureResourceRelateDsEntity dsEntity = entry.getValue().get(0);
-                if (dsEntity.getStatus().intValue() == StatusEnum.SUCCESS.getCode()) {
+                if (dsEntity.getStatus().intValue() != StatusEnum.FAIL.getCode()) {
                     normalSize = normalSize + 1;
                 }
             }

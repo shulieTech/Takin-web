@@ -6,19 +6,14 @@ import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
-import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -74,18 +69,7 @@ public class PressureResourceRelateJob implements SimpleJob {
                     if (!tryLock) {
                         return;
                     }
-                    TenantCommonExt commonExt = new TenantCommonExt();
-                    commonExt.setSource(ContextSourceEnum.JOB.getCode());
-                    commonExt.setEnvCode(resource.getEnvCode());
-                    commonExt.setTenantId(resource.getTenantId());
-                    TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
-                    if (tenantInfoExt == null) {
-                        return;
-                    }
-                    String tenantAppKey = tenantInfoExt.getTenantAppKey();
-                    commonExt.setTenantAppKey(tenantAppKey);
-                    WebPluginUtils.setTraceTenantContext(commonExt);
-
+                    ResourceContextUtil.setTenantContext(resource);
                     pressureResourceCommonService.processAutoPressureResourceRelate(resource);
                 } finally {
                     distributedLock.unLockSafely(lockKey);

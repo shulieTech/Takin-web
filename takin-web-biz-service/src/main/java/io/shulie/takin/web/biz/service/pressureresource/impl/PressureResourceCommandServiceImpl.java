@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.takin.common.beans.component.SelectVO;
+import io.shulie.takin.web.biz.job.ResourceContextUtil;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.common.*;
@@ -74,13 +75,14 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
 
     /**
      * 下发校验命令并更新数据库
+     *
      * @param resourceId
      * @return
      */
     @Override
-    public void pushCommand(Long resourceId){
+    public void pushCommand(Long resourceId) {
         PressureResourceEntity resource = resourceMapper.selectById(resourceId);
-        if(resource == null){
+        if (resource == null) {
             return;
         }
         //下发数据源校验命令
@@ -92,17 +94,18 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
 
     /**
      * 压测数据源命令
+     *
      * @param resource
      * @return
      */
-    private void pushDataSourceCommands(PressureResourceEntity resource){
-        if(resource.getIsolateType() == IsolateTypeEnum.DEFAULT.getCode()){
+    private void pushDataSourceCommands(PressureResourceEntity resource) {
+        if (resource.getIsolateType() == IsolateTypeEnum.DEFAULT.getCode()) {
             //未配置隔离类型
             return;
         }
         List<PressureResourceRelateDsEntity> dsEntities = resourceDsMapper.selectList(new QueryWrapper<PressureResourceRelateDsEntity>().lambda()
                 .eq(PressureResourceRelateDsEntity::getResourceId, resource.getId()));
-        if(CollectionUtils.isEmpty(dsEntities)){
+        if (CollectionUtils.isEmpty(dsEntities)) {
             return;
         }
         List<PressureResourceRelateTableEntity> tableEntities = resourceTableMapper.selectList(new QueryWrapper<PressureResourceRelateTableEntity>().lambda()
@@ -115,18 +118,19 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
 
         List<TakinCommand> list = new ArrayList<>();
         //遍历dsMap
-        dsMap.forEach((appName,appDsList) ->{
+        dsMap.forEach((appName, appDsList) -> {
             List<TakinCommand> collect = appDsList.stream().map(dsEntity -> {
-                        String dsKey = DataSourceUtil.generateDsKey(dsEntity.getResourceId(), dsEntity.getBusinessDatabase());
-                        return mapping(resource, dsEntity, tableMap.get(dsKey));
-                    }).filter(Objects::nonNull).collect(Collectors.toList());
+                String dsKey = DataSourceUtil.generateDsKey(dsEntity.getResourceId(), dsEntity.getBusinessDatabase());
+                return mapping(resource, dsEntity, tableMap.get(dsKey));
+            }).filter(Objects::nonNull).collect(Collectors.toList());
             list.addAll(collect);
         });
         //下发命令
         String url = joinUrl(agentManagerHost, PUSH_COMMAND_URL);
-        String post = HttpUtil.post(url,JSON.toJSONString(list));
-        Response<Boolean> response = JSON.parseObject(post, new TypeReference<Response<Boolean>>() {});
-        if(response.getData() == null || !response.getData()){
+        String post = HttpUtil.post(url, JSON.toJSONString(list));
+        Response<Boolean> response = JSON.parseObject(post, new TypeReference<Response<Boolean>>() {
+        });
+        if (response.getData() == null || !response.getData()) {
             //未下发成功  下次循环触发
             return;
         }
@@ -138,10 +142,10 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     }
 
 
-    private void pushWhitelistConfigs(PressureResourceEntity resource){
+    private void pushWhitelistConfigs(PressureResourceEntity resource) {
         List<PressureResourceRelateRemoteCallEntity> remoteCallEntities = remoteCallMapper.selectList(new QueryWrapper<PressureResourceRelateRemoteCallEntity>().lambda()
                 .eq(PressureResourceRelateRemoteCallEntity::getResourceId, resource.getId()));
-        if(CollectionUtils.isEmpty(remoteCallEntities)){
+        if (CollectionUtils.isEmpty(remoteCallEntities)) {
             return;
         }
         //group by appName
@@ -150,7 +154,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
         List<TakinConfig> configList = new ArrayList<>();
         //遍历dsMap
-        appMap.forEach((appName,remoteCallList) ->{
+        appMap.forEach((appName, remoteCallList) -> {
             TakinConfig takinConfig = new TakinConfig();
             takinConfig.setConfigId(resource.getId().toString());
             takinConfig.setAppName(appName);
@@ -173,12 +177,12 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         });
         //推送配置
         String url = joinUrl(agentManagerHost, PUSH_CONFIG_URL);
-        HttpUtil.post(url,JSON.toJSONString(configList));
+        HttpUtil.post(url, JSON.toJSONString(configList));
     }
 
 
-    private AgentRemoteCallVO.RemoteCall mapping(PressureResourceRelateRemoteCallEntity remoteCallEntity){
-        if(!StringUtils.hasText(remoteCallEntity.getServerAppName()) || remoteCallEntity.getType() == 0 || remoteCallEntity.getIsDeleted() == 1){
+    private AgentRemoteCallVO.RemoteCall mapping(PressureResourceRelateRemoteCallEntity remoteCallEntity) {
+        if (!StringUtils.hasText(remoteCallEntity.getServerAppName()) || remoteCallEntity.getType() == 0 || remoteCallEntity.getIsDeleted() == 1) {
             return null;
         }
         List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
@@ -215,12 +219,11 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     }
 
 
-
     @Override
     public void processAck(TakinAck takinAck) {
 
         String ackType = takinAck.getAckType();
-        switch (ackType){
+        switch (ackType) {
             case TakinAck.COMMAND:
                 //配置校验响应
                 TakinCommandAck takinCommandAck = JSON.parseObject(JSON.toJSONString(takinAck.getAck()), TakinCommandAck.class);
@@ -231,7 +234,8 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
                 TakinConfigAck takinConfigAck = JSON.parseObject(JSON.toJSONString(takinAck.getAck()), TakinConfigAck.class);
                 processConfigAck(takinConfigAck);
                 break;
-            default:break;
+            default:
+                break;
 
         }
 
@@ -240,16 +244,17 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
 
     /**
      * 配置生效响应
+     *
      * @param configAck
      */
     private void processConfigAck(TakinConfigAck configAck) {
         long resourceId = Long.parseLong(configAck.getConfigId());
         PressureResourceEntity resource = resourceMapper.queryByIdNoTenant(resourceId);
-        if(resource == null){
+        if (resource == null) {
             return;
         }
         //设置租户上下文
-        setTraceTenantContext(resource);
+        ResourceContextUtil.setTenantContext(resource);
         boolean success = configAck.isSuccess();
         PressureResourceTypeEnum resourceTypeEnum = PressureResourceTypeEnum.getByCode(configAck.getConfigType());
         switch (resourceTypeEnum) {
@@ -265,45 +270,27 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
                 break;
             case WHITELIST:
                 break;
-            default:break;
+            default:
+                break;
         }
 
     }
-
-
-    private void setTraceTenantContext(PressureResourceEntity resource){
-        //设置租户上下文
-        TenantCommonExt commonExt = new TenantCommonExt();
-        commonExt.setSource(ContextSourceEnum.JOB.getCode());
-        commonExt.setEnvCode(resource.getEnvCode());
-        commonExt.setTenantId(resource.getTenantId());
-        TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
-        if (tenantInfoExt == null) {
-            return;
-        }
-        String tenantCode = tenantInfoExt.getTenantCode();
-        String tenantAppKey = tenantInfoExt.getTenantAppKey();
-        commonExt.setTenantAppKey(tenantAppKey);
-        commonExt.setTenantCode(tenantCode);
-        WebPluginUtils.setTraceTenantContext(commonExt);
-    }
-
 
     /**
      * 压测配置校验响应处理
+     *
      * @param commandAck
      */
-    private void processCommandAck(TakinCommandAck commandAck){
+    private void processCommandAck(TakinCommandAck commandAck) {
         String commandId = commandAck.getCommandId();
         Long resourceId = getResourceId(commandId);
         Long subId = getSubId(commandId);
 
         PressureResourceEntity resource = resourceMapper.queryByIdNoTenant(resourceId);
-        if(resource == null){
+        if (resource == null) {
             return;
         }
-        //设置租户上下文
-        setTraceTenantContext(resource);
+        ResourceContextUtil.setTenantContext(resource);
 
         PressureResourceEntity update = new PressureResourceEntity();
         update.setId(resourceId);
@@ -312,19 +299,19 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         resourceMapper.updateById(update);
         //更新附属资源
         PressureResourceTypeEnum resourceTypeEnum = PressureResourceTypeEnum.getByCode(commandAck.getCommandType());
-        switch (resourceTypeEnum){
+        switch (resourceTypeEnum) {
             case DATABASE:
                 PressureResourceRelateDsEntity dsEntity = resourceDsMapper.selectById(subId);
-                if(dsEntity == null){
+                if (dsEntity == null) {
                     throw new IllegalArgumentException("未找到对应的数据库资源");
                 }
                 PressureResourceRelateDsEntity updateDs = new PressureResourceRelateDsEntity();
                 updateDs.setId(subId);
                 updateDs.setStatus(commandAck.isSuccess() ? 2 : 1);
-                updateDs.setRemark(commandAck.isSuccess()? "影子资源连通" : commandAck.getResponse());
+                updateDs.setRemark(commandAck.isSuccess() ? "影子资源连通" : commandAck.getResponse());
                 resourceDsMapper.updateById(updateDs);
                 //下发数据库配置
-                if(commandAck.isSuccess()){
+                if (commandAck.isSuccess()) {
                     pushPressureDatabaseConfig(resource);
                 }
                 break;
@@ -338,6 +325,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
 
     /**
      * 校验通过，下发压测库配置
+     *
      * @param resource
      */
     private void pushPressureDatabaseConfig(PressureResourceEntity resource) {
@@ -349,7 +337,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         //appName分组
         Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateDsEntity::getAppName));
         List<TakinConfig> configList = new ArrayList<>();
-        dsMap.forEach((appName,dsList)->{
+        dsMap.forEach((appName, dsList) -> {
             TakinConfig takinConfig = new TakinConfig();
             takinConfig.setConfigId(resource.getId().toString());
             takinConfig.setAppName(appName);
@@ -357,7 +345,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             takinConfig.setEnvCode(resource.getEnvCode());
             takinConfig.setTenantCode(tenantInfoExt.getTenantCode());
             takinConfig.setConfigType(PressureResourceTypeEnum.DATABASE.getCode());
-            List<DataSourceConfig> collect = dsList.stream().map(dsEntity -> mapping(resource.getIsolateType(),dsEntity)).collect(Collectors.toList());
+            List<DataSourceConfig> collect = dsList.stream().map(dsEntity -> mapping(resource.getIsolateType(), dsEntity)).collect(Collectors.toList());
             JdbcTableConfig jdbcTableConfig = new JdbcTableConfig();
             jdbcTableConfig.setData(collect);
             takinConfig.setConfigParam(JSON.toJSONString(jdbcTableConfig));
@@ -365,11 +353,11 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         });
         //推送配置
         String url = joinUrl(agentManagerHost, PUSH_CONFIG_URL);
-        HttpUtil.post(url,JSON.toJSONString(configList));
+        HttpUtil.post(url, JSON.toJSONString(configList));
     }
 
 
-    private DataSourceConfig mapping(Integer shadowType,PressureResourceRelateDsEntity dsEntity){
+    private DataSourceConfig mapping(Integer shadowType, PressureResourceRelateDsEntity dsEntity) {
         DataSourceConfig dataSourceConfig = new DataSourceConfig();
         dataSourceConfig.setShadowType(shadowType);
         dataSourceConfig.setUrl(dsEntity.getBusinessDatabase());
@@ -377,7 +365,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         dataSourceConfig.setShadowUrl(dsEntity.getShadowDatabase());
         dataSourceConfig.setShadowUsername(dsEntity.getShadowUserName());
         dataSourceConfig.setShadowPassword(dsEntity.getShadowPassword());
-        if(!shadowType.equals(IsolateTypeEnum.SHADOW_TABLE.getCode())){
+        if (!shadowType.equals(IsolateTypeEnum.SHADOW_TABLE.getCode())) {
             //非影子表模式 无表配置
             return dataSourceConfig;
         }
@@ -385,7 +373,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         List<PressureResourceRelateTableEntity> tableEntities = resourceTableMapper.selectList(new QueryWrapper<PressureResourceRelateTableEntity>().lambda()
                 .eq(PressureResourceRelateTableEntity::getDsKey, dsKey)
                 .eq(PressureResourceRelateTableEntity::getJoinFlag, JoinFlagEnum.YES.getCode()));
-        if(CollectionUtils.isEmpty(tableEntities)){
+        if (CollectionUtils.isEmpty(tableEntities)) {
             dataSourceConfig.setDisabled(true);
             return dataSourceConfig;
         }
@@ -395,12 +383,12 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     }
 
 
-    private TakinCommand mapping(PressureResourceEntity resource,PressureResourceRelateDsEntity dsEntity,List<PressureResourceRelateTableEntity> tableEntities){
-        if(!StringUtils.hasText(dsEntity.getBusinessDatabase()) || !StringUtils.hasText(dsEntity.getBusinessUserName()) || !StringUtils.hasText(dsEntity.getAppName())){
+    private TakinCommand mapping(PressureResourceEntity resource, PressureResourceRelateDsEntity dsEntity, List<PressureResourceRelateTableEntity> tableEntities) {
+        if (!StringUtils.hasText(dsEntity.getBusinessDatabase()) || !StringUtils.hasText(dsEntity.getBusinessUserName()) || !StringUtils.hasText(dsEntity.getAppName())) {
             return null;
         }
         TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
-        if(IsolateTypeEnum.SHADOW_TABLE.getCode() ==  resource.getIsolateType() && CollectionUtils.isEmpty(tableEntities)){
+        if (IsolateTypeEnum.SHADOW_TABLE.getCode() == resource.getIsolateType() && CollectionUtils.isEmpty(tableEntities)) {
             //影子表模式无影子表 不再下发校验命令 推送禁用配置
             pushPressureDatabaseConfig(resource);
             return null;
@@ -420,12 +408,12 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         bizDataSource.setUserName(dsEntity.getBusinessUserName());
         tableCompareCommand.setBizDataSource(bizDataSource);
         //影子表
-        if(!CollectionUtils.isEmpty(tableEntities)){
+        if (!CollectionUtils.isEmpty(tableEntities)) {
             List<String> tables = tableEntities.stream().map(PressureResourceRelateTableEntity::getBusinessTable).collect(Collectors.toList());
             tableCompareCommand.setTables(tables);
         }
         //影子库
-        if(StringUtils.hasText(dsEntity.getShadowDatabase())){
+        if (StringUtils.hasText(dsEntity.getShadowDatabase())) {
             DataSourceEntity shadowDataSource = new DataSourceEntity();
             shadowDataSource.setUrl(dsEntity.getShadowDatabase());
             shadowDataSource.setUserName(dsEntity.getShadowUserName());
@@ -437,35 +425,31 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     }
 
 
-
     private String joinUrl(String host, String path) {
         return host.endsWith("/") ? host + path : host + "/" + path;
     }
 
 
-
-    private String commandId(Long resourceId,Long subId){
-        return resourceId+"_"+subId;
+    private String commandId(Long resourceId, Long subId) {
+        return resourceId + "_" + subId;
     }
 
 
-    private Long getResourceId(String commandId){
+    private Long getResourceId(String commandId) {
         String[] split = commandId.split("_");
-        if(split.length != 2){
-            throw new IllegalArgumentException("命令id校验失败:"+commandId);
+        if (split.length != 2) {
+            throw new IllegalArgumentException("命令id校验失败:" + commandId);
         }
         return Long.parseLong(split[0]);
     }
 
-    private Long getSubId(String commandId){
+    private Long getSubId(String commandId) {
         String[] split = commandId.split("_");
-        if(split.length != 2){
-            throw new IllegalArgumentException("命令id校验失败:"+commandId);
+        if (split.length != 2) {
+            throw new IllegalArgumentException("命令id校验失败:" + commandId);
         }
         return Long.parseLong(split[1]);
     }
-
-
 
 
 }

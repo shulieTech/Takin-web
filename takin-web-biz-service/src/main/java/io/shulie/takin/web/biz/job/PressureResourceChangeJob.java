@@ -73,7 +73,7 @@ public class PressureResourceChangeJob implements SimpleJob {
                     return;
                 }
                 try {
-                    PressureResourceEntity resource = pressureResourceMapper.selectById(resourceId);
+                    PressureResourceEntity resource = pressureResourceMapper.queryByIdNoTenant(resourceId);
                     if (resource == null) {
                         log.warn("当前资源准备{}状态调整未查询到数据", resourceId);
                         return;

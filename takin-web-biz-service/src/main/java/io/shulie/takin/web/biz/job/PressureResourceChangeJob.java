@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @ElasticSchedulerJob(jobName = "PressureResourceChangeJob",
-        isSharding = true,
+        isSharding = false,
         cron = "0/10 * * * * ? *",
         description = "配置资源修改立即触发")
 @Slf4j
@@ -55,14 +55,7 @@ public class PressureResourceChangeJob implements SimpleJob {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return;
         }
-        // 按配置Id分片
-        List<Long> filterList = resourceIds.stream().filter(resourceId ->
-                        resourceId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem())
-                .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(filterList)) {
-            return;
-        }
-        filterList.forEach(resourceId -> {
+        resourceIds.forEach(resourceId -> {
             String lockKey = JobRedisUtils.getRedisJobResource(1L, "change", resourceId);
             if (distributedLock.checkLock(lockKey)) {
                 return;

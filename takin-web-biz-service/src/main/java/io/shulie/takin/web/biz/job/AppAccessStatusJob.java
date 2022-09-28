@@ -1,13 +1,5 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
@@ -24,6 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author 无涯
  * @date 2021/6/15 5:30 下午
@@ -31,7 +30,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ElasticSchedulerJob(
         jobName = "appAccessStatusJob",
-        cron = "0/10 * *  * * ?",
+        cron = "0/20 * *  * * ?",
         description = "同步大数据应用状态",
         // 时效转移
         misfire = true,
@@ -62,15 +61,16 @@ public class AppAccessStatusJob implements SimpleJob {
             if (CollectionUtils.isEmpty(ext.getEnvs())) {
                 continue;
             }
-            // 根据环境 分线程
-            for (TenantEnv e : ext.getEnvs()) {
-                int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
-                if (shardKey % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
-                    if (distributedLock.checkLock(lockKey)) {
-                        continue;
-                    }
-                    Runnable r = () -> {
+            Runnable r = () -> {
+                // 根据环境 分线程
+                for (TenantEnv e : ext.getEnvs()) {
+                    int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
+                    if (shardKey % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
+                        if (distributedLock.checkLock(lockKey)) {
+                            continue;
+                        }
+
                         boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
                         if (!tryLock) {
                             return;
@@ -84,10 +84,11 @@ public class AppAccessStatusJob implements SimpleJob {
                         } finally {
                             distributedLock.unLockSafely(lockKey);
                         }
-                    };
-                    futureList.add(CompletableFuture.runAsync(r, jobThreadPool));
+                    }
+
                 }
-            }
+            };
+            futureList.add(CompletableFuture.runAsync(r, jobThreadPool));
         }
         try {
             CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0])).get();

@@ -20,6 +20,9 @@ public interface PressureResourceRelateAppMapper
             "<if test=\"item.status !=null\">" +
             " ,status = values(status)" +
             "</if>" +
+            "<if test=\"item.nodeNum !=null\">" +
+            " ,node_num = values(node_num)" +
+            "</if>" +
             "</script>")
     void saveOrUpdate(@Param("item") PressureResourceRelateAppEntity item);
 }

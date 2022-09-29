@@ -463,7 +463,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                                     tableEntity.setResourceId(resourceId);
                                     tableEntity.setBusinessTable(tableName);
                                     // 系统自动处理影子表
-                                    tableEntity.setShadowTable("PT_" + tableName);
+                                    tableEntity.setShadowTable(PtUtils.shadowTable(tableName));
                                     tableEntity.setDsKey(dsKey);
                                     tableEntity.setGmtCreate(new Date());
                                     tableEntity.setJoinFlag(JoinFlagEnum.YES.getCode());

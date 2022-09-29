@@ -246,7 +246,6 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         updateResourceEntity.setUserId(input.getUserId());
         pressureResourceMapper.updateById(updateResourceEntity);
 
-        // 使用原始名字去查询
         SceneResult sceneResult = sceneDAO.getSceneDetail(entity.getSourceId());
         if (sceneResult != null && !sceneResult.getSceneName().equals(input.getName())) {
             SceneUpdateParam updateParam = new SceneUpdateParam();
@@ -306,8 +305,6 @@ public class PressureResourceServiceImpl implements PressureResourceService {
                 pressureResourceDetailMapper.deleteBatchIds(deleteIds);
             }
         }
-        // 修改的
-
     }
 
     private String fetchKey(PressureResourceDetailEntity ele) {

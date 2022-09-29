@@ -54,6 +54,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         // 判断业务表是否存在
         PressureResourceTableQueryParam queryParam = new PressureResourceTableQueryParam();
         queryParam.setBusinessTableName(input.getBusinessTable());
+        // 通过数据源ID的主键是由应用名+业务数据源+resouceId生成,这里需要转换下
         String dsKey = pressureResourceDsService.getDsKey(input.getDsId());
         queryParam.setDsKey(dsKey);
         List<PressureResourceRelateTableEntity> tableList = pressureResourceRelateTableDAO.queryList(queryParam);

@@ -22,7 +22,7 @@ public interface PressureResourceDsService {
     void add(PressureResourceRelateDsInput input);
 
     /**
-     * 数据源新增
+     * 通过数据源Id获取dsKey
      */
     String getDsKey(Long dsId);
 

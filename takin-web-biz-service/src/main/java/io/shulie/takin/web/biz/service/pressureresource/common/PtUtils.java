@@ -17,4 +17,11 @@ public class PtUtils {
         }
         return false;
     }
+
+    public static String shadowTable(String table) {
+        if (StringUtils.isBlank(table)) {
+            return table;
+        }
+        return String.format("PT_%s", table);
+    }
 }

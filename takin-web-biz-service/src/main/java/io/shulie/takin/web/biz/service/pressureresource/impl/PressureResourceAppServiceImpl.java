@@ -132,6 +132,7 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
                     vo.setRemark(applicationVo.getExceptionInfo());
                 }
             }
+            vo.setApplicationId(String.valueOf(appId));
             return vo;
         }).collect(Collectors.toList());
         return PagingList.of(returnList, pageList.getTotal());

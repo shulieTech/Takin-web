@@ -30,6 +30,9 @@ public class PressureResourceRelateAppVO extends TenantBaseEntity {
     @ApiModelProperty("应用名称")
     private String appName;
 
+    @ApiModelProperty("应用Id")
+    private String applicationId;
+
     @ApiModelProperty("状态 0-正常 1-不正常")
     @Column(name = "`status`")
     private Integer status;

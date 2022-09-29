@@ -30,7 +30,6 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
-import io.shulie.takin.web.data.param.application.AppDatabaseInputParam;
 import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
 import io.shulie.takin.web.biz.service.perfomanceanaly.TraceManageService;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;

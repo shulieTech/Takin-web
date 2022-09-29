@@ -402,15 +402,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public Long getAccessErrorNum() {
-        try {
-            ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
-            requestV2.setAccessStatus(3);
-            Long total = this.pageApplication(requestV2).getTotal();
-            return total;
-        } catch (Throwable e) {
-            log.error(ExceptionUtils.getStackTrace(e));
-        }
-        return 0L;
+        ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
+        requestV2.setAccessStatus(3);
+        return this.pageApplication(requestV2).getTotal();
     }
 
 //    @Override

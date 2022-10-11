@@ -62,6 +62,16 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-sdk</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>fastjson</artifactId>
+                    <groupId>com.alibaba</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-common</artifactId>
         </dependency>
     </dependencies>
 </project>

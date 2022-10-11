@@ -52,7 +52,7 @@
         <!-- 3rd libs version -->
         <commons-lang3.version>3.5</commons-lang3.version>
         <spring.boot.version>2.3.0.RELEASE</spring.boot.version>
-        <mysql-jdbc.version>8.0.26</mysql-jdbc.version>
+        <mysql-jdbc.version>8.0.27</mysql-jdbc.version>
         <druid.version>1.1.22</druid.version>
         <common-pools2.version>2.3</common-pools2.version>
         <quartz.version>2.3.0</quartz.version>
@@ -67,7 +67,7 @@
         <!--版本升级 3.4.0 -> 3.4.3.4-->
         <mybatis.plus.version>3.4.3.4</mybatis.plus.version>
         <freemarker.version>2.3.31</freemarker.version>
-        <mybatis.version>3.5.5</mybatis.version>
+        <mybatis.version>3.5.6</mybatis.version>
         <druid.stater.version>1.1.22</druid.stater.version>
 
         <simulator.agent.api.version>5.0.0</simulator.agent.api.version>
@@ -80,6 +80,11 @@
         <openpdf.version>9.1.22</openpdf.version>
         <!-- 升级文档 -->
         <upgrade.doc>https://shulietech.feishu.cn/docs/doccnvTvNxzVrH29Xvm60l7kgHc</upgrade.doc>
+
+        <logback-version>1.4.0</logback-version>
+        <fastjson-version>2.0.14</fastjson-version>
+        <spring-security-web-version>5.5.7</spring-security-web-version>
+        <commons-collections-version>3.2.2</commons-collections-version>
     </properties>
 
     <modules>
@@ -177,7 +182,7 @@
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-web</artifactId>
-                <version>5.1.5.RELEASE</version>
+                <version>${spring-security-web-version}</version>
             </dependency>
 
             <dependency>

@@ -26,6 +26,8 @@
 
     <artifactId>takin-web-amdb-accessor</artifactId>
 
+
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -69,10 +71,22 @@
         <dependency>
             <groupId>io.shulie.pradar</groupId>
             <artifactId>log-protocol</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>fastjson</artifactId>
+                    <groupId>com.alibaba</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>fastjson</artifactId>
+                    <groupId>com.alibaba</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
@@ -93,6 +107,7 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-common</artifactId>
+            <version>takin-web-5.5.1.2</version>
         </dependency>
         <dependency>
             <groupId>io.shulie.surge.data</groupId>
@@ -105,6 +120,22 @@
                 <exclusion>
                     <artifactId>log4j</artifactId>
                     <groupId>log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>fastjson</artifactId>
+                    <groupId>com.alibaba</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>mysql</artifactId>
+                    <groupId>io.shulie.surge.data</groupId>
                 </exclusion>
 
             </exclusions>

@@ -90,10 +90,6 @@
             <version>RELEASE</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-web-common</artifactId>
-        </dependency>
     </dependencies>
 
     <properties>

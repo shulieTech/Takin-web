@@ -17,8 +17,8 @@ public class PressureResourceMqConsumerQueryRequest extends PageBaseDTO {
     @ApiModelProperty("resourceId")
     private Long resourceId;
 
-    @ApiModelProperty("applicationName")
-    private String applicationName;
+    @ApiModelProperty("queryApplicationName")
+    private String queryApplicationName;
 
     @ApiModelProperty("mqType")
     private String mqType;

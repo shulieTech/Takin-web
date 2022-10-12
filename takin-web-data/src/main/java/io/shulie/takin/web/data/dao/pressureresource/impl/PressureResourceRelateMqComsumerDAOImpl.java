@@ -94,8 +94,8 @@ public class PressureResourceRelateMqComsumerDAOImpl implements PressureResource
         if (StringUtils.isNotBlank(param.getQueryTopicGroup())) {
             queryWrapper.like("topic_group", param.getQueryTopicGroup());
         }
-        if (StringUtils.isNotBlank(param.getApplicationName())) {
-            queryWrapper.like("application_name", param.getApplicationName());
+        if (StringUtils.isNotBlank(param.getQueryApplicationName())) {
+            queryWrapper.like("application_name", param.getQueryApplicationName());
         }
         return queryWrapper;
     }

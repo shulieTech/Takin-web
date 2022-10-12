@@ -23,8 +23,8 @@ public class PressureResourceMqConsumerQueryParam extends PageBaseDTO {
     @ApiModelProperty("模糊查询，消费组")
     private String queryTopicGroup;
 
-    @ApiModelProperty("applicationName")
-    private String applicationName;
+    @ApiModelProperty("queryApplicationName")
+    private String queryApplicationName;
 
     @ApiModelProperty("consumerTag")
     private Integer consumerTag;

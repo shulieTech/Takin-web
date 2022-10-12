@@ -23,16 +23,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-common</artifactId>
-
-    <properties>
-        <logback-version>1.2.9</logback-version>
-        <fastjson-version>1.2.83</fastjson-version>
-        <spring-security-web-version>5.5.7</spring-security-web-version>
-        <commons-collections-version>3.2.2</commons-collections-version>
-        <mybatis.version>3.5.6</mybatis.version>
-        <mysql-jdbc.version>8.0.27</mysql-jdbc.version>
-    </properties>
-
     <dependencies>
         <!--takin 公共包-->
         <dependency>
@@ -190,23 +180,6 @@
                     <groupId>com.alibaba</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback-version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>logback-core</artifactId>
-                    <groupId>ch.qos.logback</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>${logback-version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>

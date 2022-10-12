@@ -27,19 +27,20 @@ import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRel
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author xingchen
@@ -73,6 +74,10 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
 
     @Resource
     private SceneExcludedApplicationDAO sceneExcludedApplicationDAO;
+
+    @Resource
+    @Qualifier("simpleFutureThreadPool")
+    private ThreadPoolExecutor simpleFutureThreadPool;
 
     /**
      * 应用检查列表
@@ -109,6 +114,27 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
         }
         //转换下
         List<PressureResourceRelateAppEntity> source = pageList.getList();
+        // 批量下应用状态
+        List<CompletableFuture<ApplicationVo>> futureList = Lists.newArrayList();
+        source.stream().forEach(config -> {
+            Long appId = applicationService.queryApplicationIdByAppName(config.getAppName());
+            if (appId == null) {
+                return;
+            }
+            CompletableFuture<ApplicationVo> future = CompletableFuture.supplyAsync(() -> {
+                // 这里接口比较慢,并行去查
+                Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
+                if (voResponse.getSuccess()) {
+                    return voResponse.getData();
+                }
+                return new ApplicationVo();
+            }, simpleFutureThreadPool);
+            futureList.add(future);
+        });
+        List<ApplicationVo> applicationVos = Stream.of(futureList.toArray(new CompletableFuture[futureList.size()]))
+                .map(CompletableFuture<ApplicationVo>::join)
+                .collect(Collectors.toList());
+        final Map<String, List<ApplicationVo>> appMap = applicationVos.stream().collect(Collectors.groupingBy(ApplicationVo::getApplicationName));
         List<PressureResourceRelateAppVO> returnList = source.stream().map(configDto -> {
             PressureResourceRelateAppVO vo = new PressureResourceRelateAppVO();
             BeanUtils.copyProperties(configDto, vo);
@@ -121,18 +147,12 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
             vo.setStatus(1);
             vo.setId(String.valueOf(configDto.getId()));
             // 获取应用信息
-            Long appId = applicationService.queryApplicationIdByAppName(vo.getAppName());
-            if (appId != null) {
-                Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
-                if (voResponse.getSuccess()) {
-                    ApplicationVo applicationVo = voResponse.getData();
-                    vo.setNodeNum(applicationVo.getNodeNum() == null ? 0 : applicationVo.getNodeNum());
-                    vo.setAgentNodeNum(applicationVo.getOnlineNodeNum() == null ? 0 : applicationVo.getOnlineNodeNum());
-                    vo.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
-                    vo.setRemark(applicationVo.getExceptionInfo());
-                }
-            }
-            vo.setApplicationId(String.valueOf(appId));
+            ApplicationVo applicationVo = appMap.get(vo.getAppName()).stream().findFirst().get();
+            vo.setNodeNum(applicationVo.getNodeNum() == null ? 0 : applicationVo.getNodeNum());
+            vo.setAgentNodeNum(applicationVo.getOnlineNodeNum() == null ? 0 : applicationVo.getOnlineNodeNum());
+            vo.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
+            vo.setRemark(applicationVo.getExceptionInfo());
+            vo.setApplicationId(String.valueOf(applicationVo.getId()));
             return vo;
         }).collect(Collectors.toList());
         return PagingList.of(returnList, pageList.getTotal());

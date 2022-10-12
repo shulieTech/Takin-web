@@ -423,6 +423,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         statusMap.put("APP", 0);
         statusMap.put("DS", 0);
         statusMap.put("REMOTECALL", 0);
+        statusMap.put("MQ", 0);
 
         // 查看应用状态
         PressureResourceAppRequest appRequest = new PressureResourceAppRequest();
@@ -440,7 +441,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
                 statusMap.put("APP", 1);
             }
         }
-        // 影子资源检查
+        // 影子MQ检查
         PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
         dsQueryParam.setResourceId(id);
         List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
@@ -453,6 +454,24 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             // 存在正常的,进行中
             if (dsEntityList.size() - normal > 0) {
                 statusMap.put("DS", 1);
+            }
+        }
+
+        // 影子资源检查
+        PressureResourceMqConsumerQueryRequest mqRequest = new PressureResourceMqConsumerQueryRequest();
+        mqRequest.setResourceId(id);
+        mqRequest.setPageSize(2000);
+        PagingList<PressureResourceMqComsumerVO> mqPageList = pressureResourceMqConsumerService.list(mqRequest);
+        if (!mqPageList.isEmpty()) {
+            List<PressureResourceMqComsumerVO> appVOList = mqPageList.getList();
+            // 判断状态是否都是正常的
+            int normal = appVOList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
+            if (normal == appVOList.size()) {
+                statusMap.put("MQ", 2);
+            }
+            // 存在正常的,进行中
+            if (appVOList.size() - normal > 0) {
+                statusMap.put("MQ", 1);
             }
         }
         return statusMap;

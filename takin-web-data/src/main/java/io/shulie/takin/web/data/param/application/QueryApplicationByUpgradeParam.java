@@ -24,6 +24,7 @@ public class QueryApplicationByUpgradeParam extends PageBaseDTO {
     private List<Long> appIds;
 
     private List<Long> userIds;
+    private List<Long> deptIds;
 
     private Long tenantId;
     private String envCode;

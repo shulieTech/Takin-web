@@ -45,6 +45,10 @@ public class ScriptManageDeployPageQueryParam extends PagingDevice {
      */
     private List<Long> userIdList;
 
+    private List<Long> deptIdList;
+
+    private Long deptId;
+
     /**
      * 脚本类型
      */

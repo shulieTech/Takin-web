@@ -91,12 +91,13 @@ public class ApplicationApiController {
         needAuth = ActionTypeEnum.QUERY
     )
     public Response query(@ApiParam(name = "applicationName", value = "应用名") String applicationName,
-        @ApiParam(name = "api", value = "入口名") String api,
+        @ApiParam(name = "api", value = "入口名") String api, @ApiParam(name = "deptId", value = "部门id") Long deptId,
         Integer current,
         Integer pageSize) {
         EntranceApiVo vo = new EntranceApiVo();
         vo.setApplicationName(applicationName);
         vo.setApi(api);
+        vo.setDeptId(deptId);
         vo.setPageSize(pageSize);
         vo.setCurrentPage(current);
         try {

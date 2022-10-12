@@ -150,9 +150,6 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getStatus,
                 request.getEnabled() ? ShadowConsumerConstants.ENABLE : ShadowConsumerConstants.DISABLE);
         }
-        if (CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
-            lambdaQueryWrapper.in(ShadowMqConsumerEntity::getUserId, WebPluginUtils.getQueryAllowUserIdList());
-        }
         List<ShadowConsumerOutput> totalResult;
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getApplicationId, request.getApplicationId());
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getDeleted, ShadowConsumerConstants.LIVED);
@@ -664,9 +661,6 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         // if (StringUtils.isNotBlank(request.getShadowConsumerEnable())) {
         //     lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getStatus, request.getShadowConsumerEnable());
         // }
-        if (CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
-            lambdaQueryWrapper.in(ShadowMqConsumerEntity::getUserId, WebPluginUtils.getQueryAllowUserIdList());
-        }
         List<ShadowConsumerOutput> totalResult;
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getApplicationId, request.getApplicationId());
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getDeleted, ShadowConsumerConstants.LIVED);

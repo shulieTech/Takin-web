@@ -103,9 +103,12 @@ public class ReportServiceImpl implements ReportService {
         ResponseResult<List<ReportResp>> reportResponseList = cloudReportApi.listReport(new ReportQueryReq() {{
             setSceneId(param.getSceneId());
             setReportId(param.getReportId());
+            setDeptId(param.getDeptId());
             setSceneName(param.getSceneName());
             setStartTime(param.getStartTime());
             setEndTime(param.getEndTime());
+            setUserIds(WebPluginUtils.queryAllowUserIdList());
+            setDeptIds(WebPluginUtils.queryAllowDeptIdList());
             setPageSize(param.getPageSize());
             setPageNumber(param.getCurrentPage() + 1);
             setFilterSql(String.join(",", userIdList));
@@ -193,17 +196,6 @@ public class ReportServiceImpl implements ReportService {
         ReportDetailTempOutput output = new ReportDetailTempOutput();
         BeanUtils.copyProperties(result, output);
 
-        List<Long> allowStartStopUserIdList = WebPluginUtils.getStartStopAllowUserIdList();
-        if (CollectionUtils.isNotEmpty(allowStartStopUserIdList)) {
-            Long userId = output.getUserId();
-            if (userId == null || !allowStartStopUserIdList.contains(userId)) {
-                output.setCanStartStop(Boolean.FALSE);
-            } else {
-                output.setCanStartStop(Boolean.TRUE);
-            }
-        } else {
-            output.setCanStartStop(Boolean.TRUE);
-        }
         fillExecuteMan(output);
         return output;
 

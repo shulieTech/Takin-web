@@ -31,4 +31,7 @@ public class ActivityQueryRequest extends PagingDevice {
 
     @ApiModelProperty(name= "type",value = "正常、虚拟:0:正常：1虚拟")
     private Integer type;
+
+    @ApiModelProperty("部门id")
+    private Long deptId;
 }

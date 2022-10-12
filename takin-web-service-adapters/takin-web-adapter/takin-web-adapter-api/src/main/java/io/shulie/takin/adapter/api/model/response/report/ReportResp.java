@@ -51,4 +51,6 @@ public class ReportResp extends ContextExt {
 
     private Long scriptId;
 
+    private Long deptId;
+
 }

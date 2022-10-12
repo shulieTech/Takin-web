@@ -17,4 +17,6 @@ public class EntranceApiVo extends PagingDevice {
     private String applicationName;
     @ApiModelProperty(name = "api", value = "入口地址")
     private String api;
+    @ApiModelProperty(name = "deptId", value = "部门id")
+    private Long deptId;
 }

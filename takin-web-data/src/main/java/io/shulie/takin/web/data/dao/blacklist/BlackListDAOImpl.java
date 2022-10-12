@@ -20,6 +20,7 @@ import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -45,6 +46,7 @@ public class BlackListDAOImpl implements BlackListDAO {
         entity.setUseYn(param.getUseYn());
         entity.setGmtCreate(param.getCreateTime());
         entity.setGmtModified(param.getUpdateTime());
+        entity.setDeptId(WebPluginUtils.traceDeptId());
         return blackListMapper.insert(entity);
     }
 

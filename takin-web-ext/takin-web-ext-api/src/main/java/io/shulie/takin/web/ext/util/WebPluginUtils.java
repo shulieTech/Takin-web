@@ -224,6 +224,13 @@ public class WebPluginUtils {
         return null;
     }
 
+    public static Long traceDeptId(){
+        if (userApi != null) {
+            return userApi.traceDeptId();
+        }
+        return null;
+    }
+
     public static Class<?> getClassByName(String className) {
         try {
             // 先扫描用户插件
@@ -253,34 +260,145 @@ public class WebPluginUtils {
      *
      * @return -
      */
-    public static List<Long> getQueryAllowUserIdList() {
+    public static List<Long> queryAllowUserIdList() {
         if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.getQueryAllowUserIdList();
+            return dataAuthApi.queryAllowUserIdList();
         }
         return Lists.newArrayList();
     }
 
-    public static List<Long> getUpdateAllowUserIdList() {
+    public static List<Long> createAllowUserIdList() {
         if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.getUpdateAllowUserIdList();
+            return dataAuthApi.createAllowUserIdList();
         }
         return Lists.newArrayList();
     }
 
-    public static List<Long> getDeleteAllowUserIdList() {
+    public static List<Long> updateAllowUserIdList() {
         if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.getDeleteAllowUserIdList();
+            return dataAuthApi.updateAllowUserIdList();
         }
         return Lists.newArrayList();
     }
 
-    public static List<Long> getDownloadAllowUserIdList() {
+    public static List<Long> deleteAllowUserIdList() {
         if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.getDownloadAllowUserIdList();
+            return dataAuthApi.deleteAllowUserIdList();
         }
         return Lists.newArrayList();
     }
-	
+
+    public static List<Long> enableDisableAllowUserIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.enableDisableAllowUserIdList();
+        }
+        return Lists.newArrayList();
+    }
+
+    public static List<Long> startStopAllowUserIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.startStopAllowUserIdList();
+        }
+        return Lists.newArrayList();
+    }
+
+    public static List<Long> downloadAllowUserIdList() {
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.downloadAllowUserIdList();
+        }
+        return Lists.newArrayList();
+    }
+
+    public static List<Long> reportAllowUserIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.reportAllowUserIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> pigeonholeAllowUserIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.pigeonholeAllowUserIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> shareAllowUserIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.shareAllowUserIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> copyAllowUserIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.copyAllowUserIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> queryAllowDeptIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.queryAllowDeptIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> createAllowDeptIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.createAllowDeptIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> updateAllowDeptIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.updateAllowDeptIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> deleteAllowDeptIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.deleteAllowDeptIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> enableDisableAllowDeptIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.enableDisableAllowDeptIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> startStopAllowDeptIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.startStopAllowDeptIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> downloadAllowDeptIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.downloadAllowDeptIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> reportAllowDeptIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.reportAllowDeptIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> pigeonholeAllowDeptIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.pigeonholeAllowDeptIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> shareAllowDeptIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.shareAllowDeptIdList();
+        }
+        return Lists.newArrayList();
+    }
+    public static List<Long> copyAllowDeptIdList(){
+        if (Objects.nonNull(dataAuthApi)) {
+            return dataAuthApi.copyAllowDeptIdList();
+        }
+        return Lists.newArrayList();
+    }
 	/**
      * 返回租户id
      *
@@ -293,20 +411,6 @@ public class WebPluginUtils {
             }
         }
         return CUSTOMER_ID;
-    }
-	
-    public static List<Long> getStartStopAllowUserIdList() {
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.getStartStopAllowUserIdList();
-        }
-        return Lists.newArrayList();
-    }
-
-    public static List<Long> getEnableDisableAllowUserIdList() {
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.getEnableDisableAllowUserIdList();
-        }
-        return Lists.newArrayList();
     }
 
     public static boolean validateAdmin() {

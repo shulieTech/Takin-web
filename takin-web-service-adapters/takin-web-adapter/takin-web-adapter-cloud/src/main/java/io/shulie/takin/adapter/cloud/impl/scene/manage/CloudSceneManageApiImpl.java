@@ -60,6 +60,7 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapper
 import io.shulie.takin.adapter.api.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
 import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -100,6 +101,7 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         SceneManageWrapperReq request = JsonHelper.json2Bean(JsonHelper.bean2Json(req), SceneManageWrapperReq.class);
         SceneManageWrapperInput input = new SceneManageWrapperInput();
         dataModelConvert(request, input);
+        input.setDeptId(WebPluginUtils.traceDeptId());
         return cloudSceneManageService.addSceneManage(input);
     }
 
@@ -156,6 +158,9 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         queryVO.setLastPtStartTime(req.getLastPtStartTime());
         queryVO.setLastPtEndTime(req.getLastPtEndTime());
         queryVO.setIsArchive(req.getIsArchive() == null?0:req.getIsArchive());
+        queryVO.setDeptId(req.getDeptId());
+        queryVO.setUserIdList(req.getUserIdList());
+        queryVO.setDeptIdList(req.getDeptIdList());
         PageInfo<SceneManageListOutput> pageInfo = cloudSceneManageService.queryPageList(queryVO);
         // 转换
         List<SceneManageListResp> list = pageInfo.getList().stream()

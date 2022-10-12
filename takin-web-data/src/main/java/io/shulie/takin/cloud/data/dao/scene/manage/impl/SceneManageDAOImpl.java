@@ -63,18 +63,7 @@ public class SceneManageDAOImpl
 
     @Override
     public List<SceneManageEntity> getPageList(SceneManageQueryBean queryBean) {
-        // 补充用户过滤信息信息
-        String userIds = "";
-        if (StrUtil.isNotBlank(CloudPluginUtils.getContext().getFilterSql())) {
-            userIds = CloudPluginUtils.getContext().getFilterSql();
-            // 去除左右的括号
-            if (userIds.lastIndexOf("(") == 0
-                    && userIds.lastIndexOf(")") == userIds.length() - 1) {
-                userIds = userIds.substring(1, userIds.length() - 1);
-            }
-        }
-        List<String> userIdList = Arrays.stream(userIds.split(","))
-                .filter(StrUtil::isNotBlank).collect(Collectors.toList());
+
         // 组装查询条件
         LambdaQueryWrapper<SceneManageEntity> wrapper = Wrappers.lambdaQuery(SceneManageEntity.class)
             .eq(!Objects.isNull(queryBean.getSceneId()), SceneManageEntity::getId, queryBean.getSceneId())
@@ -87,7 +76,9 @@ public class SceneManageDAOImpl
             .eq(Objects.nonNull(queryBean.getIsArchive()), SceneManageEntity::getIsArchive, queryBean.getIsArchive())
             .eq(SceneManageEntity::getTenantId, CloudPluginUtils.getContext().getTenantId())
             .eq(SceneManageEntity::getEnvCode, CloudPluginUtils.getContext().getEnvCode())
-            .in(userIdList.size() > 0, SceneManageEntity::getUserId, userIdList)
+            .eq(!Objects.isNull(queryBean.getDeptId()),SceneManageEntity::getDeptId, queryBean.getDeptId())
+            .in(!CollectionUtils.isEmpty(queryBean.getUserIdList()), SceneManageEntity::getUserId, queryBean.getUserIdList())
+            .in(!CollectionUtils.isEmpty(queryBean.getDeptIdList()), SceneManageEntity::getDeptId, queryBean.getDeptIdList())
             .orderByDesc(SceneManageEntity::getLastPtTime)
             .orderByDesc(SceneManageEntity::getId);
         return this.baseMapper.selectList(wrapper);

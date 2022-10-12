@@ -80,7 +80,7 @@ public interface ApplicationDAO {
      * @param userIdList
      * @return
      */
-    List<ApplicationDetailResult> getApplicationListByUserIds(List<Long> userIdList);
+    List<ApplicationDetailResult> getApplicationListByUserIds(List<Long> userIdList, List<Long> deptIdList);
 
     /**
      * 获取应用
@@ -268,7 +268,7 @@ public interface ApplicationDAO {
      * @param keyword
      * @return
      */
-    List<ApplicationDetailResult> getApplicationMntByUserIdsAndKeyword(List<Long> userIds, String keyword);
+    List<ApplicationDetailResult> getApplicationMntByUserIdsAndKeyword(List<Long> userIds, List<Long> deptIdList, String keyword);
 
     /**
      * 判断是否存在

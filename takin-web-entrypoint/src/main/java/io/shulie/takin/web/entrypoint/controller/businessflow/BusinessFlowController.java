@@ -209,11 +209,12 @@ public class BusinessFlowController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.QUERY
     )
-    public PagingList<BusinessFlowListResponse> getBusinessFlowList(@ApiParam("业务流程名称") String businessFlowName, Integer current, Integer pageSize) {
+    public PagingList<BusinessFlowListResponse> getBusinessFlowList(@ApiParam("业务流程名称") String businessFlowName, @ApiParam("部门id") Long deptId, Integer current, Integer pageSize) {
         BusinessFlowPageQueryRequest queryRequest = new BusinessFlowPageQueryRequest();
         queryRequest.setCurrentPage(current);
         queryRequest.setPageSize(pageSize);
         queryRequest.setBusinessFlowName(businessFlowName);
+        queryRequest.setDeptId(deptId);
         return sceneService.getBusinessFlowList(queryRequest);
     }
 

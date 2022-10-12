@@ -14,5 +14,11 @@ import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class AuthQueryParamCommonExt extends TenantCommonExt {
+
     private List<Long> userIdList;
+
+    /**
+     * 允许的id列表
+     */
+    private List<Long> deptIdList;
 }

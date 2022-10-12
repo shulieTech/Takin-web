@@ -69,4 +69,7 @@ public class ApplicationApiManageEntity extends UserBaseEntity {
 
     @TableField(value = "is_agent_registe")
     private Integer isAgentRegiste;
+
+    @TableField(value = "dept_id")
+    private Long deptId;
 }

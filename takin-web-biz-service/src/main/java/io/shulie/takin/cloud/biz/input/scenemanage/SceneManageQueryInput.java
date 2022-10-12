@@ -32,4 +32,10 @@ public class SceneManageQueryInput extends PagingContextExt {
     private String lastPtEndTime;
 
     private Integer isArchive;
+
+    private Long deptId;
+
+    private List<Long> userIdList;
+
+    private List<Long> deptIdList;
 }

@@ -310,6 +310,7 @@ public class SceneServiceImpl implements SceneService {
         sceneCreateParam.setLinkRelateNum(0);
         sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
         sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
+        sceneCreateParam.setDeptId(WebPluginUtils.traceDeptId());
         if (source != null) {
             sceneCreateParam.setType(source);
         } else {
@@ -637,6 +638,7 @@ public class SceneServiceImpl implements SceneService {
         queryParam.setSceneName(flowName == null ? null : flowName.replace("%", "\\%").replace("-", "\\-").replace("_", "\\_"));
         queryParam.setCurrent(queryRequest.getCurrent());
         queryParam.setPageSize(queryRequest.getPageSize());
+        queryParam.setDeptId(queryRequest.getDeptId());
         WebPluginUtils.fillQueryParam(queryParam);
         queryParam.setIgnoreType(SceneTypeEnum.PERFORMANCE_AUTO_SCENE.getType());
 

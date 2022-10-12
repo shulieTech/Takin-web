@@ -41,4 +41,10 @@ public class SceneManageQueryBean extends ContextExt {
 	private Integer isArchive;
 
     private List<Integer> statusList;
+
+    private Long deptId;
+
+    private List<Long> userIdList;
+
+    private List<Long> deptIdList;
 }

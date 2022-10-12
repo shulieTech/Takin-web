@@ -82,6 +82,7 @@ public class SceneManageWrapperDTO implements Serializable {
     @ApiModelProperty(name = "scheduleInterval", value = "漏数时间间隔")
     private Integer scheduleInterval;
 
+    private Long deptId;
     /**
      * 是否是绝对脚本路径
      */

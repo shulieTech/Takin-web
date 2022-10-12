@@ -35,7 +35,8 @@
         CREATE_TIME,
         UPDATE_TIME,
         tenant_id,
-        USER_ID
+        USER_ID,
+        dept_id
         from
         t_black_list
         <where>
@@ -46,6 +47,12 @@
                 AND user_id IN
                 <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
                     #{userId}
+                </foreach>
+            </if>
+            <if test="deptIds != null and deptIds.size > 0">
+                AND dept_id IN
+                <foreach collection="deptIds" item="deptId" open="(" close=")" separator=",">
+                    #{deptId}
                 </foreach>
             </if>
         </where>

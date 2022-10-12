@@ -179,6 +179,12 @@ public interface WebUserExtApi extends ExtensionPoint {
      */
     Integer traceSource();
 
+    /**
+     * 获取当前登录用户最低部门id
+     * @return
+     */
+    Long traceDeptId();
+
     //********************************http线程上下文模块**********************************//
 
     /**

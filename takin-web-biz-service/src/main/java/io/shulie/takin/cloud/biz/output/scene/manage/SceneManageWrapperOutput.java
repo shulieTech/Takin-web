@@ -145,6 +145,8 @@ public class SceneManageWrapperOutput extends ContextExt {
     private String machineId;
     private Integer machineType;
 
+    private Long deptId;
+
     @Data
     @EqualsAndHashCode(callSuper = true)
     public static class SceneBusinessActivityRefOutput extends SceneBusinessActivityRefBean {

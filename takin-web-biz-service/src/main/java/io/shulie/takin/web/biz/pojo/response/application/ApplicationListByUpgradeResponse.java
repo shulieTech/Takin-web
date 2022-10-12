@@ -21,4 +21,6 @@ public class ApplicationListByUpgradeResponse {
 
     private Date gmtUpdate;
 
+    private Long deptId;
+
 }

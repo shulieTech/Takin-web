@@ -77,4 +77,7 @@ public class BlackListEntity extends UserBaseEntity {
     private String principalNo;
 
     private String value;
+
+    @TableField(value = "dept_id")
+    private Long deptId;
 }

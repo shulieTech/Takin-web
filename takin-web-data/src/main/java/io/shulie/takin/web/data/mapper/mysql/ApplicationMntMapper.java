@@ -58,7 +58,7 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
     List<ApplicationMntEntity> getAllApplicationByStatus(@Param("statusList") List<Integer> statusList);
 
     List<ApplicationMntEntity> getApplicationMntByUserIdsAndKeyword(@Param("userIds") List<Long> userIds,
-        @Param("keyword") String keyword);
+                                                                    @Param("deptIds") List<Long> deptIds,@Param("keyword") String keyword);
 
     List<ApplicationMntEntity> getAllApplications();
 

@@ -198,11 +198,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
     @Override
     public void batchConfig(AppRemoteCallConfigRequest request) {
-        if (WebPluginUtils.validateAdmin()) {
-            appRemoteCallDAO.updateListSelective(request.getType(), request.getAppIds(), null);
-        } else {
-            appRemoteCallDAO.updateListSelective(request.getType(), request.getAppIds(), WebPluginUtils.getUpdateAllowUserIdList());
-        }
+        appRemoteCallDAO.updateListSelective(request.getType(), request.getAppIds(), null);
     }
 
     @Override
@@ -382,27 +378,27 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     }
 
     /**
-     * 权限填充 用应用权限来控制
+     * 权限填充 用应用权限来控制, 应用内部不再做一次权限控制
      */
     private void fillInPermissions(AppRemoteCallListVO listVO, ApplicationDetailResult detailResult) {
-        List<Long> allowUpdateUserIdList = WebPluginUtils.getUpdateAllowUserIdList();
-        if (CollectionUtils.isEmpty(allowUpdateUserIdList)) {
-            //管理员
-            listVO.setCanEdit(true);
-        } else {
-            //普通用户
-            listVO.setCanEdit(allowUpdateUserIdList.contains(detailResult.getUserId()));
-        }
-        List<Long> allowDeleteUserIdList = WebPluginUtils.getDeleteAllowUserIdList();
-        if (CollectionUtils.isEmpty(allowDeleteUserIdList)) {
-            listVO.setCanRemove(true);
-        } else {
-            listVO.setCanRemove(allowDeleteUserIdList.contains(detailResult.getUserId()));
-        }
-        List<Long> allowEnableDisableUserIdList = WebPluginUtils.getEnableDisableAllowUserIdList();
-        if (CollectionUtils.isNotEmpty(allowEnableDisableUserIdList)) {
-            listVO.setCanEnableDisable(allowEnableDisableUserIdList.contains(detailResult.getUserId()));
-        }
+//        List<Long> allowUpdateUserIdList = WebPluginUtils.getUpdateAllowUserIdList();
+//        if (CollectionUtils.isEmpty(allowUpdateUserIdList)) {
+//            //管理员
+//            listVO.setCanEdit(true);
+//        } else {
+//            //普通用户
+//            listVO.setCanEdit(allowUpdateUserIdList.contains(detailResult.getUserId()));
+//        }
+//        List<Long> allowDeleteUserIdList = WebPluginUtils.getDeleteAllowUserIdList();
+//        if (CollectionUtils.isEmpty(allowDeleteUserIdList)) {
+//            listVO.setCanRemove(true);
+//        } else {
+//            listVO.setCanRemove(allowDeleteUserIdList.contains(detailResult.getUserId()));
+//        }
+//        List<Long> allowEnableDisableUserIdList = WebPluginUtils.getEnableDisableAllowUserIdList();
+//        if (CollectionUtils.isNotEmpty(allowEnableDisableUserIdList)) {
+//            listVO.setCanEnableDisable(allowEnableDisableUserIdList.contains(detailResult.getUserId()));
+//        }
     }
 
     @Override

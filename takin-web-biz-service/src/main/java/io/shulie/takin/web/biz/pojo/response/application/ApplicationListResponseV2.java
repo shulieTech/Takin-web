@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.pojo.response.application;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -11,7 +12,7 @@ import lombok.Data;
  * @date 2021/12/8 4:02 下午
  */
 @Data
-public class ApplicationListResponseV2 {
+public class ApplicationListResponseV2 extends AuthQueryResponseCommonExt {
 
     /**
      * 不是表id

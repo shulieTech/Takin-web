@@ -40,4 +40,6 @@ public class SceneManageCreateOrUpdateParam extends ContextExt {
 
     private String ptConfig;
 
+    private Long deptId;
+
 }

@@ -35,6 +35,7 @@ import io.shulie.takin.web.data.result.scriptmanage.ScriptDeployDetailResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptExecuteResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -114,6 +115,7 @@ public class ScriptManageDAOImpl
                 scriptManageEntity.setScriptVersion(scriptManageDeployCreateParam.getScriptVersion());
                 scriptManageEntity.setFeature(scriptManageDeployCreateParam.getFeature());
                 scriptManageEntity.setMVersion(scriptManageDeployCreateParam.getMVersion());
+                scriptManageEntity.setDeptId(WebPluginUtils.traceDeptId());
                 scriptManageMapper.insert(scriptManageEntity);
                 scriptManageDeployCreateParam.setScriptId(scriptManageEntity.getId());
             }
@@ -246,6 +248,12 @@ public class ScriptManageDAOImpl
         wrapper.orderByDesc(ScriptManageEntity::getGmtUpdate);
         if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
             wrapper.in(ScriptManageEntity::getUserId, param.getUserIdList());
+        }
+        if (CollectionUtils.isNotEmpty(param.getDeptIdList())) {
+            wrapper.in(ScriptManageEntity::getDeptId, param.getDeptIdList());
+        }
+        if (param.getDeptId() != null){
+            wrapper.eq(ScriptManageEntity::getDeptId, param.getDeptId());
         }
         Page<ScriptManageEntity> scriptManageEntityPage = scriptManageMapper.selectPage(page, wrapper);
         if (scriptManageEntityPage == null) {

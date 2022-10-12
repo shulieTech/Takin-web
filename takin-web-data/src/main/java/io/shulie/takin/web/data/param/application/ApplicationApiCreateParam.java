@@ -44,6 +44,8 @@ public class ApplicationApiCreateParam extends TenantCommonExt {
      */
     private Long userId;
 
+    private Long deptId;
+
     /**
      * 是否有效 0:有效;1:无效
      */

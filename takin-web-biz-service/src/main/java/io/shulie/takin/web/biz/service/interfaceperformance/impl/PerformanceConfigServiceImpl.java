@@ -99,6 +99,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         insertConfigEntity.setGmtModified(new Date());
         // 设置归属人未当前创建人
         insertConfigEntity.setUserId(WebPluginUtils.traceUserId());
+        insertConfigEntity.setDeptId(WebPluginUtils.traceDeptId());
         // 新增配置信息
         Long returnObj = performanceConfigDAO.add(insertConfigEntity);
         /**
@@ -186,7 +187,13 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         BeanUtils.copyProperties(request, param);
         AuthQueryParamCommonExt ext = new AuthQueryParamCommonExt();
         WebPluginUtils.fillQueryParam(ext);
-        param.setUserIdList(ext.getUserIdList());
+        if (CollectionUtils.isNotEmpty(ext.getUserIdList())){
+            param.setUserIdList(ext.getUserIdList());
+        }
+        if (CollectionUtils.isNotEmpty(ext.getDeptIdList())){
+            param.setDeptIdList(ext.getDeptIdList());
+        }
+
         PagingList<PerformanceConfigDto> dtoPagingList = performanceConfigDAO.pageList(param);
         //转换下
         List<PerformanceConfigDto> source = dtoPagingList.getList();

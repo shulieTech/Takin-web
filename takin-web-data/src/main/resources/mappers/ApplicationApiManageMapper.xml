@@ -13,11 +13,12 @@
         <result column="api" jdbcType="VARCHAR" property="api"/>
         <result column="method" jdbcType="VARCHAR" property="method"/>
         <result column="user_id" jdbcType="BIGINT" property="userId"/>
+        <result column="dept_id" jdbcType="BIGINT" property="deptId"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         ID, APPLICATION_ID, APPLICATION_NAME, CREATE_TIME, UPDATE_TIME, IS_DELETED, api,
-        `method`,USER_ID,TENANT_ID,ENV_CODE
+        `method`,USER_ID,TENANT_ID,ENV_CODE,dept_id
     </sql>
 
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
@@ -191,10 +192,19 @@
         <if test="record != null and record.applicationName != null">
             and APPLICATION_NAME LIKE concat('%',#{record.applicationName},'%')
         </if>
+        <if test="record != null and record.deptId != null">
+            and dept_id = #{record.deptId}
+        </if>
         <if test="userIds != null and userIds.size > 0">
             AND user_id IN
             <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
                 #{userId}
+            </foreach>
+        </if>
+        <if test="deptIds != null and deptIds.size > 0">
+            AND dept_id IN
+            <foreach collection="deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
             </foreach>
         </if>
         ORDER BY CREATE_TIME DESC

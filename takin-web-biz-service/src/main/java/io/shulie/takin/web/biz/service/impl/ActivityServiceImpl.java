@@ -532,6 +532,7 @@ public class ActivityServiceImpl implements ActivityService {
         param.setCurrent(request.getCurrent());
         param.setPageSize(request.getPageSize());
         param.setType(request.getType());
+        param.setDeptId(request.getDeptId());
         WebPluginUtils.fillQueryParam(param);
 
         PagingList<ActivityListResult> activityListResultPagingList = activityDAO.pageActivities(param);
@@ -553,6 +554,7 @@ public class ActivityServiceImpl implements ActivityService {
                     response.setCanDelete(result.getCanDelete());
                     response.setBusinessDomain(result.getBusinessDomain());
                     response.setActivityLevel(result.getActivityLevel());
+                    response.setDeptId(result.getDeptId());
                     WebPluginUtils.fillQueryResponse(response);
                     return response;
                 }).collect(Collectors.toList());

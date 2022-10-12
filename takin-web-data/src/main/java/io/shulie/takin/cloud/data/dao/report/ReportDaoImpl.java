@@ -28,6 +28,7 @@ import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,6 +59,7 @@ public class ReportDaoImpl implements ReportDao {
             entity.setGmtCreate(insertDate);
             entity.setGmtUpdate(insertDate);
             entity.setStartTime(insertDate);
+            entity.setDeptId(WebPluginUtils.traceDeptId());
             return reportMapper.insert(entity);
         }
         return 0;

@@ -392,6 +392,7 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
             setTenantId(t.getTenantId());
             setUserId(t.getUserId());
             setUserName(null);
+            setDeptId(t.getDeptId());
             setScriptAnalysisResult(t.getScriptAnalysisResult());
         }}).collect(Collectors.toList());
         Map<Long, Integer> threadNum = new HashMap<>(1);
@@ -1092,6 +1093,7 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         wrapperOutput.setFeatures(sceneManageResult.getFeatures());
         wrapperOutput.setScriptAnalysisResult(sceneManageResult.getScriptAnalysisResult());
         wrapperOutput.setPtConfig(sceneManageResult.getPtConfig());
+        wrapperOutput.setDeptId(sceneManageResult.getDeptId());
     }
 
     /**
@@ -1208,6 +1210,7 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         param.setType(wrapperVO.getType() == null ? 0 : wrapperVO.getType());
         param.setFeatures(wrapperVO.getFeatures());
         param.setUserId(wrapperVO.getUserId());
+        param.setDeptId(wrapperVO.getDeptId());
         param.setTenantId(wrapperVO.getTenantId());
         param.setEnvCode(wrapperVO.getEnvCode());
         return param;

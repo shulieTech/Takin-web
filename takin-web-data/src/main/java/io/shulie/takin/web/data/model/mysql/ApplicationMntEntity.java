@@ -142,4 +142,10 @@ public class ApplicationMntEntity extends UserBaseEntity {
     @TableField(value = "PRADAR_VERSION")
     private String pradarVersion;
 
+    /**
+     * 部门id
+     */
+    @TableField(value = "dept_id")
+    private Long deptId;
+
 }

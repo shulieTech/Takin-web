@@ -41,4 +41,10 @@ public class SceneManageQueryVO extends PagingContextExt {
 
     private Long configId;
 
+    private Long deptId;
+
+    private List<Long> userIdList;
+
+    private List<Long> deptIdList;
+
 }

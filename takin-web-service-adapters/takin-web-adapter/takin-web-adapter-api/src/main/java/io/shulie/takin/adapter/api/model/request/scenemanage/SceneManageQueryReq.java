@@ -4,6 +4,8 @@ import io.shulie.takin.cloud.ext.content.trace.PagingContextExt;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 /**
  * @author 无涯
  * @date 2020/10/22 8:07 下午
@@ -29,4 +31,9 @@ public class SceneManageQueryReq extends PagingContextExt {
 
     private Integer isArchive;
 
+    private Long deptId;
+
+    private List<Long> userIdList;
+
+    private List<Long> deptIdList;
 }

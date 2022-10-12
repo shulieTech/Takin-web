@@ -101,7 +101,8 @@ public interface ApplicationApiDAO {
      * @param userIds 用户主键
      * @return 数据项
      */
-    List<ApplicationApiManageResult> selectBySelective(@Param("record") ApplicationApiQueryParam record, @Param("userIds") List<Long> userIds);
+    List<ApplicationApiManageResult> selectBySelective(@Param("record") ApplicationApiQueryParam record,
+                                                       @Param("userIds") List<Long> userIds, @Param("deptIds") List<Long> deptIds);
 
     /**
      * 批量新增

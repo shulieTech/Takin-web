@@ -39,6 +39,7 @@ import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.JsonUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -252,7 +253,8 @@ public class SceneManageController {
         @ApiParam(name = "lastPtEndTime", value = "压测结束时间") String lastPtEndTime,
         @ApiParam(name = "recovery", value = "是否是回收站") Boolean recovery,
         @ApiParam(name = "source", value = "来源") Integer source,
-        @ApiParam(name = "configId", value = "单压测主键") Long configId
+        @ApiParam(name = "configId", value = "单压测主键") Long configId,
+        @ApiParam(name = "deptId", value = "部门id") Long deptId
     ) {
         SceneManageQueryVO queryVO = new SceneManageQueryVO();
 
@@ -264,6 +266,9 @@ public class SceneManageController {
         queryVO.setTagId(tagId);
         queryVO.setLastPtStartTime(lastPtStartTime);
         queryVO.setLastPtEndTime(lastPtEndTime);
+        queryVO.setDeptId(deptId);
+        queryVO.setUserIdList(WebPluginUtils.queryAllowUserIdList());
+        queryVO.setDeptIdList(WebPluginUtils.queryAllowDeptIdList());
         if(Objects.isNull(recovery)){
             recovery = false;
         }

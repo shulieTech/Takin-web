@@ -71,6 +71,12 @@
                     #{item,jdbcType=BIGINT}
                 </foreach>
             </if>
+            <if test="deptIds != null and deptIds.size() > 0">
+                AND dept_id in
+                <foreach collection="deptIds" item="item" open="(" close=")" separator=",">
+                    #{item,jdbcType=BIGINT}
+                </foreach>
+            </if>
             <if test="keyword != null and keyword != ''">
                 AND APPLICATION_NAME LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%')
             </if>
@@ -371,7 +377,7 @@
     <select id="selectApplicationPageByParam"
             resultType="io.shulie.takin.web.data.result.application.ApplicationListResult">
         SELECT a.APPLICATION_ID application_id, a.APPLICATION_NAME application_name,
-               a.UPDATE_TIME update_time, a.ACCESS_STATUS access_status, u.`name` user_name
+               a.UPDATE_TIME update_time, a.ACCESS_STATUS access_status, u.`name` user_name, a.dept_id dept_id
         FROM t_application_mnt a LEFT JOIN t_tro_user u ON u.id = a.USER_ID
 
         WHERE a.tenant_id = #{param.tenantId} AND a.env_code = #{param.envCode}
@@ -383,10 +389,21 @@
             AND a.ACCESS_STATUS = #{param.accessStatus}
         </if>
 
+        <if test="param.deptId != null">
+            AND a.dept_id = #{deptId}
+        </if>
+
         <if test="param.userIds != null and param.userIds.size > 0">
             AND a.USER_ID IN
             <foreach collection = "param.userIds" item = "userId" open="(" close=")" separator=",">
                 #{userId}
+            </foreach>
+        </if>
+
+        <if test="param.deptIds != null and param.deptIds.size > 0">
+            AND a.dept_id IN
+            <foreach collection = "param.deptIds" item = "deptId" open="(" close=")" separator=",">
+                #{deptId}
             </foreach>
         </if>
 
@@ -416,7 +433,7 @@
             resultType="io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade">
         SELECT a.APPLICATION_ID application_id, a.APPLICATION_NAME application_name,
         a.UPDATE_TIME update_time, a.ACCESS_STATUS access_status, u.`name` user_name,
-               a.NODE_NUM node_num
+               a.NODE_NUM node_num , a.dept_id dept_id
         FROM t_application_mnt a LEFT JOIN t_tro_user u ON u.id = a.USER_ID
 
         WHERE a.tenant_id = #{param.tenantId} AND a.env_code = #{param.envCode}
@@ -436,7 +453,12 @@
                 #{userId}
             </foreach>
         </if>
-
+        <if test="param.deptIds != null and param.deptIds.size > 0">
+            AND a.dept_id IN
+            <foreach collection = "param.deptIds" item = "deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+        </if>
         ORDER BY a.id DESC
     </select>
     <select id="getStatus" resultType="Map">

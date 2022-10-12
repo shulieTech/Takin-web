@@ -101,4 +101,9 @@ public class ActivityListResult {
      * 应用名
      */
     private String applicationName;
+
+    /**
+     * 部门id
+     */
+    private Long deptId;
 }

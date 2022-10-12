@@ -30,4 +30,9 @@ public class DataSourceQueryParam extends PagingDevice {
      * 数据源id集合
      */
     private List<Long> dataSourceIdList;
+
+    /**
+     * 部门id
+     */
+    private Long deptId;
 }

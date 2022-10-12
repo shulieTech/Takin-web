@@ -121,6 +121,9 @@ public class InterfacePerformanceConfigEntity extends TenantBaseEntity {
     @TableField(value = "user_id")
     private Long userId;
 
+    @TableField(value = "dept_id")
+    private Long deptId;
+
     /**
      * 修改人
      */

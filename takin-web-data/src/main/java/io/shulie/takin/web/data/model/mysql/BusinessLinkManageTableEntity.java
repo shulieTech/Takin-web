@@ -128,4 +128,10 @@ public class BusinessLinkManageTableEntity extends UserBaseEntity {
 
     @TableField(value = "persistence")
     private boolean persistence = true;
+
+    /**
+     * 部门id
+     */
+    @TableField(value = "dept_id")
+    private Long deptId;
 }

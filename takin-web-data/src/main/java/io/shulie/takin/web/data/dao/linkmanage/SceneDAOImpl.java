@@ -148,8 +148,14 @@ public class SceneDAOImpl implements SceneDAO {
         if (!StringUtils.isEmpty(param.getSceneName())) {
             lambdaQueryWrapper.like(SceneEntity::getSceneName, "\\" + param.getSceneName());
         }
+        if (param.getDeptId() != null){
+            lambdaQueryWrapper.eq(SceneEntity::getDeptId, param.getDeptId());
+        }
         if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
             lambdaQueryWrapper.in(SceneEntity::getUserId, param.getUserIdList());
+        }
+        if (CollectionUtils.isNotEmpty(param.getDeptIdList())) {
+            lambdaQueryWrapper.in(SceneEntity::getDeptId, param.getDeptIdList());
         }
         if (param.getIgnoreType() != null) {
             lambdaQueryWrapper.ne(SceneEntity::getType, param.getIgnoreType());

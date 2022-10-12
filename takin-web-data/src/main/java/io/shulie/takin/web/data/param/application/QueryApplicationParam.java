@@ -26,6 +26,10 @@ public class QueryApplicationParam extends PageBaseDTO {
 
     private List<Long> userIds;
 
+    private List<Long> deptIds;
+
+    private Long deptId;
+
     private Long tenantId;
     private String envCode;
 

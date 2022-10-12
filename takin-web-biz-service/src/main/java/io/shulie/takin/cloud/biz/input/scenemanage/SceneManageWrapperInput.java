@@ -97,6 +97,8 @@ public class SceneManageWrapperInput extends ContextExt {
 
     private Long operateId;
 
+    private Long deptId;
+
     private String operateName;
 
     private String machineId;

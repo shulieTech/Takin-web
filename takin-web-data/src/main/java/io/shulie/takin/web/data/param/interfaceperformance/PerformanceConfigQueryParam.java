@@ -15,4 +15,6 @@ public class PerformanceConfigQueryParam extends PageBaseDTO {
     private String queryName;
 
     private List<Long> userIdList;
+
+    private List<Long> deptIdList;
 }

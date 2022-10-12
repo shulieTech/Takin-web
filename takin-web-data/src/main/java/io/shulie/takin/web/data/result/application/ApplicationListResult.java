@@ -22,6 +22,8 @@ public class ApplicationListResult {
 
     private Date updateTime;
 
+    private Long deptId;
+
     private Integer accessStatus;
 
     /**

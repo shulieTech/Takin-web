@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
  * @date 2022/5/19 1:33 下午
  */
 @RestController
-@RequestMapping(value = ApiUrls.TAKIN_API_URL + "/interfaceperformance/config")
+@RequestMapping(value = ApiUrls.TAKIN_API_URL + "interfaceperformance/config")
 @Api(tags = "接口: 接口压测")
 @Slf4j
 public class PerformanceConfigController {

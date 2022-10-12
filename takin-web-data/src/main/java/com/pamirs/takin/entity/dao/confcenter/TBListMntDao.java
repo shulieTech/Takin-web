@@ -43,7 +43,7 @@ public interface TBListMntDao {
      * @author shulie
      */
     List<TBList> queryBList(@Param("redisKey") String redisKey,
-        @Param("principalNo") String principalNo,@Param("userIds") List<Long> userIds);
+        @Param("principalNo") String principalNo,@Param("userIds") List<Long> userIds, @Param("deptIds") List<Long> deptIds);
 
     /**
      * 说明: 根据id查询黑名单信息

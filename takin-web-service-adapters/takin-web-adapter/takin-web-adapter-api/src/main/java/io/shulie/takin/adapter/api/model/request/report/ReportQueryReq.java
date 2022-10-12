@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 /**
  * @author shiyajian
  * create: 2020-10-20
@@ -52,4 +54,9 @@ public class ReportQueryReq extends PagingContextExt {
     @ApiModelProperty(value = "报告类型")
     private Integer type;
 
+    private Long deptId;
+
+    private List<Long> deptIds;
+
+    private List<Long> userIds;
 }

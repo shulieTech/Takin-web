@@ -52,4 +52,6 @@ public class ApplicationApiQueryParam extends TenantCommonExt {
     private String method;
 
     private Integer isAgentRegiste;
+
+    private Long deptId;
 }

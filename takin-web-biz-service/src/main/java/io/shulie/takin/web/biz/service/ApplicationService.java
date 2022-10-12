@@ -38,7 +38,7 @@ public interface ApplicationService {
      * @param userIdList
      * @return
      */
-    List<ApplicationDetailResult> getApplicationsByUserIdList(List<Long> userIdList);
+    List<ApplicationDetailResult> getApplicationsByUserIdList(List<Long> userIdList, List<Long> deptIdList);
 
     /**
      * 带租户
@@ -298,6 +298,11 @@ public interface ApplicationService {
      */
     PagingList<ApplicationListResponseV2> pageApplication(ApplicationQueryRequestV2 request);
 
+    /**
+     * ee中调用
+     * @param request
+     * @return
+     */
     PagingList<ApplicationListByUpgradeResponse> listApplicationByUpgrade(ApplicationListByUpgradeRequest request);
 
     Response<String> operateCheck(List<String> appIds, String operate);

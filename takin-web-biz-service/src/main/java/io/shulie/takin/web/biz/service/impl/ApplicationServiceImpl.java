@@ -306,8 +306,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public List<ApplicationDetailResult> getApplicationsByUserIdList(List<Long> userIdList) {
-        return applicationDAO.getApplicationListByUserIds(userIdList);
+    public List<ApplicationDetailResult> getApplicationsByUserIdList(List<Long> userIdList, List<Long> deptIdList) {
+        return applicationDAO.getApplicationListByUserIds(userIdList, deptIdList);
     }
 
     //3.添加定时任务
@@ -973,9 +973,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public List<String> getApplicationName() {
-        List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
+        List<Long> userIdList = WebPluginUtils.queryAllowUserIdList();
+        List<Long> deptIdList = WebPluginUtils.queryAllowDeptIdList();
         List<ApplicationDetailResult> applicationDetailResultList = applicationDAO.getApplicationListByUserIds(
-                userIdList);
+                userIdList, deptIdList);
         if (CollectionUtils.isEmpty(applicationDetailResultList)) {
             return Lists.newArrayList();
         }
@@ -1378,7 +1379,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         QueryApplicationParam queryApplicationParam = BeanUtil.copyProperties(request, QueryApplicationParam.class);
         queryApplicationParam.setTenantId(WebPluginUtils.traceTenantId());
         queryApplicationParam.setEnvCode(WebPluginUtils.traceEnvCode());
-        queryApplicationParam.setUserIds(WebPluginUtils.getQueryAllowUserIdList());
+        queryApplicationParam.setUserIds(WebPluginUtils.queryAllowUserIdList());
+        queryApplicationParam.setDeptIds(WebPluginUtils.queryAllowDeptIdList());
         queryApplicationParam.setUpdateStartTime(request.getUpdateStartTime());
         queryApplicationParam.setUpdateEndTime(request.getUpdateEndTime());
         IPage<ApplicationListResult> applicationListResultPage = applicationDAO.pageByParam(queryApplicationParam);
@@ -1408,7 +1410,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         QueryApplicationByUpgradeParam param = BeanUtil.copyProperties(request, QueryApplicationByUpgradeParam.class);
         param.setTenantId(WebPluginUtils.traceTenantId());
         param.setEnvCode(WebPluginUtils.traceEnvCode());
-        param.setUserIds(WebPluginUtils.getQueryAllowUserIdList());
+        param.setUserIds(WebPluginUtils.queryAllowUserIdList());
+        param.setDeptIds(WebPluginUtils.queryAllowDeptIdList());
         IPage<ApplicationListResultByUpgrade> applicationList = applicationDAO.getApplicationList(param);
         if (applicationList.getTotal() == 0) {
             return PagingList.empty();

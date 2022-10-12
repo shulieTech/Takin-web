@@ -28,7 +28,8 @@ public interface ApplicationApiManageMapper extends BaseMapper<ApplicationApiMan
 
     List<ApplicationApiManageEntity> querySimpleWithTenant(ApplicationApiParam apiParam);
 
-    List<ApplicationApiManageEntity> selectBySelective(@Param("record") ApplicationApiQueryParam record, @Param("userIds") List<Long> userIds);
+    List<ApplicationApiManageEntity> selectBySelective(@Param("record") ApplicationApiQueryParam record,
+                                                       @Param("userIds") List<Long> userIds,  @Param("deptIds") List<Long> deptIds);
 
     int insertBatch(@Param("list") List<ApplicationApiManageEntity> list);
 

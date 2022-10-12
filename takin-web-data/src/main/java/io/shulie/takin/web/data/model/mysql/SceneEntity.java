@@ -103,4 +103,10 @@ public class SceneEntity extends UserBaseEntity {
 
     @TableField(value = "features")
     private String features;
+
+    /**
+     * 部门id
+     */
+    @TableField(value = "dept_id")
+    private Long deptId;
 }

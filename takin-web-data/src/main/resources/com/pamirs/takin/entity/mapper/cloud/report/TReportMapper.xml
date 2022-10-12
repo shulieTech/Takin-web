@@ -122,8 +122,23 @@
             <if test="param.tenantId != null">
                 and `tenant_id` = #{param.tenantId}
             </if>
+            <if test="param.deptId != null">
+                and `dept_id` = #{param.deptId}
+            </if>
             <if test="param.envCode != null">
                 and `env_code` = #{param.envCode}
+            </if>
+            <if test="param.userIds != null and param.userIds.size > 0">
+                AND user_id IN
+                <foreach collection="param.userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+            <if test="param.eptIds != null and param.deptIds.size > 0">
+                AND dept_id IN
+                <foreach collection="param.deptIds" item="deptId" open="(" close=")" separator=",">
+                    #{deptId}
+                </foreach>
             </if>
         </where>
         order by id desc

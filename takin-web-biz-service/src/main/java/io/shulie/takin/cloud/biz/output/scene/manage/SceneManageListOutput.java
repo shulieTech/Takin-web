@@ -46,4 +46,7 @@ public class SceneManageListOutput extends ContextExt {
 
     @ApiModelProperty(value = "脚本解析结果")
     private String scriptAnalysisResult;
+
+    @ApiModelProperty(value = "部门id")
+    private Long deptId;
 }

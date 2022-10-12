@@ -112,6 +112,7 @@ public class DataSourceServiceImpl implements DataSourceService {
         createParam.setUsername(username);
         // 4、密码加密（AES128）
         createParam.setPassword(AESUtil.encrypt(password));
+        createParam.setDeptId(WebPluginUtils.traceDeptId());
         dataSourceDAO.insert(createParam);
     }
 
@@ -136,7 +137,7 @@ public class DataSourceServiceImpl implements DataSourceService {
             throw new TakinWebException(ExceptionCode.DATASOURCE_UPDATE_ERROR, "不支持的数据源类型");
         }
         // 3、判断当前登录用户是否有更新权限
-        if (!checkUpdatePermission(idResult.getUserId())) {
+        if (!checkUpdatePermission(idResult.getUserId(),idResult.getDeptId())) {
             throw new TakinWebException(ExceptionCode.DATASOURCE_UPDATE_ERROR, "更新权限不足");
         }
         // 4、除过本id外，检查名称是否重复
@@ -174,8 +175,9 @@ public class DataSourceServiceImpl implements DataSourceService {
         if (CollectionUtils.isNotEmpty(dataSourceResultList)) {
             List<Long> userIdList = dataSourceResultList.stream().map(DataSourceResult::getUserId).collect(
                 Collectors.toList());
+            List<Long> deptIdList = dataSourceResultList.stream().map(DataSourceResult::getDeptId).collect(Collectors.toList());
             // 判断数据源的权限、状态等情况；
-            if (!checkDeletePermission(userIdList)) {
+            if (!checkDeletePermission(userIdList,deptIdList)) {
                 throw new TakinWebException(ExceptionCode.DATASOURCE_DELETE_ERROR, "数据权限不足");
             }
             // 删除数据源
@@ -239,6 +241,7 @@ public class DataSourceServiceImpl implements DataSourceService {
         }
         queryParam.setName(name);
         queryParam.setJdbcUrl(jdbcUrl);
+        queryParam.setDeptId(queryParam.getDeptId());
         if (CollectionUtils.isNotEmpty(filterDataSourceIdList)) {
             queryParam.setDataSourceIdList(filterDataSourceIdList);
         }
@@ -463,19 +466,27 @@ public class DataSourceServiceImpl implements DataSourceService {
         return Boolean.FALSE;
     }
 
-    private Boolean checkUpdatePermission(Long userId) {
-        List<Long> allowUpdateUserIdList = WebPluginUtils.getUpdateAllowUserIdList();
-        if (CollectionUtils.isNotEmpty(allowUpdateUserIdList)
-            && !allowUpdateUserIdList.contains(userId)) {
+    private Boolean checkUpdatePermission(Long userId, Long deptId) {
+        List<Long> allowUpdateUserIdList = WebPluginUtils.updateAllowUserIdList();
+        List<Long> allowUpdateDeptIdList = WebPluginUtils.updateAllowDeptIdList();
+        if (CollectionUtils.isNotEmpty(allowUpdateUserIdList) && !allowUpdateUserIdList.contains(userId)) {
+            return Boolean.FALSE;
+        }
+        if (CollectionUtils.isNotEmpty(allowUpdateDeptIdList) && !allowUpdateDeptIdList.contains(deptId)){
             return Boolean.FALSE;
         }
         return Boolean.TRUE;
     }
 
-    private Boolean checkDeletePermission(List<Long> userIdList) {
-        List<Long> allowDeleteUserIdList = WebPluginUtils.getDeleteAllowUserIdList();
+    private Boolean checkDeletePermission(List<Long> userIdList, List<Long> deptIdList) {
+        List<Long> allowDeleteUserIdList = WebPluginUtils.deleteAllowUserIdList();
+        List<Long> allowDeleteDeptIdList = WebPluginUtils.deleteAllowDeptIdList();
         if (CollectionUtils.isNotEmpty(allowDeleteUserIdList)
             && !allowDeleteUserIdList.containsAll(userIdList)) {
+            return Boolean.FALSE;
+        }
+        if (CollectionUtils.isNotEmpty(allowDeleteDeptIdList)
+                && !allowDeleteDeptIdList.containsAll(deptIdList)) {
             return Boolean.FALSE;
         }
         return Boolean.TRUE;

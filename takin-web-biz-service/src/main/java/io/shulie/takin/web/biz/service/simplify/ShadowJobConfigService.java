@@ -212,7 +212,6 @@ public class ShadowJobConfigService {
         if (StringUtils.isBlank(query.getOrderBy())) {
             query.setOrderBy("id desc");
         }
-        query.setUserIds(WebPluginUtils.getQueryAllowUserIdList());
         List<TShadowJobConfig> tShadowJobConfigs = tShadowJobConfigMapper.selectList(query);
         PageInfo<TShadowJobConfig> pageInfo = new PageInfo<>(tShadowJobConfigs);
         List<ShadowJobConfigVo> configVos = new ArrayList<>();
@@ -229,18 +228,7 @@ public class ShadowJobConfigService {
             vo.setActive(tShadowJobConfig.getActive());
             vo.setUpdateTime(tShadowJobConfig.getUpdateTime());
             vo.setRemark(tShadowJobConfig.getRemark());
-            List<Long> allowUpdateUserIdList = WebPluginUtils.getUpdateAllowUserIdList();
-            if (CollectionUtils.isNotEmpty(allowUpdateUserIdList)) {
-                vo.setCanEdit(allowUpdateUserIdList.contains(tShadowJobConfig.getUserId()));
-            }
-            List<Long> allowDeleteUserIdList = WebPluginUtils.getDeleteAllowUserIdList();
-            if (CollectionUtils.isNotEmpty(allowDeleteUserIdList)) {
-                vo.setCanRemove(allowDeleteUserIdList.contains(tShadowJobConfig.getUserId()));
-            }
-            List<Long> allowEnableDisableUserIdList = WebPluginUtils.getEnableDisableAllowUserIdList();
-            if (CollectionUtils.isNotEmpty(allowEnableDisableUserIdList)) {
-                vo.setCanEnableDisable(allowEnableDisableUserIdList.contains(tShadowJobConfig.getUserId()));
-            }
+
             vo.setUserId(tShadowJobConfig.getUserId());
             WebPluginUtils.fillQueryResponse(vo);
             configVos.add(vo);
@@ -260,7 +248,6 @@ public class ShadowJobConfigService {
             query.setOrderBy("id desc");
         }
         query.setApplicationId(tApplicationMnt.getApplicationId());
-        query.setUserIds(WebPluginUtils.getQueryAllowUserIdList());
         List<TShadowJobConfig> tShadowJobConfigs = tShadowJobConfigMapper.selectList(query);
         try {
             for (TShadowJobConfig tShadowJobConfig : tShadowJobConfigs) {

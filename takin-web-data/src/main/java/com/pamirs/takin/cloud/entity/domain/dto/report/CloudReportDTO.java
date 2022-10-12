@@ -46,4 +46,6 @@ public class CloudReportDTO extends ContextExt {
     @ApiModelProperty(value = "压测不通过的原因")
     private String errorMsg;
 
+    private Long deptId;
+
 }

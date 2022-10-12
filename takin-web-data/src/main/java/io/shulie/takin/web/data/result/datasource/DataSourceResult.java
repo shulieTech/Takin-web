@@ -68,4 +68,9 @@ public class DataSourceResult extends TenantCommonExt {
      * 是否有效 0:有效;1:无效
      */
     private Boolean isDeleted;
+
+    /**
+     * 部门id
+     */
+    private Long deptId;
 }

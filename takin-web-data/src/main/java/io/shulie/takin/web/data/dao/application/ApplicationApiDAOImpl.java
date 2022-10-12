@@ -45,6 +45,7 @@ public class ApplicationApiDAOImpl implements ApplicationApiDAO {
         entity.setTenantId(param.getTenantId());
         entity.setUserId(param.getUserId());
         entity.setIsAgentRegiste(param.getIsAgentRegiste());
+        entity.setDeptId(param.getDeptId());
         return apiManageMapper.insert(entity);
     }
 
@@ -137,8 +138,8 @@ public class ApplicationApiDAOImpl implements ApplicationApiDAO {
     }
 
     @Override
-    public List<ApplicationApiManageResult> selectBySelective(ApplicationApiQueryParam record, List<Long> userIds) {
-        List<ApplicationApiManageEntity> query = apiManageMapper.selectBySelective(record, userIds);
+    public List<ApplicationApiManageResult> selectBySelective(ApplicationApiQueryParam record, List<Long> userIds, List<Long> deptIds) {
+        List<ApplicationApiManageEntity> query = apiManageMapper.selectBySelective(record, userIds, deptIds);
         if (CollectionUtils.isEmpty(query)) {
             return Lists.newArrayList();
         }

@@ -31,4 +31,6 @@ public class DataSourceQueryRequest extends PagingDevice {
     @ApiModelProperty("数据源地址")
     @Size(max = 100)
     private String jdbcUrl;
+
+    private Long deptId;
 }

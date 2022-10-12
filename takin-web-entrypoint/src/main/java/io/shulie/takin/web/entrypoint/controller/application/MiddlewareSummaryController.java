@@ -117,14 +117,6 @@ public class MiddlewareSummaryController {
         final List<MiddlewareSummaryResponse> collect = page.getRecords().parallelStream()
             .map(item -> BeanUtil.copyProperties(item, MiddlewareSummaryResponse.class)).collect(
                 Collectors.toList());
-        // 1.无权限模块：默认可编辑 2.有权限模块：管理员可编辑，子账号被授权可编辑
-        if(WebPluginUtils.traceUser() == null) {
-            collect.parallelStream().forEach(item -> item.setCanEdit(Boolean.TRUE));
-        } else {
-            boolean canEdit =  WebPluginUtils.validateAdmin() || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.traceUser().getId());
-            collect.parallelStream().forEach(item -> item.setCanEdit(canEdit));
-        }
-
         return PagingList.of(collect, page.getTotal());
     }
 

@@ -130,10 +130,10 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
     @Override
     public List<String> getAllApplication(String keyword) {
-        List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
+        List<Long> userIdList = WebPluginUtils.queryAllowUserIdList();
+        List<Long> deptIdList = WebPluginUtils.queryAllowDeptIdList();
         List<ApplicationDetailResult> applicationMntList = applicationDAO.getApplicationMntByUserIdsAndKeyword(
-            userIdList,
-            keyword);
+            userIdList, deptIdList, keyword);
         return applicationMntList.stream().map(ApplicationDetailResult::getApplicationName).collect(
             Collectors.toList());
     }

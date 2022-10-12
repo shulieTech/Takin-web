@@ -71,6 +71,9 @@ public class TakinDbresourceEntity extends UserBaseEntity {
     @TableField(value = "is_deleted")
     private Boolean isDeleted;
 
+    @TableField(value = "dept_id")
+    private Long deptId;
+
     public static final String COL_ID = "id";
 
     public static final String COL_TYPE = "type";

@@ -257,7 +257,7 @@ public class ConfCenterService extends CommonService {
         tApplicationMnt.setApplicationId(snowflake.next());
         tApplicationMnt.setCacheExpTime(
                 StringUtils.isEmpty(tApplicationMnt.getCacheExpTime()) ? "0" : tApplicationMnt.getCacheExpTime());
-
+        tApplicationMnt.setDeptId(WebPluginUtils.traceDeptId());
         applicationDAO.insert(tApplicationMnt);
 
         try {
@@ -730,41 +730,6 @@ public class ConfCenterService extends CommonService {
         return tBListMntDao.queryBListByIds(blistIdList);
     }
 
-    /**
-     * 说明: 查询黑名单列表
-     *
-     * @param bListQueryParam redis的key和负责人工号
-     * @return 黑名单列表集合
-     * @author shulie
-     */
-    public Response queryBlackList(BListQueryParam bListQueryParam) {
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("pageNum", bListQueryParam.getCurrentPage());
-        paramMap.put("pageSize", bListQueryParam.getPageSize());
-        String redisKey = bListQueryParam.getRedisKey();
-        PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
-        List<TBList> queryBlackList = tBListMntDao.queryBList(redisKey, "", WebPluginUtils.getQueryAllowUserIdList());
-        if (CollectionUtils.isNotEmpty(queryBlackList)) {
-            for (TBList tbList : queryBlackList) {
-                List<Long> allowUpdateUserIdList = WebPluginUtils.getUpdateAllowUserIdList();
-                if (CollectionUtils.isNotEmpty(allowUpdateUserIdList)) {
-                    tbList.setCanEdit(allowUpdateUserIdList.contains(tbList.getUserId()));
-                }
-                List<Long> allowDeleteUserIdList = WebPluginUtils.getDeleteAllowUserIdList();
-                if (CollectionUtils.isNotEmpty(allowDeleteUserIdList)) {
-                    tbList.setCanRemove(allowDeleteUserIdList.contains(tbList.getUserId()));
-                }
-                List<Long> allowEnableDisableUserIdList = WebPluginUtils.getEnableDisableAllowUserIdList();
-                if (CollectionUtils.isNotEmpty(allowEnableDisableUserIdList)) {
-                    tbList.setCanEnableDisable(allowEnableDisableUserIdList.contains(tbList.getUserId()));
-                }
-            }
-        }
-        PageInfo<TBList> pageInfo = new PageInfo<>(queryBlackList.isEmpty() ? Lists.newArrayList() : queryBlackList);
-        Response response = Response.success(pageInfo.getList(),
-                CollectionUtils.isEmpty(pageInfo.getList()) ? 0 : pageInfo.getTotal());
-        return response;
-    }
 
     /**
      * 说明: 查询白名单列表，只供agent拦截使用，只选择USE_YN=1的白名单
@@ -2023,20 +1988,32 @@ public class ConfCenterService extends CommonService {
         paramMap.put("pageSize", bListQueryParam.getPageSize());
         String redisKey = bListQueryParam.getRedisKey();
         PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
-        List<TBList> queryBList = tBListMntDao.queryBList(redisKey, "", WebPluginUtils.getQueryAllowUserIdList());
+        List<TBList> queryBList = tBListMntDao.queryBList(redisKey, "", WebPluginUtils.queryAllowUserIdList(), WebPluginUtils.queryAllowDeptIdList());
         if (CollectionUtils.isNotEmpty(queryBList)) {
             for (TBList tbList : queryBList) {
-                List<Long> allowUpdateUserIdList = WebPluginUtils.getUpdateAllowUserIdList();
-                if (CollectionUtils.isNotEmpty(allowUpdateUserIdList)) {
-                    tbList.setCanEdit(allowUpdateUserIdList.contains(tbList.getUserId()));
+                List<Long> allowUpdateUserIdList = WebPluginUtils.updateAllowUserIdList();
+                List<Long> allowUpdateDeptIdList = WebPluginUtils.updateAllowDeptIdList();
+                if (CollectionUtils.isNotEmpty(allowUpdateUserIdList) && !allowUpdateUserIdList.contains(tbList.getUserId())) {
+                    tbList.setCanEdit(false);
                 }
-                List<Long> allowDeleteUserIdList = WebPluginUtils.getDeleteAllowUserIdList();
-                if (CollectionUtils.isNotEmpty(allowDeleteUserIdList)) {
-                    tbList.setCanRemove(allowDeleteUserIdList.contains(tbList.getUserId()));
+                if (CollectionUtils.isNotEmpty(allowUpdateDeptIdList) && !allowUpdateDeptIdList.contains(tbList.getDeptId())) {
+                    tbList.setCanEdit(false);
                 }
-                List<Long> allowEnableDisableUserIdList = WebPluginUtils.getEnableDisableAllowUserIdList();
-                if (CollectionUtils.isNotEmpty(allowEnableDisableUserIdList)) {
-                    tbList.setCanEnableDisable(allowEnableDisableUserIdList.contains(tbList.getUserId()));
+                List<Long> allowDeleteUserIdList = WebPluginUtils.deleteAllowUserIdList();
+                List<Long> allowDeleteDeptIdList = WebPluginUtils.deleteAllowDeptIdList();
+                if (CollectionUtils.isNotEmpty(allowDeleteUserIdList) && !allowDeleteUserIdList.contains(tbList.getUserId())) {
+                    tbList.setCanRemove(false);
+                }
+                if (CollectionUtils.isNotEmpty(allowDeleteDeptIdList) && !allowDeleteDeptIdList.contains(tbList.getDeptId())) {
+                    tbList.setCanRemove(false);
+                }
+                List<Long> allowEnableDisableUserIdList = WebPluginUtils.enableDisableAllowUserIdList();
+                List<Long> allowEnableDisableDeptIdList = WebPluginUtils.enableDisableAllowDeptIdList();
+                if (CollectionUtils.isNotEmpty(allowEnableDisableUserIdList) && !allowEnableDisableUserIdList.contains(tbList.getUserId())) {
+                    tbList.setCanEnableDisable(false);
+                }
+                if (CollectionUtils.isNotEmpty(allowEnableDisableDeptIdList) && !allowEnableDisableDeptIdList.contains(tbList.getDeptId())) {
+                    tbList.setCanEnableDisable(false);
                 }
             }
         }

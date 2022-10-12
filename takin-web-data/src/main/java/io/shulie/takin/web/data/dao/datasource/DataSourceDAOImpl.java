@@ -60,9 +60,15 @@ public class DataSourceDAOImpl implements DataSourceDAO {
         if (CollectionUtils.isNotEmpty(queryParam.getDataSourceIdList())) {
             wrapper.in(TakinDbresourceEntity::getId, queryParam.getDataSourceIdList());
         }
+        if (queryParam.getDeptId() != null){
+            wrapper.eq(TakinDbresourceEntity::getDeptId, queryParam.getDeptId());
+        }
         // 数据权限
-        if (CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
-            wrapper.in(TakinDbresourceEntity::getUserId, WebPluginUtils.getQueryAllowUserIdList());
+        if (CollectionUtils.isNotEmpty(WebPluginUtils.queryAllowUserIdList())) {
+            wrapper.in(TakinDbresourceEntity::getUserId, WebPluginUtils.queryAllowUserIdList());
+        }
+        if (CollectionUtils.isNotEmpty(WebPluginUtils.queryAllowDeptIdList())) {
+            wrapper.in(TakinDbresourceEntity::getDeptId, WebPluginUtils.queryAllowDeptIdList());
         }
         Page<TakinDbresourceEntity> page = new Page<>(queryParam.getCurrent(), queryParam.getPageSize());
         wrapper.orderByDesc(TakinDbresourceEntity::getUpdateTime);
@@ -134,6 +140,7 @@ public class DataSourceDAOImpl implements DataSourceDAO {
             dataSourceResult.setCreateTime(datasourceEntity.getCreateTime());
             dataSourceResult.setUpdateTime(datasourceEntity.getUpdateTime());
             dataSourceResult.setUserId(datasourceEntity.getUserId());
+            dataSourceResult.setDeptId(datasourceEntity.getDeptId());
             return dataSourceResult;
         }
         return null;

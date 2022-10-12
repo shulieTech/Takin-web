@@ -229,8 +229,8 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
         ApplicationApiQueryParam manage = new ApplicationApiQueryParam();
         manage.setApplicationName(vo.getApplicationName());
         manage.setApi(vo.getApi());
-
-        List<ApplicationApiManageResult> dataList = applicationApiDAO.selectBySelective(manage, WebPluginUtils.getQueryAllowUserIdList());
+        manage.setDeptId(vo.getDeptId());
+        List<ApplicationApiManageResult> dataList = applicationApiDAO.selectBySelective(manage, WebPluginUtils.queryAllowUserIdList(), WebPluginUtils.queryAllowDeptIdList() );
 
         dataList.sort(Comparator.comparing(ApplicationApiManageResult::getCreateTime).reversed());
         List<ApplicationApiManageResult> pageData =
@@ -240,13 +240,21 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
             ApplicationApiManageVO dto = new ApplicationApiManageVO();
             BeanUtils.copyProperties(data, dto);
             dto.setRequestMethod(data.getMethod());
-            List<Long> allowUpdateUserIdList = WebPluginUtils.getUpdateAllowUserIdList();
-            if (CollectionUtils.isNotEmpty(allowUpdateUserIdList)) {
-                dto.setCanEdit(allowUpdateUserIdList.contains(data.getUserId()));
+            List<Long> allowUpdateUserIdList = WebPluginUtils.updateAllowUserIdList();
+            List<Long> allowUpdateDeptIdList = WebPluginUtils.updateAllowDeptIdList();
+            if (CollectionUtils.isNotEmpty(allowUpdateUserIdList) && !allowUpdateUserIdList.contains(data.getUserId())) {
+                dto.setCanEdit(false);
             }
-            List<Long> allowDeleteUserIdList = WebPluginUtils.getDeleteAllowUserIdList();
-            if (CollectionUtils.isNotEmpty(allowDeleteUserIdList)) {
-                dto.setCanRemove(allowDeleteUserIdList.contains(data.getUserId()));
+            if (CollectionUtils.isNotEmpty(allowUpdateDeptIdList) && !allowUpdateDeptIdList.contains(data.getDeptId())) {
+                dto.setCanEdit(false);
+            }
+            List<Long> allowDeleteUserIdList = WebPluginUtils.deleteAllowUserIdList();
+            List<Long> allowDeleteDeptIdList = WebPluginUtils.deleteAllowDeptIdList();
+            if (CollectionUtils.isNotEmpty(allowDeleteUserIdList) && !allowDeleteUserIdList.contains(data.getUserId())) {
+                dto.setCanRemove(false);
+            }
+            if (CollectionUtils.isNotEmpty(allowDeleteDeptIdList) && !allowDeleteDeptIdList.contains(data.getDeptId())) {
+                dto.setCanRemove(false);
             }
             dtoList.add(dto);
         });
@@ -304,6 +312,7 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
         createParam.setIsDeleted((byte) 0);
         createParam.setEnvCode(WebPluginUtils.traceEnvCode());
         createParam.setTenantId(WebPluginUtils.traceTenantId());
+        createParam.setDeptId(WebPluginUtils.traceDeptId());
         boolean status = applicationApiDAO.check(vo.getApplicationName(), DictionaryCache.getObjectByParam(HTTP_METHOD_TYPE, Integer.parseInt(vo.getMethod())).getLabel(), vo.getApi());
         if (status) return Response.fail("重复添加");
         // 把旧的记录删除了，新的再添加

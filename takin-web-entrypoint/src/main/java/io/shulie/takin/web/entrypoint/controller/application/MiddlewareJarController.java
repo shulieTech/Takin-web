@@ -167,17 +167,6 @@ public class MiddlewareJarController {
             .map(item -> BeanUtil.copyProperties(item, MiddlewareJarResponse.class))
             .collect(Collectors.toList());
 
-        if (!collect.isEmpty()) {
-            boolean tempCanEdit;
-            if (WebPluginUtils.validateAdmin()) {
-                tempCanEdit = true;
-            } else {
-                tempCanEdit = WebPluginUtils.traceUser() == null || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.traceUser().getId());
-            }
-            final boolean canEdit = tempCanEdit;
-            collect.forEach(response -> response.setCanEdit(canEdit));
-        }
-
         return PagingList.of(collect, page.getTotal());
     }
 

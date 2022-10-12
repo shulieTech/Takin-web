@@ -45,4 +45,6 @@ public class ScriptManageDeployPageQueryRequest extends PagingDevice {
     @JsonProperty("businessFlow")
     private String businessFlowId;
 
+    private Long deptId;
+
 }

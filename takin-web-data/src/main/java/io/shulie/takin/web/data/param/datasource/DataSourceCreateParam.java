@@ -32,4 +32,9 @@ public class DataSourceCreateParam {
      * 数据源密码
      */
     private String password;
+
+    /**
+     * 部门id
+     */
+    private Long deptId;
 }

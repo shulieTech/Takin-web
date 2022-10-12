@@ -568,16 +568,9 @@ public class WhiteListServiceImpl implements WhiteListService {
         // 重名白名单
         List<String> existWhite = getExistWhite(armdString, Lists.newArrayList());
 
+        //去掉白名单中的权限限制，只留手工和非手工的
         for (WhiteListVO dto : resList) {
-            List<Long> allowUpdateUserIdList = WebPluginUtils.getUpdateAllowUserIdList();
             if (dto.getIsDbValue()) {
-                if (CollectionUtils.isEmpty(allowUpdateUserIdList)) {
-                    //管理员
-                    dto.setCanEdit(true);
-                } else {
-                    //普通用户
-                    dto.setCanEdit(allowUpdateUserIdList.contains(dto.getUserId()));
-                }
                 //手动新增的白名单才能编辑
                 if (dto.getIsHandwork() == null) {
                     dto.setIsHandwork(true);
@@ -594,13 +587,7 @@ public class WhiteListServiceImpl implements WhiteListService {
 
             // 补充标签
             dto.setTags(getTags(existWhite, dto));
-            List<Long> allowDeleteUserIdList = WebPluginUtils.getDeleteAllowUserIdList();
             if (dto.getIsDbValue()) {
-                if (CollectionUtils.isEmpty(allowDeleteUserIdList)) {
-                    dto.setCanRemove(true);
-                } else {
-                    dto.setCanRemove(allowDeleteUserIdList.contains(dto.getUserId()));
-                }
                 // 非手工，不允许编辑
                 if (!dto.getIsHandwork()) {
                     dto.setCanEdit(false);
@@ -609,10 +596,6 @@ public class WhiteListServiceImpl implements WhiteListService {
                 dto.setCanRemove(false);
             }
 
-            List<Long> allowEnableDisableUserIdList = WebPluginUtils.getEnableDisableAllowUserIdList();
-            if (CollectionUtils.isNotEmpty(allowEnableDisableUserIdList)) {
-                dto.setCanEnableDisable(allowEnableDisableUserIdList.contains(dto.getUserId()));
-            }
         }
         PageInfo<WhiteListVO> whiteListDtoPageInfo = new PageInfo<>(resList);
         whiteListDtoPageInfo.setTotal(totalResult.size());

@@ -20,4 +20,5 @@ public class ApplicationListResultByUpgrade {
 
     private Integer nodeNum;
 
+    private Long deptId;
 }

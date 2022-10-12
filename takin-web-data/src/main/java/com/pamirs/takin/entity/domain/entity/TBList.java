@@ -25,6 +25,7 @@ public class TBList extends BaseEntity {
     @ApiModelProperty(name = "useYn", value = "是否启用：1启用 0禁用")
     private String useYn;
 
+    private Long deptId;
 
     private Boolean canEdit = true;
 
@@ -124,6 +125,14 @@ public class TBList extends BaseEntity {
 
     public void setCanEnableDisable(Boolean canEnableDisable) {
         this.canEnableDisable = canEnableDisable;
+    }
+
+    public Long getDeptId() {
+        return deptId;
+    }
+
+    public void setDeptId(Long deptId) {
+        this.deptId = deptId;
     }
 
     /**

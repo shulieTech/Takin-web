@@ -121,9 +121,8 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
     @Override
     public PagingList<OpsScriptVO> page(OpsScriptParam param) {
         PageUtils.clearPageHelper();
-        List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
+        //运维脚本已不使用，不做权限改造
         LambdaQueryWrapper<OpsScriptManageEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(!CollectionUtils.isEmpty(userIdList), OpsScriptManageEntity::getUserId, userIdList);
         wrapper.orderByDesc(OpsScriptManageEntity::getGmtCreate);
         IPage<OpsScriptManageEntity> listPage = opsScriptManageDAO.findListPage(param, wrapper);
         List<OpsScriptVO> opsScriptVOList = Lists.newArrayList();

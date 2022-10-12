@@ -15,6 +15,16 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-config-sync-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>

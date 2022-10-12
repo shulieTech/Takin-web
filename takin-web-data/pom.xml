@@ -29,6 +29,16 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-ext-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
@@ -100,6 +110,14 @@
                 <exclusion>
                     <artifactId>commons-collections</artifactId>
                     <groupId>commons-collections</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
                 </exclusion>
             </exclusions>
         </dependency>

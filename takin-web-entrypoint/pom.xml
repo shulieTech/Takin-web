@@ -23,6 +23,16 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-biz-service</artifactId>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
@@ -33,6 +43,16 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-diff-cloud</artifactId>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- 内部module 业务依赖-->
 
@@ -56,6 +76,10 @@
                 <exclusion>
                     <artifactId>jul-to-slf4j</artifactId>
                     <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
                 </exclusion>
             </exclusions>
         </dependency>

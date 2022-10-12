@@ -148,6 +148,16 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-entrypoint</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -173,6 +183,14 @@
                 <exclusion>
                     <artifactId>fastjson</artifactId>
                     <groupId>com.alibaba</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -417,6 +435,14 @@
                     <groupId>com.github.pagehelper</groupId>
                     <artifactId>pagehelper-spring-boot-autoconfigure</artifactId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -426,6 +452,14 @@
                 <exclusion>
                     <artifactId>log4j</artifactId>
                     <groupId>log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
                 </exclusion>
             </exclusions>
         </dependency>

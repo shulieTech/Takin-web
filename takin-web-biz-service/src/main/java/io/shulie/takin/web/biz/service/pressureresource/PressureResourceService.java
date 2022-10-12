@@ -84,4 +84,11 @@ public interface PressureResourceService {
      * @return
      */
     PressureResourceExtInfo dsInfo(Long id);
+
+    /**
+     * 处理汇总信息-影子消费者
+     *
+     * @return
+     */
+    PressureResourceExtInfo mqInfo(Long id);
 }

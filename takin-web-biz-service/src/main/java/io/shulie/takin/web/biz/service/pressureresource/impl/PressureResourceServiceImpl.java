@@ -7,6 +7,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceAppService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceMqConsumerService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.*;
@@ -87,6 +88,9 @@ public class PressureResourceServiceImpl implements PressureResourceService {
 
     @Resource
     private PressureResourceDsService pressureResourceDsService;
+
+    @Resource
+    private PressureResourceMqConsumerService pressureResourceMqConsumerService;
 
     /**
      * 新增
@@ -514,6 +518,42 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PagingList<PressureResourceRelateDsVO> pageList = pressureResourceDsService.listByDs(dsRequest);
         if (!pageList.isEmpty()) {
             List<PressureResourceRelateDsVO> resourceRelateDsVOS = pageList.getList();
+            if (CollectionUtils.isNotEmpty(resourceRelateDsVOS)) {
+                extInfo.setTotalSize(resourceRelateDsVOS.size());
+                Long normalSize = resourceRelateDsVOS.stream().filter(ds -> ds.getStatus() == 2).count();
+                extInfo.setNormalSize(normalSize.intValue());
+                extInfo.setExceptionSize(extInfo.getTotalSize() - extInfo.getNormalSize());
+            }
+        }
+        // 检测时间都是一批的
+        extInfo.setCheckTime(entity.getCheckTime());
+        extInfo.setUserName(WebPluginUtils.getUserName(entity.getUserId(), WebPluginUtils.getUserMapByIds(Arrays.asList(entity.getUserId()))));
+        return extInfo;
+    }
+
+    /**
+     * 汇总信息-影子消费者
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public PressureResourceExtInfo mqInfo(Long id) {
+        PressureResourceExtInfo extInfo = new PressureResourceExtInfo();
+        extInfo.setTotalSize(0);
+        extInfo.setExceptionSize(0);
+        extInfo.setNormalSize(0);
+
+        PressureResourceEntity entity = pressureResourceMapper.selectById(id);
+        if (entity == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "配置不存在");
+        }
+        PressureResourceMqConsumerQueryRequest mqRequest = new PressureResourceMqConsumerQueryRequest();
+        mqRequest.setResourceId(id);
+        mqRequest.setPageSize(2000);
+        PagingList<PressureResourceMqComsumerVO> pageList = pressureResourceMqConsumerService.list(mqRequest);
+        if (!pageList.isEmpty()) {
+            List<PressureResourceMqComsumerVO> resourceRelateDsVOS = pageList.getList();
             if (CollectionUtils.isNotEmpty(resourceRelateDsVOS)) {
                 extInfo.setTotalSize(resourceRelateDsVOS.size());
                 Long normalSize = resourceRelateDsVOS.stream().filter(ds -> ds.getStatus() == 2).count();

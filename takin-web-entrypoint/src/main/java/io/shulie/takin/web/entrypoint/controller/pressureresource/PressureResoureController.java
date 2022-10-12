@@ -95,6 +95,12 @@ public class PressureResoureController {
         return ResponseResult.success(pressureResourceService.dsInfo(request.getId()));
     }
 
+    @ApiOperation("链路压测资源查询-汇总数据-mq信息")
+    @RequestMapping(value = "/mqInfo", method = RequestMethod.GET)
+    public ResponseResult mqInfo(PressureResourceQueryRequest request) {
+        return ResponseResult.success(pressureResourceService.mqInfo(request.getId()));
+    }
+
     //@ApiModelProperty("类型(1-应用检查，2-影子隔离 3-远程调用 )")
     //@ApiModelProperty("状态(0-未开始 1-进行中 2-完成)")
     @ApiOperation("链路压测资源查询-汇总数据-进度")

@@ -341,7 +341,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             takinConfig.setAppName(appName);
             takinConfig.setAgentSpecification(TakinCommand.SIMULATOR_AGENT);
             takinConfig.setEnvCode(resource.getEnvCode());
-            takinConfig.setTenantCode(tenantInfoExt.getTenantCode());
+            takinConfig.setTenantCode(tenantInfoExt != null ? tenantInfoExt.getTenantCode() : null);
             takinConfig.setConfigType(PressureResourceTypeEnum.DATABASE.getCode());
             List<DataSourceConfig> collect = dsList.stream().map(dsEntity -> mapping(resource.getIsolateType(), dsEntity)).collect(Collectors.toList());
             JdbcTableConfig jdbcTableConfig = new JdbcTableConfig();
@@ -396,7 +396,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         takinCommand.setAppName(dsEntity.getAppName());
         takinCommand.setAgentSpecification(TakinCommand.SIMULATOR_AGENT);
         takinCommand.setEnvCode(resource.getEnvCode());
-        takinCommand.setTenantCode(tenantInfoExt.getTenantCode());
+        takinCommand.setTenantCode(tenantInfoExt != null ? tenantInfoExt.getTenantCode() : null);
         takinCommand.setCommandType(PressureResourceTypeEnum.DATABASE.getCode());
         //命令
         JdbcTableCompareCommand tableCompareCommand = new JdbcTableCompareCommand();

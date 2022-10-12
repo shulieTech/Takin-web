@@ -11,7 +11,7 @@
 ### Jrebel File ###
 *rebel.xml.bak
 *rebel.xml
-
+*.idx
 ### Common ###
 target
 
@@ -28,4 +28,4 @@ ig**
 application-local.*
 
 .DS_Store
-public/
+public/!/extensions.idx

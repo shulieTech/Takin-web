@@ -74,7 +74,6 @@ public class PressureResourceRelateJob implements SimpleJob {
                 } finally {
                     distributedLock.unLockSafely(lockKey);
                 }
-
             });
         }
     }

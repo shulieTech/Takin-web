@@ -1,23 +1,28 @@
 package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSON;
+import com.pamirs.pradar.Pradar;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.amdb.common.dto.link.topology.AppShadowDatabaseDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
+import io.shulie.amdb.common.enums.EdgeTypeEnum;
 import io.shulie.amdb.common.enums.EdgeTypeGroupEnum;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
+import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.MqConsumerFeature;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDetailInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
@@ -64,6 +69,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -83,6 +91,9 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
 
     @Resource
     private PressureResourceRelateRemoteCallDAO pressureResourceRelateRemoteCallDAO;
+
+    @Resource
+    private PressureResourceRelateMqComsumerDAO pressureResourceRelateMqComsumerDAO;
 
     @Resource
     private PressureResourceRelateDsDAO pressureResourceRelateDsDAO;
@@ -112,6 +123,9 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     private ApplicationEntranceClient applicationEntranceClient;
 
     @Resource
+    private NotifyClient notifyClient;
+
+    @Resource
     private ApplicationClient applicationClient;
 
     @Resource
@@ -137,6 +151,10 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
 
     @Value("${takin.job.resource.interval:2}")
     private int takinResourceInterval;
+
+    private static final Pattern pattern = Pattern.compile("[0-9]");
+
+    private static final String UNKNOWN = "UNKNOWN";
 
     /**
      * 自动处理压测资源准备任务
@@ -217,6 +235,9 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 }
                 if (CollectionUtils.isNotEmpty(detailInputs)) {
                     pressureResourceInput.setDetailInputs(detailInputs);
+
+                    // 通知AMDB构建链路拓扑图
+                    CompletableFuture.runAsync(() -> processNotify(detailInputs));
                 }
             }
 
@@ -226,6 +247,22 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             } else {
                 pressureResourceService.update(pressureResourceInput);
             }
+        });
+    }
+
+    /**
+     * 通知AMDB构建链路拓扑
+     *
+     * @param detailInputs
+     */
+    private void processNotify(List<PressureResourceDetailInput> detailInputs) {
+        detailInputs.stream().forEach(detail -> {
+            notifyClient.startApplicationEntrancesCalculate(
+                    detail.getAppName(),
+                    detail.getEntranceUrl(),
+                    detail.getMethod(),
+                    String.valueOf(detail.getType()),
+                    detail.getExtend());
         });
     }
 
@@ -241,10 +278,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 for (int i = 0; i < detailEntityList.size(); i++) {
                     // 获取入口
                     PressureResourceDetailEntity detailEntity = detailEntityList.get(i);
-                    Pair<List<PressureResourceRelateDsEntity>, List<PressureResourceRelateTableEntity>> pair = processDsAndTable(detailEntity, resource.getIsolateType());
-                    // 保存
-                    pressureResourceRelateDsDAO.saveOrUpdate(pair.getLeft());
-                    pressureResourceRelateTableDAO.saveOrUpdate(pair.getRight());
+                    processRelate(detailEntity, resource.getIsolateType());
                 }
             } catch (Throwable e) {
                 logger.error(ExceptionUtils.getStackTrace(e));
@@ -321,12 +355,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
      * @param detailEntity
      * @return
      */
-    private Pair<List<PressureResourceRelateDsEntity>, List<PressureResourceRelateTableEntity>>
-    processDsAndTable(PressureResourceDetailEntity detailEntity, Integer isolateType) {
-        // 需要新增的数据源列表
-        List<PressureResourceRelateDsEntity> dsEntityList = Lists.newArrayList();
-        // 需要新增的表信息
-        List<PressureResourceRelateTableEntity> tableEntityList = Lists.newArrayList();
+    private void processRelate(PressureResourceDetailEntity detailEntity, Integer isolateType) {
         Long resourceId = detailEntity.getResourceId();
         // 链路拓扑图查询
         ApplicationEntranceTopologyQueryRequest request = new ApplicationEntranceTopologyQueryRequest();
@@ -345,136 +374,278 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
         if (applicationEntrancesTopology != null) {
             // 获取应用节点
             List<LinkNodeDTO> nodeDTOList = applicationEntrancesTopology.getNodes();
-            List<LinkNodeDTO> appNodeList = nodeDTOList.stream()
-                    .filter(node -> {
-                        if (node.getNodeType().equals(NodeTypeEnum.APP.getType()) && !"UNKNOWN".equals(node.getNodeName())) {
-                            return true;
-                        }
-                        return false;
-                    }).collect(Collectors.toList());
-            List<PressureResourceRelateAppEntity> appEntityList = Lists.newArrayList();
-            if (CollectionUtils.isNotEmpty(appNodeList)) {
-                appEntityList = appNodeList.stream().map(appNode -> {
-                    PressureResourceRelateAppEntity appEntity = new PressureResourceRelateAppEntity();
-                    appEntity.setAppName(appNode.getNodeName());
-                    appEntity.setResourceId(resourceId);
-                    appEntity.setDetailId(detailEntity.getId());
-                    appEntity.setTenantId(WebPluginUtils.traceTenantId());
-                    appEntity.setEnvCode(WebPluginUtils.traceEnvCode());
-                    // 节点数默认为0
-                    appEntity.setNodeNum(0);
-                    // 默认不正常
-                    appEntity.setStatus(1);
-                    // 通过应用去查询状态
-                    Long appId = applicationService.queryApplicationIdByAppName(appEntity.getAppName());
-                    if (appId != null) {
-                        Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
-                        if (voResponse.getSuccess()) {
-                            ApplicationVo applicationVo = voResponse.getData();
-                            appEntity.setNodeNum(applicationVo.getNodeNum() == null ? 0 : applicationVo.getNodeNum());
-                            appEntity.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
-                        }
-                    }
-                    appEntity.setJoinPressure(JoinFlagEnum.YES.getCode());
-                    appEntity.setType(SourceTypeEnum.AUTO.getCode());
-                    return appEntity;
-                }).collect(Collectors.toList());
-            }
-            if (CollectionUtils.isNotEmpty(appEntityList)) {
-                // 保存关联应用
-                pressureResourceRelateAppDAO.saveOrUpdate(appEntityList);
-            }
+            // 处理关联应用
+            List<PressureResourceRelateAppEntity> appEntityList = handleRelateApp(detailEntity, resourceId, nodeDTOList);
+            // 保存关联应用
+            pressureResourceRelateAppDAO.saveOrUpdate(appEntityList);
 
             // 隔离方案未设置,暂时不处理
             if (!(isolateType == IsolateTypeEnum.DEFAULT.getCode())) {
+                // 获取边集合
                 List<LinkEdgeDTO> edgeDTOList = applicationEntrancesTopology.getEdges();
-                // 获取所有的数据库操作信息
-                List<LinkEdgeDTO> dbEdgeList = edgeDTOList.stream().filter(edge -> {
-                    if (edge.getEagleTypeGroup().equals(EdgeTypeGroupEnum.DB.getType())) {
+                if (CollectionUtils.isEmpty(edgeDTOList)) {
+                    return;
+                }
+                Pair<List<PressureResourceRelateDsEntity>, List<PressureResourceRelateTableEntity>> pair = handleDsAndTable(resourceId, edgeDTOList, detailEntity);
+                // 保存
+                pressureResourceRelateDsDAO.saveOrUpdate(pair.getLeft());
+                pressureResourceRelateTableDAO.saveOrUpdate(pair.getRight());
+
+                // 处理影子消费者
+                List<PressureResourceRelateMqConsumerEntity> mqComsuerList = handleMqConsumer(resourceId, edgeDTOList, detailEntity);
+                pressureResourceRelateMqComsumerDAO.saveOrUpdate(mqComsuerList);
+            }
+        }
+    }
+
+    /**
+     * 处理关联应用
+     *
+     * @param detailEntity
+     * @param resourceId
+     * @param nodeDTOList
+     * @return
+     */
+    private List<PressureResourceRelateAppEntity> handleRelateApp(PressureResourceDetailEntity detailEntity,
+                                                                  Long resourceId,
+                                                                  List<LinkNodeDTO> nodeDTOList) {
+        if (CollectionUtils.isEmpty(nodeDTOList)) {
+            return Collections.EMPTY_LIST;
+        }
+        List<LinkNodeDTO> appNodeList = nodeDTOList.stream()
+                .filter(node -> {
+                    if (node.getNodeType().equals(NodeTypeEnum.APP.getType()) &&
+                            !NodeTypeEnum.UNKNOWN.getType().equals(node.getNodeName())) {
                         return true;
                     }
                     return false;
                 }).collect(Collectors.toList());
-                if (CollectionUtils.isNotEmpty(dbEdgeList)) {
-                    // 按照URL分组
-                    Map<String, List<LinkEdgeDTO>> serviceMap = dbEdgeList.stream().collect(Collectors.groupingBy(dbEdge -> fetchKey(dbEdge)));
+        List<PressureResourceRelateAppEntity> appEntityList = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(appNodeList)) {
+            appEntityList = appNodeList.stream().map(appNode -> {
+                PressureResourceRelateAppEntity appEntity = new PressureResourceRelateAppEntity();
+                appEntity.setAppName(appNode.getNodeName());
+                appEntity.setResourceId(resourceId);
+                appEntity.setDetailId(detailEntity.getId());
+                appEntity.setTenantId(WebPluginUtils.traceTenantId());
+                appEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+                // 节点数默认为0
+                appEntity.setNodeNum(0);
+                // 默认不正常
+                appEntity.setStatus(1);
+                // 通过应用去查询状态
+                Long appId = applicationService.queryApplicationIdByAppName(appEntity.getAppName());
+                if (appId != null) {
+                    Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
+                    if (voResponse.getSuccess()) {
+                        ApplicationVo applicationVo = voResponse.getData();
+                        appEntity.setNodeNum(applicationVo.getNodeNum() == null ? 0 : applicationVo.getNodeNum());
+                        appEntity.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
+                    }
+                }
+                appEntity.setJoinPressure(JoinFlagEnum.YES.getCode());
+                appEntity.setType(SourceTypeEnum.AUTO.getCode());
+                return appEntity;
+            }).collect(Collectors.toList());
+        }
+        return appEntityList;
+    }
 
-                    for (Map.Entry<String, List<LinkEdgeDTO>> entry : serviceMap.entrySet()) {
-                        String key = entry.getKey();
-                        String appName = key.split("#")[0];
-                        String database = key.split("#")[1];
-                        if ("null".equals(appName)) {
-                            // TODO 暂时打印下日志
-                            logger.error("关联数据源名称为空 key,{} value,{}", entry.getValue());
+    /**
+     * 处理影子消费者
+     *
+     * @param resourceId
+     * @param edgeDTOList
+     * @param detailEntity
+     * @return
+     */
+    private List<PressureResourceRelateMqConsumerEntity> handleMqConsumer(Long resourceId,
+                                                                          List<LinkEdgeDTO> edgeDTOList,
+                                                                          PressureResourceDetailEntity detailEntity) {
+        // 只要Mq消费的
+        List<LinkEdgeDTO> mqEdgeList = edgeDTOList.stream().filter(edge -> {
+            // 目前只处理rabbitmq,rocketMq,kafka
+            if (edge.getEagleType().equals(EdgeTypeEnum.ROCKETMQ.getType())
+                    || edge.getEagleType().equals(EdgeTypeEnum.KAFKA.getType())
+                    || edge.getEagleType().equals(EdgeTypeEnum.RABBITMQ.getType())) {
+                return true;
+            }
+            return false;
+        }).collect(Collectors.toList());
+        // 需要新增的影子消费者信息
+        List<PressureResourceRelateMqConsumerEntity> mqConsumerEntityList = Lists.newArrayList();
+        if (CollectionUtils.isEmpty(mqEdgeList)) {
+            return mqConsumerEntityList;
+        }
+        for (int i = 0; i < mqEdgeList.size(); i++) {
+            LinkEdgeDTO edge = mqEdgeList.get(i);
+            if (EdgeTypeEnum.UNKNOWN.getType().equals(edge.getAppName())) {
+                continue;
+            }
+            // 不是kafka的话，不处理客户端
+            if (!edge.getEagleType().equals(EdgeTypeEnum.KAFKA.getType())) {
+                if (edge.getLogType().equals(String.valueOf(Pradar.LOG_TYPE_INVOKE_CLIENT))) {
+                    continue;
+                }
+            }
+            // 影子Topic过滤掉
+            String topic = edge.getService();
+            if (PtUtils.isShadow(topic)) {
+                continue;
+            }
+            // 重试队列的也过滤掉
+            if (topic.startsWith("%RETRY%")) {
+                continue;
+            }
+            PressureResourceRelateMqConsumerEntity mqEntity = new PressureResourceRelateMqConsumerEntity();
+            mqEntity.setResourceId(resourceId);
+            mqEntity.setDetailId(detailEntity.getId());
+            // 消费者
+            mqEntity.setComsumerType(1);
+            mqEntity.setApplicationName(edge.getAppName());
+            mqEntity.setIsCluster(1);
+            mqEntity.setMqType(edge.getEagleType());
+            if (edge.getEagleType().equals(EdgeTypeEnum.KAFKA.getType())) {
+                // apache-kafka172.16.32.74:9092,172.16.32.137:9092,172.16.32.67:9092
+                String serverAppName = "";
+                if (edge.getLogType().equals(String.valueOf(Pradar.LOG_TYPE_INVOKE_CLIENT))) {
+                    mqEntity.setComsumerType(0);
+                    serverAppName = edge.getAppName();
+                    mqEntity.setApplicationName(edge.getServerAppName());
+                } else if (edge.getLogType().equals(String.valueOf(Pradar.LOG_TYPE_INVOKE_SERVER))) {
+                    // 消费
+                    mqEntity.setComsumerType(1);
+                    // 判断下服务端是否是集群
+                    serverAppName = edge.getServerAppName();
+                } else {
+                    // 其他不处理
+                    continue;
+                }
+                if (serverAppName.contains(",")) {
+                    // 是否集群
+                    mqEntity.setIsCluster(0);
+                    // 集群地址解析出来
+                    MqConsumerFeature feature = new MqConsumerFeature();
+                    // 匹配第一个数字开头的,截取下ip地址
+                    Matcher matcher = pattern.matcher(serverAppName);
+                    if (matcher.find()) {
+                        String tmpServerAddr = serverAppName.substring(matcher.start());
+                        feature.setClusterAddr(tmpServerAddr);
+                        // 设置的扩展字段中
+                        mqEntity.setFeature(JSON.toJSONString(feature));
+                    }
+                }
+            }
+            String group = edge.getMethod();
+            mqEntity.setTopicGroup(String.format("%s#%s", topic, group));
+            mqEntity.setType(SourceTypeEnum.AUTO.getCode());
+            mqEntity.setTenantId(WebPluginUtils.traceTenantId());
+            mqEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+            mqEntity.setGmtCreate(new Date());
+            mqEntity.setConsumerTag(1);
+            mqConsumerEntityList.add(mqEntity);
+        }
+        return mqConsumerEntityList;
+    }
+
+    /**
+     * 处理关联的数据源和table
+     *
+     * @param resourceId
+     * @param edgeDTOList
+     * @param detailEntity
+     * @return
+     */
+    private Pair<List<PressureResourceRelateDsEntity>, List<PressureResourceRelateTableEntity>> handleDsAndTable(Long resourceId, List<LinkEdgeDTO> edgeDTOList, PressureResourceDetailEntity detailEntity) {
+        // 获取所有的数据库操作信息
+        List<LinkEdgeDTO> dbEdgeList = edgeDTOList.stream().filter(edge -> {
+            if (edge.getEagleTypeGroup().equals(EdgeTypeGroupEnum.DB.getType())) {
+                return true;
+            }
+            return false;
+        }).collect(Collectors.toList());
+
+        // 需要新增的数据源列表
+        List<PressureResourceRelateDsEntity> dsEntityList = Lists.newArrayList();
+        // 需要新增的表信息
+        List<PressureResourceRelateTableEntity> tableEntityList = Lists.newArrayList();
+
+        if (CollectionUtils.isNotEmpty(dbEdgeList)) {
+            // 按照URL分组
+            Map<String, List<LinkEdgeDTO>> serviceMap = dbEdgeList.stream().collect(Collectors.groupingBy(dbEdge -> fetchKey(dbEdge)));
+
+            for (Map.Entry<String, List<LinkEdgeDTO>> entry : serviceMap.entrySet()) {
+                String key = entry.getKey();
+                String appName = key.split("#")[0];
+                String database = key.split("#")[1];
+                if ("null".equals(appName)) {
+                    continue;
+                }
+                String dbName = DbNameUtil.getDbName(database);
+                if (PtUtils.isShadow(dbName)) {
+                    continue;
+                }
+                PressureResourceRelateDsEntity dsEntity = new PressureResourceRelateDsEntity();
+                dsEntity.setResourceId(resourceId);
+                dsEntity.setDetailId(detailEntity.getId());
+                dsEntity.setAppName(appName);
+                // 从任意的边里面获取数据源详情信息
+                LinkEdgeDTO edgeDTO = entry.getValue().get(0);
+                List<AppShadowDatabaseDTO> dsList = edgeDTO.getDsList();
+                if (CollectionUtils.isEmpty(dsList)) {
+                    logger.warn("应用数据源未梳理完成,{}", database);
+                } else {
+                    AppShadowDatabaseDTO appShadowDatabaseDTO = dsList.get(0);
+                    dsEntity.setBusinessUserName(appShadowDatabaseDTO.getTableUser());
+                    dsEntity.setMiddlewareName(appShadowDatabaseDTO.getConnectionPool());
+                    dsEntity.setMiddlewareType(appShadowDatabaseDTO.getMiddlewareType());
+                }
+                dsEntity.setBusinessDatabase(database);
+                dsEntity.setTenantId(WebPluginUtils.traceTenantId());
+                dsEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+                dsEntity.setStatus(StatusEnum.NO.getCode());
+                dsEntity.setType(SourceTypeEnum.AUTO.getCode());
+                dsEntity.setGmtCreate(new Date());
+                // 生成唯一key,按应用区分
+                dsEntity.setUniqueKey(DataSourceUtil.generateDsUniqueKey(resourceId, appName, database));
+                // 这里生成的dskey是关联表的,表里面是不区分应用的
+                String dsKey = DataSourceUtil.generateDsKey(resourceId, database);
+                dsEntityList.add(dsEntity);
+
+                List<LinkEdgeDTO> value = entry.getValue();
+                // 没有设置隔离类型的话,暂时不处理关联表信息,减少没必要的数据梳理
+                if (CollectionUtils.isNotEmpty(value)) {
+                    for (int k = 0; k < value.size(); k++) {
+                        // 存在逗号分割的数据
+                        String method = value.get(k).getMethod();
+                        if (StringUtils.isBlank(method)) {
                             continue;
                         }
-                        String dbName = DbNameUtil.getDbName(database);
-                        if (PtUtils.isShadow(dbName)) {
-                            continue;
-                        }
-                        PressureResourceRelateDsEntity dsEntity = new PressureResourceRelateDsEntity();
-                        dsEntity.setResourceId(resourceId);
-                        dsEntity.setDetailId(detailEntity.getId());
-                        dsEntity.setAppName(appName);
-                        // 从任意的边里面获取数据源详情信息
-                        LinkEdgeDTO edgeDTO = entry.getValue().get(0);
-                        List<AppShadowDatabaseDTO> dsList = edgeDTO.getDsList();
-                        if (CollectionUtils.isEmpty(dsList)) {
-                            logger.warn("应用数据源未梳理完成,{}", database);
-                        } else {
-                            AppShadowDatabaseDTO appShadowDatabaseDTO = dsList.get(0);
-                            dsEntity.setBusinessUserName(appShadowDatabaseDTO.getTableUser());
-                            dsEntity.setMiddlewareName(appShadowDatabaseDTO.getConnectionPool());
-                            dsEntity.setMiddlewareType(appShadowDatabaseDTO.getMiddlewareType());
-                        }
-                        dsEntity.setBusinessDatabase(database);
-                        dsEntity.setTenantId(WebPluginUtils.traceTenantId());
-                        dsEntity.setEnvCode(WebPluginUtils.traceEnvCode());
-                        dsEntity.setStatus(StatusEnum.NO.getCode());
-                        dsEntity.setType(SourceTypeEnum.AUTO.getCode());
-                        dsEntity.setGmtCreate(new Date());
-                        // 生成唯一key,按应用区分
-                        dsEntity.setUniqueKey(DataSourceUtil.generateDsUniqueKey(resourceId, appName, database));
-                        // 这里生成的dskey是关联表的,表里面是不区分应用的
-                        String dsKey = DataSourceUtil.generateDsKey(resourceId, database);
-                        dsEntityList.add(dsEntity);
-
-                        List<LinkEdgeDTO> value = entry.getValue();
-                        // 没有设置隔离类型的话,暂时不处理关联表信息,减少没必要的数据梳理
-                        if (CollectionUtils.isNotEmpty(value)) {
-                            for (int k = 0; k < value.size(); k++) {
-                                // 存在逗号分割的数据
-                                String method = value.get(k).getMethod();
-                                if (StringUtils.isBlank(method)) {
-                                    continue;
-                                }
-                                String[] tables = method.split(",");
-                                for (int j = 0; j < tables.length; j++) {
-                                    String tableName = tables[j];
-                                    // 过滤掉影子的表
-                                    if (PtUtils.isShadow(tableName)) {
-                                        continue;
-                                    }
-                                    if (StringUtils.isBlank(tableName)) {
-                                        logger.warn("链路梳理结果错误,表信息未梳理 {}", resourceId);
-                                        continue;
-                                    }
-                                    PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
-                                    tableEntity.setResourceId(resourceId);
-                                    tableEntity.setBusinessTable(tableName);
-                                    // 系统自动处理影子表
-                                    tableEntity.setShadowTable(PtUtils.shadowTable(tableName));
-                                    tableEntity.setDsKey(dsKey);
-                                    tableEntity.setGmtCreate(new Date());
-                                    tableEntity.setJoinFlag(JoinFlagEnum.YES.getCode());
-                                    tableEntity.setStatus(StatusEnum.NO.getCode());
-                                    tableEntity.setType(SourceTypeEnum.AUTO.getCode());
-                                    tableEntity.setTenantId(WebPluginUtils.traceTenantId());
-                                    tableEntity.setEnvCode(WebPluginUtils.traceEnvCode());
-
-                                    tableEntityList.add(tableEntity);
-                                }
+                        String[] tables = method.split(",");
+                        for (int j = 0; j < tables.length; j++) {
+                            String tableName = tables[j];
+                            // 过滤掉影子的表
+                            if (PtUtils.isShadow(tableName)) {
+                                continue;
                             }
+                            if (StringUtils.isBlank(tableName)) {
+                                logger.warn("链路梳理结果错误,表信息未梳理 {}", resourceId);
+                                continue;
+                            }
+                            PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
+                            tableEntity.setResourceId(resourceId);
+                            tableEntity.setBusinessTable(tableName);
+                            // 系统自动处理影子表
+                            tableEntity.setShadowTable(PtUtils.shadowTable(tableName));
+                            tableEntity.setDsKey(dsKey);
+                            tableEntity.setGmtCreate(new Date());
+                            tableEntity.setJoinFlag(JoinFlagEnum.YES.getCode());
+                            tableEntity.setStatus(StatusEnum.NO.getCode());
+                            tableEntity.setType(SourceTypeEnum.AUTO.getCode());
+                            tableEntity.setTenantId(WebPluginUtils.traceTenantId());
+                            tableEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+
+                            tableEntityList.add(tableEntity);
                         }
                     }
                 }

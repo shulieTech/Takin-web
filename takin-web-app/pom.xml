@@ -254,7 +254,7 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
-            <version>9.0.58</version>
+            <version>${tomcat.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>tomcat-annotations-api</artifactId>
@@ -265,7 +265,7 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-websocket</artifactId>
-            <version>9.0.58</version>
+            <version>${tomcat.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>tomcat-embed-core</artifactId>
@@ -276,7 +276,7 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-annotations-api</artifactId>
-            <version>9.0.58</version>
+            <version>${tomcat.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -380,6 +380,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
                 || PRADAR_USER_APP_KEY.equals(detailResult.getEnKey())
         );
 
+
+
         AgentConfigDetailResult pradarUserIdObj = new AgentConfigDetailResult();
         pradarUserIdObj.setDesc(PRADAR_USER_ID);
         pradarUserIdObj.setEnKey(PRADAR_USER_ID);

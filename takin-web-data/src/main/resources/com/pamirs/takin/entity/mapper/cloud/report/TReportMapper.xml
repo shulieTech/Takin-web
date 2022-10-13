@@ -134,7 +134,7 @@
                     #{userId}
                 </foreach>
             </if>
-            <if test="param.eptIds != null and param.deptIds.size > 0">
+            <if test="param.deptIds != null and param.deptIds.size > 0">
                 AND dept_id IN
                 <foreach collection="param.deptIds" item="deptId" open="(" close=")" separator=",">
                     #{deptId}

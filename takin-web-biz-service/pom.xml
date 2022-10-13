@@ -5,7 +5,7 @@
     <parent>
         <artifactId>takin-web</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.10.2</version>
+        <version>takin-web-5.10.2.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

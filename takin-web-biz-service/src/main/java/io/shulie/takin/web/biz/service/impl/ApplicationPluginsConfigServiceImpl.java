@@ -20,6 +20,7 @@ import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginsConfigDAO;
@@ -71,6 +72,10 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         if (Objects.isNull(param) || Objects.isNull(param.getApplicationId())) {
             throw new TakinWebException(ExceptionCode.POD_NUM_EMPTY, "缺少参数");
         }
+        ApplicationDetailResult applicationById = applicationDAO.getApplicationById(param.getApplicationId());
+        if (applicationById == null){
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_NO_EXIST_ERROR, "该应用不存在");
+        }
         Long tenantId = WebPluginUtils.traceTenantId();
         param.setTenantId(tenantId);
         IPage<ApplicationPluginsConfigEntity> listPage = applicationPluginsConfigDAO.findListPage(param);
@@ -87,6 +92,8 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
             //精度丢失问题
             configVO.setApplicationId(record.getApplicationId() + "");
             configVO.setId(record.getId() + "");
+            configVO.setDeptId(applicationById.getDeptId());
+            WebPluginUtils.fillQueryResponse(configVO);
             configVos.add(configVO);
         }
         return PagingList.of(configVos, listPage.getTotal());

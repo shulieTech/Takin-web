@@ -306,6 +306,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             result.setTypeSelectVO(new SelectVO(entity.getName(), String.valueOf(entity.getValueOrder())));
             // 支持类型
             result.setInterfaceTypeSelectVO(getSelectVO(result.getInterfaceType(), voList));
+
+            result.setDeptId(detailResult.getDeptId());
             // 补充权限
             WebPluginUtils.fillQueryResponse(result);
         });

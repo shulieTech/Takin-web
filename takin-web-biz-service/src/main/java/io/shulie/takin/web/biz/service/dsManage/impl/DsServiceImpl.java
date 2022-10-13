@@ -230,7 +230,7 @@ public class DsServiceImpl implements DsService {
         ApplicationDsQueryParam queryParam = new ApplicationDsQueryParam();
         queryParam.setApplicationId(applicationId);
         queryParam.setIsDeleted(0);
-        WebPluginUtils.fillQueryParam(queryParam);
+//        WebPluginUtils.fillQueryParam(queryParam);
         List<ApplicationDsResult> dsResultList = applicationDsDAO.queryList(queryParam);
         List<ApplicationDsResponse> dsResponseList = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(dsResultList)) {
@@ -457,7 +457,7 @@ public class DsServiceImpl implements DsService {
         ApplicationDsQueryParam queryParam = new ApplicationDsQueryParam();
         queryParam.setApplicationId(applicationId);
         queryParam.setIsDeleted(0);
-        WebPluginUtils.fillQueryParam(queryParam);
+//        WebPluginUtils.fillQueryParam(queryParam);
         this.filterAndSave(shadowDataBaseInfos, applicationId, queryParam);
         //这里为了拿到id,先存后查
         List<ApplicationDsCacheManageDetailResult> caches = dsCacheManageDAO.selectList(queryParam);
@@ -470,9 +470,8 @@ public class DsServiceImpl implements DsService {
         response.addAll(dbs.stream().map(this::dbBuild).collect(Collectors.toList()));
         response.addAll(oldResponseList.stream().map(this::v1Build).collect(Collectors.toList()));
         response.forEach(r -> {
-            if (r.getIsManual() != null && !r.getIsManual()) {
-                r.setCanRemove(false);
-            }
+            r.setDeptId(detailResult.getDeptId());
+            WebPluginUtils.fillQueryResponse(r);
         });
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());

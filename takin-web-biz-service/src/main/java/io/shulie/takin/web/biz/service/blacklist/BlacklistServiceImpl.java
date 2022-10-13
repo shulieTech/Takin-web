@@ -21,6 +21,7 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.blacklist.BlacklistTypeEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.blacklist.BlacklistVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
@@ -166,7 +167,12 @@ public class BlacklistServiceImpl implements BlacklistService {
         if (pagingList.isEmpty()) {
             return PagingList.of(Lists.newArrayList(), pagingList.getTotal());
         }
+        ApplicationDetailResult applicationById = applicationDAO.getApplicationById(input.getApplicationId());
+        if (applicationById == null){
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_NO_EXIST_ERROR, "该应用不存在");
+        }
         for (BlacklistVO vo : pagingList.getList()) {
+            vo.setDeptId(applicationById.getDeptId());
             WebPluginUtils.fillQueryResponse(vo);
         }
         return pagingList;

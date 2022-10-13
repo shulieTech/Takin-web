@@ -20,6 +20,8 @@ import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.utils.Estimate;
 import io.shulie.takin.web.biz.utils.XmlUtil;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationShadowJobDAO;
 import io.shulie.takin.web.data.param.application.ShadowJobCreateParam;
@@ -212,6 +214,10 @@ public class ShadowJobConfigService {
         if (StringUtils.isBlank(query.getOrderBy())) {
             query.setOrderBy("id desc");
         }
+        ApplicationDetailResult applicationById = applicationDAO.getApplicationById(query.getApplicationId());
+        if (applicationById == null){
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_NO_EXIST_ERROR, "当前应用不存在");
+        }
         List<TShadowJobConfig> tShadowJobConfigs = tShadowJobConfigMapper.selectList(query);
         PageInfo<TShadowJobConfig> pageInfo = new PageInfo<>(tShadowJobConfigs);
         List<ShadowJobConfigVo> configVos = new ArrayList<>();
@@ -229,6 +235,7 @@ public class ShadowJobConfigService {
             vo.setUpdateTime(tShadowJobConfig.getUpdateTime());
             vo.setRemark(tShadowJobConfig.getRemark());
 
+            vo.setDeptId(applicationById.getDeptId());
             vo.setUserId(tShadowJobConfig.getUserId());
             WebPluginUtils.fillQueryResponse(vo);
             configVos.add(vo);

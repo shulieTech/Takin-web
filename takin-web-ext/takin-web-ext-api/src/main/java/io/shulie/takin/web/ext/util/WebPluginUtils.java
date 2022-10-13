@@ -267,13 +267,6 @@ public class WebPluginUtils {
         return Lists.newArrayList();
     }
 
-    public static List<Long> createAllowUserIdList() {
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.createAllowUserIdList();
-        }
-        return Lists.newArrayList();
-    }
-
     public static List<Long> updateAllowUserIdList() {
         if (Objects.nonNull(dataAuthApi)) {
             return dataAuthApi.updateAllowUserIdList();
@@ -309,42 +302,13 @@ public class WebPluginUtils {
         return Lists.newArrayList();
     }
 
-    public static List<Long> reportAllowUserIdList(){
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.reportAllowUserIdList();
-        }
-        return Lists.newArrayList();
-    }
-    public static List<Long> pigeonholeAllowUserIdList(){
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.pigeonholeAllowUserIdList();
-        }
-        return Lists.newArrayList();
-    }
-    public static List<Long> shareAllowUserIdList(){
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.shareAllowUserIdList();
-        }
-        return Lists.newArrayList();
-    }
-    public static List<Long> copyAllowUserIdList(){
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.copyAllowUserIdList();
-        }
-        return Lists.newArrayList();
-    }
     public static List<Long> queryAllowDeptIdList(){
         if (Objects.nonNull(dataAuthApi)) {
             return dataAuthApi.queryAllowDeptIdList();
         }
         return Lists.newArrayList();
     }
-    public static List<Long> createAllowDeptIdList(){
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.createAllowDeptIdList();
-        }
-        return Lists.newArrayList();
-    }
+
     public static List<Long> updateAllowDeptIdList(){
         if (Objects.nonNull(dataAuthApi)) {
             return dataAuthApi.updateAllowDeptIdList();
@@ -375,30 +339,7 @@ public class WebPluginUtils {
         }
         return Lists.newArrayList();
     }
-    public static List<Long> reportAllowDeptIdList(){
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.reportAllowDeptIdList();
-        }
-        return Lists.newArrayList();
-    }
-    public static List<Long> pigeonholeAllowDeptIdList(){
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.pigeonholeAllowDeptIdList();
-        }
-        return Lists.newArrayList();
-    }
-    public static List<Long> shareAllowDeptIdList(){
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.shareAllowDeptIdList();
-        }
-        return Lists.newArrayList();
-    }
-    public static List<Long> copyAllowDeptIdList(){
-        if (Objects.nonNull(dataAuthApi)) {
-            return dataAuthApi.copyAllowDeptIdList();
-        }
-        return Lists.newArrayList();
-    }
+
 	/**
      * 返回租户id
      *

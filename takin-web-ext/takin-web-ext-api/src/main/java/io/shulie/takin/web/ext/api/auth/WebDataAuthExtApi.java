@@ -16,30 +16,20 @@ public interface WebDataAuthExtApi extends ExtensionPoint {
      * @return
      */
     List<Long> queryAllowUserIdList();
-    List<Long> createAllowUserIdList();
     List<Long> updateAllowUserIdList();
     List<Long> deleteAllowUserIdList();
     List<Long> enableDisableAllowUserIdList();
     List<Long> startStopAllowUserIdList();
     List<Long> downloadAllowUserIdList();
-    List<Long> reportAllowUserIdList();
-    List<Long> pigeonholeAllowUserIdList();
-    List<Long> shareAllowUserIdList();
-    List<Long> copyAllowUserIdList();
 
     /**
      * 相关操作允许的部门id
      * @return
      */
     List<Long> queryAllowDeptIdList();
-    List<Long> createAllowDeptIdList();
     List<Long> updateAllowDeptIdList();
     List<Long> deleteAllowDeptIdList();
     List<Long> enableDisableAllowDeptIdList();
     List<Long> startStopAllowDeptIdList();
     List<Long> downloadAllowDeptIdList();
-    List<Long> reportAllowDeptIdList();
-    List<Long> pigeonholeAllowDeptIdList();
-    List<Long> shareAllowDeptIdList();
-    List<Long> copyAllowDeptIdList();
 }

@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.result.application;
 
+import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import lombok.Data;
 
 import java.util.Date;
@@ -11,7 +12,7 @@ import java.util.Date;
  * @date 2021-05-18 16:48:12
  */
 @Data
-public class ApplicationPluginsConfigVO {
+public class ApplicationPluginsConfigVO extends AuthQueryResponseCommonExt {
     private String id;
     private String configValueName;
     /**

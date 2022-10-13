@@ -19,6 +19,8 @@ import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.GuardEnableConstants;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
 import io.shulie.takin.web.data.param.application.LinkGuardCreateParam;
@@ -175,8 +177,12 @@ public class LinkGuardServiceImpl implements LinkGuardService {
             } else {
                 page = PageUtils.getPage(true, param.getCurrentPage(), param.getPageSize(), list);
             }
+            ApplicationDetailResult applicationById = applicationDAO.getApplicationById(param.getAppId());
+            if (applicationById == null){
+                throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_NO_EXIST_ERROR, "该应用不存在");
+            }
             page.stream().forEach(guardEntity -> {
-                result.add(entityToVo(guardEntity));
+                result.add(entityToVo(guardEntity,applicationById.getDeptId()));
             });
         }
         return Response.success(result, CollectionUtils.isEmpty(list) ? 0 : list.size());
@@ -209,7 +215,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
     @Override
     public Response getById(Long id) {
         LinkGuardEntity guardEntity = tLinkGuardMapper.selectById(id);
-        LinkGuardVo vo = entityToVo(guardEntity);
+        LinkGuardVo vo = entityToVo(guardEntity, null);
         return Response.success(vo);
     }
 
@@ -233,7 +239,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         return tLinkGuardMapper.getAllEnabledGuard(applicationId);
     }
 
-    public LinkGuardVo entityToVo(LinkGuardEntity guardEntity) {
+    public LinkGuardVo entityToVo(LinkGuardEntity guardEntity, Long deptId) {
         if (guardEntity == null) {
             return null;
         }
@@ -250,6 +256,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         }
         // 判断权限，需要把用户传入
         vo.setUserId(guardEntity.getUserId());
+        vo.setDeptId(deptId);
         WebPluginUtils.fillQueryResponse(vo);
         return vo;
     }

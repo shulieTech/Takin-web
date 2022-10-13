@@ -15,9 +15,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class AuthQueryResponseCommonExt extends UserCommonExt {
 
-    @ApiModelProperty(name = "canAdd", value = "是否可新增")
-    private Boolean canAdd = true;
-
     @ApiModelProperty(name = "canEdit", value = "是否可编辑")
     private Boolean canEdit = true;
 

@@ -36,4 +36,5 @@ public class ApplicationDetailResult extends TenantCommonExt {
     private String pradarVersion;
     private Long userId;
     private String md5;
+    private Long deptId;
 }

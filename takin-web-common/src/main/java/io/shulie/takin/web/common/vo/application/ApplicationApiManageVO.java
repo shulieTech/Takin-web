@@ -3,6 +3,7 @@ package io.shulie.takin.web.common.vo.application;
 import java.util.Date;
 import java.io.Serializable;
 
+import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -12,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
  * @date 2020/7/7 10:40
  */
 @Data
-public class ApplicationApiManageVO implements Serializable {
+public class ApplicationApiManageVO extends AuthQueryResponseCommonExt {
     /**
      * 主键
      */

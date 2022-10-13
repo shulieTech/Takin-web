@@ -240,22 +240,7 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
             ApplicationApiManageVO dto = new ApplicationApiManageVO();
             BeanUtils.copyProperties(data, dto);
             dto.setRequestMethod(data.getMethod());
-            List<Long> allowUpdateUserIdList = WebPluginUtils.updateAllowUserIdList();
-            List<Long> allowUpdateDeptIdList = WebPluginUtils.updateAllowDeptIdList();
-            if (CollectionUtils.isNotEmpty(allowUpdateUserIdList) && !allowUpdateUserIdList.contains(data.getUserId())) {
-                dto.setCanEdit(false);
-            }
-            if (CollectionUtils.isNotEmpty(allowUpdateDeptIdList) && !allowUpdateDeptIdList.contains(data.getDeptId())) {
-                dto.setCanEdit(false);
-            }
-            List<Long> allowDeleteUserIdList = WebPluginUtils.deleteAllowUserIdList();
-            List<Long> allowDeleteDeptIdList = WebPluginUtils.deleteAllowDeptIdList();
-            if (CollectionUtils.isNotEmpty(allowDeleteUserIdList) && !allowDeleteUserIdList.contains(data.getUserId())) {
-                dto.setCanRemove(false);
-            }
-            if (CollectionUtils.isNotEmpty(allowDeleteDeptIdList) && !allowDeleteDeptIdList.contains(data.getDeptId())) {
-                dto.setCanRemove(false);
-            }
+            WebPluginUtils.fillQueryResponse(dto);
             dtoList.add(dto);
         });
         /*  PageInfo<ApplicationApiManage> pageInfo = new PageInfo<>(pageData);*/

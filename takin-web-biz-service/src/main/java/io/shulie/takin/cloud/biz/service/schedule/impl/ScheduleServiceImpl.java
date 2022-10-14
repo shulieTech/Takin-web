@@ -453,7 +453,12 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
                 Collectors.toMap(path -> path.substring(path.lastIndexOf(SceneManageConstant.FILE_SPLIT)), Function.identity()));
             dataFile.forEach(file -> {
                 String uri = file.getUri();
-                file.setUri(fileMap.get(uri.substring(uri.lastIndexOf(SceneManageConstant.FILE_SPLIT))));
+                // 文件名称
+                String fileName = uri.substring(uri.lastIndexOf(SceneManageConstant.FILE_SPLIT));
+                // 映射的路径
+                String mapPath = fileMap.get(fileName);
+                // 如果没有映射就不做变更
+                if (StringUtils.isNotBlank(mapPath)) {file.setUri(mapPath);}
             });
         }
     }

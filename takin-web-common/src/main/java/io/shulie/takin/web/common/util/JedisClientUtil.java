@@ -42,7 +42,7 @@ public class JedisClientUtil {
     public Object get(Object key) {
         Jedis jedis = jedisPool.getResource();
         try {
-            return jedisPool.getResource().get(Objects.toString(key));
+            return jedis.get(Objects.toString(key));
         } finally {
             returnResource(jedis);
         }

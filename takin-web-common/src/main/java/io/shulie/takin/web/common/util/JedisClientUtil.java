@@ -29,11 +29,11 @@ public class JedisClientUtil {
         }
     }
 
-    public void set(Object key, Object val, Integer maxIdle, TimeUnit timeUnit) {
+    public void set(String key, String val, Integer maxIdle, TimeUnit timeUnit) {
         Jedis jedis = jedisPool.getResource();
         try {
             long time = timeUnit.toSeconds(maxIdle);
-            jedis.setex(Objects.toString(key), Math.toIntExact(time), JSON.toJSONString(Objects.toString(val)));
+            jedis.setex(key, Math.toIntExact(time), val);
         } finally {
             returnResource(jedis);
         }

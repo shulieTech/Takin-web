@@ -2,6 +2,7 @@ package io.shulie.takin.web.common.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import java.util.Objects;
@@ -19,48 +20,104 @@ public class JedisClientUtil {
 
     // 字符串操作
     public void set(Object key, Object val) {
-        jedisPool.getResource().set(Objects.toString(key), Objects.toString(val));
+        Jedis jedis = jedisPool.getResource();
+        try {
+            jedis.set(Objects.toString(key), Objects.toString(val));
+        } finally {
+            jedis.close();
+        }
     }
 
     public void set(Object key, Object val, Integer maxIdle, TimeUnit timeUnit) {
-        long time = timeUnit.toSeconds(maxIdle);
-        jedisPool.getResource().setex(Objects.toString(key), Math.toIntExact(time), Objects.toString(val));
+        Jedis jedis = jedisPool.getResource();
+        try {
+            long time = timeUnit.toSeconds(maxIdle);
+            jedis.setex(Objects.toString(key), Math.toIntExact(time), Objects.toString(val));
+        } finally {
+            jedis.close();
+        }
     }
 
     public Object get(Object key) {
-        return jedisPool.getResource().get(Objects.toString(key));
+        Jedis jedis = jedisPool.getResource();
+        try {
+            return jedisPool.getResource().get(Objects.toString(key));
+        } finally {
+            jedis.close();
+        }
     }
 
     public void delete(Object key) {
-        jedisPool.getResource().del(Objects.toString(key));
+        Jedis jedis = jedisPool.getResource();
+        try {
+            jedis.del(Objects.toString(key));
+        } finally {
+            jedis.close();
+        }
     }
 
     public Long increment(Object key) {
-        return jedisPool.getResource().incr(String.valueOf(key));
+        Jedis jedis = jedisPool.getResource();
+        try {
+            return jedis.incr(String.valueOf(key));
+        } finally {
+            jedis.close();
+        }
     }
 
     // hash
     public Boolean hasKey(Object key, Object field) {
-        return jedisPool.getResource().hexists(Objects.toString(key), Objects.toString(field));
+        Jedis jedis = jedisPool.getResource();
+        try {
+            return jedis.hexists(Objects.toString(key), Objects.toString(field));
+        } finally {
+            jedis.close();
+        }
     }
 
     public Boolean hasKey(Object key) {
-        return jedisPool.getResource().exists(Objects.toString(key));
+        Jedis jedis = jedisPool.getResource();
+        try {
+            return jedis.exists(Objects.toString(key));
+        } finally {
+            jedis.close();
+        }
     }
 
     public Object get(Object key, Object field) {
-        return jedisPool.getResource().hget(Objects.toString(key), Objects.toString(field));
+        Jedis jedis = jedisPool.getResource();
+        try {
+            return jedis.hget(Objects.toString(key), Objects.toString(field));
+        } finally {
+            jedis.close();
+        }
     }
 
     public void put(Object key, Object field, Object value) {
-        jedisPool.getResource().hset(Objects.toString(key), Objects.toString(field), Objects.toString(value));
+        Jedis jedis = jedisPool.getResource();
+        try {
+            jedis.hset(Objects.toString(key), Objects.toString(field), Objects.toString(value));
+        } finally {
+            jedis.close();
+        }
     }
 
     public void expire(Object key, long time, TimeUnit timeUnit) {
-        jedisPool.getResource().pexpire(Objects.toString(key), timeUnit.toSeconds(time));
+        Jedis jedis = jedisPool.getResource();
+        try {
+            jedis.pexpire(Objects.toString(key), timeUnit.toSeconds(time));
+        } finally {
+            jedis.close();
+        }
     }
 
     public Long getExpire(Object key, final TimeUnit timeUnit) {
-        return jedisPool.getResource().ttl(Objects.toString(key));
+        Jedis jedis = jedisPool.getResource();
+        try {
+            Long ttl = jedis.ttl(Objects.toString(key));
+            return timeUnit.toSeconds(ttl);
+        } finally {
+            jedis.close();
+        }
     }
 }

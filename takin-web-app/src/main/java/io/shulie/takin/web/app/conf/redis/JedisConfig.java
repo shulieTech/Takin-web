@@ -29,10 +29,6 @@ public class JedisConfig {
                 redisProperties.getPort(),
                 10000,
                 redisProperties.getPassword());
-
-        jedisPool.getResource().get("ss");
-        jedisPool.getResource().set("ss", "mm");
-        jedisPool.getResource().get("ss");
         return jedisPool;
     }
 }

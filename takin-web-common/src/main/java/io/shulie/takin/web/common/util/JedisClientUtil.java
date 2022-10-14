@@ -24,7 +24,7 @@ public class JedisClientUtil {
         try {
             jedis.set(Objects.toString(key), Objects.toString(val));
         } finally {
-            jedis.close();
+            returnResource(jedis);
         }
     }
 
@@ -34,7 +34,7 @@ public class JedisClientUtil {
             long time = timeUnit.toSeconds(maxIdle);
             jedis.setex(Objects.toString(key), Math.toIntExact(time), Objects.toString(val));
         } finally {
-            jedis.close();
+            returnResource(jedis);
         }
     }
 
@@ -43,7 +43,7 @@ public class JedisClientUtil {
         try {
             return jedisPool.getResource().get(Objects.toString(key));
         } finally {
-            jedis.close();
+            returnResource(jedis);
         }
     }
 
@@ -52,7 +52,7 @@ public class JedisClientUtil {
         try {
             jedis.del(Objects.toString(key));
         } finally {
-            jedis.close();
+            returnResource(jedis);
         }
     }
 
@@ -61,7 +61,7 @@ public class JedisClientUtil {
         try {
             return jedis.incr(String.valueOf(key));
         } finally {
-            jedis.close();
+            returnResource(jedis);
         }
     }
 
@@ -71,7 +71,7 @@ public class JedisClientUtil {
         try {
             return jedis.hexists(Objects.toString(key), Objects.toString(field));
         } finally {
-            jedis.close();
+            returnResource(jedis);
         }
     }
 
@@ -80,7 +80,7 @@ public class JedisClientUtil {
         try {
             return jedis.exists(Objects.toString(key));
         } finally {
-            jedis.close();
+            returnResource(jedis);
         }
     }
 
@@ -89,7 +89,7 @@ public class JedisClientUtil {
         try {
             return jedis.hget(Objects.toString(key), Objects.toString(field));
         } finally {
-            jedis.close();
+            returnResource(jedis);
         }
     }
 
@@ -98,7 +98,7 @@ public class JedisClientUtil {
         try {
             jedis.hset(Objects.toString(key), Objects.toString(field), Objects.toString(value));
         } finally {
-            jedis.close();
+            returnResource(jedis);
         }
     }
 
@@ -107,7 +107,7 @@ public class JedisClientUtil {
         try {
             jedis.pexpire(Objects.toString(key), timeUnit.toSeconds(time));
         } finally {
-            jedis.close();
+            returnResource(jedis);
         }
     }
 
@@ -117,6 +117,12 @@ public class JedisClientUtil {
             Long ttl = jedis.ttl(Objects.toString(key));
             return timeUnit.toSeconds(ttl);
         } finally {
+            returnResource(jedis);
+        }
+    }
+
+    public static void returnResource(Jedis jedis) {
+        if (jedis != null) {
             jedis.close();
         }
     }

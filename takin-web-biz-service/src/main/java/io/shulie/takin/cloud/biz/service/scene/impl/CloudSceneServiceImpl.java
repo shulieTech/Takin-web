@@ -45,6 +45,7 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.DataV
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.File;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.Goal;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.MonitoringGoal;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -419,6 +420,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
         sceneEntity.setUserId(CloudPluginUtils.getUserId());
         sceneEntity.setEnvCode(CloudPluginUtils.getEnvCode());
         sceneEntity.setTenantId(CloudPluginUtils.getTenantId());
+        sceneEntity.setDeptId(WebPluginUtils.traceDeptId());
         // 执行数据库操作
         sceneManageMapper.insert(sceneEntity);
         // 回填自增主键

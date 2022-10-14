@@ -126,6 +126,7 @@ public class ReportServiceImpl implements ReportService {
             ReportDTO result = BeanUtil.copyProperties(t, ReportDTO.class);
             result.setUserName(userName);
             result.setUserId(userId);
+            WebPluginUtils.fillQueryResponse(result);
             return result;
         }).collect(Collectors.toList());
         return ResponseResult.success(dtoList, reportResponseList.getTotalNum());

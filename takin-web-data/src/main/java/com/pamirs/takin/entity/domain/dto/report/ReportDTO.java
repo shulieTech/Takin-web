@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +14,7 @@ import lombok.Data;
  * @date 2020-04-17
  */
 @Data
-public class ReportDTO extends UserCommonExt implements Serializable {
+public class ReportDTO extends AuthQueryResponseCommonExt implements Serializable {
 
     private static final long serialVersionUID = 4235565595934721788L;
 

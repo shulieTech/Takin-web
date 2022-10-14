@@ -78,4 +78,6 @@ public class SceneResult {
     private Integer totalNodeNum;
 
     private String features;
+
+    private Long deptId;
 }

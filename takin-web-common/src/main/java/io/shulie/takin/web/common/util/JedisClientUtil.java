@@ -94,10 +94,10 @@ public class JedisClientUtil {
         }
     }
 
-    public void put(Object key, Object field, Object value) {
+    public void put(String key, String field, String value) {
         Jedis jedis = jedisPool.getResource();
         try {
-            jedis.hset(Objects.toString(key), Objects.toString(field), Objects.toString(value));
+            jedis.hset(key, field, value);
         } finally {
             returnResource(jedis);
         }

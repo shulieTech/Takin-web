@@ -21,14 +21,18 @@ public class JedisConfig {
     public JedisPool jedisPool() {
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         jedisPoolConfig.setMaxTotal(redisProperties.getJedis().getPool().getMaxActive());
+        jedisPoolConfig.setMaxIdle(redisProperties.getJedis().getPool().getMaxActive());
         jedisPoolConfig.setMinIdle(redisProperties.getJedis().getPool().getMinIdle());
-        jedisPoolConfig.setMaxWaitMillis(redisProperties.getJedis().getPool().getMaxWait().toMillis());
+        jedisPoolConfig.setTestOnBorrow(true);
+        jedisPoolConfig.setTestOnReturn(true);
+        jedisPoolConfig.setMaxWaitMillis(2000);
         JedisPool jedisPool = new JedisPool(
                 jedisPoolConfig,
                 redisProperties.getHost(),
                 redisProperties.getPort(),
-                10000,
+                2000,
                 redisProperties.getPassword());
+
         return jedisPool;
     }
 }

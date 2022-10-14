@@ -15,10 +15,12 @@
 
 package io.shulie.takin.cloud.biz.output.statistics;
 
-import io.shulie.takin.cloud.common.pojo.AbstractEntry;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import org.influxdb.annotation.Column;
+
+import io.shulie.takin.cloud.common.pojo.AbstractEntry;
 
 /**
  * @author liyuanba
@@ -26,6 +28,7 @@ import org.influxdb.annotation.Column;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@Accessors(chain = true)
 public class PressureOutput extends AbstractEntry {
     @Column(tag = true, name = "transaction")
     private String transaction;
@@ -60,11 +63,6 @@ public class PressureOutput extends AbstractEntry {
      */
     @Column(name = "active_threads")
     private Integer activeThreads;
-    /**
-     * 实际活跃线程数:对应metrics表中的activeThreads字段
-     */
-//    @Column(name = "real_active_threads")
-//    private Integer realActiveThreads;
     @Column(name = "avg_tps")
     private Double avgTps;
     @Column(name = "sa_percent")

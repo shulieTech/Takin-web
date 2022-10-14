@@ -34,6 +34,7 @@ import org.apache.commons.lang3.math.NumberUtils;
  */
 @Slf4j
 public class NumberUtil {
+    private NumberUtil() {}
     public static <T> double maxDouble(Collection<T> list, Function<T, Double> func) {
         return maxDouble(list, func, 0d);
     }
@@ -65,7 +66,7 @@ public class NumberUtil {
     }
 
     public static <T> double minDouble(Collection<T> list, Function<T, Double> func) {
-        return maxDouble(list, func, 0d);
+        return minDouble(list, func, 0d);
     }
     public static <T> Double minDouble(Collection<T> list, Function<T, Double> func, Double defValue) {
         if (CollectionUtils.isEmpty(list)) {
@@ -255,7 +256,7 @@ public class NumberUtil {
 
     public static boolean isZero(double a) {
         BigDecimal zero = new BigDecimal(0);
-        BigDecimal aa = new BigDecimal(a);
+        BigDecimal aa = BigDecimal.valueOf(a);
         return aa.compareTo(zero) == 0;
     }
 
@@ -270,8 +271,4 @@ public class NumberUtil {
         return decimalToString(decimal, 2, RoundingMode.HALF_DOWN);
     }
 
-    public static void main(String[] args) {
-        System.out.println("isZero=" + decimalToString(null));
-        System.out.println("getRate=" + getRate(1, 0.00000d));
-    }
 }

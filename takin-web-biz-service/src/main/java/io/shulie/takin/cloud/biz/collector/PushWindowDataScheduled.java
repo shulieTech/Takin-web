@@ -1,64 +1,68 @@
 package io.shulie.takin.cloud.biz.collector;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Collection;
 import java.util.stream.Collectors;
+import java.util.function.Consumer;
+import java.util.concurrent.TimeUnit;
+import java.nio.charset.StandardCharsets;
 
 import javax.annotation.Resource;
 
 import cn.hutool.core.date.DateUnit;
-import com.google.common.collect.Lists;
-import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
-import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
-import io.shulie.takin.cloud.biz.output.statistics.PressureOutput;
-import io.shulie.takin.cloud.biz.output.statistics.RtDataOutput;
-import io.shulie.takin.cloud.biz.utils.DataUtils;
-import io.shulie.takin.cloud.biz.utils.Executors;
-import io.shulie.takin.cloud.common.bean.collector.ResponseMetrics;
-import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
-import io.shulie.takin.cloud.common.constants.CollectorConstants;
-import io.shulie.takin.cloud.common.constants.ScheduleConstants;
-import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
-import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
-import io.shulie.takin.cloud.common.exception.TakinCloudException;
-import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
-import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
-import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
-import io.shulie.takin.cloud.common.utils.CollectorUtil;
-import io.shulie.takin.cloud.common.utils.CommonUtil;
-import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.cloud.common.utils.JsonUtil;
-import io.shulie.takin.cloud.common.utils.NumberUtil;
-import io.shulie.takin.cloud.data.dao.report.ReportDao;
-import io.shulie.takin.cloud.data.param.report.ReportQueryParam;
-import io.shulie.takin.cloud.data.param.report.ReportQueryParam.PressureTypeRelation;
-import io.shulie.takin.cloud.data.result.report.ReportResult;
-import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
-import io.shulie.takin.cloud.ext.content.script.ScriptNode;
-import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.common.enums.ContextSourceEnum;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.text.CharSequenceUtil;
+
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.ibatis.jdbc.SQL;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.stereotype.Component;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.data.redis.connection.RedisConnection;
+
+import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.cloud.biz.utils.DataUtils;
+import io.shulie.takin.cloud.biz.utils.Executors;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.cloud.common.utils.JsonUtil;
+import io.shulie.takin.cloud.common.utils.CommonUtil;
+import io.shulie.takin.cloud.common.utils.NumberUtil;
+import io.shulie.takin.cloud.data.dao.report.ReportDao;
+import io.shulie.takin.cloud.common.utils.CollectorUtil;
+import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
+import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
+import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.cloud.data.result.report.ReportResult;
+import io.shulie.takin.cloud.common.constants.ScheduleConstants;
+import io.shulie.takin.cloud.data.param.report.ReportQueryParam;
+import io.shulie.takin.cloud.biz.output.statistics.RtDataOutput;
+import io.shulie.takin.cloud.common.constants.CollectorConstants;
+import io.shulie.takin.cloud.common.exception.TakinCloudException;
+import io.shulie.takin.cloud.biz.output.statistics.PressureOutput;
+import io.shulie.takin.cloud.common.bean.collector.ResponseMetrics;
+import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
+import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
+import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
+import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
+import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
+import io.shulie.takin.cloud.data.param.report.ReportQueryParam.PressureTypeRelation;
 
 /**
  * @author <a href="tangyuhan@shulie.io">yuhan.tang</a>
@@ -80,8 +84,8 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         Long timeWindow = null;
         try {
             String measurement = InfluxUtil.getMetricsMeasurement(jobId, sceneId, reportId, customerId);
-            ResponseMetrics metrics = influxWriter.querySingle(
-                "select * from " + measurement + " where time>0 order by time asc limit 1", ResponseMetrics.class);
+            ResponseMetrics metrics = influxWriter.querySingle(new SQL().SELECT("*").FROM(measurement).WHERE("time > 0")
+                .ORDER_BY("time asc").LIMIT(1).toString(), ResponseMetrics.class);
             if (null != metrics) {
                 timeWindow = CollectorUtil.getTimeWindowTime(metrics.getTime());
             }
@@ -95,16 +99,14 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         try {
             //查询引擎上报数据时，通过时间窗向前5s来查询，(0,5]
             String measurement = InfluxUtil.getMetricsMeasurement(jobId, sceneId, reportId, customerId);
-            StringBuilder sql = new StringBuilder("select * from");
-            sql.append(" ").append(measurement);
+            SQL sql = new SQL().SELECT("*").FROM(measurement);
             if (null != timeWindow) {
-                long time = TimeUnit.NANOSECONDS.convert(timeWindow, TimeUnit.MILLISECONDS);
-                sql.append(" ").append("where").append(" ").append("time<=").append(time).append(" and ")
-                    .append("time>").append(
-                        time - TimeUnit.NANOSECONDS.convert(CollectorConstants.SEND_TIME, TimeUnit.SECONDS));
+                long endTime = TimeUnit.NANOSECONDS.convert(timeWindow, TimeUnit.MILLISECONDS);
+                long startTime = endTime - TimeUnit.NANOSECONDS.convert(CollectorConstants.SEND_TIME, TimeUnit.SECONDS);
+                sql.WHERE("time > " + startTime).WHERE("time <= " + endTime);
                 List<ResponseMetrics> query = influxWriter.query(sql.toString(), ResponseMetrics.class);
                 log.info("汇总查询日志：sceneId:{},sql:{},查询结果数量:{}", sceneId, sql, query == null ? "null" : query.size());
-                return query;
+                return query == null ? new ArrayList<>(0) : query;
             } else {
                 timeWindow = getMetricsMinTimeWindow(jobId, sceneId, reportId, customerId);
                 if (null != timeWindow) {
@@ -114,7 +116,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         } catch (Throwable e) {
             log.error("查询失败", e);
         }
-        return null;
+        return new ArrayList<>(0);
     }
 
     /**
@@ -124,8 +126,9 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         Long timeWindow = null;
         try {
             String measurement = InfluxUtil.getMeasurement(jobId, sceneId, reportId, customerId);
-            PressureOutput pressure = influxWriter.querySingle(
-                "select * from " + measurement + " where status=0 order by time asc limit 1", PressureOutput.class);
+            SQL sql = new SQL().SELECT("*").FROM(measurement).WHERE("status = 0")
+                .ORDER_BY("time asc").LIMIT(1);
+            PressureOutput pressure = influxWriter.querySingle(sql.toString(), PressureOutput.class);
             if (null != pressure) {
                 timeWindow = pressure.getTime();
             }
@@ -183,7 +186,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         }
         //timeWindow如果为空，则获取全部metrics数据，如果不为空则获取该时间窗口的数据
         List<ResponseMetrics> metricsList = queryMetrics(jobId, sceneId, reportId, customerId, timeWindow);
-        if (CollectionUtils.isEmpty(metricsList)) {
+        if (CollUtil.isEmpty(metricsList)) {
             log.info("{}, timeWindow={} ， metrics 是空集合!", logPre, showTime(timeWindow));
             return timeWindow;
         }
@@ -208,7 +211,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             .filter(StringUtils::isNotBlank)
             .distinct()
             .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(transactions)) {
+        if (CollUtil.isEmpty(transactions)) {
             log.info("{} return 4!transactions is empty!", logPre);
             return timeWindow;
         }
@@ -218,17 +221,17 @@ public class PushWindowDataScheduled extends AbstractIndicators {
 
         List<PressureOutput> results = transactions.stream().filter(StringUtils::isNotBlank)
             .map(s -> this.filterByTransaction(metricsList, s))
-            .filter(CollectionUtils::isNotEmpty)
+            .filter(CollUtil::isNotEmpty)
             .map(l -> this.toPressureOutput(l, podNum, time))
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(results)) {
+        if (CollUtil.isEmpty(results)) {
             log.info("results is empty!");
             return timeWindow;
         }
 
         //统计没有回传的节点数据
-        if (CollectionUtils.isNotEmpty(nodes)) {
+        if (CollUtil.isNotEmpty(nodes)) {
             Map<String, PressureOutput> pressureMap = results.stream().filter(Objects::nonNull)
                 .collect(Collectors.toMap(PressureOutput::getTransaction, o -> o, (o1, o2) -> o1));
             nodes.stream().filter(Objects::nonNull)
@@ -260,7 +263,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         if (null != result) {
             return result;
         }
-        if (CollectionUtils.isEmpty(node.getChildren())) {
+        if (CollUtil.isEmpty(node.getChildren())) {
             return null;
         }
         List<PressureOutput> childPressures = node.getChildren().stream().filter(Objects::nonNull)
@@ -283,7 +286,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
      */
     private PressureOutput countPressure(ScriptNode node, List<PressureOutput> childPressures,
         Map<String, PressureOutput> sourceMap) {
-        if (CollectionUtils.isEmpty(childPressures)) {
+        if (CollUtil.isEmpty(childPressures)) {
             return null;
         }
         long time = childPressures.stream().filter(Objects::nonNull)
@@ -314,8 +317,8 @@ public class PushWindowDataScheduled extends AbstractIndicators {
          */
         List<ScriptNode> childNodes = JmxUtil.getChildNodesByFilterFunc(node,
             n -> sourceMap.containsKey(n.getXpathMd5()));
-        final List<PressureOutput> subPressures = Lists.newArrayList(childPressures);
-        if (CollectionUtils.isNotEmpty(childNodes)) {
+        final List<PressureOutput> subPressures = new ArrayList<>(childPressures);
+        if (CollUtil.isNotEmpty(childNodes)) {
             childNodes.stream().filter(Objects::nonNull)
                 .map(ScriptNode::getXpathMd5)
                 .filter(StringUtils::isNotBlank)
@@ -366,7 +369,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
      * 单个时间窗口数据，根据transaction过滤
      */
     private List<ResponseMetrics> filterByTransaction(List<ResponseMetrics> metricsList, String transaction) {
-        if (CollectionUtils.isEmpty(metricsList)) {
+        if (CollUtil.isEmpty(metricsList)) {
             return metricsList;
         }
         return metricsList.stream().filter(Objects::nonNull)
@@ -378,60 +381,61 @@ public class PushWindowDataScheduled extends AbstractIndicators {
      * 实时数据统计
      */
     private PressureOutput toPressureOutput(List<ResponseMetrics> metricsList, Integer podNum, long time) {
-        if (CollectionUtils.isEmpty(metricsList)) {
-            return null;
-        }
+        if (CollUtil.isEmpty(metricsList)) {return null;}
         String transaction = metricsList.get(0).getTransaction();
         String testName = metricsList.get(0).getTestName();
-
-        int count = NumberUtil.sum(metricsList, ResponseMetrics::getCount);
-        int failCount = NumberUtil.sum(metricsList, ResponseMetrics::getFailCount);
-        int saCount = NumberUtil.sum(metricsList, ResponseMetrics::getSaCount);
-        double sa = NumberUtil.getPercentRate(saCount, count);
-        double successRate = NumberUtil.getPercentRate(count - failCount, count);
-        long sendBytes = NumberUtil.sumLong(metricsList, ResponseMetrics::getSentBytes);
-        long receivedBytes = NumberUtil.sumLong(metricsList, ResponseMetrics::getReceivedBytes);
-        long sumRt = NumberUtil.sumLong(metricsList, ResponseMetrics::getSumRt);
-        double avgRt = NumberUtil.getRate(sumRt, count);
-        double maxRt = NumberUtil.maxDouble(metricsList, ResponseMetrics::getMaxRt);
-        double minRt = NumberUtil.maxDouble(metricsList, ResponseMetrics::getMinRt);
-        int activeThreads = NumberUtil.sum(metricsList, ResponseMetrics::getActiveThreads);
-        double avgTps = NumberUtil.getRate(count, CollectorConstants.SEND_TIME);
+        PressureOutput result = new PressureOutput()
+            .setTime(time).setTestName(testName).setTransaction(transaction)
+            .setCount(0).setSumRt(0L).setSaCount(0).setDataNum(0).setFailCount(0)
+            .setMaxRt(Double.MIN_VALUE).setMinRt(Double.MAX_VALUE)
+            .setActiveThreads(0).setSentBytes(0L).setReceivedBytes(0L);
+        // 根据pod编号进行分组
+        Map<String, List<ResponseMetrics>> podGroupData =
+            metricsList.stream().collect(Collectors.groupingBy(ResponseMetrics::getPodNum));
+        for (Map.Entry<String, List<ResponseMetrics>> entry : podGroupData.entrySet()) {
+            List<ResponseMetrics> metrics = entry.getValue();
+            if (CollUtil.isNotEmpty(metrics)) {
+                // 请求总数|总RT|SA总数|请求失败总数|发送字节|响应字节
+                // 都是简单的求和
+                result.setCount(result.getCount() + NumberUtil.sum(metrics, ResponseMetrics::getCount));
+                result.setSumRt(result.getSumRt() + NumberUtil.sumLong(metrics, ResponseMetrics::getSumRt));
+                result.setSaCount(result.getSaCount() + NumberUtil.sum(metrics, ResponseMetrics::getSaCount));
+                result.setFailCount(result.getFailCount() + NumberUtil.sum(metrics, ResponseMetrics::getFailCount));
+                result.setSentBytes(result.getSentBytes() + NumberUtil.sumLong(metrics, ResponseMetrics::getSentBytes));
+                result.setReceivedBytes(result.getReceivedBytes() + NumberUtil.sumLong(metrics, ResponseMetrics::getReceivedBytes));
+                // 最大RT|最小RT
+                // 取极值
+                result.setMaxRt(Math.max(result.getMaxRt(), NumberUtil.maxDouble(metrics, ResponseMetrics::getMaxRt)));
+                result.setMinRt(Math.min(result.getMinRt(), NumberUtil.minDouble(metrics, ResponseMetrics::getMinRt)));
+                // 活跃线程数(并发数)
+                // pod内计算平均值后累加
+                //  1. 计算出当前pod的并发数平均值
+                double activeThread = cn.hutool.core.util.NumberUtil.div(NumberUtil.sum(metrics, ResponseMetrics::getActiveThreads), metrics.size());
+                //  2. 累加
+                result.setActiveThreads(result.getActiveThreads() + (int)activeThread);
+                // dataNumber
+                if (CharSequenceUtil.isNotBlank(entry.getKey())) {result.setDataNum(result.getDataNum() + 1);}
+            }
+        }
+        // 数据收集的是否完整
+        result.setStatus(result.getDataNum().equals(podNum) ? 1 : 0);
+        // SA       =   SA总数 / 请求总数
+        result.setSa(NumberUtil.getPercentRate(result.getSaCount(), result.getCount()));
+        // 成功率      =   ( 请求总数 - 请求失败总数 ) / 请求总数
+        result.setSuccessRate(NumberUtil.getPercentRate(result.getCount() - result.getFailCount(), result.getCount()));
+        // 平均RT     =   总RT / 请求总数
+        result.setAvgRt(NumberUtil.getRate(result.getSumRt(), result.getCount()));
+        // 平均TPS    =   请求总数 / 聚合窗口大小
+        result.setAvgTps(NumberUtil.getRate(result.getCount(), CollectorConstants.SEND_TIME));
+        // 数据采集量    =   数据来源的pod个数 / 总pod个数
+        result.setDataRate(NumberUtil.getPercentRate(result.getDataNum(), podNum, 100d));
+        // 百分位
         List<String> percentDataList = metricsList.stream().filter(Objects::nonNull)
             .map(ResponseMetrics::getPercentData)
-            .filter(StringUtils::isNotBlank)
+            .filter(CharSequenceUtil::isNotBlank)
             .collect(Collectors.toList());
-        String percentSa = calculateSaPercent(percentDataList);
-        Set<String> podNos = metricsList.stream().filter(Objects::nonNull)
-            .map(ResponseMetrics::getPodNo)
-            .filter(StringUtils::isNotBlank)
-            .collect(Collectors.toSet());
-
-        int dataNum = CollectionUtils.isEmpty(podNos) ? 0 : podNos.size();
-        double dataRate = NumberUtil.getPercentRate(dataNum, podNum, 100d);
-        int status = dataNum < podNum ? 0 : 1;
-        PressureOutput p = new PressureOutput();
-        p.setTime(time);
-        p.setTransaction(transaction);
-        p.setCount(count);
-        p.setFailCount(failCount);
-        p.setSaCount(saCount);
-        p.setSa(sa);
-        p.setSuccessRate(successRate);
-        p.setSentBytes(sendBytes);
-        p.setReceivedBytes(receivedBytes);
-        p.setSumRt(sumRt);
-        p.setAvgRt(avgRt);
-        p.setMaxRt(maxRt);
-        p.setMinRt(minRt);
-        p.setActiveThreads(activeThreads);
-        p.setAvgTps(avgTps);
-        p.setSaPercent(percentSa);
-        p.setDataNum(dataNum);
-        p.setDataRate(dataRate);
-        p.setStatus(status);
-        p.setTestName(testName);
-        return p;
+        result.setSaPercent(calculateSaPercent(percentDataList));
+        return result;
     }
 
     private void finishPushData(ReportResult report, Integer podNum, Long timeWindow, long endTime, List<ScriptNode> nodes) {
@@ -494,7 +498,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         param.setPressureTypeRelation(new PressureTypeRelation(PressureSceneEnum.INSPECTION_MODE.getCode(), false));
         param.setJobIdNotNull(true);
         List<ReportResult> results = reportDao.queryReportList(param);
-        if (CollectionUtils.isEmpty(results)) {
+        if (CollUtil.isEmpty(results)) {
             log.debug("没有需要统计的报告！");
             return;
         }
@@ -517,13 +521,13 @@ public class PushWindowDataScheduled extends AbstractIndicators {
      * 计算sa
      */
     private String calculateSaPercent(List<String> percentDataList) {
-        if (CollectionUtils.isEmpty(percentDataList)) {
+        if (CollUtil.isEmpty(percentDataList)) {
             return null;
         }
         List<Map<Integer, RtDataOutput>> percentMapList = percentDataList.stream().filter(StringUtils::isNotBlank)
             .map(DataUtils::parseToPercentMap)
             .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(percentMapList)) {
+        if (CollUtil.isEmpty(percentMapList)) {
             return null;
         }
         //请求总数
@@ -537,7 +541,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         List<RtDataOutput> rtDataList = percentMapList.stream().filter(Objects::nonNull)
             .peek(DataUtils::percentMapRemoveDuplicateHits)
             .map(Map::values)
-            .filter(CollectionUtils::isNotEmpty)
+            .filter(CollUtil::isNotEmpty)
             .flatMap(Collection::stream)
             .sorted(Comparator.comparing(RtDataOutput::getTime))
             .collect(Collectors.toList());
@@ -624,7 +628,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             ext.setTenantId(customerId);
             ext.setEnvCode(r.getEnvCode());
             TenantInfoExt infoExt = WebPluginUtils.getTenantInfo(customerId);
-            if(infoExt == null) {
+            if (infoExt == null) {
                 log.error("租户信息未找到【{}】", customerId);
                 return;
             }

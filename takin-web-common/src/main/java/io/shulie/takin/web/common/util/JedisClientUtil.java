@@ -1,5 +1,6 @@
 package io.shulie.takin.web.common.util;
 
+import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
@@ -22,7 +23,7 @@ public class JedisClientUtil {
     public void set(Object key, Object val) {
         Jedis jedis = jedisPool.getResource();
         try {
-            jedis.set(Objects.toString(key), Objects.toString(val));
+            jedis.set(Objects.toString(key), JSON.toJSONString(Objects.toString(val)));
         } finally {
             returnResource(jedis);
         }
@@ -32,7 +33,7 @@ public class JedisClientUtil {
         Jedis jedis = jedisPool.getResource();
         try {
             long time = timeUnit.toSeconds(maxIdle);
-            jedis.setex(Objects.toString(key), Math.toIntExact(time), Objects.toString(val));
+            jedis.setex(Objects.toString(key), Math.toIntExact(time), JSON.toJSONString(Objects.toString(val)));
         } finally {
             returnResource(jedis);
         }

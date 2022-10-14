@@ -27,6 +27,7 @@ public class JedisConfig {
         jedisPoolConfig.setTestOnBorrow(true);
         jedisPoolConfig.setTestOnReturn(true);
         jedisPoolConfig.setTestOnCreate(true);
+
         jedisPoolConfig.setBlockWhenExhausted(false);
         JedisPool jedisPool = new JedisPool(
                 jedisPoolConfig,

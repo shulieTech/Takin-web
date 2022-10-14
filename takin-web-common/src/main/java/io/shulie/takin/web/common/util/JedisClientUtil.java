@@ -20,10 +20,10 @@ public class JedisClientUtil {
     private JedisPool jedisPool;
 
     // 字符串操作
-    public void set(Object key, Object val) {
+    public void set(String key, String val) {
         Jedis jedis = jedisPool.getResource();
         try {
-            jedis.set(Objects.toString(key), JSON.toJSONString(Objects.toString(val)));
+            jedis.set(Objects.toString(key), val);
         } finally {
             returnResource(jedis);
         }

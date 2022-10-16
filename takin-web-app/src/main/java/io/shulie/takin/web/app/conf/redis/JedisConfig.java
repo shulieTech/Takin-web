@@ -12,7 +12,7 @@ import redis.clients.jedis.JedisPoolConfig;
  * @description: TODO
  * @date 2022/10/13 10:39 PM
  */
-@Configuration
+//@Configuration
 public class JedisConfig {
     @Autowired
     private RedisProperties redisProperties;

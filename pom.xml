@@ -170,6 +170,18 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-data-redis</artifactId>
                 <version>${spring.boot.version}</version>
+                <!--排除掉默认的 lettuce-->
+                <exclusions>
+                    <exclusion>
+                        <artifactId>lettuce-core</artifactId>
+                        <groupId>io.lettuce</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>3.3.0</version>
             </dependency>
             <!-- redis session -->
             <!-- https://mvnrepository.com/artifact/org.springframework.session/spring-session-data-redis -->

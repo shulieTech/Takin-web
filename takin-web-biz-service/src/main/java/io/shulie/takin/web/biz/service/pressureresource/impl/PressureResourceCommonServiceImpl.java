@@ -507,6 +507,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             mqEntity.setMqType(edge.getEagleType());
             if (edge.getEagleType().equals(EdgeTypeEnum.KAFKA.getType())) {
                 // apache-kafka172.16.32.74:9092,172.16.32.137:9092,172.16.32.67:9092
+                // kafka100.81.128.29:9092,100.81.128.30:9092,100.81.128.31:9092,100.81.128.32:9092,100.81.128.33:9092
                 String serverAppName = "";
                 if (edge.getLogType().equals(String.valueOf(Pradar.LOG_TYPE_INVOKE_CLIENT))) {
                     mqEntity.setComsumerType(0);
@@ -537,7 +538,8 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 }
             }
             String group = edge.getMethod();
-            mqEntity.setTopicGroup(String.format("%s#%s", topic, group));
+            mqEntity.setTopic(topic);
+            mqEntity.setGroup(group);
             mqEntity.setType(SourceTypeEnum.AUTO.getCode());
             mqEntity.setTenantId(WebPluginUtils.traceTenantId());
             mqEntity.setEnvCode(WebPluginUtils.traceEnvCode());

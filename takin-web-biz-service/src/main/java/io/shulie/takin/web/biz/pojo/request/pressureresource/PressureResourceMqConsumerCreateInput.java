@@ -14,13 +14,37 @@ public class PressureResourceMqConsumerCreateInput {
     @ApiModelProperty(value = "Id")
     private Long id;
 
-    @ApiModelProperty(value = "topic#消费组")
-    private String topicGroup;
+    /**
+     * topic
+     */
+    @ApiModelProperty(value = "topic")
+    private String topic;
+
+    /**
+     * topic
+     */
+    @ApiModelProperty(value = "group")
+    private String group;
 
     @ApiModelProperty(value = "resourceId")
     private Long resourceId;
 
-    @ApiModelProperty(value = "消费者类型RABBITMQ/ROCKETMQ/KAFKA")
+    /**
+     * broker地址
+     */
+    private String brokerAddr;
+
+    /**
+     * topicTokens
+     */
+    private String topicTokens;
+
+    /**
+     * systemIdToken
+     */
+    private String systemIdToken;
+
+    @ApiModelProperty(value = "消费者类型RABBITMQ/ROCKETMQ/KAFKA/KAFKA其他")
     private String mqType;
 
     private Long applicationId;

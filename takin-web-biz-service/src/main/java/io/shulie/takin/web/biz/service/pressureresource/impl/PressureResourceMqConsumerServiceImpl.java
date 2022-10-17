@@ -80,27 +80,28 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
      */
     @Override
     public void create(PressureResourceMqConsumerCreateInput request) {
-        if (!request.getTopicGroup().contains("#")) {
-            throw new RuntimeException("请求参数不正确，Group和Topic以#号拼接");
-        }
-        String[] split = request.getTopicGroup().split("#");
-        if (split.length != 2) {
-            throw new RuntimeException("请求参数不正确，Group和Topic中间包含超过1个# 或者 #两边无数据");
-        }
+        validata(request);
         PressureResourceMqConsumerQueryParam queryParam = new PressureResourceMqConsumerQueryParam();
         queryParam.setResourceId(request.getResourceId());
-        queryParam.setTopicGroup(request.getTopicGroup());
+        queryParam.setTopic(request.getTopic());
+        queryParam.setGroup(request.getGroup());
         queryParam.setMqType(request.getMqType());
         List<PressureResourceRelateMqConsumerEntity> exists = pressureResourceRelateMqComsumerDAO.queryList(queryParam);
         if (CollectionUtils.isNotEmpty(exists)) {
             throw new RuntimeException(
-                    String.format("类型为[%s]，对应的[%s]已存在", request.getMqType(), request.getTopicGroup()));
+                    String.format("类型为[%s]，对应的topic[%s] group[%s]已存在",
+                            request.getMqType(),
+                            request.getTopic(),
+                            request.getGroup()));
         }
         PressureResourceRelateMqConsumerEntity shadowMqConsumerEntity = convertEntity(request);
         shadowMqConsumerEntity.setId(null);
         shadowMqConsumerEntity.setGmtCreate(new Date());
         shadowMqConsumerEntity.setGmtModified(new Date());
         pressureResourceRelateMqComsumerDAO.add(shadowMqConsumerEntity);
+    }
+
+    private void validata(PressureResourceMqConsumerCreateInput request) {
     }
 
     /**
@@ -120,7 +121,8 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
         }
         PressureResourceMqConsumerQueryParam queryParam = new PressureResourceMqConsumerQueryParam();
         queryParam.setResourceId(request.getResourceId());
-        queryParam.setTopicGroup(request.getTopicGroup());
+        queryParam.setTopic(request.getTopic());
+        queryParam.setGroup(request.getGroup());
         queryParam.setMqType(request.getMqType());
         List<PressureResourceRelateMqConsumerEntity> exists = pressureResourceRelateMqComsumerDAO.queryList(queryParam);
         if (CollectionUtils.isNotEmpty(exists)) {
@@ -128,7 +130,10 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
             PressureResourceRelateMqConsumerEntity mqConsumer = exists.get(0);
             if (!mqConsumer.getId().equals(request.getId())) {
                 throw new RuntimeException(
-                        String.format("类型为[%s]，对应的[%s]已存在", request.getMqType(), request.getTopicGroup()));
+                        String.format("类型为[%s]，对应的topic[%s] group[%s]已存在",
+                                request.getMqType(),
+                                request.getTopic(),
+                                request.getGroup()));
             }
         }
         // 更新
@@ -171,7 +176,11 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
         PressureResourceRelateMqConsumerEntity shadowMqConsumerEntity = new PressureResourceRelateMqConsumerEntity();
         shadowMqConsumerEntity.setId(request.getId());
         shadowMqConsumerEntity.setResourceId(request.getResourceId());
-        shadowMqConsumerEntity.setTopicGroup(request.getTopicGroup());
+        shadowMqConsumerEntity.setTopic(request.getTopic());
+        shadowMqConsumerEntity.setGroup(request.getGroup());
+        shadowMqConsumerEntity.setBrokerAddr(request.getBrokerAddr());
+        shadowMqConsumerEntity.setTopicTokens(request.getTopicTokens());
+        shadowMqConsumerEntity.setSystemIdToken(request.getSystemIdToken());
         shadowMqConsumerEntity.setMqType(request.getMqType());
         // 是否消费
         shadowMqConsumerEntity.setConsumerTag(request.getConsumerTag());

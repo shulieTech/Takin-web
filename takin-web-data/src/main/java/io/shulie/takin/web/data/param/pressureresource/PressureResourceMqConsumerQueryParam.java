@@ -11,8 +11,11 @@ import lombok.Data;
  */
 @Data
 public class PressureResourceMqConsumerQueryParam extends PageBaseDTO {
-    @ApiModelProperty("topicGroup")
-    private String topicGroup;
+    @ApiModelProperty("topic")
+    private String topic;
+
+    @ApiModelProperty("group")
+    private String group;
 
     @ApiModelProperty("资源配置ID")
     private Long resourceId;

@@ -34,7 +34,6 @@ public class PressureResourceShadowMqController {
     @ApiOperation("链路压测资源-新增影子消费者")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseResult create(@RequestBody PressureResourceMqConsumerCreateInput request) {
-        request.setTopicGroup(StringUtils.isBlank(request.getTopicGroup()) ? "" : request.getTopicGroup().trim());
         request.setType(SourceTypeEnum.MANUAL.getCode());
         pressureResourceMqConsumerService.create(request);
         return ResponseResult.success();
@@ -43,7 +42,6 @@ public class PressureResourceShadowMqController {
     @ApiOperation("链路压测资源-修改影子消费者")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult update(@RequestBody PressureResourceMqConsumerCreateInput request) {
-        request.setTopicGroup(StringUtils.isBlank(request.getTopicGroup()) ? "" : request.getTopicGroup().trim());
         pressureResourceMqConsumerService.update(request);
         return ResponseResult.success();
     }

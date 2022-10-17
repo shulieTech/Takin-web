@@ -37,8 +37,32 @@ public class PressureResourceRelateMqConsumerEntity extends TenantBaseEntity {
     /**
      * topic
      */
-    @TableField(value = "topic_group")
-    private String topicGroup;
+    @TableField(value = "topic")
+    private String topic;
+
+    /**
+     * topic
+     */
+    @TableField(value = "group")
+    private String group;
+
+    /**
+     * broker地址
+     */
+    @TableField(value = "broker_addr")
+    private String brokerAddr;
+
+    /**
+     * topicTokens
+     */
+    @TableField(value = "topic_tokens")
+    private String topicTokens;
+
+    /**
+     * systemIdToken
+     */
+    @TableField(value = "systemId_Token")
+    private String systemIdToken;
 
     /**
      * MQ类型

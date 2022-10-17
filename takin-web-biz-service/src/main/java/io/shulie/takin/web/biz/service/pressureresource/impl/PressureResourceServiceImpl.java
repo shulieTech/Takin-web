@@ -9,6 +9,7 @@ import io.shulie.takin.web.biz.service.pressureresource.PressureResourceAppServi
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceMqConsumerService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
+import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.*;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -420,10 +421,10 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     @Override
     public Map<String, Integer> progress(Long id) {
         Map<String, Integer> statusMap = Maps.newHashMap();
-        statusMap.put("APP", 0);
-        statusMap.put("DS", 0);
-        statusMap.put("REMOTECALL", 0);
-        statusMap.put("MQ", 0);
+        statusMap.put(ModuleEnum.APP.getCode(), 0);
+        statusMap.put(ModuleEnum.DS.getCode(), 0);
+        statusMap.put(ModuleEnum.REMOTECALL.getCode(), 0);
+        statusMap.put(ModuleEnum.MQ.getCode(), 0);
 
         // 查看应用状态
         PressureResourceAppRequest appRequest = new PressureResourceAppRequest();
@@ -434,11 +435,11 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             // 判断状态是否都是正常的
             int normal = appVOList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
             if (normal == appVOList.size()) {
-                statusMap.put("APP", 2);
+                statusMap.put(ModuleEnum.APP.getCode(), 2);
             }
             // 存在正常的,进行中
             if (appVOList.size() - normal > 0) {
-                statusMap.put("APP", 1);
+                statusMap.put(ModuleEnum.APP.getCode(), 1);
             }
         }
         // 影子MQ检查
@@ -449,11 +450,11 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             // 判断状态是否都是正常的
             int normal = dsEntityList.stream().filter(ds -> ds.getStatus() == 2).collect(Collectors.toList()).size();
             if (normal == dsEntityList.size()) {
-                statusMap.put("DS", 2);
+                statusMap.put(ModuleEnum.DS.getCode(), 2);
             }
             // 存在正常的,进行中
             if (dsEntityList.size() - normal > 0) {
-                statusMap.put("DS", 1);
+                statusMap.put(ModuleEnum.DS.getCode(), 1);
             }
         }
 
@@ -467,11 +468,11 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             // 判断状态是否都是正常的
             int normal = appVOList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
             if (normal == appVOList.size()) {
-                statusMap.put("MQ", 2);
+                statusMap.put(ModuleEnum.MQ.getCode(), 2);
             }
             // 存在正常的,进行中
             if (appVOList.size() - normal > 0) {
-                statusMap.put("MQ", 1);
+                statusMap.put(ModuleEnum.DS.getCode(), 1);
             }
         }
         return statusMap;

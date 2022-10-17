@@ -25,7 +25,27 @@ public class PressureResourceMqComsumerVO {
     /**
      * topic
      */
-    private String topicGroup;
+    private String topic;
+
+    /**
+     * topic
+     */
+    private String group;
+
+    /**
+     * broker地址
+     */
+    private String brokerAddr;
+
+    /**
+     * topicTokens
+     */
+    private String topicTokens;
+
+    /**
+     * systemIdToken
+     */
+    private String systemIdToken;
 
     /**
      * MQ类型

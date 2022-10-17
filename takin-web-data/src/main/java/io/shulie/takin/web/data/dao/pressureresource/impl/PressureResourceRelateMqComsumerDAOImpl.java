@@ -80,10 +80,10 @@ public class PressureResourceRelateMqComsumerDAOImpl implements PressureResource
         }
         // 模糊查询
         if (StringUtils.isNotBlank(param.getTopic())) {
-            queryWrapper.eq("topic", param.getTopic());
+            queryWrapper.eq("`topic`", param.getTopic());
         }
         if (StringUtils.isNotBlank(param.getGroup())) {
-            queryWrapper.eq("group", param.getGroup());
+            queryWrapper.eq("`group`", param.getGroup());
         }
         if (param.getResourceId() != null) {
             queryWrapper.eq("resource_id", param.getResourceId());
@@ -95,8 +95,8 @@ public class PressureResourceRelateMqComsumerDAOImpl implements PressureResource
             queryWrapper.eq("consumer_tag", param.getConsumerTag());
         }
         if (StringUtils.isNotBlank(param.getQueryTopicGroup())) {
-            queryWrapper.like("topic", param.getQueryTopicGroup());
-            queryWrapper.like("group", param.getQueryTopicGroup());
+            queryWrapper.like("`topic`", param.getQueryTopicGroup());
+            queryWrapper.like("`group`", param.getQueryTopicGroup());
         }
         if (StringUtils.isNotBlank(param.getQueryApplicationName())) {
             queryWrapper.like("application_name", param.getQueryApplicationName());

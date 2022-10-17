@@ -17,5 +17,8 @@ public class MqConsumerFeature {
     private String clusterAddr;
 
     @ApiModelProperty("生产或消费的线程数")
-    private Integer threadCount;
+    private Integer providerThreadCount;
+
+    @ApiModelProperty("生产或消费的线程数")
+    private Integer consumerThreadCount;
 }

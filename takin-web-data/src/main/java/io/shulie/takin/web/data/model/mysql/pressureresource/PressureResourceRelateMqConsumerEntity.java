@@ -17,7 +17,6 @@ import java.util.Date;
  */
 @Data
 @TableName(value = "t_pressure_resource_relate_shadow_mq_consumer")
-@EnableSign
 public class PressureResourceRelateMqConsumerEntity extends TenantBaseEntity {
     /**
      * 主键id

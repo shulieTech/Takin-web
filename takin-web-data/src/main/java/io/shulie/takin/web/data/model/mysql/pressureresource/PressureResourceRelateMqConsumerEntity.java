@@ -37,68 +37,68 @@ public class PressureResourceRelateMqConsumerEntity extends TenantBaseEntity {
     /**
      * topic
      */
-    @TableField(value = "topic")
+    @TableField(value = "`topic`")
     private String topic;
 
     /**
      * topic
      */
-    @TableField(value = "group")
+    @TableField(value = "`group`")
     private String group;
 
     /**
      * broker地址
      */
-    @TableField(value = "broker_addr")
+    @TableField(value = "`broker_addr`")
     private String brokerAddr;
 
     /**
      * topicTokens
      */
-    @TableField(value = "topic_tokens")
+    @TableField(value = "`topic_tokens`")
     private String topicTokens;
 
     /**
      * systemIdToken
      */
-    @TableField(value = "systemId_Token")
+    @TableField(value = "`systemId_Token`")
     private String systemIdToken;
 
     /**
      * MQ类型
      */
-    @TableField(value = "mq_type")
+    @TableField(value = "`mq_type`")
     private String mqType;
 
     /**
      * 应用id
      */
-    @TableField(value = "application_id")
+    @TableField(value = "`application_id`")
     private Long applicationId;
     /**
      * 应用id
      */
-    @TableField(value = "application_name")
+    @TableField(value = "`application_name`")
     private String applicationName;
 
     @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
-    @TableField(value = "status")
+    @TableField(value = "`status`")
     private Integer status;
 
     @ApiModelProperty("是否消费(0-消费 1-不消费 )")
-    @TableField(value = "consumer_tag")
+    @TableField(value = "`consumer_tag`")
     private Integer consumerTag;
 
     /**
      * 是否删除，0正常，1删除
      */
-    @TableField(value = "deleted")
+    @TableField(value = "`deleted`")
     private Integer deleted;
 
     /**
      * 拓展字段
      */
-    @TableField(value = "feature")
+    @TableField(value = "`feature`")
     private String feature;
 
     @ApiModelProperty("remark")
@@ -110,11 +110,11 @@ public class PressureResourceRelateMqConsumerEntity extends TenantBaseEntity {
     private Integer type;
 
     @ApiModelProperty("是否影子集群(0-是 1否)")
-    @TableField(value = "is_cluster")
+    @TableField(value = "`is_cluster`")
     private Integer isCluster;
 
     @ApiModelProperty("生产或消费(0-生产,1-消费)")
-    @TableField(value = "comsumer_type")
+    @TableField(value = "`comsumer_type`")
     private Integer comsumerType;
 
     /**

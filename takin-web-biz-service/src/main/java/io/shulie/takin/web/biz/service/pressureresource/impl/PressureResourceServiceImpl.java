@@ -5,10 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
-import io.shulie.takin.web.biz.service.pressureresource.PressureResourceAppService;
-import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
-import io.shulie.takin.web.biz.service.pressureresource.PressureResourceMqConsumerService;
-import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
+import io.shulie.takin.web.biz.service.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.*;
@@ -46,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -80,6 +78,9 @@ public class PressureResourceServiceImpl implements PressureResourceService {
 
     @Resource
     private PressureResourceRelateDsDAO pressureResourceRelateDsDAO;
+
+    @Resource
+    private PressureResourceCommonService pressureResourceCommonService;
 
     @Resource
     private SceneDAO sceneDAO;
@@ -145,6 +146,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             updateResource.setSourceId(sourceId);
             pressureResourceMapper.updateById(updateResource);
         }
+        pressureResourceCommonService.processNotify(detailInputs);
     }
 
     @Override
@@ -310,6 +312,17 @@ public class PressureResourceServiceImpl implements PressureResourceService {
                 pressureResourceDetailMapper.deleteBatchIds(deleteIds);
             }
         }
+
+        // 把最新的链路去处理链路拓扑
+        PressureResourceDetailQueryParam newDetailParam = new PressureResourceDetailQueryParam();
+        detailParam.setResourceId(input.getId());
+        List<PressureResourceDetailEntity> newDetailList = pressureResourceDetailDAO.getList(newDetailParam);
+        List<PressureResourceDetailInput> detailInputs = newDetailList.stream().map(tmp -> {
+            PressureResourceDetailInput in = new PressureResourceDetailInput();
+            BeanUtils.copyProperties(tmp, in);
+            return in;
+        }).collect(Collectors.toList());
+        pressureResourceCommonService.processNotify(detailInputs);
     }
 
     private String fetchKey(PressureResourceDetailEntity ele) {

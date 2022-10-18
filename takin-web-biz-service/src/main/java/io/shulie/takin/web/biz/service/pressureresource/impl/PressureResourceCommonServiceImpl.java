@@ -240,9 +240,6 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 }
                 if (CollectionUtils.isNotEmpty(detailInputs)) {
                     pressureResourceInput.setDetailInputs(detailInputs);
-
-                    // 通知AMDB构建链路拓扑图
-                    processNotify(detailInputs);
                 }
             }
 

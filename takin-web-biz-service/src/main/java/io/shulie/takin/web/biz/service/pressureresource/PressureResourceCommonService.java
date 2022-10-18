@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.pressureresource;
 
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDetailInput;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 
 import java.util.List;
@@ -45,4 +46,6 @@ public interface PressureResourceCommonService {
      * @param resouceId
      */
     void syncDs(Long resouceId);
+
+    void processNotify(List<PressureResourceDetailInput> detailInputs);
 }

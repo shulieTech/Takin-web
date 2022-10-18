@@ -70,6 +70,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -146,6 +147,10 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     @Autowired
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
+
+    @Resource
+    @Qualifier("simpleFutureThreadPool")
+    private ThreadPoolExecutor simpleFutureThreadPool;
 
     private static String TAKIN_RESOURCE_MODIFY_KEY = "TAKIN:RESOURCE:MODIFY:KEY";
 
@@ -237,7 +242,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     pressureResourceInput.setDetailInputs(detailInputs);
 
                     // 通知AMDB构建链路拓扑图
-                    CompletableFuture.runAsync(() -> processNotify(detailInputs));
+                    processNotify(detailInputs);
                 }
             }
 
@@ -255,14 +260,17 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
      *
      * @param detailInputs
      */
-    private void processNotify(List<PressureResourceDetailInput> detailInputs) {
+    @Override
+    public void processNotify(List<PressureResourceDetailInput> detailInputs) {
         detailInputs.stream().forEach(detail -> {
-            notifyClient.startApplicationEntrancesCalculate(
-                    detail.getAppName(),
-                    detail.getEntranceUrl(),
-                    detail.getMethod(),
-                    String.valueOf(detail.getType()),
-                    detail.getExtend());
+            CompletableFuture.runAsync(() -> {
+                notifyClient.startApplicationEntrancesCalculate(
+                        detail.getAppName(),
+                        detail.getEntranceUrl(),
+                        detail.getMethod(),
+                        String.valueOf(detail.getType()),
+                        detail.getExtend());
+            }, simpleFutureThreadPool);
         });
     }
 

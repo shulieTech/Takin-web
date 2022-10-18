@@ -4,48 +4,36 @@ import org.springframework.util.StringUtils;
 
 /**
  * @author guann1n9
- * @date 2022/9/14 6:52 PM
+ * @date 2022/10/17 7:15 PM
  */
-public enum PressureResourceTypeEnum {
+public enum MqTypeEnum {
 
     /**
-     * 数据库
+     *
      */
-    DATABASE("pressure_database"),
-
-    /**
-     * 白名单
-     */
-    WHITELIST("pressure_whitelist"),
-
-    /**
-     * 影子消费者
-     */
-    MQ("pressure_mq");
-
+    SF_KAKFA("KAFKA-其他");
 
     private String code;
 
-
-    PressureResourceTypeEnum(String code) {
+    MqTypeEnum(String code) {
         this.code = code;
     }
-
 
     public String getCode() {
         return code;
     }
 
 
-    public static PressureResourceTypeEnum getByCode(String code){
+    public static MqTypeEnum getByCode(String code){
         if(!StringUtils.hasText(code)){
             return null;
         }
-        for (PressureResourceTypeEnum value : PressureResourceTypeEnum.values()) {
+        for (MqTypeEnum value : MqTypeEnum.values()) {
             if(value.getCode().equals(code)){
                 return value;
             }
         }
         return null;
     }
+
 }

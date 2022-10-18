@@ -105,8 +105,6 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         List<TakinCommand> commandList = mqConsumerEntities.stream().filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getApplicationName()))
                 .filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getMqType()))
                 .filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getTopic()))
-                .filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getSystemIdToken()))
-                .filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getTopicTokens()))
                 .map(mqConsumerEntity -> mqResourceToCommand(resource, mqConsumerEntity, tenantInfoExt))
                 .collect(Collectors.toList());
         if(CollectionUtils.isEmpty(commandList)){

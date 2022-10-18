@@ -130,7 +130,10 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         takinCommand.setTenantCode(tenantInfoExt.getTenantCode());
         takinCommand.setCommandType(PressureResourceTypeEnum.MQ.getCode());
         Object config = mqResourceConfig(mqConsumerEntity);
-        takinCommand.setCommandParam(JSON.toJSONString(config));
+        if(Objects.isNull(config)){
+            return null;
+        }
+        takinCommand.setCommandParam(JSON.toJSONString(Arrays.asList(config)));
         return takinCommand;
     }
 
@@ -415,6 +418,10 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         Map<String, List<PressureResourceRelateMqConsumerEntity>> appMap = mqConsumerEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateMqConsumerEntity::getApplicationName));
         List<TakinConfig> configList = new ArrayList<>();
         appMap.forEach((appName, mqList) -> {
+            List<Object> collect = mqList.stream().map(this::mqResourceConfig).filter(Objects::nonNull).collect(Collectors.toList());
+            if(CollectionUtils.isEmpty(collect)){
+                return;
+            }
             TakinConfig takinConfig = new TakinConfig();
             takinConfig.setConfigId(resource.getId().toString());
             takinConfig.setAppName(appName);
@@ -422,7 +429,6 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             takinConfig.setEnvCode(resource.getEnvCode());
             takinConfig.setTenantCode(tenantInfoExt.getTenantCode());
             takinConfig.setConfigType(PressureResourceTypeEnum.MQ.getCode());
-            List<Object> collect = mqList.stream().map(this::mqResourceConfig).collect(Collectors.toList());
             takinConfig.setConfigParam(JSON.toJSONString(collect));
             configList.add(takinConfig);
         });

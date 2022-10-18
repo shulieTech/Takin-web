@@ -11,7 +11,13 @@ public enum MqTypeEnum {
     /**
      *
      */
-    SF_KAKFA("KAFKA-其他");
+    SF_KAKFA("KAFKA-其他"),
+
+    KAFKA("KAFKA"),
+
+    ROCKETMQ("ROCKETMQ"),
+
+    RABBITMQ("RABBITMQ");
 
     private String code;
 

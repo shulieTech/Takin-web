@@ -133,7 +133,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         if(Objects.isNull(config)){
             return null;
         }
-        takinCommand.setCommandParam(JSON.toJSONString(Arrays.asList(config)));
+        takinCommand.setCommandParam(JSON.toJSONString(Collections.singletonList(config)));
         return takinCommand;
     }
 

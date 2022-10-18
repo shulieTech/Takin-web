@@ -240,9 +240,6 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 }
                 if (CollectionUtils.isNotEmpty(detailInputs)) {
                     pressureResourceInput.setDetailInputs(detailInputs);
-
-                    // 通知AMDB构建链路拓扑图
-                    processNotify(detailInputs);
                 }
             }
 
@@ -387,10 +384,10 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             // 保存关联应用
             pressureResourceRelateAppDAO.saveOrUpdate(appEntityList);
 
+            // 获取边集合
+            List<LinkEdgeDTO> edgeDTOList = applicationEntrancesTopology.getEdges();
             // 隔离方案未设置,暂时不处理
             if (!(isolateType == IsolateTypeEnum.DEFAULT.getCode())) {
-                // 获取边集合
-                List<LinkEdgeDTO> edgeDTOList = applicationEntrancesTopology.getEdges();
                 if (CollectionUtils.isEmpty(edgeDTOList)) {
                     return;
                 }
@@ -399,10 +396,10 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 pressureResourceRelateDsDAO.saveOrUpdate(pair.getLeft());
                 pressureResourceRelateTableDAO.saveOrUpdate(pair.getRight());
 
-                // 处理影子消费者
-                List<PressureResourceRelateMqConsumerEntity> mqComsuerList = handleMqConsumer(resourceId, edgeDTOList, detailEntity);
-                pressureResourceRelateMqComsumerDAO.saveOrUpdate(mqComsuerList);
             }
+            // 处理影子消费者
+            List<PressureResourceRelateMqConsumerEntity> mqComsuerList = handleMqConsumer(resourceId, edgeDTOList, detailEntity);
+            pressureResourceRelateMqComsumerDAO.saveOrUpdate(mqComsuerList);
         }
     }
 

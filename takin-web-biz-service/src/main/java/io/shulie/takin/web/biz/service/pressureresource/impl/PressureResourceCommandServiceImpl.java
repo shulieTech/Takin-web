@@ -409,13 +409,17 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     private void pushPressureMqConfig(PressureResourceEntity resource) {
         //租户信息
         TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
+
         List<PressureResourceRelateMqConsumerEntity> mqConsumerEntities = mqConsumerMapper.selectList(new QueryWrapper<PressureResourceRelateMqConsumerEntity>().lambda()
                 .eq(PressureResourceRelateMqConsumerEntity::getResourceId, resource.getId()));
-        if(CollectionUtils.isEmpty(mqConsumerEntities)){
+        List<PressureResourceRelateMqConsumerEntity> validRecords = mqConsumerEntities.stream().filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getApplicationName()))
+                .filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getMqType()))
+                .filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getTopic())).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(validRecords)){
             return;
         }
         //按照应用名称分组
-        Map<String, List<PressureResourceRelateMqConsumerEntity>> appMap = mqConsumerEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateMqConsumerEntity::getApplicationName));
+        Map<String, List<PressureResourceRelateMqConsumerEntity>> appMap = validRecords.stream().collect(Collectors.groupingBy(PressureResourceRelateMqConsumerEntity::getApplicationName));
         List<TakinConfig> configList = new ArrayList<>();
         appMap.forEach((appName, mqList) -> {
             List<Object> collect = mqList.stream().map(this::mqResourceConfig).filter(Objects::nonNull).collect(Collectors.toList());

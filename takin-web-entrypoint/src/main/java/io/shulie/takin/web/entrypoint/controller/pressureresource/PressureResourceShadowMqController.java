@@ -3,6 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.pressureresource;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMqConsumerCreateInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMqConsumerQueryRequest;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceMqConsumerService;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.common.constant.ApiUrls;
@@ -27,15 +28,18 @@ import javax.annotation.Resource;
 @Api(tags = "接口: 关联表")
 @Slf4j
 public class PressureResourceShadowMqController {
-
     @Resource
     private PressureResourceMqConsumerService pressureResourceMqConsumerService;
+
+    @Resource
+    private PressureResourceCommonService pressureResourceCommonService;
 
     @ApiOperation("链路压测资源-新增影子消费者")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseResult create(@RequestBody PressureResourceMqConsumerCreateInput request) {
         request.setType(SourceTypeEnum.MANUAL.getCode());
         pressureResourceMqConsumerService.create(request);
+        pressureResourceCommonService.pushRedis(request.getResourceId());
         return ResponseResult.success();
     }
 
@@ -43,6 +47,7 @@ public class PressureResourceShadowMqController {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult update(@RequestBody PressureResourceMqConsumerCreateInput request) {
         pressureResourceMqConsumerService.update(request);
+        pressureResourceCommonService.pushRedis(request.getResourceId());
         return ResponseResult.success();
     }
 

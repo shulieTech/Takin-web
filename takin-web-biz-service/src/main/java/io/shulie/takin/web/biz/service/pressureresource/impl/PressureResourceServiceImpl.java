@@ -375,16 +375,31 @@ public class PressureResourceServiceImpl implements PressureResourceService {
 
     private int processStatus(Long id) {
         Map<String, Integer> processMap = progress(id);
+        // 应用状态是完成,如果其他未开始,状态就为已完成
+        Integer appStatus = processMap.get(ModuleEnum.APP.getCode());
+        Integer size = processMap.entrySet().stream()
+                .filter(entry -> {
+                    if (!entry.getKey().equals(ModuleEnum.APP.getCode())) {
+                        if (entry.getValue() == FinishStatusEnum.NO.getCode()) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }).map(entry -> entry.getValue()).collect(Collectors.toList()).size();
+
+        if (appStatus == FinishStatusEnum.FINSH.getCode() && size == processMap.size() - 1) {
+            return FinishStatusEnum.FINSH.getCode();
+        }
         List<Integer> status = processMap.entrySet().stream().map(entry -> entry.getValue()).collect(Collectors.toList());
-        Integer normal = status.stream().filter(var -> var == 2).collect(Collectors.toList()).size();
-        Integer ing = status.stream().filter(var -> var == 1).collect(Collectors.toList()).size();
+        Integer normal = status.stream().filter(var -> var == FinishStatusEnum.FINSH.getCode()).collect(Collectors.toList()).size();
+        Integer ing = status.stream().filter(var -> var == FinishStatusEnum.START_ING.getCode()).collect(Collectors.toList()).size();
         if (ing > 0) {
-            return 1;  // 进行中
+            return FinishStatusEnum.START_ING.getCode();  // 进行中
         }
         if (normal == status.size()) {
-            return 2;//已完成
+            return FinishStatusEnum.FINSH.getCode();//已完成
         }
-        return 0; // 未开始
+        return FinishStatusEnum.NO.getCode(); // 未开始
     }
 
     /**
@@ -454,10 +469,10 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     @Override
     public Map<String, Integer> progress(Long id) {
         Map<String, Integer> statusMap = Maps.newHashMap();
-        statusMap.put(ModuleEnum.APP.getCode(), 0);
-        statusMap.put(ModuleEnum.DS.getCode(), 0);
-        statusMap.put(ModuleEnum.REMOTECALL.getCode(), 0);
-        statusMap.put(ModuleEnum.MQ.getCode(), 0);
+        statusMap.put(ModuleEnum.APP.getCode(), FinishStatusEnum.NO.getCode());
+        statusMap.put(ModuleEnum.DS.getCode(), FinishStatusEnum.NO.getCode());
+        statusMap.put(ModuleEnum.REMOTECALL.getCode(), FinishStatusEnum.NO.getCode());
+        statusMap.put(ModuleEnum.MQ.getCode(), FinishStatusEnum.NO.getCode());
 
         // 查看应用状态
         PressureResourceAppRequest appRequest = new PressureResourceAppRequest();
@@ -466,13 +481,13 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (!pageList.isEmpty()) {
             List<PressureResourceRelateAppVO> appVOList = pageList.getList();
             // 判断状态是否都是正常的
-            int normal = appVOList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
+            int normal = appVOList.stream().filter(app -> app.getStatus() == FinishStatusEnum.FINSH.getCode()).collect(Collectors.toList()).size();
             if (normal == appVOList.size()) {
-                statusMap.put(ModuleEnum.APP.getCode(), 2);
+                statusMap.put(ModuleEnum.APP.getCode(), FinishStatusEnum.FINSH.getCode());
             }
             // 存在正常的,进行中
             if (appVOList.size() - normal > 0) {
-                statusMap.put(ModuleEnum.APP.getCode(), 1);
+                statusMap.put(ModuleEnum.APP.getCode(), FinishStatusEnum.START_ING.getCode());
             }
         }
 
@@ -482,13 +497,13 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
         if (CollectionUtils.isNotEmpty(dsEntityList)) {
             // 判断状态是否都是正常的
-            int normal = dsEntityList.stream().filter(ds -> ds.getStatus() == 2).collect(Collectors.toList()).size();
+            int normal = dsEntityList.stream().filter(ds -> ds.getStatus() == FinishStatusEnum.FINSH.getCode()).collect(Collectors.toList()).size();
             if (normal == dsEntityList.size()) {
-                statusMap.put(ModuleEnum.DS.getCode(), 2);
+                statusMap.put(ModuleEnum.DS.getCode(), FinishStatusEnum.FINSH.getCode());
             }
             // 存在正常的,进行中
             if (dsEntityList.size() - normal > 0) {
-                statusMap.put(ModuleEnum.DS.getCode(), 1);
+                statusMap.put(ModuleEnum.DS.getCode(), FinishStatusEnum.START_ING.getCode());
             }
         }
 
@@ -500,13 +515,13 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (!callPagingList.isEmpty()) {
             List<PressureResourceRelateRemoteCallVO> callVOList = callPagingList.getList();
             // 判断状态是否都是正常的
-            int normal = callVOList.stream().filter(app -> app.getStatus() == 2).collect(Collectors.toList()).size();
+            int normal = callVOList.stream().filter(app -> app.getStatus() == FinishStatusEnum.FINSH.getCode()).collect(Collectors.toList()).size();
             if (normal == callVOList.size()) {
-                statusMap.put(ModuleEnum.REMOTECALL.getCode(), 2);
+                statusMap.put(ModuleEnum.REMOTECALL.getCode(), FinishStatusEnum.FINSH.getCode());
             }
             // 存在正常的,进行中
             if (callVOList.size() - normal > 0) {
-                statusMap.put(ModuleEnum.REMOTECALL.getCode(), 1);
+                statusMap.put(ModuleEnum.REMOTECALL.getCode(), FinishStatusEnum.START_ING.getCode());
             }
         }
 
@@ -518,13 +533,13 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (!mqPageList.isEmpty()) {
             List<PressureResourceMqComsumerVO> appVOList = mqPageList.getList();
             // 判断状态是否都是正常的
-            int normal = appVOList.stream().filter(app -> app.getStatus() == 2).collect(Collectors.toList()).size();
+            int normal = appVOList.stream().filter(app -> app.getStatus() == FinishStatusEnum.FINSH.getCode()).collect(Collectors.toList()).size();
             if (normal == appVOList.size()) {
-                statusMap.put(ModuleEnum.MQ.getCode(), 2);
+                statusMap.put(ModuleEnum.MQ.getCode(), FinishStatusEnum.FINSH.getCode());
             }
             // 存在正常的,进行中
             if (appVOList.size() - normal > 0) {
-                statusMap.put(ModuleEnum.MQ.getCode(), 1);
+                statusMap.put(ModuleEnum.MQ.getCode(), FinishStatusEnum.START_ING.getCode());
             }
         }
         return statusMap;

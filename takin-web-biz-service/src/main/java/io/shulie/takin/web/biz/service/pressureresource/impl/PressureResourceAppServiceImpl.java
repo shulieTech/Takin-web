@@ -117,11 +117,11 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
         // 批量下应用状态
         List<CompletableFuture<ApplicationVo>> futureList = Lists.newArrayList();
         source.stream().forEach(config -> {
-            Long appId = applicationService.queryApplicationIdByAppName(config.getAppName());
-            if (appId == null) {
-                return;
-            }
             CompletableFuture<ApplicationVo> future = CompletableFuture.supplyAsync(() -> {
+                Long appId = applicationService.queryApplicationIdByAppName(config.getAppName());
+                if (appId == null) {
+                    return new ApplicationVo();
+                }
                 // 这里接口比较慢,并行去查
                 Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
                 if (voResponse.getSuccess()) {

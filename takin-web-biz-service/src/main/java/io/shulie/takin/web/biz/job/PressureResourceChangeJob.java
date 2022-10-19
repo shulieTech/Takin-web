@@ -74,12 +74,11 @@ public class PressureResourceChangeJob implements SimpleJob {
                     }
                     ResourceContextUtil.setTenantContext(resource);
                     pressureResourceCommandService.pushCommand(taskVo);
-                } finally {
-                    distributedLock.unLockSafely(lockKey);
                     // 移除Redis数据
                     pressureResourceCommonService.deleteCommandTask(taskVo);
+                } finally {
+                    distributedLock.unLockSafely(lockKey);
                 }
-
             });
         });
     }

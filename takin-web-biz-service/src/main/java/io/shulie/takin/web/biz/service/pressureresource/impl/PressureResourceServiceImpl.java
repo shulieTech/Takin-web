@@ -375,12 +375,13 @@ public class PressureResourceServiceImpl implements PressureResourceService {
 
     private int processStatus(Long id) {
         Map<String, Integer> processMap = progress(id);
-        // 应用状态是完成,如果其他未开始,状态就为已完成
+        // 应用状态是完成,如果其他未开始或已完成,状态就为已完成
         Integer appStatus = processMap.get(ModuleEnum.APP.getCode());
         Integer size = processMap.entrySet().stream()
                 .filter(entry -> {
                     if (!entry.getKey().equals(ModuleEnum.APP.getCode())) {
-                        if (entry.getValue() == FinishStatusEnum.NO.getCode()) {
+                        if (entry.getValue() == FinishStatusEnum.NO.getCode() ||
+                                entry.getValue() == FinishStatusEnum.FINSH.getCode()) {
                             return true;
                         }
                     }

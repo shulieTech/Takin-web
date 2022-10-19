@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.pressureresource;
 
+import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.*;
 
 /**
@@ -13,7 +14,7 @@ public interface PressureResourceCommandService {
      * @param resourceId
      * @return
      */
-    void pushCommand(Long resourceId);
+    void pushCommand(CommandTaskVo commandTaskVo);
 
     void processAck(TakinAck pressureResourceAck);
 }

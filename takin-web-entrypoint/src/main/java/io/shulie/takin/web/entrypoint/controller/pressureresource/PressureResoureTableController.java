@@ -5,7 +5,9 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRel
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceTableService;
+import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -40,7 +42,11 @@ public class PressureResoureTableController {
     public ResponseResult save(@RequestBody PressureResourceRelateTableInput input) {
         input.setType(SourceTypeEnum.MANUAL.getCode());
         pressureResourceTableService.save(input);
-        pressureResourceCommonService.pushRedis(input.getResourceId());
+
+        CommandTaskVo taskVo = new CommandTaskVo();
+        taskVo.setResourceId(input.getResourceId());
+        taskVo.setModule(ModuleEnum.DS.getCode());
+        pressureResourceCommonService.pushRedisCommand(taskVo);
         return ResponseResult.success();
     }
 
@@ -54,7 +60,11 @@ public class PressureResoureTableController {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult update(@RequestBody PressureResourceRelateTableInput input) {
         pressureResourceTableService.update(input);
-        pressureResourceCommonService.pushRedis(input.getResourceId());
+
+        CommandTaskVo taskVo = new CommandTaskVo();
+        taskVo.setResourceId(input.getResourceId());
+        taskVo.setModule(ModuleEnum.DS.getCode());
+        pressureResourceCommonService.pushRedisCommand(taskVo);
         return ResponseResult.success();
     }
 
@@ -62,7 +72,11 @@ public class PressureResoureTableController {
     @RequestMapping(value = "/batchUpdate", method = RequestMethod.POST)
     public ResponseResult batchUpdate(@RequestBody PressureResourceRelateTableInput input) {
         pressureResourceTableService.batchUpdate(input);
-        pressureResourceCommonService.pushRedis(input.getResourceId());
+
+        CommandTaskVo taskVo = new CommandTaskVo();
+        taskVo.setResourceId(input.getResourceId());
+        taskVo.setModule(ModuleEnum.DS.getCode());
+        pressureResourceCommonService.pushRedisCommand(taskVo);
         return ResponseResult.success();
     }
 

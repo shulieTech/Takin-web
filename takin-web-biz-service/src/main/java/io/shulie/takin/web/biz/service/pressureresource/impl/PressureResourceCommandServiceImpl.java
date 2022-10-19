@@ -12,6 +12,7 @@ import io.shulie.takin.web.biz.job.ResourceContextUtil;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.common.*;
+import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.*;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
@@ -71,32 +72,47 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     /**
      * 下发校验命令并更新数据库
      *
-     * @param resourceId
+     * @param taskVo
      * @return
      */
     @Override
-    public void pushCommand(Long resourceId) {
-        PressureResourceEntity resource = resourceMapper.selectById(resourceId);
+    public void pushCommand(CommandTaskVo taskVo) {
+        PressureResourceEntity resource = resourceMapper.selectById(taskVo.getResourceId());
         if (resource == null) {
             return;
         }
+        if (taskVo.getModule().equals(ModuleEnum.ALL.getCode())) {
+            // push数据源
+            pushDataSourceCommands(resource);
+            //下发白名单配置，无需校验
+            pushWhitelistConfigs(resource);
+            //下发mq验证
+            pushMqCommands(resource);
+        }
         //下发数据源校验命令，校验通过后，再下发配置
-        pushDataSourceCommands(resource);
-        //下发白名单配置，无需校验
-        pushWhitelistConfigs(resource);
-        //下发mq验证
-        pushMqCommands(resource);
+        if (taskVo.getModule().equals(ModuleEnum.DS.getCode())) {
+            pushDataSourceCommands(resource);
+        }
+        if (taskVo.getModule().equals(ModuleEnum.REMOTECALL.getCode())) {
+            //下发白名单配置，无需校验
+            pushWhitelistConfigs(resource);
+        }
+        if (taskVo.getModule().equals(ModuleEnum.MQ.getCode())) {
+            //下发mq验证
+            pushMqCommands(resource);
+        }
     }
 
 
     /**
      * mq压测配置校验命令下发
+     *
      * @param resource
      */
-    private void pushMqCommands(PressureResourceEntity resource){
+    private void pushMqCommands(PressureResourceEntity resource) {
         List<PressureResourceRelateMqConsumerEntity> mqConsumerEntities = mqConsumerMapper.selectList(new QueryWrapper<PressureResourceRelateMqConsumerEntity>().lambda()
                 .eq(PressureResourceRelateMqConsumerEntity::getResourceId, resource.getId()));
-        if(CollectionUtils.isEmpty(mqConsumerEntities)){
+        if (CollectionUtils.isEmpty(mqConsumerEntities)) {
             return;
         }
         //租户信息
@@ -107,21 +123,22 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
                 .filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getTopic()))
                 .map(mqConsumerEntity -> mqResourceToCommand(resource, mqConsumerEntity, tenantInfoExt))
                 .collect(Collectors.toList());
-        if(CollectionUtils.isEmpty(commandList)){
+        if (CollectionUtils.isEmpty(commandList)) {
             return;
         }
         //下发命令
         boolean succ = sendCommand(commandList);
-        if(succ){
+        if (succ) {
             pushCommandSuccess(resource.getId());
         }
     }
 
     /**
      * command参数转换
+     *
      * @return
      */
-    private TakinCommand mqResourceToCommand(PressureResourceEntity resource,PressureResourceRelateMqConsumerEntity mqConsumerEntity,TenantInfoExt tenantInfoExt){
+    private TakinCommand mqResourceToCommand(PressureResourceEntity resource, PressureResourceRelateMqConsumerEntity mqConsumerEntity, TenantInfoExt tenantInfoExt) {
         TakinCommand takinCommand = new TakinCommand();
         takinCommand.setCommandId(commandId(resource.getId(), mqConsumerEntity.getId()));
         takinCommand.setAppName(mqConsumerEntity.getApplicationName());
@@ -130,13 +147,12 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         takinCommand.setTenantCode(tenantInfoExt.getTenantCode());
         takinCommand.setCommandType(PressureResourceTypeEnum.MQ.getCode());
         Object config = mqResourceConfig(mqConsumerEntity);
-        if(Objects.isNull(config)){
+        if (Objects.isNull(config)) {
             return null;
         }
         takinCommand.setCommandParam(JSON.toJSONString(Collections.singletonList(config)));
         return takinCommand;
     }
-
 
 
     /**
@@ -174,13 +190,13 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         });
         //下发命令
         boolean succ = sendCommand(list);
-        if(succ){
+        if (succ) {
             pushCommandSuccess(resource.getId());
         }
     }
 
 
-    private boolean  sendCommand(List<TakinCommand> commandList){
+    private boolean sendCommand(List<TakinCommand> commandList) {
         //下发命令
         String url = joinUrl(agentManagerHost, PUSH_COMMAND_URL);
         String post = HttpUtil.post(url, JSON.toJSONString(commandList));
@@ -194,15 +210,13 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     }
 
 
-
-    private void pushCommandSuccess(Long resourceId){
+    private void pushCommandSuccess(Long resourceId) {
         //更新数据库
         PressureResourceEntity update = new PressureResourceEntity();
         update.setId(resourceId);
         update.setCheckStatus(CheckStatusEnum.CHECK_ING.getCode());
         resourceMapper.updateById(update);
     }
-
 
 
     private void pushWhitelistConfigs(PressureResourceEntity resource) {
@@ -388,7 +402,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
                 break;
             case MQ:
                 PressureResourceRelateMqConsumerEntity consumerEntity = mqConsumerMapper.selectById(subId);
-                if(consumerEntity == null){
+                if (consumerEntity == null) {
                     throw new IllegalArgumentException("未找到对应的MQ资源");
                 }
                 PressureResourceRelateMqConsumerEntity updateMq = new PressureResourceRelateMqConsumerEntity();
@@ -415,7 +429,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         List<PressureResourceRelateMqConsumerEntity> validRecords = mqConsumerEntities.stream().filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getApplicationName()))
                 .filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getMqType()))
                 .filter(mqConsumerEntity -> StringUtils.hasText(mqConsumerEntity.getTopic())).collect(Collectors.toList());
-        if(CollectionUtils.isEmpty(validRecords)){
+        if (CollectionUtils.isEmpty(validRecords)) {
             return;
         }
         //按照应用名称分组
@@ -423,7 +437,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         List<TakinConfig> configList = new ArrayList<>();
         appMap.forEach((appName, mqList) -> {
             List<Object> collect = mqList.stream().map(this::mqResourceConfig).filter(Objects::nonNull).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(collect)){
+            if (CollectionUtils.isEmpty(collect)) {
                 return;
             }
             TakinConfig takinConfig = new TakinConfig();
@@ -442,9 +456,9 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     }
 
 
-    private Object mqResourceConfig(PressureResourceRelateMqConsumerEntity mqConsumerEntity){
+    private Object mqResourceConfig(PressureResourceRelateMqConsumerEntity mqConsumerEntity) {
         MqTypeEnum mqTypeEnum = MqTypeEnum.getByCode(mqConsumerEntity.getMqType());
-        switch (mqTypeEnum){
+        switch (mqTypeEnum) {
             case SF_KAKFA:
                 return SfKakfaConfig.mapping(mqConsumerEntity);
             default:

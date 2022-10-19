@@ -94,6 +94,9 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     @Resource
     private PressureResourceMqConsumerService pressureResourceMqConsumerService;
 
+    @Resource
+    private PressureResourceRemoteCallService pressureResourceRemoteCallService;
+
     /**
      * 新增
      *
@@ -361,10 +364,27 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             vo.setId(String.valueOf(configDto.getId()));
             // 设置详情条数
             vo.setDetailCount(finalDetailMap.getOrDefault(String.valueOf(configDto.getId()), Collections.EMPTY_LIST).size());
+            // 未开始
+            vo.setStatus(processStatus(configDto.getId()));
+            // 处理下状态
             return vo;
         }).collect(Collectors.toList());
 
         return PagingList.of(returnList, pageList.getTotal());
+    }
+
+    private int processStatus(Long id) {
+        Map<String, Integer> processMap = progress(id);
+        List<Integer> status = processMap.entrySet().stream().map(entry -> entry.getValue()).collect(Collectors.toList());
+        Integer normal = status.stream().filter(var -> var == 2).collect(Collectors.toList()).size();
+        Integer ing = status.stream().filter(var -> var == 1).collect(Collectors.toList()).size();
+        if (ing > 0) {
+            return 1;  // 进行中
+        }
+        if (normal == status.size()) {
+            return 2;//已完成
+        }
+        return 0; // 未开始
     }
 
     /**
@@ -455,7 +475,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
                 statusMap.put(ModuleEnum.APP.getCode(), 1);
             }
         }
-        // 影子MQ检查
+
+        // 影子资源检查
         PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
         dsQueryParam.setResourceId(id);
         List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
@@ -471,7 +492,25 @@ public class PressureResourceServiceImpl implements PressureResourceService {
             }
         }
 
-        // 影子资源检查
+        // 远程调用
+        PressureResourceRelateRemoteCallRequest callRequest = new PressureResourceRelateRemoteCallRequest();
+        callRequest.setResourceId(id);
+        callRequest.setPageSize(2000);
+        PagingList<PressureResourceRelateRemoteCallVO> callPagingList = pressureResourceRemoteCallService.pageList(callRequest);
+        if (!callPagingList.isEmpty()) {
+            List<PressureResourceRelateRemoteCallVO> callVOList = callPagingList.getList();
+            // 判断状态是否都是正常的
+            int normal = callVOList.stream().filter(app -> app.getStatus() == 2).collect(Collectors.toList()).size();
+            if (normal == callVOList.size()) {
+                statusMap.put(ModuleEnum.REMOTECALL.getCode(), 2);
+            }
+            // 存在正常的,进行中
+            if (callVOList.size() - normal > 0) {
+                statusMap.put(ModuleEnum.REMOTECALL.getCode(), 1);
+            }
+        }
+
+        // 影子MQ检查
         PressureResourceMqConsumerQueryRequest mqRequest = new PressureResourceMqConsumerQueryRequest();
         mqRequest.setResourceId(id);
         mqRequest.setPageSize(2000);
@@ -479,13 +518,13 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (!mqPageList.isEmpty()) {
             List<PressureResourceMqComsumerVO> appVOList = mqPageList.getList();
             // 判断状态是否都是正常的
-            int normal = appVOList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
+            int normal = appVOList.stream().filter(app -> app.getStatus() == 2).collect(Collectors.toList()).size();
             if (normal == appVOList.size()) {
                 statusMap.put(ModuleEnum.MQ.getCode(), 2);
             }
             // 存在正常的,进行中
             if (appVOList.size() - normal > 0) {
-                statusMap.put(ModuleEnum.DS.getCode(), 1);
+                statusMap.put(ModuleEnum.MQ.getCode(), 1);
             }
         }
         return statusMap;

@@ -4,7 +4,9 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceDsService;
+import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,7 +44,11 @@ public class PressureResoureDsController {
     public ResponseResult create(@RequestBody PressureResourceRelateDsInput input) {
         input.setType(SourceTypeEnum.MANUAL.getCode());
         pressureResourceDsService.add(input);
-        pressureResourceCommonService.pushRedis(input.getResourceId());
+
+        CommandTaskVo taskVo = new CommandTaskVo();
+        taskVo.setResourceId(input.getResourceId());
+        taskVo.setModule(ModuleEnum.DS.getCode());
+        pressureResourceCommonService.pushRedisCommand(taskVo);
         return ResponseResult.success();
     }
 
@@ -69,7 +75,11 @@ public class PressureResoureDsController {
     @RequestMapping(value = "/import", method = RequestMethod.POST)
     public ResponseResult importDsConfig(@RequestParam MultipartFile file, @RequestParam Long resourceId) {
         pressureResourceDsService.importDsConfig(file, resourceId);
-        pressureResourceCommonService.pushRedis(resourceId);
+
+        CommandTaskVo taskVo = new CommandTaskVo();
+        taskVo.setResourceId(resourceId);
+        taskVo.setModule(ModuleEnum.DS.getCode());
+        pressureResourceCommonService.pushRedisCommand(taskVo);
         return ResponseResult.success();
     }
 

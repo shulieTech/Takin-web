@@ -33,6 +33,7 @@ import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.pressureresource.common.*;
+import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
@@ -338,6 +339,28 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     @Override
     public void pushRedis(Long... resoureIds) {
         redisTemplate.opsForSet().add(TAKIN_RESOURCE_MODIFY_KEY, resoureIds);
+    }
+
+    @Override
+    public void pushRedisCommand(CommandTaskVo taskVo) {
+        redisTemplate.opsForList().leftPush(TAKIN_RESOURCE_MODIFY_KEY, JSON.toJSONString(taskVo));
+    }
+
+    @Override
+    public void deleteCommandTask(CommandTaskVo taskVo) {
+        redisTemplate.opsForList().remove(TAKIN_RESOURCE_MODIFY_KEY, 0, JSON.toJSONString(taskVo));
+    }
+
+    @Override
+    public List<CommandTaskVo> getTaskFormRedis() {
+        List<Object> objs = redisTemplate.opsForList().range(TAKIN_RESOURCE_MODIFY_KEY, 0, -1);
+        if (CollectionUtils.isEmpty(objs)) {
+            return Collections.EMPTY_LIST;
+        }
+        return objs.stream().map(obj -> {
+            CommandTaskVo vo = JSON.parseObject(Objects.toString(obj), CommandTaskVo.class);
+            return vo;
+        }).collect(Collectors.toList());
     }
 
     @Override

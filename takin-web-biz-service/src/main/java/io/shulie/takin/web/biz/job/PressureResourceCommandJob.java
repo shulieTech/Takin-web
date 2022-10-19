@@ -5,6 +5,8 @@ import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
+import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
+import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
@@ -71,7 +73,10 @@ public class PressureResourceCommandJob implements SimpleJob {
                 }
                 try {
                     ResourceContextUtil.setTenantContext(resource);
-                    pressureResourceCommandService.pushCommand(resource.getId());
+                    CommandTaskVo commandTaskVo = new CommandTaskVo();
+                    commandTaskVo.setResourceId(resource.getId());
+                    commandTaskVo.setModule(ModuleEnum.ALL.getCode());
+                    pressureResourceCommandService.pushCommand(commandTaskVo);
                 } finally {
                     distributedLock.unLockSafely(lockKey);
                 }

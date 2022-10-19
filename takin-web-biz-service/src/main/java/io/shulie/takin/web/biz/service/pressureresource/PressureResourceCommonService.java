@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.pressureresource;
 
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDetailInput;
+import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 
 import java.util.List;
@@ -34,6 +35,25 @@ public interface PressureResourceCommonService {
      * @param resoureIds
      */
     void pushRedis(Long... resoureIds);
+
+    /**
+     * 推送变更到Redis
+     *
+     * @param taskVo
+     */
+    void pushRedisCommand(CommandTaskVo taskVo);
+
+    /**
+     * 删除数据
+     *
+     * @param taskVo
+     */
+    void deleteCommandTask(CommandTaskVo taskVo);
+
+    /**
+     * 从Redis里面获取数据
+     */
+    List<CommandTaskVo> getTaskFormRedis();
 
     /**
      * 从Redis里面获取数据

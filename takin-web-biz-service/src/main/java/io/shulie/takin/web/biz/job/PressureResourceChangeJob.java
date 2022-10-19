@@ -6,6 +6,7 @@ import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
+import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
@@ -51,12 +52,12 @@ public class PressureResourceChangeJob implements SimpleJob {
     @Override
     public void execute(ShardingContext shardingContext) {
         // 查询所有压测资源准备配置
-        List<Long> resourceIds = pressureResourceCommonService.getResourceIdsFormRedis();
-        if (CollectionUtils.isEmpty(resourceIds)) {
+        List<CommandTaskVo> commandTaskVos = pressureResourceCommonService.getTaskFormRedis();
+        if (CollectionUtils.isEmpty(commandTaskVos)) {
             return;
         }
-        resourceIds.forEach(resourceId -> {
-            String lockKey = JobRedisUtils.getRedisJobResource(1L, "change", resourceId);
+        commandTaskVos.forEach(taskVo -> {
+            String lockKey = JobRedisUtils.getRedisJobResource(1L, "change", taskVo.getResourceId());
             if (distributedLock.checkLock(lockKey)) {
                 return;
             }
@@ -66,15 +67,17 @@ public class PressureResourceChangeJob implements SimpleJob {
                     return;
                 }
                 try {
-                    PressureResourceEntity resource = pressureResourceMapper.queryByIdNoTenant(resourceId);
+                    PressureResourceEntity resource = pressureResourceMapper.queryByIdNoTenant(taskVo.getResourceId());
                     if (resource == null) {
-                        log.warn("当前资源准备{}状态调整未查询到数据", resourceId);
+                        log.warn("当前资源准备{}状态调整未查询到数据", taskVo.getResourceId());
                         return;
                     }
                     ResourceContextUtil.setTenantContext(resource);
-                    pressureResourceCommandService.pushCommand(resourceId);
+                    pressureResourceCommandService.pushCommand(taskVo);
                 } finally {
                     distributedLock.unLockSafely(lockKey);
+                    // 移除Redis数据
+                    pressureResourceCommonService.deleteCommandTask(taskVo);
                 }
 
             });

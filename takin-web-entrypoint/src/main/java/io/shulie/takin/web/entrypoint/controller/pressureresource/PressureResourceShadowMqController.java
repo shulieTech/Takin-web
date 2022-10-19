@@ -5,12 +5,13 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMqC
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMqConsumerQueryRequest;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceMqConsumerService;
+import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -39,7 +40,11 @@ public class PressureResourceShadowMqController {
     public ResponseResult create(@RequestBody PressureResourceMqConsumerCreateInput request) {
         request.setType(SourceTypeEnum.MANUAL.getCode());
         pressureResourceMqConsumerService.create(request);
-        pressureResourceCommonService.pushRedis(request.getResourceId());
+
+        CommandTaskVo taskVo = new CommandTaskVo();
+        taskVo.setResourceId(request.getResourceId());
+        taskVo.setModule(ModuleEnum.MQ.getCode());
+        pressureResourceCommonService.pushRedisCommand(taskVo);
         return ResponseResult.success();
     }
 
@@ -47,7 +52,11 @@ public class PressureResourceShadowMqController {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult update(@RequestBody PressureResourceMqConsumerCreateInput request) {
         pressureResourceMqConsumerService.update(request);
-        pressureResourceCommonService.pushRedis(request.getResourceId());
+
+        CommandTaskVo taskVo = new CommandTaskVo();
+        taskVo.setResourceId(request.getResourceId());
+        taskVo.setModule(ModuleEnum.MQ.getCode());
+        pressureResourceCommonService.pushRedisCommand(taskVo);
         return ResponseResult.success();
     }
 

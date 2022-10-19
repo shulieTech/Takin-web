@@ -481,7 +481,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (!pageList.isEmpty()) {
             List<PressureResourceRelateAppVO> appVOList = pageList.getList();
             // 判断状态是否都是正常的
-            int normal = appVOList.stream().filter(app -> app.getStatus() == FinishStatusEnum.FINSH.getCode()).collect(Collectors.toList()).size();
+            int normal = appVOList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
             if (normal == appVOList.size()) {
                 statusMap.put(ModuleEnum.APP.getCode(), FinishStatusEnum.FINSH.getCode());
             }

@@ -386,6 +386,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         PressureResourceTypeEnum resourceTypeEnum = PressureResourceTypeEnum.getByCode(commandAck.getCommandType());
         switch (resourceTypeEnum) {
             case DATABASE:
+                //更新ds表
                 PressureResourceRelateDsEntity dsEntity = resourceDsMapper.selectById(subId);
                 if (dsEntity == null) {
                     throw new IllegalArgumentException("未找到对应的数据库资源");
@@ -395,6 +396,17 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
                 updateDs.setStatus(commandAck.isSuccess() ? 2 : 1);
                 updateDs.setRemark(commandAck.isSuccess() ? "影子资源连通" : commandAck.getResponse());
                 resourceDsMapper.updateById(updateDs);
+                //更新table表
+                String dsKey = DataSourceUtil.generateDsKey(dsEntity.getResourceId(), dsEntity.getBusinessDatabase());
+                List<PressureResourceRelateTableEntity> tableEntities = resourceTableMapper.selectList(new QueryWrapper<PressureResourceRelateTableEntity>().lambda()
+                        .eq(PressureResourceRelateTableEntity::getResourceId, resource.getId())
+                        .eq(PressureResourceRelateTableEntity::getDsKey,dsKey)
+                        .eq(PressureResourceRelateTableEntity::getJoinFlag, JoinFlagEnum.YES.getCode()));
+                tableEntities.forEach(table -> {
+                    table.setStatus(commandAck.isSuccess() ? 2 : 1);
+                    table.setRemark(commandAck.isSuccess() ? "影子表正确" : commandAck.getResponse());
+                    resourceTableMapper.updateById(table);
+                });
                 //下发数据库配置
                 if (commandAck.isSuccess()) {
                     pushPressureDatabaseConfig(resource);

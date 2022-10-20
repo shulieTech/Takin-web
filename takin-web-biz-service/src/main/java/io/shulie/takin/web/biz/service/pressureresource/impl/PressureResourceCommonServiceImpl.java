@@ -450,7 +450,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 }).collect(Collectors.toList());
         List<PressureResourceRelateAppEntity> appEntityList = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(appNodeList)) {
-            appEntityList = appNodeList.stream().map(appNode -> {
+            appNodeList.stream().forEach(appNode -> {
                 PressureResourceRelateAppEntity appEntity = new PressureResourceRelateAppEntity();
                 appEntity.setAppName(appNode.getNodeName());
                 appEntity.setResourceId(resourceId);
@@ -470,11 +470,14 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                         appEntity.setNodeNum(applicationVo.getNodeNum() == null ? 0 : applicationVo.getNodeNum());
                         appEntity.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
                     }
+                    appEntity.setJoinPressure(JoinFlagEnum.YES.getCode());
+                    appEntity.setType(SourceTypeEnum.AUTO.getCode());
+                    appEntityList.add(appEntity);
+                } else {
+                    //不处理
+                    logger.warn("未查询到应用信息{} ", appEntity.getAppName());
                 }
-                appEntity.setJoinPressure(JoinFlagEnum.YES.getCode());
-                appEntity.setType(SourceTypeEnum.AUTO.getCode());
-                return appEntity;
-            }).collect(Collectors.toList());
+            });
         }
         return appEntityList;
     }

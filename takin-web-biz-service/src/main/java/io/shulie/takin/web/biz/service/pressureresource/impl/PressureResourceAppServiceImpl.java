@@ -29,6 +29,7 @@ import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQue
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -138,10 +140,18 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
             }, simpleFutureThreadPool);
             futureList.add(future);
         });
-        List<ApplicationVo> applicationVos = Stream.of(futureList.toArray(new CompletableFuture[futureList.size()]))
-                .map(CompletableFuture<ApplicationVo>::join)
-                .collect(Collectors.toList());
-        final Map<String, List<ApplicationVo>> appMap = applicationVos.stream().collect(Collectors.groupingBy(ApplicationVo::getApplicationName));
+        CompletableFuture cfAll = CompletableFuture.allOf(futureList.toArray(new CompletableFuture[futureList.size()]));
+        CompletableFuture<List<ApplicationVo>> listCompletableFuture = cfAll.thenApply(v -> futureList.stream().map(rs -> {
+            try {
+                return rs.get();
+            } catch (Throwable e) {
+                logger.error("等待结果失败 {}", ExceptionUtils.getStackTrace(e));
+            }
+            ApplicationVo vo = new ApplicationVo();
+            vo.setApplicationName("default");
+            return vo;
+        }).collect(Collectors.toList()));
+        final Map<String, List<ApplicationVo>> appMap = listCompletableFuture.join().stream().collect(Collectors.groupingBy(ApplicationVo::getApplicationName));
         List<PressureResourceRelateAppVO> returnList = source.stream().map(configDto -> {
             PressureResourceRelateAppVO vo = new PressureResourceRelateAppVO();
             BeanUtils.copyProperties(configDto, vo);

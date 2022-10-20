@@ -181,7 +181,7 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
         shadowMqConsumerEntity.setId(request.getId());
         shadowMqConsumerEntity.setResourceId(request.getResourceId());
         shadowMqConsumerEntity.setTopic(request.getTopic());
-        shadowMqConsumerEntity.setGroup(request.getGroup());
+        shadowMqConsumerEntity.setGroup(StringUtils.isBlank(request.getGroup()) ? "default" : request.getGroup());
         shadowMqConsumerEntity.setBrokerAddr(request.getBrokerAddr());
         shadowMqConsumerEntity.setTopicTokens(request.getTopicTokens());
         shadowMqConsumerEntity.setSystemIdToken(request.getSystemIdToken());

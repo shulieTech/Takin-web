@@ -565,14 +565,14 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     }
                 }
             }
-            String group = edge.getMethod();
+            String group = StringUtils.isBlank(edge.getMethod()) ? "default" : edge.getMethod();
             mqEntity.setTopic(topic);
             mqEntity.setGroup(group);
-            mqEntity.setType(SourceTypeEnum.AUTO.getCode());
             mqEntity.setTenantId(WebPluginUtils.traceTenantId());
             mqEntity.setEnvCode(WebPluginUtils.traceEnvCode());
             mqEntity.setGmtCreate(new Date());
             mqEntity.setConsumerTag(1);
+            mqEntity.setType(SourceTypeEnum.AUTO.getCode());
             mqConsumerEntityList.add(mqEntity);
         }
         return mqConsumerEntityList;

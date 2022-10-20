@@ -260,7 +260,7 @@ public class ShadowJobConfigService {
             query.setOrderBy("id desc");
         }
         query.setApplicationId(tApplicationMnt.getApplicationId());
-        query.setUserIds(WebPluginUtils.getQueryAllowUserIdList());
+//        query.setUserIds(WebPluginUtils.getQueryAllowUserIdList());
         List<TShadowJobConfig> tShadowJobConfigs = tShadowJobConfigMapper.selectList(query);
         try {
             for (TShadowJobConfig tShadowJobConfig : tShadowJobConfigs) {

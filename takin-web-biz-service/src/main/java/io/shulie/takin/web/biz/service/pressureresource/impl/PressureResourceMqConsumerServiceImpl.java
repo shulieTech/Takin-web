@@ -68,7 +68,7 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
                 vo.setMqConsumerFeature(JSON.parseObject(vo.getFeature(), MqConsumerFeature.class));
             }
             // kafka的时候,如果是生产者,不需要展示消费组,设置为空
-            if ("KAFKA".equals(vo.getMqType()) && vo.getComsumerType() == 0) {
+            if (vo.getMqType().contains("KAFKA") && vo.getComsumerType() == 0) {
                 vo.setGroup("");
             }
             return vo;

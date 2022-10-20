@@ -683,6 +683,9 @@ public class SceneServiceImpl implements SceneService {
         if (CollectionUtils.isNotEmpty(queryParam.getUserIdList())) {
             wrapper.in(SceneEntity::getUserId, queryParam.getUserIdList());
         }
+        if (CollectionUtils.isNotEmpty(queryParam.getDeptIdList())){
+            wrapper.in(SceneEntity::getDeptId, queryParam.getDeptIdList());
+        }
         return sceneMapper.selectList(wrapper);
     }
 

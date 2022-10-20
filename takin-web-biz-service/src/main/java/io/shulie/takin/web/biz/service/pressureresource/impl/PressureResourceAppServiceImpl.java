@@ -120,14 +120,21 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
             CompletableFuture<ApplicationVo> future = CompletableFuture.supplyAsync(() -> {
                 Long appId = applicationService.queryApplicationIdByAppName(config.getAppName());
                 if (appId == null) {
-                    return new ApplicationVo();
+                    logger.error("应用名Id为空{}", config.getAppName());
+                    ApplicationVo vo = new ApplicationVo();
+                    vo.setApplicationName(config.getAppName());
+                    return vo;
                 }
                 // 这里接口比较慢,并行去查
                 Response<ApplicationVo> voResponse = applicationService.getApplicationInfo(String.valueOf(appId));
                 if (voResponse.getSuccess()) {
                     return voResponse.getData();
+                } else {
+                    logger.error("查询应用信息失败{}", config.getAppName());
                 }
-                return new ApplicationVo();
+                ApplicationVo vo = new ApplicationVo();
+                vo.setApplicationName(config.getAppName());
+                return vo;
             }, simpleFutureThreadPool);
             futureList.add(future);
         });

@@ -134,10 +134,8 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         TraceInfoQueryDTO traceInfoQueryDTO = new TraceInfoQueryDTO();
         traceInfoQueryDTO.setAppName(call.getAppName());
         traceInfoQueryDTO.setQueryType(1);
-        EntranceRuleDTO entranceRuleDTO = new EntranceRuleDTO();
-        entranceRuleDTO.setAppName(call.getAppName());
-        entranceRuleDTO.setEntrance(call.getInterfaceName());
-        traceInfoQueryDTO.setEntranceRuleDTOS(Arrays.asList(entranceRuleDTO));
+        traceInfoQueryDTO.setAppName(call.getAppName());
+        traceInfoQueryDTO.setServiceName(call.getInterfaceName());
         traceInfoQueryDTO.setPageNum(0);
         traceInfoQueryDTO.setPageSize(20);
         PagingList<EntryTraceInfoDTO> pageList = traceClient.listEntryTraceInfo(traceInfoQueryDTO);
@@ -146,7 +144,14 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         }
         Double avg = pageList.getList().stream().mapToLong(EntryTraceInfoDTO::getCost).average().orElse(0D);
         mockDetailVO.setResponseTime(String.valueOf(Math.floor(avg)));
-        List<String> requests = pageList.getList().stream().map(mock -> mock.getRequest()).collect(Collectors.toList());
+        List<String> requests = pageList.getList().stream().map(mock -> {
+            String request = mock.getRequest();
+            if (request.startsWith("{{") && request.endsWith("}}")) {
+                request = request.substring(1);
+                request = request.substring(0, request.length() - 1);
+            }
+            return request;
+        }).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(requests)) {
             mockDetailVO.setRequest(ListUtil.sub(requests, 1, 2));
         }

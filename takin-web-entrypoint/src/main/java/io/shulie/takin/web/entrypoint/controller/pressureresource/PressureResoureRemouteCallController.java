@@ -46,8 +46,8 @@ public class PressureResoureRemouteCallController {
     }
 
     @ApiOperation("链路压测资源-远程调用-平均响应时间")
-    @RequestMapping(value = "/avgRt", method = RequestMethod.GET)
-    public ResponseResult avgRt(PressureResourceRelateRemoteCallRequest input) {
+    @RequestMapping(value = "/config", method = RequestMethod.GET)
+    public ResponseResult config(PressureResourceRelateRemoteCallRequest input) {
         return ResponseResult.success(pressureResourceRemoteCallService.mockDetail(input.getId()));
     }
 

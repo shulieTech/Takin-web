@@ -126,4 +126,6 @@ public class QueryLinkDetailDTO extends PagingDevice {
      */
     private Integer queryType;
 
+    private String appName;
+
 }

@@ -132,14 +132,23 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "数据未找到");
         }
         TraceInfoQueryDTO traceInfoQueryDTO = new TraceInfoQueryDTO();
-        traceInfoQueryDTO.setAppName(call.getAppName());
         traceInfoQueryDTO.setQueryType(1);
         traceInfoQueryDTO.setAppName(call.getAppName());
-        traceInfoQueryDTO.setServiceName(call.getInterfaceName());
+        if (call.getInterfaceName().contains("#")) {
+            traceInfoQueryDTO.setServiceName(call.getInterfaceName().split("#")[0]);
+            traceInfoQueryDTO.setMethodName(call.getInterfaceName().split("#")[1]);
+        } else {
+            traceInfoQueryDTO.setServiceName(call.getInterfaceName());
+        }
         traceInfoQueryDTO.setPageNum(0);
         traceInfoQueryDTO.setPageSize(20);
-        PagingList<EntryTraceInfoDTO> pageList = traceClient.listEntryTraceInfo(traceInfoQueryDTO);
-        if (pageList.isEmpty()) {
+        PagingList<EntryTraceInfoDTO> pageList = null;
+        try {
+            pageList = traceClient.listEntryTraceInfo(traceInfoQueryDTO);
+            if (pageList == null || pageList.isEmpty()) {
+                return mockDetailVO;
+            }
+        } catch (Throwable e) {
             return mockDetailVO;
         }
         Double avg = pageList.getList().stream().mapToLong(EntryTraceInfoDTO::getCost).average().orElse(0D);

@@ -9,6 +9,7 @@ import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceRemoteCallService;
+import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.PassEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.RemoteCallUtil;
 import io.shulie.takin.web.biz.service.pressureresource.common.dy.DynamicCompilerUtil;
@@ -65,15 +66,6 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
     public PagingList<PressureResourceRelateRemoteCallVO> pageList(PressureResourceRelateRemoteCallRequest request) {
         PressureResourceRemoteCallQueryParam param = new PressureResourceRemoteCallQueryParam();
         BeanUtils.copyProperties(request, param);
-        if (StringUtils.isNotBlank(request.getEntry())) {
-            PressureResourceDetailQueryParam queryParam = new PressureResourceDetailQueryParam();
-            queryParam.setLinkId(request.getEntry());
-            List<PressureResourceDetailEntity> list = pressureResourceDetailDAO.getList(queryParam);
-            if (CollectionUtils.isNotEmpty(list)) {
-                String url = list.get(0).getEntranceUrl();
-                param.setQueryInterfaceName(url);
-            }
-        }
         PagingList<PressureResourceRelateRemoteCallEntity> pageList = pressureResourceRelateRemoteCallDAO.pageList(param);
 
         if (pageList.isEmpty()) {
@@ -116,6 +108,10 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         }
         update.setGmtModified(new Date());
         update.setType(RemoteCallUtil.getType(update));
+        // 假如是放行,默认不检测，检测状态直接置位成功
+        if (update.getPass() != null && update.getPass() == PassEnum.PASS_YES.getCode()) {
+            update.setStatus(CheckStatusEnum.CHECK_FIN.getCode());
+        }
         pressureResourceRelateRemoteCallMapper.updateById(update);
     }
 

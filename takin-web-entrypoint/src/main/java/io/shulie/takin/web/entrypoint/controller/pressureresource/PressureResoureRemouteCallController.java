@@ -32,9 +32,6 @@ public class PressureResoureRemouteCallController {
     @Resource
     private PressureResourceRemoteCallService pressureResourceRemoteCallService;
 
-    @Resource
-    private PressureResourceCommonService pressureResourceCommonService;
-
     @ApiOperation("链路压测资源-远程调用列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ResponseResult list(PressureResourceRelateRemoteCallRequest request) {

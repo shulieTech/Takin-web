@@ -28,4 +28,7 @@ public class PressureResourceRemoteCallQueryParam extends PageBaseDTO {
 
     @ApiModelProperty("linkId")
     private String linkId;
+
+    @ApiModelProperty("入口的detailId")
+    private String entry;
 }

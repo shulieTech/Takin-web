@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.*;
+import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.*;
@@ -498,7 +499,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
         if (CollectionUtils.isNotEmpty(dsEntityList)) {
             // 判断状态是否都是正常的
-            int normal = dsEntityList.stream().filter(ds -> ds.getStatus() == FinishStatusEnum.FINSH.getCode()).collect(Collectors.toList()).size();
+            int normal = dsEntityList.stream().filter(ds -> ds.getStatus() == CheckStatusEnum.CHECK_FIN.getCode()).collect(Collectors.toList()).size();
             if (normal == dsEntityList.size()) {
                 statusMap.put(ModuleEnum.DS.getCode(), FinishStatusEnum.FINSH.getCode());
             }
@@ -516,7 +517,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (!callPagingList.isEmpty()) {
             List<PressureResourceRelateRemoteCallVO> callVOList = callPagingList.getList();
             // 判断状态是否都是正常的
-            int normal = callVOList.stream().filter(app -> app.getStatus() == FinishStatusEnum.FINSH.getCode()).collect(Collectors.toList()).size();
+            int normal = callVOList.stream().filter(app -> app.getStatus() == CheckStatusEnum.CHECK_FIN.getCode()).collect(Collectors.toList()).size();
             if (normal == callVOList.size()) {
                 statusMap.put(ModuleEnum.REMOTECALL.getCode(), FinishStatusEnum.FINSH.getCode());
             }
@@ -534,7 +535,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (!mqPageList.isEmpty()) {
             List<PressureResourceMqComsumerVO> appVOList = mqPageList.getList();
             // 判断状态是否都是正常的
-            int normal = appVOList.stream().filter(app -> app.getStatus() == FinishStatusEnum.FINSH.getCode()).collect(Collectors.toList()).size();
+            int normal = appVOList.stream().filter(app -> app.getStatus() == CheckStatusEnum.CHECK_FIN.getCode()).collect(Collectors.toList()).size();
             if (normal == appVOList.size()) {
                 statusMap.put(ModuleEnum.MQ.getCode(), FinishStatusEnum.FINSH.getCode());
             }

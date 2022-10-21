@@ -97,19 +97,8 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
         PressureResourceAppQueryParam param = new PressureResourceAppQueryParam();
         BeanUtils.copyProperties(request, param);
         if (StringUtils.isNotBlank(request.getEntry())) {
-            // 通过entry获取详情Id
-            PressureResourceDetailQueryParam queryParam = new PressureResourceDetailQueryParam();
-            queryParam.setLinkId(request.getEntry());
-            List<PressureResourceDetailEntity> detailEntityList = pressureResourceDetailDAO.getList(queryParam);
-            if (CollectionUtils.isNotEmpty(detailEntityList)) {
-                List<Long> detailIds = detailEntityList.stream().map(detail -> detail.getId()).distinct().collect(Collectors.toList());
-                param.setDetailIds(detailIds);
-            } else {
-                // 没有找到详情,直接返回空
-                return PagingList.of(Collections.emptyList(), 0);
-            }
+            param.setDetailId(Long.valueOf(request.getEntry()));
         }
-
         PagingList<PressureResourceRelateAppEntity> pageList = pressureResourceRelateAppDAO.pageList(param);
         if (pageList.isEmpty()) {
             return PagingList.of(Collections.emptyList(), pageList.getTotal());

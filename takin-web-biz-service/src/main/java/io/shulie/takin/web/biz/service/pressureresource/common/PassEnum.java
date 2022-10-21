@@ -1,5 +1,12 @@
 package io.shulie.takin.web.biz.service.pressureresource.common;
 
+import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 /**
  * @author xingchen
  * @description: TODO
@@ -23,5 +30,17 @@ public enum PassEnum {
 
     public String getName() {
         return name;
+    }
+
+    public static List<String> defaultPass = Arrays.asList("httpclient5", "jdk-http", "okhttpv3");
+
+    public static int defaultPass(String middlewareName) {
+        if (StringUtils.isBlank(middlewareName)) {
+            return PASS_NO.getCode();
+        }
+        if (defaultPass.contains(middlewareName.toLowerCase())) {
+            return PASS_YES.getCode();
+        }
+        return PASS_NO.getCode();
     }
 }

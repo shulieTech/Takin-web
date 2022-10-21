@@ -744,10 +744,10 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             callEntity.setManualTag(0);
             callEntity.setTenantId(WebPluginUtils.traceTenantId());
             callEntity.setEnvCode(WebPluginUtils.traceEnvCode());
-
             // 通过服务查询本地的远程调用信息
             String md5 = RemoteCallUtils.buildRemoteCallName(callEntity.getAppName(), callEntity.getInterfaceName(), callEntity.getInterfaceType());
             List<AppRemoteCallEntity> md5List = md5Map.get(md5);
+            callEntity.setPass(PassEnum.defaultPass(callEntity.getInterfaceChildType()));
             if (CollectionUtils.isNotEmpty(md5List)) {
                 AppRemoteCallEntity tmpEntity = md5List.get(0);
                 callEntity.setServerAppName(tmpEntity.getServerAppName());
@@ -755,12 +755,17 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 callEntity.setIsSynchronize(tmpEntity.getIsSynchronize() ? 0 : 1);
                 // 是否放行 - 调用方和非调用方为非http类型的，默认自动放行，开关：开；其余的为关
                 // 0 http 2 feign 1 double
-                if (callEntity.getInterfaceType().intValue() != 0 || callEntity.getInterfaceType() != 2) {
+                if (callEntity.getInterfaceType() != 0 || callEntity.getInterfaceType() != 2) {
                     callEntity.setPass(PassEnum.PASS_YES.getCode());
                 }
             }
             // 重新设置下远程调用类型,兼容下原有的类型
             callEntity.setType(RemoteCallUtil.getType(callEntity));
+            callEntity.setStatus(CheckStatusEnum.CHECK_NO.getCode());
+            // 设置检测状态,放行的默认不检测，状态默认为检测成功
+            if (callEntity.getPass() == PassEnum.PASS_YES.getCode()) {
+                callEntity.setStatus(CheckStatusEnum.CHECK_FIN.getCode());
+            }
             return callEntity;
         }).collect(Collectors.toList());
         return callEntityList;

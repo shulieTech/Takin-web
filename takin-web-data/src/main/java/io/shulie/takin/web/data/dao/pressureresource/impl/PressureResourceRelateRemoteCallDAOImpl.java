@@ -79,6 +79,9 @@ public class PressureResourceRelateRemoteCallDAOImpl implements PressureResource
         if (param.getStatus() != null) {
             queryWrapper.eq("status", param.getStatus());
         }
+        if (StringUtils.isNotBlank(param.getEntry())) {
+            queryWrapper.eq("detail_id", param.getEntry());
+        }
         return queryWrapper;
     }
 }

@@ -1,6 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.file;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,19 +56,45 @@ public class FileController {
 
     @ApiOperation("|_ 文件下载")
     @GetMapping("/download")
-    public void download(@RequestParam("filePath") String filePath, HttpServletResponse response) {
-        if (!this.filePathValidate(filePath)) {
-            log.error("非法下载路径文件，禁止下载：{}", filePath);
-            return;
+    public HttpServletResponse download(@RequestParam("filePath") String filePath, HttpServletResponse response) {
+//        if (!this.filePathValidate(filePath)) {
+//            log.error("非法下载路径文件，禁止下载：{}", filePath);
+//            return;
+//        }
+//
+//        File file = new File(filePath);
+//        if (!file.exists()) {
+//            log.warn("文件不存在，地址：{}", filePath);
+//            return;
+//        }
+//
+//        CommonUtil.zeroCopyDownload(file, response);
+        try {
+            // path是指欲下载的文件的路径。
+            File file = new File(filePath);
+            // 取得文件名。
+            String filename = file.getName();
+            // 取得文件的后缀名。
+            String ext = filename.substring(filename.lastIndexOf(".") + 1).toUpperCase();
+            // 以流的形式下载文件。
+            InputStream fis = new BufferedInputStream(new FileInputStream(filePath));
+            byte[] buffer = new byte[fis.available()];
+            fis.read(buffer);
+            fis.close();
+            // 清空response
+            response.reset();
+            // 设置response的Header
+            response.addHeader("Content-Disposition", "attachment;filename=" + new String(filename.getBytes()));
+            response.addHeader("Content-Length", "" + file.length());
+            OutputStream toClient = new BufferedOutputStream(response.getOutputStream());
+            response.setContentType("application/octet-stream");
+            toClient.write(buffer);
+            toClient.flush();
+            toClient.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
-
-        File file = new File(filePath);
-        if (!file.exists()) {
-            log.warn("文件不存在，地址：{}", filePath);
-            return;
-        }
-
-        CommonUtil.zeroCopyDownload(file, response);
+        return response;
     }
 
     @PostMapping("/upload")
@@ -97,10 +123,7 @@ public class FileController {
             setFileList(FileUtil.convertMultipartFileList(file));
         }});
         FileUtil.deleteTempFile(file);
-        List<FileDTO> dtoList = response.stream()
-                .map(t -> BeanUtil.copyProperties(t, FileDTO.class))
-                .peek(t -> t.setFileType(2))
-                .collect(Collectors.toList());
+        List<FileDTO> dtoList = response.stream().map(t -> BeanUtil.copyProperties(t, FileDTO.class)).peek(t -> t.setFileType(2)).collect(Collectors.toList());
         return WebResponse.success(dtoList);
     }
 

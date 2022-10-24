@@ -140,6 +140,9 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         } else {
             traceInfoQueryDTO.setServiceName(call.getInterfaceName());
         }
+        traceInfoQueryDTO.setLogType("2");
+        traceInfoQueryDTO.setSortField("startDate");
+        traceInfoQueryDTO.setSortType("desc");
         traceInfoQueryDTO.setPageNum(0);
         traceInfoQueryDTO.setPageSize(20);
         PagingList<EntryTraceInfoDTO> pageList = null;

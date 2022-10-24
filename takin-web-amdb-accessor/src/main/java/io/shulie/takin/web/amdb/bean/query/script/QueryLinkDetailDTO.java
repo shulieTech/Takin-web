@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.shulie.takin.web.amdb.bean.common.PagingDevice;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -132,4 +133,7 @@ public class QueryLinkDetailDTO extends PagingDevice {
      * 类名模糊查询
      */
     private String queryMethodName;
+
+    @ApiModelProperty("调用类型")
+    String logType;
 }

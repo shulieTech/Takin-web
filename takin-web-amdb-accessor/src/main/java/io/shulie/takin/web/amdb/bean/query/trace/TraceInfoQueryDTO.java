@@ -95,4 +95,6 @@ public class TraceInfoQueryDTO implements Serializable {
     private String rpcType;
 
     private Integer clusterTest;
+
+    String logType;
 }

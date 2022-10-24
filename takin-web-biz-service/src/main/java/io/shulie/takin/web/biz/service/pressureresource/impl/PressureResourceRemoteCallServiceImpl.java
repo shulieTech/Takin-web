@@ -136,7 +136,7 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         traceInfoQueryDTO.setAppName(call.getAppName());
         if (call.getInterfaceName().contains("#")) {
             traceInfoQueryDTO.setServiceName(call.getInterfaceName().split("#")[0]);
-            traceInfoQueryDTO.setMethodName(call.getInterfaceName().split("#")[1]);
+            traceInfoQueryDTO.setQueryMethodName(call.getInterfaceName().split("#")[1]);
         } else {
             traceInfoQueryDTO.setServiceName(call.getInterfaceName());
         }

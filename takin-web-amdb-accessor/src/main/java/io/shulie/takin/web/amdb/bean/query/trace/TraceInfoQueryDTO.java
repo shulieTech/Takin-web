@@ -65,6 +65,11 @@ public class TraceInfoQueryDTO implements Serializable {
     private String methodName;
 
     /**
+     * 方法名模糊查询
+     */
+    private String queryMethodName;
+
+    /**
      * 调用参数：request
      */
     private String request;

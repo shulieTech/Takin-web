@@ -128,4 +128,8 @@ public class QueryLinkDetailDTO extends PagingDevice {
 
     private String appName;
 
+    /**
+     * 类名模糊查询
+     */
+    private String queryMethodName;
 }

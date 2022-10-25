@@ -119,12 +119,30 @@
                     <artifactId>jsqlparser</artifactId>
                     <groupId>com.github.jsqlparser</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-entrypoint</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>log4j-core</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j-1.2-api</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -143,6 +161,18 @@
                     <artifactId>fastjson</artifactId>
                     <groupId>com.alibaba</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>log4j-core</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j-1.2-api</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!--内部module 业务依赖-->
@@ -151,6 +181,20 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-adapter-cloud</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>log4j-core</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j-1.2-api</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!--cloud 依赖-->
         <dependency>
@@ -330,6 +374,10 @@
                     <groupId>com.github.pagehelper</groupId>
                     <artifactId>pagehelper-spring-boot-autoconfigure</artifactId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -340,6 +388,18 @@
                     <artifactId>log4j</artifactId>
                     <groupId>log4j</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>log4j-core</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j-1.2-api</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -349,7 +409,21 @@
             <artifactId>transmittable-thread-local</artifactId>
             <version>2.12.4</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-to-slf4j</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
     </dependencies>
 
     <profiles>

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.map.MapUtil;
 import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.fastjson.JSONObject;
 
@@ -65,16 +66,13 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
         ApplicationDetailResult tApplicationMnt = ensureApplicationExist(queryRequest);
 
         // 应用节点相关错误信息
-        ApplicationErrorOutput nodeErrorResponse =
-            this.getNodeErrorResponse(tApplicationMnt.getApplicationName(), tApplicationMnt.getNodeNum());
+        ApplicationErrorOutput nodeErrorResponse = this.getNodeErrorResponse(tApplicationMnt.getApplicationName(), tApplicationMnt.getNodeNum());
         if (nodeErrorResponse != null) {
             responseList.add(nodeErrorResponse);
         }
 
         //redisKey改造
-        String appUniqueKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
-            WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
-            queryRequest.getApplicationId() + ApplicationServiceImpl.PRADARNODE_KEYSET);
+        String appUniqueKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(), queryRequest.getApplicationId() + ApplicationServiceImpl.PRADARNODE_KEYSET);
         Set<String> keys = redisTemplate.opsForSet().members(appUniqueKey);
         if (keys == null || keys.size() == 0) {
             return responseList;
@@ -94,8 +92,7 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
     }
 
     private ApplicationDetailResult ensureApplicationExist(ApplicationErrorQueryInput queryRequest) {
-        Response<ApplicationDetailResult> applicationMntResponse = applicationService.getApplicationInfoForError(
-            String.valueOf(queryRequest.getApplicationId()));
+        Response<ApplicationDetailResult> applicationMntResponse = applicationService.getApplicationInfoForError(String.valueOf(queryRequest.getApplicationId()));
         ApplicationDetailResult tApplicationMnt = applicationMntResponse.getData();
         if (Objects.isNull(tApplicationMnt)) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_VALIDATE_ERROR, "应用不存在");
@@ -103,12 +100,10 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
         return tApplicationMnt;
     }
 
-    private void putNodeExceptionIfNeeded(List<ApplicationErrorOutput> responseList,
-        ApplicationDetailResult tApplicationMnt) {
+    private void putNodeExceptionIfNeeded(List<ApplicationErrorOutput> responseList, ApplicationDetailResult tApplicationMnt) {
         Integer totalNodeCount = tApplicationMnt.getNodeNum();
         Integer onlineNodeCount = 0;
-        List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(
-            Collections.singletonList(tApplicationMnt.getApplicationName()));
+        List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(Collections.singletonList(tApplicationMnt.getApplicationName()));
         if (CollectionUtils.isEmpty(applicationResultList)) {
             log.error("AMDB中应用信息查询结果为空");
         } else {
@@ -119,43 +114,39 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
             log.error("AMDB存在多个名称重复的应用！");
         }
         if (!totalNodeCount.equals(onlineNodeCount)) {
-            responseList.add(new ApplicationErrorOutput()
-                .setExceptionId("-")
-                .setAgentIdList(Collections.singletonList("-"))
-                .setDescription("在线节点数 与 配置的节点总数 不一致")
-                .setTime(DateUtils.getNowDateStr())
-                .setDetail("设置节点数：" + totalNodeCount + "，在线节点数：" + onlineNodeCount));
+            responseList.add(new ApplicationErrorOutput().setExceptionId("-").setAgentIdList(Collections.singletonList("-")).setDescription("在线节点数 与 配置的节点总数 不一致").setTime(DateUtils.getNowDateStr()).setDetail("设置节点数：" + totalNodeCount + "，在线节点数：" + onlineNodeCount));
         }
     }
 
-    private void convertNodeUploadDataList(List<ApplicationErrorOutput> responseList,
-        List<String> nodeUploadDataDTOList) {
+    private void convertNodeUploadDataList(List<ApplicationErrorOutput> responseList, List<String> nodeUploadDataDTOList) {
         nodeUploadDataDTOList.parallelStream().forEach(n -> {
             NodeUploadDataDTO nodeUploadDataDTO = JSONObject.parseObject(n, NodeUploadDataDTO.class);
             Map<String, Object> exceptionMap = nodeUploadDataDTO.getSwitchErrorMap();
-            if (exceptionMap != null && exceptionMap.size() > 0) {
-                for (Map.Entry<String, Object> entry : exceptionMap.entrySet()) {
-                    String message = String.valueOf(entry.getValue());
-                    if (message.contains("errorCode")) {
-                        ExceptionInfo exceptionInfo = null;
-                        try {
-                            exceptionInfo = JSONObject.parseObject(message, ExceptionInfo.class);
-                        } catch (Exception e) {
-                            log.error("异常转换失败：错误信息: {},异常内容{}", message, e.getMessage());
-                        }
-                        ApplicationErrorOutput applicationErrorResponse
-                                = new ApplicationErrorOutput()
-                                .setExceptionId(exceptionInfo != null ? exceptionInfo.getErrorCode() : "web-异常原文显示")
-                                .setAgentIdList(Collections.singletonList(nodeUploadDataDTO.getAgentId()))
-                                .setDescription(exceptionInfo != null ? exceptionInfo.getMessage() : message)
-                                .setDetail(exceptionInfo != null ? exceptionInfo.getDetail() : message)
-                                .setTime(nodeUploadDataDTO.getExceptionTime());
-                        if (!StringUtil.equals("探针接入异常", applicationErrorResponse.getDetail())
-                                || !StringUtil.equals("探针接入异常", applicationErrorResponse.getDescription())) {
-                            responseList.add(applicationErrorResponse);
-                        }
-                    }
+            if (MapUtil.isEmpty(exceptionMap)) {
+                return;
+            }
+            for (Map.Entry<String, Object> entry : exceptionMap.entrySet()) {
+                String message = String.valueOf(entry.getValue());
+                if (!message.contains("errorCode")) {
+                    return;
                 }
+                try {
+                    ExceptionInfo exceptionInfo = JSONObject.parseObject(message, ExceptionInfo.class);
+                    ApplicationErrorOutput applicationErrorResponse = new ApplicationErrorOutput()
+                            .setExceptionId(exceptionInfo != null ? exceptionInfo.getErrorCode() : "web-异常原文显示")
+                            .setAgentIdList(Collections.singletonList(nodeUploadDataDTO.getAgentId()))
+                            .setDescription(exceptionInfo != null ? exceptionInfo.getMessage() : message)
+                            .setDetail(exceptionInfo != null ? exceptionInfo.getDetail() : message)
+                            .setTime(nodeUploadDataDTO.getExceptionTime());
+                    if (!StringUtil.equals("探针接入异常", applicationErrorResponse.getDetail())
+                            || !StringUtil.equals("探针接入异常", applicationErrorResponse.getDescription())) {
+                        responseList.add(applicationErrorResponse);
+                    }
+                } catch (Exception e) {
+                    log.error("异常转换失败：错误信息: {},异常内容{}", message, e.getMessage());
+                    throw e;
+                }
+
             }
         });
     }
@@ -176,9 +167,7 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
                 outputs.add(output);
             }
             //redisKey改造
-            String appUniqueKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
-                WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceTenantCode(),
-                app.getAppId() + ApplicationServiceImpl.PRADAR_SEPERATE_FLAG);
+            String appUniqueKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceTenantCode(), app.getAppId() + ApplicationServiceImpl.PRADAR_SEPERATE_FLAG);
             Set<String> keys = redisTemplate.keys(appUniqueKey + "*");
             if (keys != null) {
                 for (String nodeKey : keys) {
@@ -194,8 +183,7 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
                                     String message = String.valueOf(entry.getValue());
                                     if (message.contains("errorCode")) {
                                         try {
-                                            ExceptionInfo exceptionInfo = JSONObject.parseObject(message,
-                                                ExceptionInfo.class);
+                                            ExceptionInfo exceptionInfo = JSONObject.parseObject(message, ExceptionInfo.class);
                                             ApplicationExceptionOutput output = new ApplicationExceptionOutput();
                                             output.setApplicationName(app.getAppName());
                                             output.setAgentIds(Arrays.asList(nodeUploadDataDTO.getAgentId()));
@@ -228,12 +216,10 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
      * @return 节点错误
      */
     private ApplicationErrorOutput getNodeErrorResponse(String applicationName, Integer totalNodeCount) {
-        List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(
-            Collections.singletonList(applicationName));
+        List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(Collections.singletonList(applicationName));
 
         ApplicationErrorOutput applicationErrorResponse = null;
-        if (CollectionUtils.isEmpty(applicationResultList)
-            || !totalNodeCount.equals(applicationResultList.get(0).getInstanceInfo().getInstanceOnlineAmount())) {
+        if (CollectionUtils.isEmpty(applicationResultList) || !totalNodeCount.equals(applicationResultList.get(0).getInstanceInfo().getInstanceOnlineAmount())) {
             applicationErrorResponse = new ApplicationErrorOutput();
             applicationErrorResponse.setExceptionId("-");
             applicationErrorResponse.setAgentIdList(Collections.singletonList("-"));
@@ -258,15 +244,11 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
      */
     private List<ApplicationErrorOutput> processErrorList(List<ApplicationErrorOutput> responseList) {
         // 按照时间倒序输出
-        List<ApplicationErrorOutput> sortedList = responseList.parallelStream()
-            .filter(t -> t != null && CharSequenceUtil.isNotBlank(t.getTime()))
-            .sorted((a1, a2) -> a2.getTime().compareTo(a1.getTime()))
-            .collect(Collectors.toList());
+        List<ApplicationErrorOutput> sortedList = responseList.parallelStream().filter(t -> t != null && CharSequenceUtil.isNotBlank(t.getTime())).sorted((a1, a2) -> a2.getTime().compareTo(a1.getTime())).collect(Collectors.toList());
 
         List<ApplicationErrorOutput> noTimeList = responseList.parallelStream()
-            // 无时间的
-            .filter(response -> response != null && CharSequenceUtil.isBlank(response.getTime()))
-            .collect(Collectors.toList());
+                // 无时间的
+                .filter(response -> response != null && CharSequenceUtil.isBlank(response.getTime())).collect(Collectors.toList());
 
         if (sortedList.isEmpty()) {
             return noTimeList;

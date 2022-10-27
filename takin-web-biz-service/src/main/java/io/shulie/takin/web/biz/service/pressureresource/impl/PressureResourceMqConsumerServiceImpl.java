@@ -84,8 +84,8 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
         shadowMqConsumerEntity.setId(null);
         shadowMqConsumerEntity.setGmtCreate(new Date());
         shadowMqConsumerEntity.setGmtModified(new Date());
-        // kafka其他集群模式
-        if ("KAFKA其他".equals(request.getMqType())) {
+        // kafka-其他集群模式
+        if ("KAFKA-其他".equals(request.getMqType())) {
             Long dsId = insertShadowClusterKafkaDsManage(shadowMqConsumerEntity);
             shadowMqConsumerEntity.setRelateDsManageId(dsId);
         }
@@ -166,7 +166,7 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
         updateEntity.setGmtModified(new Date());
 
         // 更新应用配置的旧表
-        if ("KAFKA其他".equals(request.getMqType())) {
+        if ("KAFKA-其他".equals(request.getMqType())) {
             if (entity.getRelateDsManageId() == null) {
                 Long dsManageId = insertShadowClusterKafkaDsManage(updateEntity);
                 updateEntity.setRelateDsManageId(dsManageId);

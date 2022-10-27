@@ -103,4 +103,8 @@ public class PressureResourceRelateRemoteCallEntity extends TenantBaseEntity {
     @TableField(value = "`gmt_modified`")
     @ApiModelProperty("更新时间")
     private Date gmtModified;
+
+    @TableField(value = "`relate_app_remote_call_id`")
+    @ApiModelProperty("关联远程调用表id")
+    private Long relateAppRemoteCallId;
 }

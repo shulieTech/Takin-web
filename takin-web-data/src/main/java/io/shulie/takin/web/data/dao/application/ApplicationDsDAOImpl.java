@@ -54,7 +54,8 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
 
         //数据加密处理
         aes(entity);
-        return applicationDsManageMapper.insert(entity);
+        applicationDsManageMapper.insert(entity);
+        return entity.getId().intValue();
     }
 
     /**

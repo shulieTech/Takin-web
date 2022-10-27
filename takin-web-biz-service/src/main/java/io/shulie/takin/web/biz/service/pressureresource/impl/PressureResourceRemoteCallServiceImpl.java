@@ -4,7 +4,6 @@ import cn.hutool.core.collection.ListUtil;
 import com.alibaba.fastjson.JSON;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.TraceClient;
-import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
@@ -16,12 +15,12 @@ import io.shulie.takin.web.biz.service.pressureresource.common.dy.DynamicCompile
 import io.shulie.takin.web.biz.service.pressureresource.vo.PressureResourceRelateRemoteCallVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDetailDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateRemoteCallDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateRemoteCallMapper;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
+import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntity;
-import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceRemoteCallQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +30,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -57,6 +55,9 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
 
     @Resource
     private TraceClient traceClient;
+
+    @Resource
+    private AppRemoteCallDAO appRemoteCallDAO;
 
     /**
      * @param request
@@ -112,6 +113,21 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         if (update.getPass() != null && update.getPass() == PassEnum.PASS_YES.getCode()) {
             update.setStatus(CheckStatusEnum.CHECK_FIN.getCode());
         }
+
+        // mockReturnValue更新到app_remote_call表中
+        PressureResourceRelateRemoteCallEntity entity = pressureResourceRelateRemoteCallMapper.selectById(id);
+        if(entity.getRelateAppRemoteCallId() != null){
+            AppRemoteCallEntity ety = new AppRemoteCallEntity();
+            ety.setId(entity.getRelateAppRemoteCallId());
+            ety.setType(update.getType());
+            ety.setMockReturnValue(update.getMockReturnValue());
+            ety.setGmtModified(update.getGmtModified());
+            appRemoteCallDAO.updateById(ety);
+            // 移除数据
+            update.setType(null);
+            update.setMockReturnValue(null);
+        }
+
         pressureResourceRelateRemoteCallMapper.updateById(update);
     }
 
@@ -130,6 +146,10 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         PressureResourceRelateRemoteCallEntity call = pressureResourceRelateRemoteCallMapper.selectById(id);
         if (call == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "数据未找到");
+        }
+        if(call.getRelateAppRemoteCallId() != null){
+            AppRemoteCallEntity callEntity = appRemoteCallDAO.getById(call.getRelateAppRemoteCallId());
+            populateProperties(call, callEntity);
         }
         TraceInfoQueryDTO traceInfoQueryDTO = new TraceInfoQueryDTO();
         traceInfoQueryDTO.setQueryType(1);
@@ -206,5 +226,18 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
             }
         }
         return checkVO;
+    }
+
+    private void populateProperties(PressureResourceRelateRemoteCallEntity entity, AppRemoteCallEntity appRemoteCall) {
+        if(appRemoteCall == null){
+            return;
+        }
+        entity.setInterfaceName(appRemoteCall.getInterfaceName());
+        entity.setInterfaceType(appRemoteCall.getInterfaceType());
+        entity.setRemark(appRemoteCall.getRemark());
+        entity.setType(appRemoteCall.getType());
+        entity.setMockReturnValue(appRemoteCall.getMockReturnValue());
+        entity.setUserId(appRemoteCall.getUserId());
+        entity.setIsSynchronize(appRemoteCall.getIsSynchronize() == null ? 0 : appRemoteCall.getIsSynchronize() ? 1 : 0);
     }
 }

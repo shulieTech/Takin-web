@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,11 +16,16 @@ import io.shulie.takin.web.biz.service.pressureresource.common.*;
 import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.*;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
+import io.shulie.takin.web.common.secure.SecureUtil;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
+import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDsManageDAO;
 import io.shulie.takin.web.data.dao.application.InterfaceTypeMainDAO;
 import io.shulie.takin.web.data.dao.application.RemoteCallConfigDAO;
 import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.mapper.mysql.*;
+import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
+import io.shulie.takin.web.data.model.mysql.ApplicationDsManageEntity;
 import io.shulie.takin.web.data.model.mysql.InterfaceTypeMainEntity;
 import io.shulie.takin.web.data.model.mysql.RemoteCallConfigEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.*;
@@ -67,7 +73,10 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     private RemoteCallConfigDAO remoteCallConfigDAO;
     @Resource
     private InterfaceTypeMainDAO interfaceTypeMainDAO;
-
+    @Resource
+    private AppRemoteCallDAO appRemoteCallDAO;
+    @Resource
+    private ApplicationDsManageDAO applicationDsManageDAO;
 
     /**
      * 下发校验命令并更新数据库
@@ -115,6 +124,21 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         if (CollectionUtils.isEmpty(mqConsumerEntities)) {
             return;
         }
+
+        List<Long> dsManageIds = mqConsumerEntities.stream().filter(entity -> entity.getRelateDsManageId() != null).map(entity -> entity.getRelateDsManageId()).collect(Collectors.toList());
+        if (!dsManageIds.isEmpty()) {
+            List<ApplicationDsManageEntity> manageEntities = applicationDsManageDAO.listByIds(dsManageIds);
+            Map<Long, ApplicationDsManageEntity> mappings = new HashMap<>();
+            manageEntities.forEach(applicationDsManageEntity -> mappings.put(applicationDsManageEntity.getId(), applicationDsManageEntity));
+
+            // 把application_ds_manage的属性填充到配置上
+            mqConsumerEntities.stream().forEach(entity -> {
+                if (entity.getRelateDsManageId() != null) {
+                    populateKafkaClusterProperties(entity, mappings.get(entity.getRelateDsManageId()));
+                }
+            });
+        }
+
         //租户信息
         TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
         //验证命令
@@ -225,6 +249,18 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         if (CollectionUtils.isEmpty(remoteCallEntities)) {
             return;
         }
+
+        // 查询旧表数据
+        Set<Long> appRemoteCallIds = remoteCallEntities.stream().map(entity -> entity.getRelateAppRemoteCallId()).collect(Collectors.toSet());
+        if (!appRemoteCallIds.isEmpty()) {
+            List<AppRemoteCallEntity> appRemoteCallEntities = appRemoteCallDAO.listByIds(appRemoteCallIds);
+            Map<Long, AppRemoteCallEntity> mappings = new HashMap<>();
+            for (AppRemoteCallEntity callEntity : appRemoteCallEntities) {
+                mappings.put(callEntity.getId(), callEntity);
+            }
+            remoteCallEntities.forEach(entity -> populateRemoteCallProperties(entity, mappings.get(entity.getRelateAppRemoteCallId())));
+        }
+
         //group by appName
         Map<String, List<PressureResourceRelateRemoteCallEntity>> appMap = remoteCallEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateRemoteCallEntity::getAppName));
 
@@ -605,6 +641,38 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             throw new IllegalArgumentException("命令id校验失败:" + commandId);
         }
         return Long.parseLong(split[1]);
+    }
+
+    private void populateRemoteCallProperties(PressureResourceRelateRemoteCallEntity entity, AppRemoteCallEntity appRemoteCall) {
+        if (appRemoteCall == null) {
+            return;
+        }
+        entity.setInterfaceName(appRemoteCall.getInterfaceName());
+        entity.setInterfaceType(appRemoteCall.getInterfaceType());
+        entity.setRemark(appRemoteCall.getRemark());
+        entity.setType(appRemoteCall.getType());
+        entity.setMockReturnValue(appRemoteCall.getMockReturnValue());
+        entity.setUserId(appRemoteCall.getUserId());
+        entity.setIsSynchronize(appRemoteCall.getIsSynchronize() == null ? 0 : appRemoteCall.getIsSynchronize() ? 1 : 0);
+    }
+
+    private void populateKafkaClusterProperties(PressureResourceRelateMqConsumerEntity consumer, ApplicationDsManageEntity entity) {
+        if (entity == null) {
+            return;
+        }
+        JSONObject object = JSON.parseObject(SecureUtil.decrypt(entity.getParseConfig()));
+        consumer.setTopic(object.getString("topic"));
+        consumer.setBrokerAddr(object.getString("brokerAddr"));
+        consumer.setGroup(object.getString("group"));
+        consumer.setSystemIdToken(object.getString("systemIdToken"));
+        consumer.setTopicTokens(object.getString("topicTokens"));
+
+        Map<String, Object> feature = new HashMap<>();
+        feature.put("clusterName", object.getString("clusterName"));
+        feature.put("clusterAddr", object.getString("monitorUrl"));
+        feature.put("providerThreadCount", object.getInteger("poolSize"));
+        feature.put("messageConsumeThreadCount", object.getInteger("messageConsumeThreadCount"));
+        consumer.setFeature(JSON.toJSONString(feature));
     }
 
 

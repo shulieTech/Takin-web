@@ -13,12 +13,12 @@ public interface PressureResourceRelateRemoteCallMapper
             "insert into t_pressure_resource_relate_remote_call(" +
             "resource_id,detail_id,interface_name,interface_type,server_app_name,app_name,pass,type," +
             "mock_return_value,user_id,is_synchronize,interface_child_type,status,remark,manual_tag," +
-            "tenant_id,env_code,md5,rpc_id,gmt_create)" +
+            "tenant_id,env_code,md5,rpc_id,gmt_create,relate_app_remote_call_id)" +
             "values " +
             "(#{item.resourceId},#{item.detailId},#{item.interfaceName},#{item.interfaceType},#{item.serverAppName}," +
             "#{item.appName},#{item.pass},#{item.type},#{item.mockReturnValue},#{item.userId},#{item.isSynchronize}," +
             "#{item.interfaceChildType},#{item.status},#{item.remark},#{item.manualTag},#{item.tenantId},#{item.envCode}," +
-            "#{item.md5},#{item.rpcId},#{item.gmtCreate})" +
+            "#{item.md5},#{item.rpcId},#{item.gmtCreate},#{item.relateAppRemoteCallId})" +
             " ON DUPLICATE KEY UPDATE gmt_modified=now()" +
             "<if test=\"item.serverAppName !=null and item.serverAppName !=''\"> " +
             "   ,server_app_name =values(server_app_name)" +

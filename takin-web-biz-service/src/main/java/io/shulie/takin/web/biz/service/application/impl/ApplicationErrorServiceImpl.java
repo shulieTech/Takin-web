@@ -38,6 +38,7 @@ import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -179,44 +180,46 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
             }
             //redisKey改造
             String appUniqueKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
-                WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceTenantCode(),
-                app.getAppId() + ApplicationServiceImpl.PRADAR_SEPERATE_FLAG);
+                    WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceTenantCode(),
+                    app.getAppId() + ApplicationServiceImpl.PRADAR_SEPERATE_FLAG);
             Set<String> keys = redisTemplate.keys(appUniqueKey + "*");
-            if (keys != null) {
-                for (String nodeKey : keys) {
-                    List<String> nodeUploadDataDTOList = redisTemplate.opsForList().range(nodeKey, 0, -1);
-                    if (CollectionUtils.isEmpty(nodeUploadDataDTOList)) {
-                        continue;
-                    } else {
-                        nodeUploadDataDTOList.forEach(n -> {
-                            NodeUploadDataDTO nodeUploadDataDTO = JSONObject.parseObject(n, NodeUploadDataDTO.class);
-                            Map<String, Object> exceptionMap = nodeUploadDataDTO.getSwitchErrorMap();
-                            if (exceptionMap != null && exceptionMap.size() > 0) {
-                                for (Map.Entry<String, Object> entry : exceptionMap.entrySet()) {
-                                    String message = String.valueOf(entry.getValue());
-                                    if (message.contains("errorCode")) {
-                                        try {
-                                            ExceptionInfo exceptionInfo = JSONObject.parseObject(message,
-                                                ExceptionInfo.class);
-                                            ApplicationExceptionOutput output = new ApplicationExceptionOutput();
-                                            output.setApplicationName(app.getAppName());
-                                            output.setAgentIds(Arrays.asList(nodeUploadDataDTO.getAgentId()));
-                                            output.setCode(exceptionInfo.getErrorCode());
-                                            output.setDescription(exceptionInfo.getMessage());
-                                            // todo 时间需要修改
-                                            output.setTime(nodeUploadDataDTO.getExceptionTime());
-                                            // todo 明细不全不传 exceptionInfo.getDetail()
-                                            outputs.add(output);
-                                        } catch (Exception e) {
-                                            log.error(message);
-                                            log.error("异常转换失败：", e);
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                    }
+            if (keys == null) {
+                return;
+            }
+            for (String nodeKey : keys) {
+                List<String> nodeUploadDataDTOList = redisTemplate.opsForList().range(nodeKey, 0, -1);
+                if (CollectionUtils.isEmpty(nodeUploadDataDTOList)) {
+                    continue;
                 }
+                nodeUploadDataDTOList.forEach(n -> {
+                    NodeUploadDataDTO nodeUploadDataDTO = JSONObject.parseObject(n, NodeUploadDataDTO.class);
+                    Map<String, Object> exceptionMap = nodeUploadDataDTO.getSwitchErrorMap();
+                    if (MapUtils.isEmpty(exceptionMap)) {
+                        return;
+                    }
+                    for (Map.Entry<String, Object> entry : exceptionMap.entrySet()) {
+                        String message = String.valueOf(entry.getValue());
+                        if (!message.contains("errorCode")) {
+                            continue;
+                        }
+                        try {
+                            ExceptionInfo exceptionInfo = JSONObject.parseObject(message,
+                                    ExceptionInfo.class);
+                            ApplicationExceptionOutput output = new ApplicationExceptionOutput();
+                            output.setApplicationName(app.getAppName());
+                            output.setAgentIds(Arrays.asList(nodeUploadDataDTO.getAgentId()));
+                            output.setCode(exceptionInfo.getErrorCode());
+                            output.setDescription(exceptionInfo.getMessage());
+                            // todo 时间需要修改
+                            output.setTime(nodeUploadDataDTO.getExceptionTime());
+                            // todo 明细不全不传 exceptionInfo.getDetail()
+                            outputs.add(output);
+                        } catch (Exception e) {
+                            log.error(message);
+                            log.error("异常转换失败：", e);
+                        }
+                    }
+                });
             }
         });
         return outputs;

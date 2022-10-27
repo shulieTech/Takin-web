@@ -4,7 +4,6 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceMockInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateRemoteCallRequest;
-import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceRemoteCallService;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
@@ -28,7 +27,7 @@ import javax.annotation.Resource;
 @RequestMapping(value = ApiUrls.TAKIN_API_URL + "/pressureResource/remotecall")
 @Api(tags = "接口: 远程调用")
 @Slf4j
-public class PressureResoureRemouteCallController {
+public class PressureResoureRemoteCallController {
     @Resource
     private PressureResourceRemoteCallService pressureResourceRemoteCallService;
 

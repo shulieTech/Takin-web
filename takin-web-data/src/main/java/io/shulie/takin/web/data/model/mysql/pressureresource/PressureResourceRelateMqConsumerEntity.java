@@ -127,4 +127,10 @@ public class PressureResourceRelateMqConsumerEntity extends TenantBaseEntity {
      */
     @TableField(value = "gmt_modified")
     private Date gmtModified;
+
+    /**
+     * 关联application_ds_manage表的字段
+     */
+    @TableField(value = "relate_ds_manage_id")
+    private Long relateDsManageId;
 }

@@ -117,7 +117,7 @@ public class PressureResourceRelateMqComsumerDAOImpl implements PressureResource
             // 查到了数据
             PressureResourceRelateMqConsumerEntity exists = entities.get(0);
             // 关联上application_ds_manage表
-            if ("KAFKA其他".equals(exists.getMqType())) {
+            if ("KAFKA-其他".equals(exists.getMqType())) {
                 if (exists.getRelateDsManageId() != null) {
                     return;
                 }

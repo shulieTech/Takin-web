@@ -44,7 +44,7 @@ public class PressureResourceMqConsumerCreateInput {
      */
     private String systemIdToken;
 
-    @ApiModelProperty(value = "消费者类型RABBITMQ/ROCKETMQ/KAFKA/KAFKA其他")
+    @ApiModelProperty(value = "消费者类型RABBITMQ/ROCKETMQ/KAFKA/KAFKA-其他")
     private String mqType;
 
     private Long applicationId;

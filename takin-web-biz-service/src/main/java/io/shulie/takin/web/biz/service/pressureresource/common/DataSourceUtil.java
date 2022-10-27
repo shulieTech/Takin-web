@@ -40,6 +40,12 @@ public class DataSourceUtil {
         return MD5Util.getMD5(key);
     }
 
+    public static String generateDsKey_ext(String businessDatabase, String userName) {
+        String key = String.format("%s-%s",
+                businessDatabase, userName);
+        return MD5Util.getMD5(key);
+    }
+
     /**
      * 关联数据源存储的时候,按应用拆分
      *

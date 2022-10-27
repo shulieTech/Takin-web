@@ -155,7 +155,7 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
                     }
                 } catch (Exception e) {
                     log.error("异常转换失败：错误信息: {},异常内容{}", message, e.getMessage());
-                    throw e;
+                    //throw e;
                 }
 
             }

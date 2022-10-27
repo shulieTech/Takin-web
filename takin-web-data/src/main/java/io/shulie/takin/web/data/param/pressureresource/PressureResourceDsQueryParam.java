@@ -24,4 +24,7 @@ public class PressureResourceDsQueryParam {
 
     @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
     private Integer status;
+
+    @ApiModelProperty("数据源Id")
+    private Long id;
 }

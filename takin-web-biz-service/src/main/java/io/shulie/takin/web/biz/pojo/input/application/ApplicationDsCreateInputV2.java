@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.pojo.input.application;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.Info;
 import lombok.Data;
 
 import javax.validation.Valid;
@@ -16,20 +17,18 @@ import javax.validation.constraints.NotNull;
 @Valid
 @ApiModel
 public class ApplicationDsCreateInputV2 extends UserCommonExt {
-
-
     /**
      * 应用id
      */
     @NotNull
-    @ApiModelProperty(name = "applicationId", value = "应用id",required =true)
+    @ApiModelProperty(name = "applicationId", value = "应用id", required = true)
     private Long applicationId;
 
     /**
      * 中间件类型
      */
     @NotNull
-    @ApiModelProperty(name = "middlewareType", value = "中间件类型",required =true)
+    @ApiModelProperty(name = "middlewareType", value = "中间件类型", required = true)
     private String middlewareType;
 
     @ApiModelProperty(name = "cacheType", value = "缓存模式")
@@ -42,7 +41,7 @@ public class ApplicationDsCreateInputV2 extends UserCommonExt {
      * 方案类型 DsTypeEnum.Class
      */
     @NotNull
-    @ApiModelProperty(name = "dsType", value = "方案类型",required =true)
+    @ApiModelProperty(name = "dsType", value = "方案类型", required = true)
     private Integer dsType;
 
     @ApiModelProperty(name = "shaDowUrl", value = "影子数据源")
@@ -59,22 +58,22 @@ public class ApplicationDsCreateInputV2 extends UserCommonExt {
      * 其他配置信息
      */
     @NotNull
-    @ApiModelProperty(name = "extInfo", value = "其他配置信息",required =true)
+    @ApiModelProperty(name = "extInfo", value = "其他配置信息", required = true)
     private String extInfo;
 
     /**
      * 其他配置信息
      */
-    @ApiModelProperty(name = "agentSourceType",required =true)
+    @ApiModelProperty(name = "agentSourceType", required = true)
     private String agentSourceType;
 
-    @ApiModelProperty(name = "connectionPool",value = "中间件名称",required =true)
+    @ApiModelProperty(name = "connectionPool", value = "中间件名称", required = true)
     private String connectionPool;
 
     /**
      * 应用名称
      */
-    @ApiModelProperty(name = "applicationName", value = "应用名称",required =true)
+    @ApiModelProperty(name = "applicationName", value = "应用名称", required = true)
     private String applicationName;
 
 
@@ -91,7 +90,20 @@ public class ApplicationDsCreateInputV2 extends UserCommonExt {
     /**
      * 老数据转换过来的标识
      */
-    private Boolean isOld =false;
+    private Boolean isOld = false;
 
+    /**
+     * 压测资源准备-资源Id
+     */
+    private Long resourceId;
 
+    /**
+     * 压测资源准备-详情Id
+     */
+    private Long detailId;
+
+    /**
+     * 手工还是/自动
+     */
+    private Integer type;
 }

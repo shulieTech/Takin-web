@@ -67,6 +67,11 @@ public class ShadowDetailResponse implements Serializable {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class TableInfo {
+        @Info(describe = "压测资源准备-资源Id")
+        private Long resourceId;
+
+        @Info(describe = "压测资源准备-详情Id")
+        private Long detailId;
 
         @Info(describe = "业务库")
         private String bizDatabase;
@@ -96,7 +101,7 @@ public class ShadowDetailResponse implements Serializable {
             this.bizTableName = bizTableName;
             this.shaDowTableName = shaDowTableName;
             this.isManual = manualTag == 1;
-            this.isCheck = isCheck ==1;
+            this.isCheck = isCheck == 1;
         }
     }
 }

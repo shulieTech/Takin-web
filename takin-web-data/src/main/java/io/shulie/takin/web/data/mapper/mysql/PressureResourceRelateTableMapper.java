@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.mapper.mysql;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntityV2;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 

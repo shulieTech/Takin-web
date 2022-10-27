@@ -16,18 +16,18 @@ import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
+import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapper;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateAppEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapperV2;
+import io.shulie.takin.web.data.model.mysql.pressureresource.*;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceAppQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
+import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -37,6 +37,7 @@ import org.mortbay.util.ajax.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -63,11 +64,16 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
     @Resource
     private PressureResourceRelateDsMapper pressureResourceRelateDsMapper;
 
+    private PressureResourceRelateDsMapperV2 pressureResourceRelateDsMapperV2;
+
     @Resource
     private PressureResourceMapper pressureResourceMapper;
 
     @Resource
     private PressureResourceRelateAppDAO pressureResourceRelateAppDAO;
+
+    @Autowired
+    private ApplicationDsDbManageDAO dbManageDAO;
 
     /**
      * 新增
@@ -142,7 +148,15 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         if (dsId == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "参数ID未传递!");
         }
-        pressureResourceRelateDsMapper.deleteById(dsId);
+        PressureResourceRelateDsEntityV2 v2 = pressureResourceRelateDsMapperV2.selectById(dsId);
+        if (v2 != null) {
+            ApplicationDsDbManageDetailResult detailResult = dbManageDAO.selectOneById(v2.getRelateId());
+            pressureResourceRelateDsMapperV2.deleteById(v2.getId());
+            // 关联的数据源也删除掉
+            if (detailResult != null) {
+                dbManageDAO.removeRecord(v2.getRelateId());
+            }
+        }
     }
 
     /**
@@ -156,13 +170,17 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         // 查询所有的数据源信息
         PressureResourceDsQueryParam param = new PressureResourceDsQueryParam();
         param.setResourceId(request.getResourceId());
-        param.setQueryBussinessDatabase(request.getQueryBusinessDataBase());
         param.setStatus(request.getStatus());
+        // 数据源模糊查询
+        param.setQueryBussinessDatabase(request.getQueryBusinessDataBase());
 
-        List<PressureResourceRelateDsEntity> dsList = pressureResourceRelateDsDAO.queryByParam(param);
+        List<PressureResourceRelateDsEntity> dsList = pressureResourceRelateDsDAO.queryByParam_v2(param);
         // 相同数据源合并
         List<PressureResourceRelateDsVO> listVO = Lists.newArrayList();
-        Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsList.stream().filter(app -> StringUtils.isNotBlank(app.getAppName())).collect(Collectors.groupingBy(ds -> ds.getBusinessDatabase()));
+        Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsList.stream().filter(app -> StringUtils.isNotBlank(app.getAppName()))
+                .collect(Collectors.groupingBy(ds ->
+                        DataSourceUtil.generateDsKey_ext(ds.getBusinessDatabase(), ds.getBusinessUserName())));
+
         for (Map.Entry<String, List<PressureResourceRelateDsEntity>> entry : dsMap.entrySet()) {
             List<PressureResourceRelateDsEntity> tmpList = entry.getValue();
             List<String> appNames = tmpList.stream().map(ds -> ds.getAppName()).collect(Collectors.toList());
@@ -170,8 +188,9 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
             tmpVO.setAppList(Collections.EMPTY_LIST);
             BeanUtils.copyProperties(tmpList.get(0), tmpVO);
             tmpVO.setDatabase(DbNameUtil.getDbName(tmpList.get(0).getBusinessDatabase()));
+            // 这里的Id是数据源+用户名
+            tmpVO.setDsKey(entry.getKey());
 
-            tmpVO.setId(String.valueOf(tmpList.get(0).getId()));
             tmpVO.setResourceId(String.valueOf(tmpList.get(0).getResourceId()));
             if (StringUtils.isNotBlank(tmpVO.getBusinessDatabase())) {
                 String bussinessDatabase = tmpVO.getBusinessDatabase();
@@ -216,7 +235,7 @@ public class PressureResourceDsServiceImpl implements PressureResourceDsService 
         PressureResourceDsQueryParam param = new PressureResourceDsQueryParam();
         param.setResourceId(request.getResourceId());
         param.setQueryAppName(request.getQueryAppName());
-        List<PressureResourceRelateDsEntity> dsList = pressureResourceRelateDsDAO.queryByParam(param);
+        List<PressureResourceRelateDsEntity> dsList = pressureResourceRelateDsDAO.queryByParam_v2(param);
         // 相同数据源合并
         List<PressureResourceRelateDsVO> listVO = Lists.newArrayList();
         Map<String, List<PressureResourceRelateDsEntity>> appMap = dsList.stream().collect(Collectors.groupingBy(ds -> ds.getAppName()));

@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.service.dsManage.impl.v2;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.pamirs.attach.plugin.dynamic.one.Converter;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import io.shulie.takin.web.biz.convert.db.parser.DbTemplateParser;
@@ -20,7 +19,6 @@ import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsDbManageEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsDbTableEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntityV2;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntityV2;
 import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;

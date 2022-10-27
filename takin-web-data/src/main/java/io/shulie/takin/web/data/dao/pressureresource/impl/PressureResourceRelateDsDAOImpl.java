@@ -62,7 +62,7 @@ public class PressureResourceRelateDsDAOImpl implements PressureResourceRelateDs
     public void add_v2(List<PressureResourceRelateDsEntityV2> dsEntitys) {
         if (CollectionUtils.isNotEmpty(dsEntitys)) {
             dsEntitys.stream().forEach(entity -> {
-                pressureResourceRelateDsMapperV2.saveOrUpdateV2(entity);
+                pressureResourceRelateDsMapperV2.saveOrUpdate(entity);
             });
         }
     }

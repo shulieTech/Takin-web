@@ -5,6 +5,7 @@ import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
+import io.shulie.takin.web.biz.service.pressureresource.common.IsolateTypeEnum;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -54,6 +56,7 @@ public class PressureResourceRelateJob implements SimpleJob {
         List<PressureResourceEntity> filterList = resourceList.stream().filter(resouce ->
                         resouce.getId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem())
                 .collect(Collectors.toList());
+
         if (CollectionUtils.isEmpty(filterList)) {
             return;
         }

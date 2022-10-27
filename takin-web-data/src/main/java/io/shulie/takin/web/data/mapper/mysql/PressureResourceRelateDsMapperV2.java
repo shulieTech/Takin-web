@@ -12,10 +12,10 @@ public interface PressureResourceRelateDsMapperV2
     @InterceptorIgnore(tenantLine = "true")
     @Insert("<script>" +
             "insert ignore into t_pressure_resource_relate_ds_v2(" +
-            "resource_id,detail_id,relate_id,type,tenant_id,env_code,gmt_create)" +
+            "resource_id,detail_id,app_name,business_database,relate_id,type,tenant_id,env_code,gmt_create)" +
             "values " +
-            "(#{item.resourceId},#{item.detailId},#{item.relateId},#{item.type}," +
+            "(#{item.resourceId},#{item.detailId},#{item.appName},#{item.businessDatabase},#{item.relateId},#{item.type}," +
             "#{item.tenantId},#{item.envCode},#{item.gmtCreate})" +
             "</script>")
-    void saveOrUpdateV2(@Param("item") PressureResourceRelateDsEntityV2 item);
+    void saveOrUpdate(@Param("item") PressureResourceRelateDsEntityV2 item);
 }

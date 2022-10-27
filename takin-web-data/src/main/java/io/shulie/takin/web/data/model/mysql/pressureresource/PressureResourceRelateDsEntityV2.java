@@ -28,9 +28,17 @@ public class PressureResourceRelateDsEntityV2 extends TenantBaseEntity {
     @TableField(value = "`resource_id`")
     private Long resourceId;
 
+    @ApiModelProperty("应用名称")
+    @TableField(value = "`app_name`")
+    private String appName;
+
     @ApiModelProperty("链路详情Id")
     @TableField(value = "`detail_id`")
     private Long detailId;
+
+    @ApiModelProperty("业务数据源")
+    @TableField(value = "`business_database`")
+    private String businessDatabase;
 
     @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
     @TableField(value = "`status`")

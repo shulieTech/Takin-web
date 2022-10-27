@@ -117,7 +117,9 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
         PressureResourceRelateDsEntityV2 dsEntity = new PressureResourceRelateDsEntityV2();
         dsEntity.setResourceId(inputV2.getResourceId());
         dsEntity.setDetailId(inputV2.getDetailId());
+        dsEntity.setAppName(inputV2.getApplicationName());
         dsEntity.setRelateId(relateId);
+        dsEntity.setBusinessDatabase(inputV2.getUrl());
         dsEntity.setType(1);
         dsEntity.setTenantId(WebPluginUtils.traceTenantId());
         dsEntity.setEnvCode(WebPluginUtils.traceEnvCode());
@@ -229,7 +231,7 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
                 PressureResourceRelateTableEntityV2 tableEntityV2 = new PressureResourceRelateTableEntityV2();
                 tableEntityV2.setRelateId(table.getId());
                 tableEntityV2.setResourceId(inputV2.getResourceId());
-                tableEntityV2.setDsKey(DataSourceUtil.generateDsKey_ext(inputV2.getUrl(), inputV2.getUserName()));
+                tableEntityV2.setDsKey(DataSourceUtil.generateDsKey_ext(inputV2.getUrl(), inputV2.getUsername()));
                 tableEntityV2.setType(2);
                 tableEntityV2.setTenantId(WebPluginUtils.traceTenantId());
                 tableEntityV2.setEnvCode(WebPluginUtils.traceEnvCode());
@@ -248,7 +250,7 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
                         PressureResourceRelateTableEntityV2 tableEntityV2 = new PressureResourceRelateTableEntityV2();
                         tableEntityV2.setRelateId(table.getId());
                         tableEntityV2.setResourceId(inputV2.getResourceId());
-                        tableEntityV2.setDsKey(DataSourceUtil.generateDsKey_ext(inputV2.getUrl(), inputV2.getUserName()));
+                        tableEntityV2.setDsKey(DataSourceUtil.generateDsKey_ext(inputV2.getUrl(), inputV2.getUsername()));
                         tableEntityV2.setType(2);
                         tableEntityV2.setTenantId(WebPluginUtils.traceTenantId());
                         tableEntityV2.setEnvCode(WebPluginUtils.traceEnvCode());

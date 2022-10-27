@@ -144,7 +144,10 @@ public class PressureResourceRelateTableDAOImpl
             PressureResourceRelateTableEntityV2 v2 = list.get(i);
             Long relateId = v2.getRelateId();
             ApplicationDsDbTableEntity dsDbTableEntity = dsDbTableDAO.getOne(relateId);
-
+            if (dsDbTableEntity == null) {
+                logger.warn("关联数据表为空{}", relateId);
+                continue;
+            }
             PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
             tableEntity.setId(v2.getId());
             tableEntity.setResourceId(v2.getResourceId());

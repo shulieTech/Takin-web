@@ -147,8 +147,8 @@ public class AgentPushController {
 
     /**
      * 判断是否需要上传
-     *
      * @param uploadNeedVo appName与数量
+     * 兼容1.0 作为心跳接口使用
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      */
     @PostMapping(value = AgentUrls.UPLOAD,

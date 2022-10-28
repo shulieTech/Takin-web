@@ -30,12 +30,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 @ElasticSchedulerJob(
         jobName = "appAccessStatusJob",
-        cron = "0/20 * *  * * ?",
+        cron = "0/20 * * * * ?",
         description = "同步大数据应用状态",
-        // 时效转移
-        misfire = true,
-        // 重新执行
-        failover = true,
         isSharding = true)
 public class AppAccessStatusJob implements SimpleJob {
 

@@ -7,6 +7,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.JoinFlagEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.*;
@@ -483,7 +484,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         if (!pageList.isEmpty()) {
             List<PressureResourceRelateAppVO> appVOList = pageList.getList();
             // 判断状态是否都是正常的
-            int normal = appVOList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
+            int normal = appVOList.stream().filter(app -> app.getStatus() == 0 || app.getJoinPressure() == JoinFlagEnum.NO.getCode()).collect(Collectors.toList()).size();
             if (normal == appVOList.size()) {
                 statusMap.put(ModuleEnum.APP.getCode(), FinishStatusEnum.FINSH.getCode());
             }
@@ -573,7 +574,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
                 // 总的应用数
                 extInfo.setTotalSize(appVOList.size());
                 // 正常的应用数
-                Long normalSize = appVOList.stream().filter(app -> app.getStatus() == 0).count();
+                Long normalSize = appVOList.stream().filter(app -> app.getStatus() == 0 || app.getJoinPressure() == JoinFlagEnum.NO.getCode()).count();
                 extInfo.setNormalSize(normalSize.intValue());
                 extInfo.setExceptionSize(appVOList.size() - normalSize.intValue());
             }

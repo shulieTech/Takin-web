@@ -148,6 +148,10 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
             entity.setPwd("");
             entity.setConfigJson("");
             entity.setSource(1);
+            // 链路梳理而来
+            if (inputV2.getType() != null && inputV2.getType() == 1) {
+                entity.setSource(0);
+            }
             entity.setFileExtedn(inputV2.getParseConfig());
             entity.setConfigJson(inputV2.getIsOld() ? "老转新" : "");
             if ("other".equals(entity.getConnPoolName())) {

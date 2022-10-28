@@ -499,7 +499,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     appEntity.setType(SourceTypeEnum.AUTO.getCode());
                     appEntityList.add(appEntity);
                 } else {
-                    //不处理
+
                     logger.warn("未查询到应用信息{} ", appEntity.getAppName());
                 }
             });
@@ -647,6 +647,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 dsCreateInputV2.setDetailId(detailEntity.getId());
                 dsCreateInputV2.setTenantId(WebPluginUtils.traceTenantId());
                 dsCreateInputV2.setEnvCode(WebPluginUtils.traceEnvCode());
+                dsCreateInputV2.setType(1);
                 // 从任意的边里面获取数据源详情信息
                 LinkEdgeDTO edgeDTO = entry.getValue().get(0);
                 List<AppShadowDatabaseDTO> dsList = edgeDTO.getDsList();
@@ -655,7 +656,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 } else {
                     // 业务数据源相关信息
                     AppShadowDatabaseDTO appShadowDatabaseDTO = dsList.get(0);
-                    dsCreateInputV2.setUsername(appShadowDatabaseDTO.getTableUser() + "压测资源配置");
+                    dsCreateInputV2.setUsername(appShadowDatabaseDTO.getTableUser());
                     dsCreateInputV2.setConnectionPool(appShadowDatabaseDTO.getConnectionPool());
                     dsCreateInputV2.setMiddlewareType(appShadowDatabaseDTO.getMiddlewareType());
                 }

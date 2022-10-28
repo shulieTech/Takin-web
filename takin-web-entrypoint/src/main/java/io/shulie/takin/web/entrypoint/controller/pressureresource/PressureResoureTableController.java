@@ -83,7 +83,7 @@ public class PressureResoureTableController {
     @ApiOperation("链路压测资源-影子表-删除")
     @RequestMapping(value = "/del", method = RequestMethod.GET)
     public ResponseResult del(PressureResourceRelateTableInput input) {
-        pressureResourceTableService.delete(input.getId());
+        pressureResourceTableService.delete_v2(input.getId());
         return ResponseResult.success();
     }
 }

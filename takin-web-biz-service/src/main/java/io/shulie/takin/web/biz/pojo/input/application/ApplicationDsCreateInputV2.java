@@ -103,7 +103,7 @@ public class ApplicationDsCreateInputV2 extends UserCommonExt {
     private Long detailId;
 
     /**
-     * 手工还是/自动
+     * 手工还是/自动 来源类型(0-手工,1-自动)
      */
     private Integer type;
 }

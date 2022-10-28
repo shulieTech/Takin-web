@@ -1137,6 +1137,11 @@ public class DsServiceImpl implements DsService {
         List<String> agentVersionList = dtoList.stream()
                 .map(agentDto -> agentDto.getAgentVersion())
                 .collect(Collectors.toList());
+        //查询到了数据，但是没有版本号
+        agentVersionList = agentVersionList.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(agentVersionList)){
+            return select;
+        }
         // 倒序排
         Collections.sort(agentVersionList, (o1, o2) -> AgentVersionUtil.compareVersion(o1, o2, false));
         // 获取最大版本号

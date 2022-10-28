@@ -151,6 +151,7 @@ public class PressureResourceRelateTableDAOImpl
             PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
             tableEntity.setId(v2.getId());
             tableEntity.setResourceId(v2.getResourceId());
+            tableEntity.setDsKey(v2.getDsKey());
             tableEntity.setStatus(v2.getStatus());
             tableEntity.setRemark(v2.getRemark());
             tableEntity.setBusinessTable(dsDbTableEntity.getBizTable());

@@ -992,7 +992,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 }
             }
             // 重新设置下远程调用类型,兼容下原有的类型
-            callEntity.setType(RemoteCallUtil.getType(callEntity));
+            callEntity.setType(RemoteCallUtil.getType(callEntity.getMockReturnValue(), callEntity.getPass()));
             callEntity.setStatus(CheckStatusEnum.CHECK_NO.getCode());
             // 设置检测状态,放行的默认不检测，状态默认为检测成功
             if (callEntity.getPass() == PassEnum.PASS_YES.getCode()) {

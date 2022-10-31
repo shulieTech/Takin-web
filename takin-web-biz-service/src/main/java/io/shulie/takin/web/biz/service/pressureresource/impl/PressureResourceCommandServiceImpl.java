@@ -63,9 +63,16 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     @Resource
     private PressureResourceMapper resourceMapper;
     @Resource
+    private PressureResourceRelateDsMapperV2 resourceRelateDsMapperV2;
+
+    @Resource
     private PressureResourceRelateDsMapper resourceDsMapper;
+
     @Resource
     private PressureResourceRelateTableMapper resourceTableMapper;
+
+    @Resource
+    private PressureResourceRelateTableMapperV2 resourceRelateTableMapperV2;
     @Resource
     private PressureResourceRelateRemoteCallMapper remoteCallMapper;
     @Resource
@@ -469,27 +476,31 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         switch (resourceTypeEnum) {
             case DATABASE:
                 //更新ds表
-                PressureResourceRelateDsEntity dsEntity = resourceDsMapper.selectById(subId);
+                PressureResourceRelateDsEntityV2 dsEntity = resourceRelateDsMapperV2.selectById(subId);
                 if (dsEntity == null) {
                     throw new IllegalArgumentException("未找到对应的数据库资源");
                 }
-                PressureResourceRelateDsEntity updateDs = new PressureResourceRelateDsEntity();
+                PressureResourceRelateDsEntityV2 updateDs = new PressureResourceRelateDsEntityV2();
                 updateDs.setId(subId);
                 updateDs.setStatus(commandAck.isSuccess() ? 2 : 1);
                 updateDs.setRemark(commandAck.isSuccess() ? "影子资源连通" : commandAck.getResponse());
-                resourceDsMapper.updateById(updateDs);
+                resourceRelateDsMapperV2.updateById(updateDs);
+
                 //更新table表
-                String dsKey = DataSourceUtil.generateDsKey(dsEntity.getResourceId(), dsEntity.getBusinessDatabase());
+                String dsKey = DataSourceUtil.generateDsKey_ext(dsEntity.getBusinessDatabase(), dsEntity.getBusinessUserName());
                 // 查询tables
                 PressureResourceTableQueryParam tableQueryParam = new PressureResourceTableQueryParam();
                 tableQueryParam.setResourceId(resource.getId());
+                tableQueryParam.setDsKey(dsKey);
                 List<PressureResourceRelateTableEntity> tmpList = pressureResourceRelateTableDAO.queryList_v2(tableQueryParam);
                 List<PressureResourceRelateTableEntity> tableEntities = tmpList.stream().filter(tmp -> tmp.getJoinFlag() == JoinFlagEnum.YES.getCode()).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(tableEntities)) {
                     tableEntities.forEach(table -> {
-                        table.setStatus(commandAck.isSuccess() ? 2 : 1);
-                        table.setRemark(commandAck.isSuccess() ? "影子表正确" : commandAck.getResponse());
-                        resourceTableMapper.updateById(table);
+                        PressureResourceRelateTableEntityV2 v2 = new PressureResourceRelateTableEntityV2();
+                        v2.setId(table.getId());
+                        v2.setStatus(commandAck.isSuccess() ? 2 : 1);
+                        v2.setRemark(commandAck.isSuccess() ? "影子表正确" : commandAck.getResponse());
+                        resourceRelateTableMapperV2.updateById(v2);
                     });
                 }
                 //下发数据库配置

@@ -85,4 +85,8 @@ public class PressureResourceRelateRemoteCallEntityV2 extends TenantBaseEntity {
      */
     @TableField(exist = false)
     private boolean isFind;
+
+    @ApiModelProperty("mock返回值")
+    @TableField(exist = false)
+    private String mockReturnValue;
 }

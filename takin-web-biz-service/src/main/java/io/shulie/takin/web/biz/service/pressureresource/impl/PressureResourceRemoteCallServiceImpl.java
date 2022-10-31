@@ -114,7 +114,7 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
             update.setPass(mockInput.getPass());
         }
         update.setGmtModified(new Date());
-        update.setType(RemoteCallUtil.getType(update));
+        update.setType(RemoteCallUtil.getType(update.getMockReturnValue(), update.getPass()));
         // 假如是放行,默认不检测，检测状态直接置位成功
         if (update.getPass() != null && update.getPass() == PassEnum.PASS_YES.getCode()) {
             update.setStatus(CheckStatusEnum.CHECK_FIN.getCode());
@@ -147,7 +147,12 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         if (id == null) {
             throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "参数Id未指定");
         }
-        PressureResourceRelateRemoteCallEntity update = new PressureResourceRelateRemoteCallEntity();
+        PressureResourceRelateRemoteCallEntityV2 entity = pressureResourceRelateRemoteCallMapperV2.selectById(id);
+        if (entity == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "远程调用不存在!");
+        }
+
+        PressureResourceRelateRemoteCallEntityV2 update = new PressureResourceRelateRemoteCallEntityV2();
         update.setId(id);
         if (mockInput.getPass() != null) {
             update.setPass(mockInput.getPass());
@@ -157,17 +162,19 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
             update.setStatus(CheckStatusEnum.CHECK_FIN.getCode());
         }
         // mockReturnValue更新到app_remote_call表中
-        PressureResourceRelateRemoteCallEntityV2 entity = pressureResourceRelateRemoteCallMapperV2.selectById(id);
-        if (entity == null) {
-            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "远程调用不存在!");
+        if (mockInput.getMockInfo() != null) {
+            update.setMockReturnValue(JSON.toJSONString(mockInput.getMockInfo()));
         }
         AppRemoteCallResult callResult = appRemoteCallDAO.queryOne(entity.getAppName(), entity.getInterfaceType(), entity.getInterfaceName());
         AppRemoteCallEntity updateEntity = new AppRemoteCallEntity();
         updateEntity.setId(callResult.getId());
-        updateEntity.setType(RemoteCallUtil.getType(update));
+        updateEntity.setType(RemoteCallUtil.getType(update.getMockReturnValue(), update.getPass()));
         updateEntity.setMockReturnValue(update.getMockReturnValue());
         updateEntity.setGmtModified(update.getGmtModified());
         appRemoteCallDAO.updateById(updateEntity);
+
+        // 更新冗余
+        pressureResourceRelateRemoteCallMapperV2.updateById(update);
     }
 
     /**

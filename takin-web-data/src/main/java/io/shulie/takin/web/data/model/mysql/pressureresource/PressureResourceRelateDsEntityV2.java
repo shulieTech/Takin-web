@@ -40,6 +40,10 @@ public class PressureResourceRelateDsEntityV2 extends TenantBaseEntity {
     @TableField(value = "`business_database`")
     private String businessDatabase;
 
+    @ApiModelProperty("业务数据源用户名")
+    @TableField(value = "`business_user_name`")
+    private String businessUserName;
+
     @ApiModelProperty("状态(0-未检测 1-检测失败 2-检测成功)")
     @TableField(value = "`status`")
     private Integer status;

@@ -19,8 +19,10 @@ import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDetailDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateRemoteCallDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateRemoteCallMapper;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateRemoteCallMapperV2;
 import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntityV2;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceRemoteCallQueryParam;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import org.apache.commons.collections4.CollectionUtils;
@@ -50,6 +52,9 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
 
     @Resource
     private PressureResourceRelateRemoteCallMapper pressureResourceRelateRemoteCallMapper;
+
+    @Resource
+    private PressureResourceRelateRemoteCallMapperV2 pressureResourceRelateRemoteCallMapperV2;
 
     @Resource
     private PressureResourceDetailDAO pressureResourceDetailDAO;
@@ -152,7 +157,7 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
             update.setStatus(CheckStatusEnum.CHECK_FIN.getCode());
         }
         // mockReturnValue更新到app_remote_call表中
-        PressureResourceRelateRemoteCallEntity entity = pressureResourceRelateRemoteCallMapper.selectById(id);
+        PressureResourceRelateRemoteCallEntityV2 entity = pressureResourceRelateRemoteCallMapperV2.selectById(id);
         if (entity == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "远程调用不存在!");
         }

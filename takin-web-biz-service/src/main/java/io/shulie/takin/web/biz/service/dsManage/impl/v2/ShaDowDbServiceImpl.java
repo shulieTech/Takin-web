@@ -116,6 +116,7 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
         dsEntity.setResourceId(inputV2.getResourceId());
         dsEntity.setDetailId(inputV2.getDetailId());
         dsEntity.setAppName(inputV2.getApplicationName());
+        dsEntity.setBusinessUserName(inputV2.getUsername());
         dsEntity.setRelateId(relateId);
         dsEntity.setBusinessDatabase(inputV2.getUrl());
         dsEntity.setType(1);

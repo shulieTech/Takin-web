@@ -189,13 +189,9 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         mockDetailVO.setRequest(Collections.emptyList());
         mockDetailVO.setResponseTime("0");
         // 远程调用服务Id
-        PressureResourceRelateRemoteCallEntity call = pressureResourceRelateRemoteCallMapper.selectById(id);
+        PressureResourceRelateRemoteCallEntityV2 call = pressureResourceRelateRemoteCallMapperV2.selectById(id);
         if (call == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "数据未找到");
-        }
-        if (call.getRelateAppRemoteCallId() != null) {
-            AppRemoteCallEntity callEntity = appRemoteCallDAO.getById(call.getRelateAppRemoteCallId());
-            populateProperties(call, callEntity);
         }
         TraceInfoQueryDTO traceInfoQueryDTO = new TraceInfoQueryDTO();
         traceInfoQueryDTO.setQueryType(1);

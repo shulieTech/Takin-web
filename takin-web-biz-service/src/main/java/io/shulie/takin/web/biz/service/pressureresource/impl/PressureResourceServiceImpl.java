@@ -7,6 +7,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.JoinFlagEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.*;
@@ -36,6 +37,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -375,7 +377,12 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     }
 
     private int processStatus(Long id) {
-        Map<String, Integer> processMap = progress(id);
+        Map<String, Integer> processMap = null;
+        try {
+            processMap = progress(id);
+        } catch (Throwable e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
+        }
         // 应用状态是完成,如果其他未开始或已完成,状态就为已完成
         Integer appStatus = processMap.get(ModuleEnum.APP.getCode());
         Integer size = processMap.entrySet().stream()
@@ -482,8 +489,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PagingList<PressureResourceRelateAppVO> pageList = pressureResourceAppService.appCheckList(appRequest);
         if (!pageList.isEmpty()) {
             List<PressureResourceRelateAppVO> appVOList = pageList.getList();
-            // 判断状态是否都是正常的
-            int normal = appVOList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
+            // 判断状态是否都是正常的,不需要检查的,status会设置为null
+            int normal = appVOList.stream().filter(app -> app.getStatus() == null || app.getStatus() == 0).collect(Collectors.toList()).size();
             if (normal == appVOList.size()) {
                 statusMap.put(ModuleEnum.APP.getCode(), FinishStatusEnum.FINSH.getCode());
             }
@@ -513,6 +520,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PressureResourceRelateRemoteCallRequest callRequest = new PressureResourceRelateRemoteCallRequest();
         callRequest.setResourceId(id);
         callRequest.setPageSize(2000);
+        callRequest.setConvert(true);
         PagingList<PressureResourceRelateRemoteCallVO> callPagingList = pressureResourceRemoteCallService.pageList(callRequest);
         if (!callPagingList.isEmpty()) {
             List<PressureResourceRelateRemoteCallVO> callVOList = callPagingList.getList();
@@ -573,7 +581,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
                 // 总的应用数
                 extInfo.setTotalSize(appVOList.size());
                 // 正常的应用数
-                Long normalSize = appVOList.stream().filter(app -> app.getStatus() == 0).count();
+                Long normalSize = appVOList.stream().filter(app -> app.getStatus() == 0 || app.getJoinPressure() == JoinFlagEnum.NO.getCode()).count();
                 extInfo.setNormalSize(normalSize.intValue());
                 extInfo.setExceptionSize(appVOList.size() - normalSize.intValue());
             }

@@ -19,9 +19,12 @@ import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDetailDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateRemoteCallDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateRemoteCallMapper;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateRemoteCallMapperV2;
 import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntityV2;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceRemoteCallQueryParam;
+import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -51,6 +54,9 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
     private PressureResourceRelateRemoteCallMapper pressureResourceRelateRemoteCallMapper;
 
     @Resource
+    private PressureResourceRelateRemoteCallMapperV2 pressureResourceRelateRemoteCallMapperV2;
+
+    @Resource
     private PressureResourceDetailDAO pressureResourceDetailDAO;
 
     @Resource
@@ -67,7 +73,7 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
     public PagingList<PressureResourceRelateRemoteCallVO> pageList(PressureResourceRelateRemoteCallRequest request) {
         PressureResourceRemoteCallQueryParam param = new PressureResourceRemoteCallQueryParam();
         BeanUtils.copyProperties(request, param);
-        PagingList<PressureResourceRelateRemoteCallEntity> pageList = pressureResourceRelateRemoteCallDAO.pageList(param);
+        PagingList<PressureResourceRelateRemoteCallEntity> pageList = pressureResourceRelateRemoteCallDAO.pageList_v2(param);
 
         if (pageList.isEmpty()) {
             return PagingList.of(Collections.emptyList(), pageList.getTotal());
@@ -116,7 +122,7 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
 
         // mockReturnValue更新到app_remote_call表中
         PressureResourceRelateRemoteCallEntity entity = pressureResourceRelateRemoteCallMapper.selectById(id);
-        if(entity.getRelateAppRemoteCallId() != null){
+        if (entity.getRelateAppRemoteCallId() != null) {
             AppRemoteCallEntity ety = new AppRemoteCallEntity();
             ety.setId(entity.getRelateAppRemoteCallId());
             ety.setType(update.getType());
@@ -127,8 +133,41 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
             update.setType(null);
             update.setMockReturnValue(null);
         }
-
         pressureResourceRelateRemoteCallMapper.updateById(update);
+    }
+
+    /**
+     * 更新mock
+     *
+     * @param mockInput
+     */
+    @Override
+    public void update_v2(PressureResourceMockInput mockInput) {
+        Long id = mockInput.getId();
+        if (id == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "参数Id未指定");
+        }
+        PressureResourceRelateRemoteCallEntity update = new PressureResourceRelateRemoteCallEntity();
+        update.setId(id);
+        if (mockInput.getPass() != null) {
+            update.setPass(mockInput.getPass());
+        }
+        // 假如是放行,默认不检测，检测状态直接置为成功
+        if (update.getPass() != null && update.getPass() == PassEnum.PASS_YES.getCode()) {
+            update.setStatus(CheckStatusEnum.CHECK_FIN.getCode());
+        }
+        // mockReturnValue更新到app_remote_call表中
+        PressureResourceRelateRemoteCallEntityV2 entity = pressureResourceRelateRemoteCallMapperV2.selectById(id);
+        if (entity == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_OP_ERROR, "远程调用不存在!");
+        }
+        AppRemoteCallResult callResult = appRemoteCallDAO.queryOne(entity.getAppName(), entity.getInterfaceType(), entity.getInterfaceName());
+        AppRemoteCallEntity updateEntity = new AppRemoteCallEntity();
+        updateEntity.setId(callResult.getId());
+        updateEntity.setType(RemoteCallUtil.getType(update));
+        updateEntity.setMockReturnValue(update.getMockReturnValue());
+        updateEntity.setGmtModified(update.getGmtModified());
+        appRemoteCallDAO.updateById(updateEntity);
     }
 
     /**
@@ -147,7 +186,7 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         if (call == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PRESSURE_RESOURCE_QUERY_ERROR, "数据未找到");
         }
-        if(call.getRelateAppRemoteCallId() != null){
+        if (call.getRelateAppRemoteCallId() != null) {
             AppRemoteCallEntity callEntity = appRemoteCallDAO.getById(call.getRelateAppRemoteCallId());
             populateProperties(call, callEntity);
         }
@@ -229,7 +268,7 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
     }
 
     private void populateProperties(PressureResourceRelateRemoteCallEntity entity, AppRemoteCallEntity appRemoteCall) {
-        if(appRemoteCall == null){
+        if (appRemoteCall == null) {
             return;
         }
         entity.setInterfaceName(appRemoteCall.getInterfaceName());

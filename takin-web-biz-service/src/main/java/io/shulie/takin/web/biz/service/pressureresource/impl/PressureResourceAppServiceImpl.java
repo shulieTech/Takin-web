@@ -159,6 +159,11 @@ public class PressureResourceAppServiceImpl implements PressureResourceAppServic
             vo.setStatus("0".equals(String.valueOf(applicationVo.getAccessStatus())) ? 0 : 1);
             vo.setRemark(applicationVo.getExceptionInfo());
             vo.setApplicationId(String.valueOf(applicationVo.getId()));
+
+            // 未假如的话忽略
+            if (configDto.getJoinPressure() == JoinFlagEnum.NO.getCode()) {
+                vo.setStatus(null);
+            }
             return vo;
         }).collect(Collectors.toList());
         return PagingList.of(returnList, pageList.getTotal());

@@ -120,5 +120,4 @@ public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serial
     private String sign;
 
     private Long customerId;
-
 }

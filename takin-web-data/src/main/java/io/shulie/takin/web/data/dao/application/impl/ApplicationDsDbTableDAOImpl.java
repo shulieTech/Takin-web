@@ -10,6 +10,7 @@ import io.shulie.takin.web.data.model.mysql.ApplicationDsDbTableEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDsDbTableDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -24,17 +25,30 @@ import java.util.stream.Collectors;
  * @date 2021-09-15 17:21:41
  */
 @Service
-public class ApplicationDsDbTableDAOImpl  extends ServiceImpl<ApplicationDsDbTableMapper, ApplicationDsDbTableEntity>
+public class ApplicationDsDbTableDAOImpl extends ServiceImpl<ApplicationDsDbTableMapper, ApplicationDsDbTableEntity>
         implements ApplicationDsDbTableDAO, MPUtil<ApplicationDsDbTableEntity> {
-
 
     @Override
     public List<ApplicationDsDbTableDetailResult> getList(String url, Long appId, String userName) {
         LambdaQueryWrapper<ApplicationDsDbTableEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
-                .eq(ApplicationDsDbTableEntity::getAppId,appId)
-                .eq(ApplicationDsDbTableEntity::getUrl,url)
-                .eq(ApplicationDsDbTableEntity::getUserName,userName)
-                .eq(ApplicationDsDbTableEntity::getIsDeleted,0);
+                .eq(ApplicationDsDbTableEntity::getAppId, appId)
+                .eq(ApplicationDsDbTableEntity::getUrl, url)
+                .eq(ApplicationDsDbTableEntity::getUserName, userName)
+                .eq(ApplicationDsDbTableEntity::getIsDeleted, 0);
+        List<ApplicationDsDbTableEntity> list = this.list(lambdaQueryWrapper);
+        return getApplicationDsDbTableDetailResults(list);
+    }
+
+    @Override
+    public List<ApplicationDsDbTableDetailResult> queryList(String url, Long appId, String userName, String bizTable) {
+        LambdaQueryWrapper<ApplicationDsDbTableEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
+                .eq(ApplicationDsDbTableEntity::getAppId, appId)
+                .eq(ApplicationDsDbTableEntity::getUrl, url)
+                .eq(ApplicationDsDbTableEntity::getUserName, userName)
+                .eq(ApplicationDsDbTableEntity::getIsDeleted, 0);
+        if (StringUtils.isNotBlank(bizTable)) {
+            lambdaQueryWrapper.eq(ApplicationDsDbTableEntity::getBizTable, bizTable);
+        }
         List<ApplicationDsDbTableEntity> list = this.list(lambdaQueryWrapper);
         return getApplicationDsDbTableDetailResults(list);
     }
@@ -47,10 +61,27 @@ public class ApplicationDsDbTableDAOImpl  extends ServiceImpl<ApplicationDsDbTab
     }
 
     @Override
+    public List<ApplicationDsDbTableEntity> batchSave_ext(List<ApplicationDsDbTableDetailResult> list) {
+        List<ApplicationDsDbTableEntity> entities = this.getEntitys(list);
+        this.saveBatch(entities);
+        return entities;
+    }
+
+    @Override
     public void batchDeleted(List<ApplicationDsDbTableDetailResult> list) {
         List<ApplicationDsDbTableEntity> entities = this.getEntitys(list);
         List<Long> ids = CollStreamUtil.toList(entities, ApplicationDsDbTableEntity::getId);
         this.removeByIds(ids);
+    }
+
+    @Override
+    public void batchDeleted_V2(List<Long> ids) {
+        this.removeByIds(ids);
+    }
+
+    @Override
+    public ApplicationDsDbTableEntity getOne(Long id) {
+        return this.getById(id);
     }
 
     private ApplicationDsDbTableDetailResult getApplicationDsDbTableDetailResult(ApplicationDsDbTableEntity entity) {

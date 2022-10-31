@@ -98,6 +98,10 @@
                     <artifactId>fastjson</artifactId>
                     <groupId>com.alibaba</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>commons-text</artifactId>
+                    <groupId>org.apache.commons</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!--takin common 公共包-->

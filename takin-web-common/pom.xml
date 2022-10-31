@@ -143,6 +143,10 @@
                     <artifactId>fastjson</artifactId>
                     <groupId>com.alibaba</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>commons-text</artifactId>
+                    <groupId>org.apache.commons</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -200,6 +204,11 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
             <version>${spring-security-web-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${commons.text.version}</version>
         </dependency>
     </dependencies>
 

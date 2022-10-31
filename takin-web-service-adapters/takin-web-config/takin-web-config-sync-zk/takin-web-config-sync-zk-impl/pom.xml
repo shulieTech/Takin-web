@@ -103,6 +103,12 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-text</artifactId>
+                    <groupId>org.apache.commons</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>

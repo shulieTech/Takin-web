@@ -24,6 +24,10 @@
                     <artifactId>fastjson</artifactId>
                     <groupId>com.alibaba</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>commons-text</artifactId>
+                    <groupId>org.apache.commons</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -105,6 +109,11 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
             <version>${logback-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${commons.text.version}</version>
         </dependency>
     </dependencies>
 

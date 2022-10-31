@@ -86,6 +86,7 @@
         <mybatis.version>3.5.6</mybatis.version>
         <mysql-jdbc.version>8.0.27</mysql-jdbc.version>
         <tomcat.version>9.0.63</tomcat.version>
+        <commons.text.version>1.10.0</commons.text.version>
     </properties>
 
     <modules>

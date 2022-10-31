@@ -489,8 +489,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PagingList<PressureResourceRelateAppVO> pageList = pressureResourceAppService.appCheckList(appRequest);
         if (!pageList.isEmpty()) {
             List<PressureResourceRelateAppVO> appVOList = pageList.getList();
-            // 判断状态是否都是正常的
-            int normal = appVOList.stream().filter(app -> app.getStatus() == null || app.getStatus() == 0 || app.getJoinPressure() == JoinFlagEnum.NO.getCode()).collect(Collectors.toList()).size();
+            // 判断状态是否都是正常的,不需要检查的,status会设置为null
+            int normal = appVOList.stream().filter(app -> app.getStatus() == null || app.getStatus() == 0).collect(Collectors.toList()).size();
             if (normal == appVOList.size()) {
                 statusMap.put(ModuleEnum.APP.getCode(), FinishStatusEnum.FINSH.getCode());
             }

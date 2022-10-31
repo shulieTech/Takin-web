@@ -1,7 +1,7 @@
 package io.shulie.takin.web.data.dao.pressureresource.impl;
 
 import com.pamirs.attach.plugin.dynamic.one.Type;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.RelateDsEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
 
 /**
@@ -16,8 +16,8 @@ public class RelateConvert {
      * @param result
      * @return
      */
-    public static PressureResourceRelateDsEntity dsManageConvertRelateDs(ApplicationDsDbManageDetailResult result) {
-        final PressureResourceRelateDsEntity dsEntity = new PressureResourceRelateDsEntity();
+    public static RelateDsEntity dsManageConvertRelateDs(ApplicationDsDbManageDetailResult result) {
+        final RelateDsEntity dsEntity = new RelateDsEntity();
         dsEntity.setAppName(result.getApplicationName());
         dsEntity.setBusinessUserName(result.getUserName());
         dsEntity.setBusinessDatabase(result.getUrl());

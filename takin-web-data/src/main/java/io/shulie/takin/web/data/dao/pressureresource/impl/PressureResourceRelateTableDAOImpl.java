@@ -7,11 +7,10 @@ import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbTableDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapperV2;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsDbTableEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntityV2;
+import io.shulie.takin.web.data.model.mysql.pressureresource.RelateTableEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,28 +34,10 @@ public class PressureResourceRelateTableDAOImpl
     private static Logger logger = LoggerFactory.getLogger(PressureResourceRelateTableDAOImpl.class);
 
     @Resource
-    private PressureResourceRelateTableMapper pressureResourceRelateTableMapper;
-
-    @Resource
     private PressureResourceRelateTableMapperV2 pressureResourceRelateTableMapperV2;
 
     @Autowired
     private ApplicationDsDbTableDAO dsDbTableDAO;
-
-    /**
-     * 新增
-     *
-     * @param dsEntitys
-     */
-    @Override
-    public void add(List<PressureResourceRelateTableEntity> dsEntitys) {
-        if (CollectionUtils.isEmpty(dsEntitys)) {
-            return;
-        }
-        dsEntitys.stream().forEach(dsEntity -> {
-            pressureResourceRelateTableMapper.insert(dsEntity);
-        });
-    }
 
     /**
      * 新增
@@ -81,7 +62,7 @@ public class PressureResourceRelateTableDAOImpl
      * @return
      */
     @Override
-    public PagingList<PressureResourceRelateTableEntity> pageList_v2(PressureResourceTableQueryParam param) {
+    public PagingList<RelateTableEntity> pageList_v2(PressureResourceTableQueryParam param) {
         QueryWrapper<PressureResourceRelateTableEntityV2> queryWrapper = this.getWrapper_v2(param);
         Page<PressureResourceRelateTableEntityV2> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
         queryWrapper.orderByDesc("gmt_modified");
@@ -92,18 +73,6 @@ public class PressureResourceRelateTableDAOImpl
         return PagingList.of(fixTable(pageList.getRecords()), pageList.getTotal());
     }
 
-    @Override
-    public PagingList<PressureResourceRelateTableEntity> pageList(PressureResourceTableQueryParam param) {
-        QueryWrapper<PressureResourceRelateTableEntity> queryWrapper = this.getWrapper(param);
-        Page<PressureResourceRelateTableEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
-        queryWrapper.orderByDesc("gmt_modified");
-        IPage<PressureResourceRelateTableEntity> pageList = pressureResourceRelateTableMapper.selectPage(page, queryWrapper);
-        if (pageList.getRecords().isEmpty()) {
-            return PagingList.empty();
-        }
-        return PagingList.of(pageList.getRecords(), pageList.getTotal());
-    }
-
     /**
      * 查询
      *
@@ -111,34 +80,18 @@ public class PressureResourceRelateTableDAOImpl
      * @return
      */
     @Override
-    public List<PressureResourceRelateTableEntity> queryList(PressureResourceTableQueryParam param) {
-        QueryWrapper<PressureResourceRelateTableEntity> queryWrapper = this.getWrapper(param);
-        List<PressureResourceRelateTableEntity> list = pressureResourceRelateTableMapper.selectList(queryWrapper);
-        if (CollectionUtils.isEmpty(list)) {
-            return Collections.EMPTY_LIST;
-        }
-        return list;
-    }
-
-    /**
-     * 查询
-     *
-     * @param param
-     * @return
-     */
-    @Override
-    public List<PressureResourceRelateTableEntity> queryList_v2(PressureResourceTableQueryParam param) {
+    public List<RelateTableEntity> queryList_v2(PressureResourceTableQueryParam param) {
         QueryWrapper<PressureResourceRelateTableEntityV2> queryWrapper = this.getWrapper_v2(param);
         List<PressureResourceRelateTableEntityV2> list = pressureResourceRelateTableMapperV2.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
-        List<PressureResourceRelateTableEntity> rsList = fixTable(list);
+        List<RelateTableEntity> rsList = fixTable(list);
         return rsList;
     }
 
-    private List<PressureResourceRelateTableEntity> fixTable(List<PressureResourceRelateTableEntityV2> list) {
-        List<PressureResourceRelateTableEntity> rsList = Lists.newArrayList();
+    private List<RelateTableEntity> fixTable(List<PressureResourceRelateTableEntityV2> list) {
+        List<RelateTableEntity> rsList = Lists.newArrayList();
         // 转换关联表信息
         for (int i = 0; i < list.size(); i++) {
             PressureResourceRelateTableEntityV2 v2 = list.get(i);
@@ -148,7 +101,7 @@ public class PressureResourceRelateTableDAOImpl
                 logger.warn("关联数据表为空{}", relateId);
                 continue;
             }
-            PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
+            RelateTableEntity tableEntity = new RelateTableEntity();
             tableEntity.setId(v2.getId());
             tableEntity.setResourceId(v2.getResourceId());
             tableEntity.setDsKey(v2.getDsKey());
@@ -165,37 +118,13 @@ public class PressureResourceRelateTableDAOImpl
     }
 
     @Override
-    public void saveOrUpdate(List<PressureResourceRelateTableEntity> tableEntitys) {
+    public void saveOrUpdate(List<PressureResourceRelateTableEntityV2> tableEntitys) {
         if (CollectionUtils.isEmpty(tableEntitys)) {
             return;
         }
         tableEntitys.stream().forEach(table -> {
-            pressureResourceRelateTableMapper.saveOrUpdate(table);
+            //pressureResourceRelateTableMapper.saveOrUpdate(table);
         });
-    }
-
-    private QueryWrapper<PressureResourceRelateTableEntity> getWrapper(PressureResourceTableQueryParam param) {
-        QueryWrapper<PressureResourceRelateTableEntity> queryWrapper = new QueryWrapper<>();
-        if (param == null) {
-            return queryWrapper;
-        }
-        // 模糊查询
-        if (StringUtils.isNotBlank(param.getQueryBusinessTableName())) {
-            queryWrapper.like("business_table", param.getQueryBusinessTableName());
-        }
-        if (StringUtils.isNotBlank(param.getBusinessTableName())) {
-            queryWrapper.eq("business_table", param.getBusinessTableName());
-        }
-        if (param.getStatus() != null) {
-            queryWrapper.eq("status", param.getStatus());
-        }
-        if (StringUtils.isNotBlank(param.getDsKey())) {
-            queryWrapper.eq("ds_key", param.getDsKey());
-        }
-        if (param.getResourceId() != null) {
-            queryWrapper.eq("resource_id", param.getResourceId());
-        }
-        return queryWrapper;
     }
 
     private QueryWrapper<PressureResourceRelateTableEntityV2> getWrapper_v2(PressureResourceTableQueryParam param) {

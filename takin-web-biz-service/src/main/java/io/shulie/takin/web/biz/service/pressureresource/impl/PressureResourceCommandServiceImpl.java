@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.takin.common.beans.component.SelectVO;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.job.ResourceContextUtil;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
@@ -18,20 +19,23 @@ import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.*;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.secure.SecureUtil;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
-import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsManageDAO;
 import io.shulie.takin.web.data.dao.application.InterfaceTypeMainDAO;
 import io.shulie.takin.web.data.dao.application.RemoteCallConfigDAO;
 import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
+import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateRemoteCallDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateTableDAO;
-import io.shulie.takin.web.data.mapper.mysql.*;
-import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapperV2;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateMqConsumerMapper;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapperV2;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsManageEntity;
 import io.shulie.takin.web.data.model.mysql.InterfaceTypeMainEntity;
 import io.shulie.takin.web.data.model.mysql.RemoteCallConfigEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.*;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
+import io.shulie.takin.web.data.param.pressureresource.PressureResourceRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -64,20 +68,12 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     private PressureResourceMapper resourceMapper;
     @Resource
     private PressureResourceRelateDsMapperV2 resourceRelateDsMapperV2;
-
-    @Resource
-    private PressureResourceRelateDsMapper resourceDsMapper;
-
-    @Resource
-    private PressureResourceRelateTableMapper resourceTableMapper;
-
     @Resource
     private PressureResourceRelateTableMapperV2 resourceRelateTableMapperV2;
     @Resource
-    private PressureResourceRelateRemoteCallMapper remoteCallMapper;
+    private PressureResourceRelateRemoteCallDAO pressureResourceRelateRemoteCallDAO;
     @Resource
     private PressureResourceRelateMqConsumerMapper mqConsumerMapper;
-
     @Resource
     private DictionaryDataDAO dictionaryDataDAO;
     @Resource
@@ -85,10 +81,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     @Resource
     private InterfaceTypeMainDAO interfaceTypeMainDAO;
     @Resource
-    private AppRemoteCallDAO appRemoteCallDAO;
-    @Resource
     private ApplicationDsManageDAO applicationDsManageDAO;
-
     @Resource
     private PressureResourceRelateDsDAO pressureResourceRelateDsDAO;
     @Resource
@@ -200,20 +193,20 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         // 查询关联的数据源信息
         PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
         dsQueryParam.setResourceId(resource.getId());
-        List<PressureResourceRelateDsEntity> dsEntities = pressureResourceRelateDsDAO.queryByParam_v2(dsQueryParam);
+        List<RelateDsEntity> dsEntities = pressureResourceRelateDsDAO.queryByParam_v2(dsQueryParam);
         if (CollectionUtils.isEmpty(dsEntities)) {
             return;
         }
         // 查询tables
         PressureResourceTableQueryParam tableQueryParam = new PressureResourceTableQueryParam();
         tableQueryParam.setResourceId(resource.getId());
-        List<PressureResourceRelateTableEntity> tmpList = pressureResourceRelateTableDAO.queryList_v2(tableQueryParam);
-        List<PressureResourceRelateTableEntity> tableEntities = tmpList.stream().filter(tmp -> tmp.getJoinFlag() == JoinFlagEnum.YES.getCode()).collect(Collectors.toList());
+        List<RelateTableEntity> tmpList = pressureResourceRelateTableDAO.queryList_v2(tableQueryParam);
+        List<RelateTableEntity> tableEntities = tmpList.stream().filter(tmp -> tmp.getJoinFlag() == JoinFlagEnum.YES.getCode()).collect(Collectors.toList());
 
         //appName分组
-        Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateDsEntity::getAppName));
+        Map<String, List<RelateDsEntity>> dsMap = dsEntities.stream().collect(Collectors.groupingBy(RelateDsEntity::getAppName));
         //dsKey分组
-        Map<String, List<PressureResourceRelateTableEntity>> tableMap = tableEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateTableEntity::getDsKey));
+        Map<String, List<RelateTableEntity>> tableMap = tableEntities.stream().collect(Collectors.groupingBy(RelateTableEntity::getDsKey));
 
         List<TakinCommand> list = new ArrayList<>();
         //遍历dsMap
@@ -231,47 +224,6 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             pushCommandSuccess(resource.getId());
         }
     }
-
-    /**
-     * 压测数据源命令
-     *
-     * @param resource
-     * @return
-     */
-    private void pushDataSourceCommands(PressureResourceEntity resource) {
-        if (resource.getIsolateType() == IsolateTypeEnum.DEFAULT.getCode()) {
-            //未配置隔离类型
-            return;
-        }
-        List<PressureResourceRelateDsEntity> dsEntities = resourceDsMapper.selectList(new QueryWrapper<PressureResourceRelateDsEntity>().lambda()
-                .eq(PressureResourceRelateDsEntity::getResourceId, resource.getId()));
-        if (CollectionUtils.isEmpty(dsEntities)) {
-            return;
-        }
-        List<PressureResourceRelateTableEntity> tableEntities = resourceTableMapper.selectList(new QueryWrapper<PressureResourceRelateTableEntity>().lambda()
-                .eq(PressureResourceRelateTableEntity::getResourceId, resource.getId())
-                .eq(PressureResourceRelateTableEntity::getJoinFlag, JoinFlagEnum.YES.getCode()));
-        //appName分组
-        Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateDsEntity::getAppName));
-        //dsKey分组
-        Map<String, List<PressureResourceRelateTableEntity>> tableMap = tableEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateTableEntity::getDsKey));
-
-        List<TakinCommand> list = new ArrayList<>();
-        //遍历dsMap
-        dsMap.forEach((appName, appDsList) -> {
-            List<TakinCommand> collect = appDsList.stream().map(dsEntity -> {
-                String dsKey = DataSourceUtil.generateDsKey(dsEntity.getResourceId(), dsEntity.getBusinessDatabase());
-                return mapping(resource, dsEntity, tableMap.get(dsKey));
-            }).filter(Objects::nonNull).collect(Collectors.toList());
-            list.addAll(collect);
-        });
-        //下发命令
-        boolean succ = sendCommand(list);
-        if (succ) {
-            pushCommandSuccess(resource.getId());
-        }
-    }
-
 
     private boolean sendCommand(List<TakinCommand> commandList) {
         //下发命令
@@ -297,25 +249,14 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
 
 
     private void pushWhitelistConfigs(PressureResourceEntity resource) {
-        List<PressureResourceRelateRemoteCallEntity> remoteCallEntities = remoteCallMapper.selectList(new QueryWrapper<PressureResourceRelateRemoteCallEntity>().lambda()
-                .eq(PressureResourceRelateRemoteCallEntity::getResourceId, resource.getId()));
-        if (CollectionUtils.isEmpty(remoteCallEntities)) {
+        PressureResourceRemoteCallQueryParam callQueryParam = new PressureResourceRemoteCallQueryParam();
+        callQueryParam.setResourceId(resource.getId());
+        PagingList<RelateRemoteCallEntity> pageList = pressureResourceRelateRemoteCallDAO.pageList_v2(callQueryParam);
+        if (pageList.isEmpty()) {
             return;
         }
-
-        // 查询旧表数据
-        Set<Long> appRemoteCallIds = remoteCallEntities.stream().map(entity -> entity.getRelateAppRemoteCallId()).collect(Collectors.toSet());
-        if (!appRemoteCallIds.isEmpty()) {
-            List<AppRemoteCallEntity> appRemoteCallEntities = appRemoteCallDAO.listByIds(appRemoteCallIds);
-            Map<Long, AppRemoteCallEntity> mappings = new HashMap<>();
-            for (AppRemoteCallEntity callEntity : appRemoteCallEntities) {
-                mappings.put(callEntity.getId(), callEntity);
-            }
-            remoteCallEntities.forEach(entity -> populateRemoteCallProperties(entity, mappings.get(entity.getRelateAppRemoteCallId())));
-        }
-
         //group by appName
-        Map<String, List<PressureResourceRelateRemoteCallEntity>> appMap = remoteCallEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateRemoteCallEntity::getAppName));
+        Map<String, List<RelateRemoteCallEntity>> appMap = pageList.getList().stream().collect(Collectors.groupingBy(RelateRemoteCallEntity::getAppName));
 
         TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
         List<TakinConfig> configList = new ArrayList<>();
@@ -347,8 +288,8 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     }
 
 
-    private AgentRemoteCallVO.RemoteCall mapping(PressureResourceRelateRemoteCallEntity remoteCallEntity) {
-        if (!StringUtils.hasText(remoteCallEntity.getServerAppName()) || remoteCallEntity.getType() == 0 || remoteCallEntity.getIsDeleted() == 1) {
+    private AgentRemoteCallVO.RemoteCall mapping(RelateRemoteCallEntity remoteCallEntity) {
+        if (!StringUtils.hasText(remoteCallEntity.getServerAppName()) || remoteCallEntity.getType() == 0) {
             return null;
         }
         List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
@@ -427,11 +368,11 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             case DATABASE:
                 String dsResponse = success ? "配置生效" : configAck.getResponse();
                 //更新ds 记录失败原因
-                List<PressureResourceRelateDsEntity> dsEntities = resourceDsMapper.selectList(new QueryWrapper<PressureResourceRelateDsEntity>().lambda()
-                        .eq(PressureResourceRelateDsEntity::getResourceId, resourceId));
+                List<PressureResourceRelateDsEntityV2> dsEntities = resourceRelateDsMapperV2.selectList(new QueryWrapper<PressureResourceRelateDsEntityV2>().lambda()
+                        .eq(PressureResourceRelateDsEntityV2::getResourceId, resourceId));
                 dsEntities.forEach(dsEntity -> {
                     dsEntity.setRemark(dsEntity.getRemark() + ";" + dsResponse);
-                    resourceDsMapper.updateById(dsEntity);
+                    resourceRelateDsMapperV2.updateById(dsEntity);
                 });
                 break;
             case MQ:
@@ -492,8 +433,8 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
                 PressureResourceTableQueryParam tableQueryParam = new PressureResourceTableQueryParam();
                 tableQueryParam.setResourceId(resource.getId());
                 tableQueryParam.setDsKey(dsKey);
-                List<PressureResourceRelateTableEntity> tmpList = pressureResourceRelateTableDAO.queryList_v2(tableQueryParam);
-                List<PressureResourceRelateTableEntity> tableEntities = tmpList.stream().filter(tmp -> tmp.getJoinFlag() == JoinFlagEnum.YES.getCode()).collect(Collectors.toList());
+                List<RelateTableEntity> tmpList = pressureResourceRelateTableDAO.queryList_v2(tableQueryParam);
+                List<RelateTableEntity> tableEntities = tmpList.stream().filter(tmp -> tmp.getJoinFlag() == JoinFlagEnum.YES.getCode()).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(tableEntities)) {
                     tableEntities.forEach(table -> {
                         PressureResourceRelateTableEntityV2 v2 = new PressureResourceRelateTableEntityV2();
@@ -586,12 +527,12 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         // 查询Resource
         PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
         dsQueryParam.setResourceId(resource.getId());
-        List<PressureResourceRelateDsEntity> dsEntities = pressureResourceRelateDsDAO.queryByParam_v2(dsQueryParam);
+        List<RelateDsEntity> dsEntities = pressureResourceRelateDsDAO.queryByParam_v2(dsQueryParam);
         if (CollectionUtils.isEmpty(dsEntities)) {
             return;
         }
         //appName分组
-        Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateDsEntity::getAppName));
+        Map<String, List<RelateDsEntity>> dsMap = dsEntities.stream().collect(Collectors.groupingBy(RelateDsEntity::getAppName));
         List<TakinConfig> configList = new ArrayList<>();
         dsMap.forEach((appName, dsList) -> {
             TakinConfig takinConfig = new TakinConfig();
@@ -612,40 +553,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         HttpUtil.post(url, JSON.toJSONString(configList));
     }
 
-    /**
-     * 校验通过，下发压测库配置
-     *
-     * @param resource
-     */
-    private void pushPressureDatabaseConfig(PressureResourceEntity resource) {
-        //租户信息
-        TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
-
-        List<PressureResourceRelateDsEntity> dsEntities = resourceDsMapper.selectList(new QueryWrapper<PressureResourceRelateDsEntity>().lambda()
-                .eq(PressureResourceRelateDsEntity::getResourceId, resource.getId()));
-        //appName分组
-        Map<String, List<PressureResourceRelateDsEntity>> dsMap = dsEntities.stream().collect(Collectors.groupingBy(PressureResourceRelateDsEntity::getAppName));
-        List<TakinConfig> configList = new ArrayList<>();
-        dsMap.forEach((appName, dsList) -> {
-            TakinConfig takinConfig = new TakinConfig();
-            takinConfig.setConfigId(resource.getId().toString());
-            takinConfig.setAppName(appName);
-            takinConfig.setAgentSpecification(TakinCommand.SIMULATOR_AGENT);
-            takinConfig.setEnvCode(resource.getEnvCode());
-            takinConfig.setTenantCode(tenantInfoExt.getTenantCode());
-            takinConfig.setConfigType(PressureResourceTypeEnum.DATABASE.getCode());
-            List<DataSourceConfig> collect = dsList.stream().map(dsEntity -> mapping(resource.getIsolateType(), dsEntity)).collect(Collectors.toList());
-            JdbcTableConfig jdbcTableConfig = new JdbcTableConfig();
-            jdbcTableConfig.setData(collect);
-            takinConfig.setConfigParam(JSON.toJSONString(jdbcTableConfig));
-            configList.add(takinConfig);
-        });
-        //推送配置
-        String url = joinUrl(agentManagerHost, PUSH_CONFIG_URL);
-        HttpUtil.post(url, JSON.toJSONString(configList));
-    }
-
-    private DataSourceConfig mapping_v2(Integer shadowType, PressureResourceRelateDsEntity dsEntity) {
+    private DataSourceConfig mapping_v2(Integer shadowType, RelateDsEntity dsEntity) {
         DataSourceConfig dataSourceConfig = new DataSourceConfig();
         dataSourceConfig.setShadowType(shadowType);
         dataSourceConfig.setUrl(dsEntity.getBusinessDatabase());
@@ -662,8 +570,8 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         PressureResourceTableQueryParam tableQueryParam = new PressureResourceTableQueryParam();
         tableQueryParam.setResourceId(dsEntity.getResourceId());
         tableQueryParam.setDsKey(dsKey);
-        List<PressureResourceRelateTableEntity> tmpList = pressureResourceRelateTableDAO.queryList_v2(tableQueryParam);
-        List<PressureResourceRelateTableEntity> tableEntities = tmpList.stream().filter(tmp -> tmp.getJoinFlag() == JoinFlagEnum.YES.getCode()).collect(Collectors.toList());
+        List<RelateTableEntity> tmpList = pressureResourceRelateTableDAO.queryList_v2(tableQueryParam);
+        List<RelateTableEntity> tableEntities = tmpList.stream().filter(tmp -> tmp.getJoinFlag() == JoinFlagEnum.YES.getCode()).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(tableEntities)) {
             tableEntities = tableEntities.stream().filter(it -> it.getJoinFlag() == JoinFlagEnum.YES.getCode()).collect(Collectors.toList());
         }
@@ -671,38 +579,12 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             dataSourceConfig.setDisabled(true);
             return dataSourceConfig;
         }
-        List<String> bizTables = tableEntities.stream().map(PressureResourceRelateTableEntity::getBusinessTable).collect(Collectors.toList());
+        List<String> bizTables = tableEntities.stream().map(RelateTableEntity::getBusinessTable).collect(Collectors.toList());
         dataSourceConfig.setBizTables(bizTables);
         return dataSourceConfig;
     }
 
-    private DataSourceConfig mapping(Integer shadowType, PressureResourceRelateDsEntity dsEntity) {
-        DataSourceConfig dataSourceConfig = new DataSourceConfig();
-        dataSourceConfig.setShadowType(shadowType);
-        dataSourceConfig.setUrl(dsEntity.getBusinessDatabase());
-        dataSourceConfig.setUsername(dsEntity.getBusinessUserName());
-        dataSourceConfig.setShadowUrl(dsEntity.getShadowDatabase());
-        dataSourceConfig.setShadowUsername(dsEntity.getShadowUserName());
-        dataSourceConfig.setShadowPassword(dsEntity.getShadowPassword());
-        if (!shadowType.equals(IsolateTypeEnum.SHADOW_TABLE.getCode())) {
-            //非影子表模式 无表配置
-            return dataSourceConfig;
-        }
-        String dsKey = DataSourceUtil.generateDsKey(dsEntity.getResourceId(), dsEntity.getBusinessDatabase());
-        List<PressureResourceRelateTableEntity> tableEntities = resourceTableMapper.selectList(new QueryWrapper<PressureResourceRelateTableEntity>().lambda()
-                .eq(PressureResourceRelateTableEntity::getDsKey, dsKey)
-                .eq(PressureResourceRelateTableEntity::getJoinFlag, JoinFlagEnum.YES.getCode()));
-        if (CollectionUtils.isEmpty(tableEntities)) {
-            dataSourceConfig.setDisabled(true);
-            return dataSourceConfig;
-        }
-        List<String> bizTables = tableEntities.stream().map(PressureResourceRelateTableEntity::getBusinessTable).collect(Collectors.toList());
-        dataSourceConfig.setBizTables(bizTables);
-        return dataSourceConfig;
-    }
-
-
-    private TakinCommand mapping_v2(PressureResourceEntity resource, PressureResourceRelateDsEntity dsEntity, List<PressureResourceRelateTableEntity> tableEntities) {
+    private TakinCommand mapping_v2(PressureResourceEntity resource, RelateDsEntity dsEntity, List<RelateTableEntity> tableEntities) {
         if (!StringUtils.hasText(dsEntity.getBusinessDatabase())
                 || !StringUtils.hasText(dsEntity.getBusinessUserName())
                 || !StringUtils.hasText(dsEntity.getAppName())) {
@@ -730,7 +612,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         tableCompareCommand.setBizDataSource(bizDataSource);
         //影子表
         if (!CollectionUtils.isEmpty(tableEntities)) {
-            List<String> tables = tableEntities.stream().map(PressureResourceRelateTableEntity::getBusinessTable).collect(Collectors.toList());
+            List<String> tables = tableEntities.stream().map(RelateTableEntity::getBusinessTable).collect(Collectors.toList());
             tableCompareCommand.setTables(tables);
         }
         //影子库
@@ -744,48 +626,6 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         takinCommand.setCommandParam(JSON.toJSONString(tableCompareCommand));
         return takinCommand;
     }
-
-    private TakinCommand mapping(PressureResourceEntity resource, PressureResourceRelateDsEntity dsEntity, List<PressureResourceRelateTableEntity> tableEntities) {
-        if (!StringUtils.hasText(dsEntity.getBusinessDatabase()) || !StringUtils.hasText(dsEntity.getBusinessUserName()) || !StringUtils.hasText(dsEntity.getAppName())) {
-            return null;
-        }
-        TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(resource.getTenantId());
-        if (IsolateTypeEnum.SHADOW_TABLE.getCode() == resource.getIsolateType() && CollectionUtils.isEmpty(tableEntities)) {
-            //影子表模式无影子表 不再下发校验命令 推送禁用配置
-            pushPressureDatabaseConfig(resource);
-            return null;
-        }
-        TakinCommand takinCommand = new TakinCommand();
-        takinCommand.setCommandId(commandId(resource.getId(), dsEntity.getId()));
-        takinCommand.setAppName(dsEntity.getAppName());
-        takinCommand.setAgentSpecification(TakinCommand.SIMULATOR_AGENT);
-        takinCommand.setEnvCode(resource.getEnvCode());
-        takinCommand.setTenantCode(tenantInfoExt.getTenantCode());
-        takinCommand.setCommandType(PressureResourceTypeEnum.DATABASE.getCode());
-        //命令
-        JdbcTableCompareCommand tableCompareCommand = new JdbcTableCompareCommand();
-        tableCompareCommand.setShadowType(resource.getIsolateType());
-        DataSourceEntity bizDataSource = new DataSourceEntity();
-        bizDataSource.setUrl(dsEntity.getBusinessDatabase());
-        bizDataSource.setUserName(dsEntity.getBusinessUserName());
-        tableCompareCommand.setBizDataSource(bizDataSource);
-        //影子表
-        if (!CollectionUtils.isEmpty(tableEntities)) {
-            List<String> tables = tableEntities.stream().map(PressureResourceRelateTableEntity::getBusinessTable).collect(Collectors.toList());
-            tableCompareCommand.setTables(tables);
-        }
-        //影子库
-        if (StringUtils.hasText(dsEntity.getShadowDatabase())) {
-            DataSourceEntity shadowDataSource = new DataSourceEntity();
-            shadowDataSource.setUrl(dsEntity.getShadowDatabase());
-            shadowDataSource.setUserName(dsEntity.getShadowUserName());
-            shadowDataSource.setPassword(dsEntity.getShadowPassword());
-            tableCompareCommand.setShadowDataSource(shadowDataSource);
-        }
-        takinCommand.setCommandParam(JSON.toJSONString(tableCompareCommand));
-        return takinCommand;
-    }
-
 
     private String joinUrl(String host, String path) {
         return host.endsWith("/") ? host + path : host + "/" + path;
@@ -813,18 +653,6 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
         return Long.parseLong(split[1]);
     }
 
-    private void populateRemoteCallProperties(PressureResourceRelateRemoteCallEntity entity, AppRemoteCallEntity appRemoteCall) {
-        if (appRemoteCall == null) {
-            return;
-        }
-        entity.setInterfaceName(appRemoteCall.getInterfaceName());
-        entity.setInterfaceType(appRemoteCall.getInterfaceType());
-        entity.setRemark(appRemoteCall.getRemark());
-        entity.setType(appRemoteCall.getType());
-        entity.setMockReturnValue(appRemoteCall.getMockReturnValue());
-        entity.setUserId(appRemoteCall.getUserId());
-        entity.setIsSynchronize(appRemoteCall.getIsSynchronize() == null ? 0 : appRemoteCall.getIsSynchronize() ? 1 : 0);
-    }
 
     private void populateKafkaClusterProperties(PressureResourceRelateMqConsumerEntity consumer, ApplicationDsManageEntity entity) {
         if (entity == null) {

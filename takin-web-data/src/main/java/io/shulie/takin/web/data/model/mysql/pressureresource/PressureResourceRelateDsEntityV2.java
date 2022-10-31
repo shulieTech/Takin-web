@@ -17,7 +17,7 @@ import java.util.Date;
  * @date 2022/8/30 10:24 AM
  */
 @Data
-@TableName(value = "t_pressure_resource_relate_ds_v2")
+@TableName(value = "t_pressure_resource_relate_ds")
 @ToString(callSuper = true)
 public class PressureResourceRelateDsEntityV2 extends TenantBaseEntity {
     @TableId(value = "ID", type = IdType.AUTO)

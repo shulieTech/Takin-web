@@ -2,8 +2,6 @@ package io.shulie.takin.web.biz.service.pressureresource.common;
 
 import com.alibaba.fastjson.JSON;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntityV2;
 import org.apache.commons.lang3.StringUtils;
 
 /**

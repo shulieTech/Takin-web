@@ -21,12 +21,9 @@ import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDA
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceDetailMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapper;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapperV2;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapperV2;
+import io.shulie.takin.web.data.model.mysql.pressureresource.*;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
@@ -46,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -65,10 +61,10 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     private PressureResourceMapper pressureResourceMapper;
 
     @Resource
-    private PressureResourceRelateDsMapper pressureResourceRelateDsMapper;
+    private PressureResourceRelateDsMapperV2 pressureResourceRelateDsMapperV2;
 
     @Resource
-    private PressureResourceRelateTableMapper pressureResourceRelateTableMapper;
+    private PressureResourceRelateTableMapperV2 pressureResourceRelateTableMapperV2;
 
     @Resource
     private PressureResourceDetailDAO pressureResourceDetailDAO;
@@ -175,14 +171,14 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         pressureResourceDetailMapper.delete(detailWrapper);
 
         // 删除数据源
-        QueryWrapper<PressureResourceRelateDsEntity> dsWrapper = new QueryWrapper<>();
+        QueryWrapper<PressureResourceRelateDsEntityV2> dsWrapper = new QueryWrapper<>();
         dsWrapper.eq("resource_id", resourceId);
-        pressureResourceRelateDsMapper.delete(dsWrapper);
+        pressureResourceRelateDsMapperV2.delete(dsWrapper);
 
         // 删除表
-        QueryWrapper<PressureResourceRelateTableEntity> tableWrapper = new QueryWrapper<>();
+        QueryWrapper<PressureResourceRelateTableEntityV2> tableWrapper = new QueryWrapper<>();
         tableWrapper.eq("resource_id", resourceId);
-        pressureResourceRelateTableMapper.delete(tableWrapper);
+        pressureResourceRelateTableMapperV2.delete(tableWrapper);
 
         // 删除流程
         SceneUpdateParam updateParam = new SceneUpdateParam();
@@ -503,7 +499,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         // 影子资源检查
         PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
         dsQueryParam.setResourceId(id);
-        List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
+        List<RelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam_v2(dsQueryParam);
         if (CollectionUtils.isNotEmpty(dsEntityList)) {
             // 判断状态是否都是正常的
             int normal = dsEntityList.stream().filter(ds -> ds.getStatus() == CheckStatusEnum.CHECK_FIN.getCode()).collect(Collectors.toList()).size();

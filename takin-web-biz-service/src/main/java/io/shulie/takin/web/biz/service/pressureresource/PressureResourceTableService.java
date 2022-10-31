@@ -16,19 +16,7 @@ public interface PressureResourceTableService {
     /**
      * 数据源新增
      */
-    void save(PressureResourceRelateTableInput input);
-
-    /**
-     * 数据源新增
-     */
     void save_v2(PressureResourceRelateTableInput input);
-
-    /**
-     * 更新
-     *
-     * @param updateInput
-     */
-    void update(PressureResourceRelateTableInput updateInput);
 
     /**
      * 更新
@@ -44,13 +32,6 @@ public interface PressureResourceTableService {
      */
     void batchUpdate(PressureResourceRelateTableInput updateInput);
 
-    /**
-     * 删除
-     *
-     * @param id
-     */
-    void delete(Long id);
-
     void delete_v2(Long id);
 
     /**
@@ -59,7 +40,5 @@ public interface PressureResourceTableService {
      * @param request
      * @return
      */
-    PagingList<PressureResourceRelateTableVO> pageList(PressureResourceRelateTableRequest request);
-
     PagingList<PressureResourceRelateTableVO> pageList_v2(PressureResourceRelateTableRequest request);
 }

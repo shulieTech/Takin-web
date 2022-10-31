@@ -6,17 +6,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.pressureresource.MockInfo;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateRemoteCallDAO;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateRemoteCallMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateRemoteCallMapperV2;
-import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateRemoteCallEntityV2;
-import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
+import io.shulie.takin.web.data.model.mysql.pressureresource.RelateRemoteCallEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceRemoteCallQueryParam;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
@@ -30,11 +26,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author xingchen
@@ -45,9 +37,6 @@ import java.util.stream.Collectors;
 public class PressureResourceRelateRemoteCallDAOImpl implements PressureResourceRelateRemoteCallDAO {
 
     public static final String APPLICATION_CACHE_PREFIX = "application:cache";
-
-    @Resource
-    private PressureResourceRelateRemoteCallMapper pressureResourceRelateRemoteCallMapper;
 
     @Resource
     private PressureResourceRelateRemoteCallMapperV2 pressureResourceRelateRemoteCallMapperV2;
@@ -61,29 +50,6 @@ public class PressureResourceRelateRemoteCallDAOImpl implements PressureResource
 
     @Resource
     private ApplicationDAO applicationDAO;
-
-    /**
-     * 存在则更新
-     *
-     * @param remoteCallEntityList
-     */
-    @Override
-    public void saveOrUpdate(List<PressureResourceRelateRemoteCallEntity> remoteCallEntityList) {
-        if (CollectionUtils.isEmpty(remoteCallEntityList)) {
-            return;
-        }
-
-        Set<String> appNames = remoteCallEntityList.stream().map(entity -> entity.getAppName()).collect(Collectors.toSet());
-        Map<String, Long> appNameIdMappings = new HashMap<>();
-        appNames.stream().forEach(s -> appNameIdMappings.put(s, queryApplicationIdByAppName(s)));
-
-        remoteCallEntityList.stream().forEach(remote -> {
-            Long id = insertAppRemoteCall(remote, appNameIdMappings);
-            remote.setRelateAppRemoteCallId(id);
-            removeDuplicateProperties(remote);
-            pressureResourceRelateRemoteCallMapper.saveOrUpdate(remote);
-        });
-    }
 
     /**
      * 存在则更新
@@ -123,63 +89,6 @@ public class PressureResourceRelateRemoteCallDAOImpl implements PressureResource
         return String.format("%s:%s:%s", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), applicationName);
     }
 
-    /**
-     * 写入应用配置的表
-     *
-     * @param entity
-     * @param appNameIdMappings
-     */
-    private Long insertAppRemoteCall(PressureResourceRelateRemoteCallEntity entity, Map<String, Long> appNameIdMappings) {
-
-        AppRemoteCallEntity callEntity = new AppRemoteCallEntity();
-        callEntity.setInterfaceName(entity.getInterfaceName());
-        callEntity.setInterfaceType(entity.getInterfaceType());
-        callEntity.setServerAppName(entity.getServerAppName());
-        callEntity.setAppName(entity.getAppName());
-        callEntity.setType(entity.getType());
-        callEntity.setMockReturnValue(entity.getMockReturnValue());
-        callEntity.setIsDeleted(entity.getIsDeleted());
-        callEntity.setGmtCreate(entity.getGmtCreate());
-        callEntity.setGmtModified(entity.getGmtModified());
-        callEntity.setIsSynchronize(isSynchronize(entity.getIsSynchronize()));
-        callEntity.setManualTag(entity.getManualTag());
-        callEntity.setInterfaceChildType(entity.getInterfaceChildType());
-        callEntity.setRemark(entity.getRemark());
-        callEntity.setMd5(entity.getMd5());
-        callEntity.setUserId(entity.getUserId());
-        callEntity.setTenantId(entity.getTenantId());
-        callEntity.setEnvCode(entity.getEnvCode());
-        callEntity.setApplicationId(appNameIdMappings.get(entity.getAppName()));
-
-        AppRemoteCallQueryParam param = new AppRemoteCallQueryParam();
-        param.setType(entity.getType());
-        param.setInterfaceName(entity.getInterfaceName());
-        param.setApplicationId(callEntity.getApplicationId());
-        // 如果在旧表上已经有相应的记录，则关联上数据,不重复写入
-        List<AppRemoteCallResult> remoteCallResults = appRemoteCallDAO.getList(param);
-        // 自动梳理不能重复写入
-        if (!remoteCallResults.isEmpty()) {
-            return remoteCallResults.get(0).getId();
-        }
-        appRemoteCallDAO.save(callEntity);
-        return callEntity.getId();
-    }
-
-    /**
-     * 移除部分属性，防止双写
-     *
-     * @param entity
-     */
-    private void removeDuplicateProperties(PressureResourceRelateRemoteCallEntity entity) {
-        entity.setInterfaceName(null);
-        entity.setInterfaceType(null);
-        entity.setRemark(null);
-        entity.setType(null);
-        entity.setMockReturnValue(null);
-        entity.setUserId(null);
-        entity.setIsSynchronize(null);
-    }
-
     private Boolean isSynchronize(Integer isSynchronize) {
         return isSynchronize != null && isSynchronize > 0;
     }
@@ -191,36 +100,7 @@ public class PressureResourceRelateRemoteCallDAOImpl implements PressureResource
      * @return
      */
     @Override
-    public PagingList<PressureResourceRelateRemoteCallEntity> pageList(PressureResourceRemoteCallQueryParam param) {
-        QueryWrapper<PressureResourceRelateRemoteCallEntity> queryWrapper = this.getWrapper(param);
-        Page<PressureResourceRelateRemoteCallEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
-        queryWrapper.orderByAsc("rpc_id");
-        IPage<PressureResourceRelateRemoteCallEntity> pageList = pressureResourceRelateRemoteCallMapper.selectPage(page, queryWrapper);
-        if (pageList.getRecords().isEmpty()) {
-            return PagingList.empty();
-        }
-        // 查询旧表数据
-        Set<Long> appRemoteCallIds = pageList.getRecords().stream().map(entity -> entity.getRelateAppRemoteCallId()).collect(Collectors.toSet());
-        if (!appRemoteCallIds.isEmpty()) {
-            List<AppRemoteCallEntity> remoteCallEntities = appRemoteCallDAO.listByIds(appRemoteCallIds);
-            Map<Long, AppRemoteCallEntity> mappings = new HashMap<>();
-            for (AppRemoteCallEntity callEntity : remoteCallEntities) {
-                mappings.put(callEntity.getId(), callEntity);
-            }
-            pageList.getRecords().forEach(entity -> populateProperties(entity, mappings.get(entity.getRelateAppRemoteCallId())));
-        }
-
-        return PagingList.of(pageList.getRecords(), pageList.getTotal());
-    }
-
-    /**
-     * 分页
-     *
-     * @param param
-     * @return
-     */
-    @Override
-    public PagingList<PressureResourceRelateRemoteCallEntity> pageList_v2(PressureResourceRemoteCallQueryParam param) {
+    public PagingList<RelateRemoteCallEntity> pageList_v2(PressureResourceRemoteCallQueryParam param) {
         QueryWrapper<PressureResourceRelateRemoteCallEntityV2> queryWrapper = this.getWrapper_v2(param);
         Page<PressureResourceRelateRemoteCallEntityV2> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
         queryWrapper.orderByAsc("rpc_id");
@@ -229,10 +109,10 @@ public class PressureResourceRelateRemoteCallDAOImpl implements PressureResource
             return PagingList.empty();
         }
         List<PressureResourceRelateRemoteCallEntityV2> v2List = pageList.getRecords();
-        List<PressureResourceRelateRemoteCallEntity> callEntityList = Lists.newArrayList();
+        List<RelateRemoteCallEntity> callEntityList = Lists.newArrayList();
         for (int i = 0; i < v2List.size(); i++) {
             PressureResourceRelateRemoteCallEntityV2 v2 = v2List.get(i);
-            PressureResourceRelateRemoteCallEntity call = new PressureResourceRelateRemoteCallEntity();
+            RelateRemoteCallEntity call = new RelateRemoteCallEntity();
             BeanUtils.copyProperties(v2, call);
 
             if (!param.isConvert()) {
@@ -284,45 +164,5 @@ public class PressureResourceRelateRemoteCallDAOImpl implements PressureResource
             queryWrapper.eq("detail_id", param.getEntry());
         }
         return queryWrapper;
-    }
-
-    private QueryWrapper<PressureResourceRelateRemoteCallEntity> getWrapper(PressureResourceRemoteCallQueryParam param) {
-        QueryWrapper<PressureResourceRelateRemoteCallEntity> queryWrapper = new QueryWrapper<>();
-        if (param == null) {
-            return queryWrapper;
-        }
-        // 模糊查询
-        if (StringUtils.isNotBlank(param.getQueryInterfaceName())) {
-            queryWrapper.like("interface_name", param.getQueryInterfaceName());
-        }
-        if (param.getResourceId() != null) {
-            queryWrapper.eq("resource_id", param.getResourceId());
-        }
-        if (param.getInterfaceChildType() != null) {
-            queryWrapper.eq("interface_child_type", param.getInterfaceChildType());
-        }
-        if (param.getPass() != null) {
-            queryWrapper.eq("pass", param.getPass());
-        }
-        if (param.getStatus() != null) {
-            queryWrapper.eq("status", param.getStatus());
-        }
-        if (StringUtils.isNotBlank(param.getEntry())) {
-            queryWrapper.eq("detail_id", param.getEntry());
-        }
-        return queryWrapper;
-    }
-
-    private void populateProperties(PressureResourceRelateRemoteCallEntity entity, AppRemoteCallEntity appRemoteCall) {
-        if (appRemoteCall == null) {
-            return;
-        }
-        entity.setInterfaceName(appRemoteCall.getInterfaceName());
-        entity.setInterfaceType(appRemoteCall.getInterfaceType());
-        entity.setRemark(appRemoteCall.getRemark());
-        entity.setType(appRemoteCall.getType());
-        entity.setMockReturnValue(appRemoteCall.getMockReturnValue());
-        entity.setUserId(appRemoteCall.getUserId());
-        entity.setIsSynchronize(appRemoteCall.getIsSynchronize() == null ? 0 : appRemoteCall.getIsSynchronize() ? 1 : 0);
     }
 }

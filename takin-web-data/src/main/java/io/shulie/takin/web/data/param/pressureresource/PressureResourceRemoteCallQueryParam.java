@@ -31,4 +31,7 @@ public class PressureResourceRemoteCallQueryParam extends PageBaseDTO {
 
     @ApiModelProperty("入口的detailId")
     private String entry;
+
+    @ApiModelProperty("是否需要转换,查询mock")
+    private boolean convert;
 }

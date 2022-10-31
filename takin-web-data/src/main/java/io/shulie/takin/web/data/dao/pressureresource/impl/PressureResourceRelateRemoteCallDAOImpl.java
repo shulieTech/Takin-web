@@ -232,24 +232,26 @@ public class PressureResourceRelateRemoteCallDAOImpl implements PressureResource
         List<PressureResourceRelateRemoteCallEntity> callEntityList = Lists.newArrayList();
         for (int i = 0; i < v2List.size(); i++) {
             PressureResourceRelateRemoteCallEntityV2 v2 = v2List.get(i);
-            AppRemoteCallResult callResult = appRemoteCallDAO.queryOne(v2.getAppName(), v2.getInterfaceType(), v2.getInterfaceName());
             PressureResourceRelateRemoteCallEntity call = new PressureResourceRelateRemoteCallEntity();
             BeanUtils.copyProperties(v2, call);
 
-            // 设置下mock值
-            MockInfo mockInfo = new MockInfo();
-            Integer type = callResult.getType();
-            call.setType(callResult.getType());
-            if (type == 2) {
-                // groovy脚本mock
-                mockInfo.setType(String.valueOf(1));
-                mockInfo.setMockValue(callResult.getMockReturnValue());
-                call.setMockReturnValue(JSON.toJSONString(mockInfo));
-            }
-            if (type == 4) {
-                mockInfo.setType(String.valueOf(0));
-                mockInfo.setMockValue(callResult.getMockReturnValue());
-                call.setMockReturnValue(JSON.toJSONString(mockInfo));
+            if (!param.isConvert()) {
+                AppRemoteCallResult callResult = appRemoteCallDAO.queryOne(v2.getAppName(), v2.getInterfaceType(), v2.getInterfaceName());
+                // 设置下mock值
+                MockInfo mockInfo = new MockInfo();
+                Integer type = callResult.getType();
+                call.setType(callResult.getType());
+                if (type == 2) {
+                    // groovy脚本mock
+                    mockInfo.setType(String.valueOf(1));
+                    mockInfo.setMockValue(callResult.getMockReturnValue());
+                    call.setMockReturnValue(JSON.toJSONString(mockInfo));
+                }
+                if (type == 4) {
+                    mockInfo.setType(String.valueOf(0));
+                    mockInfo.setMockValue(callResult.getMockReturnValue());
+                    call.setMockReturnValue(JSON.toJSONString(mockInfo));
+                }
             }
             callEntityList.add(call);
         }

@@ -21,6 +21,7 @@ import io.shulie.takin.web.data.param.application.ApplicationDsCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsUpdateParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceMqConsumerQueryParam;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -112,9 +113,10 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
             PressureResourceMqComsumerVO vo = new PressureResourceMqComsumerVO();
             BeanUtils.copyProperties(configDto, vo);
             Long applicationId = configDto.getApplicationId();
-            if(applicationId != null){
+            if (applicationId != null) {
                 vo.setApplicationId(String.valueOf(applicationId));
-                vo.setApplicationName(applicationDAO.getApplicationById(applicationId).getApplicationName());
+                ApplicationDetailResult detail = applicationDAO.getApplicationById(applicationId);
+                vo.setApplicationName(detail == null ? "" : detail.getApplicationName());
             }
             vo.setId(String.valueOf(configDto.getId()));
             // 转换下feature
@@ -252,7 +254,7 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
         shadowMqConsumerEntity.setSystemIdToken(request.getSystemIdToken());
         shadowMqConsumerEntity.setMqType(request.getMqType());
         String applicationId = request.getApplicationId();
-        if(StringUtils.isNotBlank(applicationId)){
+        if (StringUtils.isNotBlank(applicationId)) {
             shadowMqConsumerEntity.setApplicationId(Long.valueOf(applicationId));
         }
         // 是否消费

@@ -252,6 +252,7 @@ public class PressureResourceRelateRemoteCallDAOImpl implements PressureResource
                     mockInfo.setMockValue(callResult.getMockReturnValue());
                     call.setMockReturnValue(JSON.toJSONString(mockInfo));
                 }
+                call.setServerAppName(callResult.getServerAppName());
             }
             callEntityList.add(call);
         }

@@ -111,7 +111,11 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
         List<PressureResourceMqComsumerVO> returnList = source.stream().map(configDto -> {
             PressureResourceMqComsumerVO vo = new PressureResourceMqComsumerVO();
             BeanUtils.copyProperties(configDto, vo);
-            vo.setApplicationId(String.valueOf(configDto.getApplicationId()));
+            Long applicationId = configDto.getApplicationId();
+            if(applicationId != null){
+                vo.setApplicationId(String.valueOf(applicationId));
+                vo.setApplicationName(applicationDAO.getApplicationById(applicationId).getApplicationName());
+            }
             vo.setId(String.valueOf(configDto.getId()));
             // 转换下feature
             if (StringUtils.isNotBlank(vo.getFeature())) {

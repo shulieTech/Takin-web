@@ -111,6 +111,7 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
         List<PressureResourceMqComsumerVO> returnList = source.stream().map(configDto -> {
             PressureResourceMqComsumerVO vo = new PressureResourceMqComsumerVO();
             BeanUtils.copyProperties(configDto, vo);
+            vo.setApplicationId(String.valueOf(configDto.getApplicationId()));
             vo.setId(String.valueOf(configDto.getId()));
             // 转换下feature
             if (StringUtils.isNotBlank(vo.getFeature())) {
@@ -246,7 +247,10 @@ public class PressureResourceMqConsumerServiceImpl implements PressureResourceMq
         shadowMqConsumerEntity.setTopicTokens(request.getTopicTokens());
         shadowMqConsumerEntity.setSystemIdToken(request.getSystemIdToken());
         shadowMqConsumerEntity.setMqType(request.getMqType());
-        shadowMqConsumerEntity.setApplicationId(request.getApplicationId());
+        String applicationId = request.getApplicationId();
+        if(StringUtils.isNotBlank(applicationId)){
+            shadowMqConsumerEntity.setApplicationId(Long.valueOf(applicationId));
+        }
         // 是否消费
         shadowMqConsumerEntity.setConsumerTag(request.getConsumerTag());
         shadowMqConsumerEntity.setComsumerType(request.getComsumerType());

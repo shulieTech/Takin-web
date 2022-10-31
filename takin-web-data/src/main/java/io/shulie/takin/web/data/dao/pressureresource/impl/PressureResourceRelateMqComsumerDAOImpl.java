@@ -104,8 +104,8 @@ public class PressureResourceRelateMqComsumerDAOImpl implements PressureResource
             params.put("tenant_id", entity.getTenantId());
             params.put("env_code", entity.getEnvCode());
             params.put("resource_id", entity.getResourceId());
-            params.put("topic", entity.getTopic());
-            params.put("group", entity.getGroup());
+            params.put("`topic`", entity.getTopic());
+            params.put("`group`", entity.getGroup());
             params.put("mq_type", entity.getMqType());
             // 根据唯一键查询
             List<PressureResourceRelateMqConsumerEntity> entities = pressureResourceRelateMqConsumerMapper.selectByMap(params);
@@ -182,7 +182,7 @@ public class PressureResourceRelateMqComsumerDAOImpl implements PressureResource
         consumer.setSystemIdToken(object.getString("systemIdToken"));
         consumer.setTopicTokens(object.getString("topicTokens"));
 
-        Map<String,Object> feature = new HashMap<>();
+        Map<String, Object> feature = new HashMap<>();
         feature.put("clusterName", object.getString("clusterName"));
         feature.put("clusterAddr", object.getString("monitorUrl"));
         feature.put("providerThreadCount", object.getInteger("poolSize"));

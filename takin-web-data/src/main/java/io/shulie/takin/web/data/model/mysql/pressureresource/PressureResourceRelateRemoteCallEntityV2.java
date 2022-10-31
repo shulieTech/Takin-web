@@ -83,5 +83,6 @@ public class PressureResourceRelateRemoteCallEntityV2 extends TenantBaseEntity {
     /**
      * 是否找到客户端调用
      */
+    @TableField(exist = false)
     private boolean isFind;
 }

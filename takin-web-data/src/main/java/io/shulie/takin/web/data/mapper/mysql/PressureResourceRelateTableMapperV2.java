@@ -10,7 +10,7 @@ public interface PressureResourceRelateTableMapperV2
         extends BaseMapper<PressureResourceRelateTableEntityV2> {
     @InterceptorIgnore(tenantLine = "true")
     @Insert("<script>" +
-            "insert ignore into t_pressure_resource_relate_table_v2(" +
+            "insert ignore into t_pressure_resource_relate_table(" +
             "resource_id,type,ds_key,relate_id,tenant_id,env_code,gmt_create)" +
             "values " +
             "(#{item.resourceId},#{item.type},#{item.dsKey},#{item.relateId}," +

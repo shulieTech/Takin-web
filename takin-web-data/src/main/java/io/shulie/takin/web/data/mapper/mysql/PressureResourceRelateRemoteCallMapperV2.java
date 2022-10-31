@@ -10,7 +10,7 @@ public interface PressureResourceRelateRemoteCallMapperV2
         extends BaseMapper<PressureResourceRelateRemoteCallEntityV2> {
     @InterceptorIgnore(tenantLine = "true")
     @Insert("<script>" +
-            "insert into t_pressure_resource_relate_remote_call_v2(" +
+            "insert into t_pressure_resource_relate_remote_call(" +
             "resource_id,detail_id,interface_name,interface_type,app_name,pass," +
             "interface_child_type,status,remark,manual_tag," +
             "tenant_id,env_code,rpc_id,gmt_create,md5)" +

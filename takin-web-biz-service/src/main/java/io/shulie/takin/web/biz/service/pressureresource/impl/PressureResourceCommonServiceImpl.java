@@ -313,10 +313,6 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
      */
     @Override
     public void processAutoPressureResourceRelate_remoteCall(PressureResourceEntity resource) {
-        // 没设置隔离类型的,暂时不处理白名单,减少不需要的调用处理
-        if (resource.getIsolateType().equals(IsolateTypeEnum.DEFAULT.getCode())) {
-            return;
-        }
         List<PressureResourceDetailEntity> detailEntityList = getPressureResourceDetailList(resource.getId());
         if (CollectionUtils.isNotEmpty(detailEntityList)) {
             try {
@@ -325,7 +321,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 for (int i = 0; i < detailEntityList.size(); i++) {
                     // 获取入口
                     PressureResourceDetailEntity detailEntity = detailEntityList.get(i);
-                    // 远程调用梳理
+                    // 远程调用梳理remoteCallEntityList = {ArrayList@24198}  size = 1
                     List<PressureResourceRelateRemoteCallEntityV2> remoteCallEntityList = processRemoteCall_v2(detailEntity);
                     allEntitys.addAll(remoteCallEntityList);
                 }

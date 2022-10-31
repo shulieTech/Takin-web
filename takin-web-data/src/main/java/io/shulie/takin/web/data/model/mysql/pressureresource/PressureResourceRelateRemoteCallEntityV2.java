@@ -76,10 +76,6 @@ public class PressureResourceRelateRemoteCallEntityV2 extends TenantBaseEntity {
     @ApiModelProperty("更新时间")
     private Date gmtModified;
 
-    @TableField(value = "`relate_id`")
-    @ApiModelProperty("关联远程调用表id")
-    private Long relateId;
-
     @ApiModelProperty("应用名，接口名称，接口类型，租户id,环境code求md5")
     @TableField(value = "`md5`")
     private String md5;

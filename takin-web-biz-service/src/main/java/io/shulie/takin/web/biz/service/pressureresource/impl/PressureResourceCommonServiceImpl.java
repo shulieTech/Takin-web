@@ -21,6 +21,7 @@ import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
+import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
@@ -319,22 +320,38 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
         List<PressureResourceDetailEntity> detailEntityList = getPressureResourceDetailList(resource.getId());
         if (CollectionUtils.isNotEmpty(detailEntityList)) {
             try {
-                List<PressureResourceRelateRemoteCallEntity> allEntitys = Lists.newArrayList();
+                List<PressureResourceRelateRemoteCallEntityV2> allEntitys = Lists.newArrayList();
                 // 根据详情来处理
                 for (int i = 0; i < detailEntityList.size(); i++) {
                     // 获取入口
                     PressureResourceDetailEntity detailEntity = detailEntityList.get(i);
                     // 远程调用梳理
-                    List<PressureResourceRelateRemoteCallEntity> remoteCallEntityList = processRemoteCall(detailEntity);
+                    List<PressureResourceRelateRemoteCallEntityV2> remoteCallEntityList = processRemoteCall_v2(detailEntity);
                     allEntitys.addAll(remoteCallEntityList);
                 }
                 if (CollectionUtils.isNotEmpty(allEntitys)) {
                     // 去重
-                    List<PressureResourceRelateRemoteCallEntity> insertList = allEntitys.stream().collect(
+                    List<PressureResourceRelateRemoteCallEntityV2> insertList = allEntitys.stream().collect(
                             Collectors.collectingAndThen(
                                     Collectors.toCollection(
                                             () -> new TreeSet<>(Comparator.comparing(p -> p.getMd5()))), ArrayList::new));
-                    pressureResourceRelateRemoteCallDAO.saveOrUpdate(insertList);
+                    // 找到未添加的
+                    List<PressureResourceRelateRemoteCallEntityV2> unFindList = insertList.stream().filter(call -> !call.isFind()).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(unFindList)) {
+                        unFindList.stream().forEach(call -> {
+                            AppRemoteCallUpdateInput updateInput = new AppRemoteCallUpdateInput();
+                            Long appId = applicationService.queryApplicationIdByAppName(call.getAppName());
+                            updateInput.setApplicationId(appId);
+                            updateInput.setAppName(call.getAppName());
+                            updateInput.setInterfaceName(call.getInterfaceName());
+                            updateInput.setInterfaceType(call.getInterfaceType());
+                            updateInput.setInterfaceChildType(call.getInterfaceChildType());
+                            updateInput.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
+                            appRemoteCallService.update(updateInput);
+                        });
+                    }
+                    List<PressureResourceRelateRemoteCallEntityV2> findList = insertList.stream().filter(call -> call.isFind()).collect(Collectors.toList());
+                    pressureResourceRelateRemoteCallDAO.saveOrUpdate_v2(findList);
                 }
             } catch (Throwable e) {
                 logger.error(ExceptionUtils.getStackTrace(e));
@@ -825,6 +842,85 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             }
         }
         return Pair.of(dsEntityList, tableEntityList);
+    }
+
+    /**
+     * 处理关联的远程调用信息
+     *
+     * @param detailEntity
+     * @return
+     */
+    private List<PressureResourceRelateRemoteCallEntityV2> processRemoteCall_v2(PressureResourceDetailEntity detailEntity) {
+        // 通过linkId去查询远程调用
+        ApplicationRemoteCallQueryDTO callQueryDTO = new ApplicationRemoteCallQueryDTO();
+        callQueryDTO.setLinkId(detailEntity.getLinkId());
+        callQueryDTO.setQueryTye("2");
+        callQueryDTO.setPageSize(1000);
+        callQueryDTO.setCurrentPage(0);
+        PagingList<ApplicationRemoteCallDTO> pageList = applicationClient.listApplicationRemoteCalls(callQueryDTO);
+        if (pageList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // 获取所有应用
+        List<Long> appIds = Lists.newArrayList();
+        pageList.getList().stream().forEach(call -> {
+            Long appId = applicationService.queryApplicationIdByAppName(call.getAppName());
+            call.setAppId(appId);
+            appIds.add(appId);
+        });
+
+        // 通过服务查询本地的远程调用信息
+        AppRemoteCallQueryParam queryParam = new AppRemoteCallQueryParam();
+        queryParam.setApplicationIds(appIds);
+        List<AppRemoteCallEntity> appRemoteCallEntityList = appRemoteCallDAO.getRemoteCallMd5_ext(queryParam);
+        Map<String, List<AppRemoteCallEntity>> md5Map = appRemoteCallEntityList.stream().collect(Collectors.groupingBy(AppRemoteCallEntity::getMd5));
+
+        // 数据字段增加后，也在枚举中增加下
+        List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
+        Map<String, InterfaceTypeChildEntity> childEntityMap = interfaceTypeChildDAO.selectToMapWithNameKey();
+        List<ApplicationRemoteCallDTO> list = pageList.getList();
+        // 保存
+        List<PressureResourceRelateRemoteCallEntityV2> callEntityList = list.stream().map(item -> {
+            PressureResourceRelateRemoteCallEntityV2 callEntity = new PressureResourceRelateRemoteCallEntityV2();
+            callEntity.setResourceId(detailEntity.getResourceId());
+            callEntity.setDetailId(detailEntity.getId());
+            callEntity.setAppName(item.getAppName());
+            callEntity.setStatus(StatusEnum.NO.getCode());
+            callEntity.setPass(PassEnum.PASS_NO.getCode());
+            callEntity.setRpcId(item.getRpcId());
+            callEntity.setInterfaceName(RemoteCallUtils.getInterfaceNameByRpcName(item.getMiddlewareName(), item.getServiceName(), item.getMethodName()));
+            callEntity.setInterfaceType(appRemoteCallService.getInterfaceType(item.getMiddlewareName(), voList));
+            if (!childEntityMap.containsKey(item.getMiddlewareDetail())) {
+                callEntity.setInterfaceChildType(item.getMiddlewareName());
+            } else {
+                callEntity.setInterfaceChildType(item.getMiddlewareDetail());
+            }
+            callEntity.setMd5(RemoteCallUtils.buildRemoteCallName(callEntity.getAppName(), callEntity.getInterfaceName(), callEntity.getInterfaceType()));
+            callEntity.setManualTag(0);
+            callEntity.setTenantId(WebPluginUtils.traceTenantId());
+            callEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+            // 通过服务查询本地的远程调用信息
+            String md5 = RemoteCallUtils.buildRemoteCallName(callEntity.getAppName(), callEntity.getInterfaceName(), callEntity.getInterfaceType());
+            List<AppRemoteCallEntity> md5List = md5Map.get(md5);
+            callEntity.setPass(PassEnum.defaultPass(callEntity.getInterfaceChildType()));
+            callEntity.setFind(false);
+            if (CollectionUtils.isNotEmpty(md5List)) {
+                // 是否放行 - 调用方和非调用方为非http类型的，默认自动放行，开关：开；其余的为关
+                // 0 http 2 feign 1 double
+                if (callEntity.getInterfaceType() != 0 || callEntity.getInterfaceType() != 2) {
+                    callEntity.setPass(PassEnum.PASS_YES.getCode());
+                }
+                // 已经找到调用,加个标识，后续直接查询
+                callEntity.setFind(true);
+            }
+            callEntity.setStatus(CheckStatusEnum.CHECK_NO.getCode());
+            // 设置检测状态,放行的默认不检测，状态默认为检测成功
+            if (callEntity.getPass() == PassEnum.PASS_YES.getCode()) {
+                callEntity.setStatus(CheckStatusEnum.CHECK_FIN.getCode());
+            }
+            return callEntity;
+        }).collect(Collectors.toList());
+        return callEntityList;
     }
 
     /**

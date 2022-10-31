@@ -28,6 +28,13 @@ public interface PressureResourceRemoteCallService {
     void update(PressureResourceMockInput mockInput);
 
     /**
+     * 修改
+     *
+     * @param mockInput
+     */
+    void update_v2(PressureResourceMockInput mockInput);
+
+    /**
      * 获取服务响应时间
      *
      * @param id

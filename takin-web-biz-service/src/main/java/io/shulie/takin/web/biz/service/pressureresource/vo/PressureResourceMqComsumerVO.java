@@ -55,7 +55,7 @@ public class PressureResourceMqComsumerVO {
     /**
      * 应用id
      */
-    private Long applicationId;
+    private String applicationId;
 
     private String applicationName;
 

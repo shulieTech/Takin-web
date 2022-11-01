@@ -41,7 +41,7 @@ public class PressureResoureTableController {
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     public ResponseResult save(@RequestBody PressureResourceRelateTableInput input) {
         input.setType(SourceTypeEnum.MANUAL.getCode());
-        pressureResourceTableService.save(input);
+        pressureResourceTableService.save_v2(input);
 
         CommandTaskVo taskVo = new CommandTaskVo();
         taskVo.setResourceId(input.getResourceId());
@@ -53,13 +53,13 @@ public class PressureResoureTableController {
     @ApiOperation("链路压测资源-影子表列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ResponseResult list(PressureResourceRelateTableRequest request) {
-        return ResponseResult.success(pressureResourceTableService.pageList(request));
+        return ResponseResult.success(pressureResourceTableService.pageList_v2(request));
     }
 
     @ApiOperation("链路压测资源-影子表-修改")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult update(@RequestBody PressureResourceRelateTableInput input) {
-        pressureResourceTableService.update(input);
+        pressureResourceTableService.update_v2(input);
 
         CommandTaskVo taskVo = new CommandTaskVo();
         taskVo.setResourceId(input.getResourceId());
@@ -83,7 +83,7 @@ public class PressureResoureTableController {
     @ApiOperation("链路压测资源-影子表-删除")
     @RequestMapping(value = "/del", method = RequestMethod.GET)
     public ResponseResult del(PressureResourceRelateTableInput input) {
-        pressureResourceTableService.delete(input.getId());
+        pressureResourceTableService.delete_v2(input.getId());
         return ResponseResult.success();
     }
 }

@@ -25,7 +25,7 @@ public interface PressureResourceRemoteCallService {
      *
      * @param mockInput
      */
-    void update(PressureResourceMockInput mockInput);
+    void update_v2(PressureResourceMockInput mockInput);
 
     /**
      * 获取服务响应时间

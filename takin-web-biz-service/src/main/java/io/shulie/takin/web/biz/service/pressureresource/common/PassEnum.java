@@ -1,11 +1,9 @@
 package io.shulie.takin.web.biz.service.pressureresource.common;
 
-import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author xingchen

@@ -11,7 +11,7 @@ public interface PressureResourceCommandService {
 
     /**
      * 下发命令并更新数据库
-     * @param resourceId
+     * @param commandTaskVo
      * @return
      */
     void pushCommand(CommandTaskVo commandTaskVo);

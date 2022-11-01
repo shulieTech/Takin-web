@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.pressureresource.common;
 
+import com.pamirs.takin.common.enums.ds.DsTypeEnum;
+
 /**
  * @author xingchen
  * @description: TODO
@@ -41,5 +43,18 @@ public enum IsolateTypeEnum {
 
     public static String getKeyName(int code) {
         return keyPre + getName(code);
+    }
+
+    public static int convertDsType(Integer isolateType) {
+        if (isolateType == SHADOW_DB.getCode()) {
+            return DsTypeEnum.SHADOW_DB.getCode();
+        }
+        if (isolateType == SHADOW_DB_TABLE.getCode()) {
+            return DsTypeEnum.SHADOW_REDIS_SERVER.getCode();
+        }
+        if (isolateType == SHADOW_TABLE.getCode()) {
+            return DsTypeEnum.SHADOW_TABLE.getCode();
+        }
+        throw new RuntimeException("未有配置值,请检查隔离类型{}");
     }
 }

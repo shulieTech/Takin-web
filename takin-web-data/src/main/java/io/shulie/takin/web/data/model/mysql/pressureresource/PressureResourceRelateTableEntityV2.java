@@ -19,7 +19,7 @@ import java.util.Date;
 @Data
 @TableName(value = "t_pressure_resource_relate_table")
 @ToString(callSuper = true)
-public class PressureResourceRelateTableEntity extends TenantBaseEntity {
+public class PressureResourceRelateTableEntityV2 extends TenantBaseEntity {
     @TableId(value = "ID", type = IdType.AUTO)
     @ApiModelProperty("ID")
     private Long id;
@@ -36,25 +36,13 @@ public class PressureResourceRelateTableEntity extends TenantBaseEntity {
     @TableField(value = "`status`")
     private Integer status;
 
-    @ApiModelProperty("业务表")
-    @TableField(value = "`business_table`")
-    private String businessTable;
-
-    @ApiModelProperty("影子表")
-    @TableField(value = "`shadow_table`")
-    private String shadowTable;
-
-    @ApiModelProperty("是否加入(0-加入 1-未加入)")
-    @TableField(value = "`join_flag`")
-    private Integer joinFlag;
-
     @ApiModelProperty("类型(0-手工 1-自动)")
     @TableField(value = "`type`")
     private Integer type;
 
-    @ApiModelProperty("扩展信息")
-    @TableField(value = "`ext_info`")
-    private String extInfo;
+    @ApiModelProperty("关联表Id")
+    @TableField(value = "`relate_id`")
+    private Long relateId;
 
     @ApiModelProperty("备注")
     @TableField(value = "`remark`")

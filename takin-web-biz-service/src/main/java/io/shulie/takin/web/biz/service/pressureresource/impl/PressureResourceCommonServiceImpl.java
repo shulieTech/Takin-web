@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.pressureresource.impl;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Maps;
 import com.pamirs.pradar.Pradar;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
@@ -12,6 +13,7 @@ import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
 import io.shulie.amdb.common.enums.EdgeTypeEnum;
 import io.shulie.amdb.common.enums.EdgeTypeGroupEnum;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
@@ -19,6 +21,8 @@ import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
+import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
+import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequest;
@@ -26,9 +30,12 @@ import io.shulie.takin.web.biz.pojo.request.pressureresource.MqConsumerFeature;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceDetailInput;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.biz.service.ConfCenterService;
+import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
@@ -53,13 +60,13 @@ import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceQueryParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,6 +160,9 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     @Qualifier("simpleFutureThreadPool")
     private ThreadPoolExecutor simpleFutureThreadPool;
 
+    @Autowired
+    private ConfCenterService confCenterService;
+
     private static String TAKIN_RESOURCE_MODIFY_KEY = "TAKIN:RESOURCE:MODIFY:KEY";
 
     @Value("${takin.job.resource.interval:2}")
@@ -161,6 +171,9 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     private static final Pattern pattern = Pattern.compile("[0-9]");
 
     private static final String UNKNOWN = "UNKNOWN";
+
+    @Resource
+    private DsService dsService;
 
     /**
      * 自动处理压测资源准备任务
@@ -284,7 +297,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 for (int i = 0; i < detailEntityList.size(); i++) {
                     // 获取入口
                     PressureResourceDetailEntity detailEntity = detailEntityList.get(i);
-                    processRelate(detailEntity, resource.getIsolateType());
+                    processRelate(detailEntity, resource);
                 }
             } catch (Throwable e) {
                 logger.error(ExceptionUtils.getStackTrace(e));
@@ -298,29 +311,41 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
      */
     @Override
     public void processAutoPressureResourceRelate_remoteCall(PressureResourceEntity resource) {
-        // 没设置隔离类型的,暂时不处理白名单,减少不需要的调用处理
-        if (resource.getIsolateType().equals(IsolateTypeEnum.DEFAULT.getCode())) {
-            return;
-        }
         List<PressureResourceDetailEntity> detailEntityList = getPressureResourceDetailList(resource.getId());
         if (CollectionUtils.isNotEmpty(detailEntityList)) {
             try {
-                List<PressureResourceRelateRemoteCallEntity> allEntitys = Lists.newArrayList();
+                List<PressureResourceRelateRemoteCallEntityV2> allEntitys = Lists.newArrayList();
                 // 根据详情来处理
                 for (int i = 0; i < detailEntityList.size(); i++) {
                     // 获取入口
                     PressureResourceDetailEntity detailEntity = detailEntityList.get(i);
                     // 远程调用梳理
-                    List<PressureResourceRelateRemoteCallEntity> remoteCallEntityList = processRemoteCall(detailEntity);
+                    List<PressureResourceRelateRemoteCallEntityV2> remoteCallEntityList = processRemoteCall_v2(detailEntity);
                     allEntitys.addAll(remoteCallEntityList);
                 }
                 if (CollectionUtils.isNotEmpty(allEntitys)) {
                     // 去重
-                    List<PressureResourceRelateRemoteCallEntity> insertList = allEntitys.stream().collect(
+                    List<PressureResourceRelateRemoteCallEntityV2> insertList = allEntitys.stream().collect(
                             Collectors.collectingAndThen(
                                     Collectors.toCollection(
                                             () -> new TreeSet<>(Comparator.comparing(p -> p.getMd5()))), ArrayList::new));
-                    pressureResourceRelateRemoteCallDAO.saveOrUpdate(insertList);
+                    // 找到未添加的
+                    List<PressureResourceRelateRemoteCallEntityV2> unFindList = insertList.stream().filter(call -> !call.isFind()).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(unFindList)) {
+                        unFindList.stream().forEach(call -> {
+                            AppRemoteCallUpdateInput updateInput = new AppRemoteCallUpdateInput();
+                            Long appId = applicationService.queryApplicationIdByAppName(call.getAppName());
+                            updateInput.setApplicationId(appId);
+                            updateInput.setAppName(call.getAppName());
+                            updateInput.setInterfaceName(call.getInterfaceName());
+                            updateInput.setInterfaceType(call.getInterfaceType());
+                            updateInput.setInterfaceChildType(call.getInterfaceChildType());
+                            updateInput.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
+                            appRemoteCallService.update(updateInput);
+                        });
+                    }
+                    List<PressureResourceRelateRemoteCallEntityV2> findList = insertList.stream().filter(call -> call.isFind()).collect(Collectors.toList());
+                    pressureResourceRelateRemoteCallDAO.saveOrUpdate_v2(findList);
                 }
             } catch (Throwable e) {
                 logger.error(ExceptionUtils.getStackTrace(e));
@@ -383,7 +408,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
      * @param detailEntity
      * @return
      */
-    private void processRelate(PressureResourceDetailEntity detailEntity, Integer isolateType) {
+    private void processRelate(PressureResourceDetailEntity detailEntity, PressureResourceEntity resource) {
         Long resourceId = detailEntity.getResourceId();
         // 链路拓扑图查询
         ApplicationEntranceTopologyQueryRequest request = new ApplicationEntranceTopologyQueryRequest();
@@ -410,15 +435,22 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             // 获取边集合
             List<LinkEdgeDTO> edgeDTOList = applicationEntrancesTopology.getEdges();
             // 隔离方案未设置,暂时不处理
-            if (!(isolateType == IsolateTypeEnum.DEFAULT.getCode())) {
+            if (!(resource.getIsolateType() == IsolateTypeEnum.DEFAULT.getCode())) {
                 if (CollectionUtils.isEmpty(edgeDTOList)) {
                     return;
                 }
-                Pair<List<PressureResourceRelateDsEntity>, List<PressureResourceRelateTableEntity>> pair = handleDsAndTable(resourceId, edgeDTOList, detailEntity);
-                // 保存
-                pressureResourceRelateDsDAO.saveOrUpdate(pair.getLeft());
-                pressureResourceRelateTableDAO.saveOrUpdate(pair.getRight());
+                List<ApplicationDsCreateInputV2> dsCreateInputV2List = handleDsAndTable_relateAppDetail(resource, edgeDTOList, detailEntity);
 
+                if (CollectionUtils.isNotEmpty(dsCreateInputV2List)) {
+                    dsCreateInputV2List.stream().forEach(dsCreateInput -> {
+                        // 同步到原始表之后，这里需要有权限控制，用应用的权限做控制
+                        ApplicationDetailResult appDetail = confCenterService.queryApplicationInfoById(dsCreateInput.getApplicationId());
+                        ContextExt contextExt = new ContextExt();
+                        contextExt.setUserId(appDetail.getUserId());
+                        WebPluginUtils.setCloudUserData(contextExt);
+                        dsService.dsCreateConfig(dsCreateInput);
+                    });
+                }
             }
             // 处理影子消费者
             List<PressureResourceRelateMqConsumerEntity> mqComsuerList = handleMqConsumer(resourceId, edgeDTOList, detailEntity);
@@ -474,7 +506,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                     appEntity.setType(SourceTypeEnum.AUTO.getCode());
                     appEntityList.add(appEntity);
                 } else {
-                    //不处理
+
                     logger.warn("未查询到应用信息{} ", appEntity.getAppName());
                 }
             });
@@ -584,12 +616,13 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
     /**
      * 处理关联的数据源和table
      *
-     * @param resourceId
      * @param edgeDTOList
      * @param detailEntity
      * @return
      */
-    private Pair<List<PressureResourceRelateDsEntity>, List<PressureResourceRelateTableEntity>> handleDsAndTable(Long resourceId, List<LinkEdgeDTO> edgeDTOList, PressureResourceDetailEntity detailEntity) {
+    private List<ApplicationDsCreateInputV2> handleDsAndTable_relateAppDetail(PressureResourceEntity pressureResource,
+                                                                              List<LinkEdgeDTO> edgeDTOList,
+                                                                              PressureResourceDetailEntity detailEntity) {
         // 获取所有的数据库操作信息
         List<LinkEdgeDTO> dbEdgeList = edgeDTOList.stream().filter(edge -> {
             if (edge.getEagleTypeGroup().equals(EdgeTypeGroupEnum.DB.getType())) {
@@ -598,15 +631,12 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             return false;
         }).collect(Collectors.toList());
 
-        // 需要新增的数据源列表
-        List<PressureResourceRelateDsEntity> dsEntityList = Lists.newArrayList();
-        // 需要新增的表信息
-        List<PressureResourceRelateTableEntity> tableEntityList = Lists.newArrayList();
+        // 存储影子库表集合
+        List<ApplicationDsCreateInputV2> dsCreateInputV2List = Lists.newArrayList();
 
         if (CollectionUtils.isNotEmpty(dbEdgeList)) {
-            // 按照URL分组
+            // 按照URL分组,app#ds
             Map<String, List<LinkEdgeDTO>> serviceMap = dbEdgeList.stream().collect(Collectors.groupingBy(dbEdge -> fetchKey(dbEdge)));
-
             for (Map.Entry<String, List<LinkEdgeDTO>> entry : serviceMap.entrySet()) {
                 String key = entry.getKey();
                 String appName = key.split("#")[0];
@@ -614,40 +644,45 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                 if ("null".equals(appName)) {
                     continue;
                 }
+                // 库名
                 String dbName = DbNameUtil.getDbName(database);
                 if (PtUtils.isShadow(dbName)) {
                     continue;
                 }
-                PressureResourceRelateDsEntity dsEntity = new PressureResourceRelateDsEntity();
-                dsEntity.setResourceId(resourceId);
-                dsEntity.setDetailId(detailEntity.getId());
-                dsEntity.setAppName(appName);
+                ApplicationDsCreateInputV2 dsCreateInputV2 = new ApplicationDsCreateInputV2();
+                dsCreateInputV2.setResourceId(pressureResource.getId());
+                dsCreateInputV2.setDetailId(detailEntity.getId());
+                dsCreateInputV2.setTenantId(WebPluginUtils.traceTenantId());
+                dsCreateInputV2.setEnvCode(WebPluginUtils.traceEnvCode());
+                dsCreateInputV2.setType(1);
                 // 从任意的边里面获取数据源详情信息
                 LinkEdgeDTO edgeDTO = entry.getValue().get(0);
                 List<AppShadowDatabaseDTO> dsList = edgeDTO.getDsList();
                 if (CollectionUtils.isEmpty(dsList)) {
                     logger.warn("应用数据源未梳理完成,{}", database);
                 } else {
+                    // 业务数据源相关信息
                     AppShadowDatabaseDTO appShadowDatabaseDTO = dsList.get(0);
-                    dsEntity.setBusinessUserName(appShadowDatabaseDTO.getTableUser());
-                    dsEntity.setMiddlewareName(appShadowDatabaseDTO.getConnectionPool());
-                    dsEntity.setMiddlewareType(appShadowDatabaseDTO.getMiddlewareType());
+                    dsCreateInputV2.setUsername(appShadowDatabaseDTO.getTableUser());
+                    dsCreateInputV2.setConnectionPool(appShadowDatabaseDTO.getConnectionPool());
+                    dsCreateInputV2.setMiddlewareType(appShadowDatabaseDTO.getMiddlewareType());
                 }
-                dsEntity.setBusinessDatabase(database);
-                dsEntity.setTenantId(WebPluginUtils.traceTenantId());
-                dsEntity.setEnvCode(WebPluginUtils.traceEnvCode());
-                dsEntity.setStatus(StatusEnum.NO.getCode());
-                dsEntity.setType(SourceTypeEnum.AUTO.getCode());
-                dsEntity.setGmtCreate(new Date());
-                // 生成唯一key,按应用区分
-                dsEntity.setUniqueKey(DataSourceUtil.generateDsUniqueKey(resourceId, appName, database));
-                // 这里生成的dskey是关联表的,表里面是不区分应用的
-                String dsKey = DataSourceUtil.generateDsKey(resourceId, database);
-                dsEntityList.add(dsEntity);
+                // 通过应用名获取应用Id
+                Long appId = applicationService.queryApplicationIdByAppName(appName);
+                if (appId == null) {
+                    logger.warn("应用名{}对应的应用Id不存在", appName);
+                    continue;
+                }
+                dsCreateInputV2.setApplicationId(appId);
+                dsCreateInputV2.setApplicationName(appName);
+                dsCreateInputV2.setUrl(database);
+                dsCreateInputV2.setDsType(IsolateTypeEnum.convertDsType(pressureResource.getIsolateType()));
 
                 List<LinkEdgeDTO> value = entry.getValue();
                 // 没有设置隔离类型的话,暂时不处理关联表信息,减少没必要的数据梳理
-                if (CollectionUtils.isNotEmpty(value)) {
+                if (CollectionUtils.isNotEmpty(value)
+                        && pressureResource.getIsolateType() == IsolateTypeEnum.SHADOW_TABLE.getCode()) {
+                    List<ShadowDetailResponse.TableInfo> tableInfoList = Lists.newArrayList();
                     for (int k = 0; k < value.size(); k++) {
                         // 存在逗号分割的数据
                         String method = value.get(k).getMethod();
@@ -662,29 +697,35 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
                                 continue;
                             }
                             if (StringUtils.isBlank(tableName)) {
-                                logger.warn("链路梳理结果错误,表信息未梳理 {}", resourceId);
+                                logger.warn("链路梳理结果错误,表信息未梳理 {}", pressureResource.getId());
                                 continue;
                             }
-                            PressureResourceRelateTableEntity tableEntity = new PressureResourceRelateTableEntity();
-                            tableEntity.setResourceId(resourceId);
-                            tableEntity.setBusinessTable(tableName);
+                            // 影子表扩展信息
+                            ShadowDetailResponse.TableInfo tableInfo = new ShadowDetailResponse.TableInfo();
+                            tableInfo.setResourceId(pressureResource.getId());
+                            tableInfo.setDetailId(detailEntity.getId());
+                            tableInfo.setBizTableName(tableName);
                             // 系统自动处理影子表
-                            tableEntity.setShadowTable(PtUtils.shadowTable(tableName));
-                            tableEntity.setDsKey(dsKey);
-                            tableEntity.setGmtCreate(new Date());
-                            tableEntity.setJoinFlag(JoinFlagEnum.YES.getCode());
-                            tableEntity.setStatus(StatusEnum.NO.getCode());
-                            tableEntity.setType(SourceTypeEnum.AUTO.getCode());
-                            tableEntity.setTenantId(WebPluginUtils.traceTenantId());
-                            tableEntity.setEnvCode(WebPluginUtils.traceEnvCode());
+                            tableInfo.setShaDowTableName(PtUtils.shadowTable(tableName));
+                            tableInfo.setBizDatabase(dbName);
+                            tableInfo.setIsManual(false);
+                            tableInfo.setIsCheck(false);
 
-                            tableEntityList.add(tableEntity);
+                            tableInfoList.add(tableInfo);
                         }
                     }
+
+                    // 设置影子库表
+                    if (CollectionUtils.isNotEmpty(tableInfoList)) {
+                        Map<String, Object> shaDowTaleInfo = Maps.newHashMap();
+                        shaDowTaleInfo.put("shaDowTaleInfo", JSON.toJSONString(tableInfoList));
+                        dsCreateInputV2.setExtInfo(JSON.toJSONString(shaDowTaleInfo));
+                    }
                 }
+                dsCreateInputV2List.add(dsCreateInputV2);
             }
         }
-        return Pair.of(dsEntityList, tableEntityList);
+        return dsCreateInputV2List;
     }
 
     /**
@@ -693,7 +734,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
      * @param detailEntity
      * @return
      */
-    private List<PressureResourceRelateRemoteCallEntity> processRemoteCall(PressureResourceDetailEntity detailEntity) {
+    private List<PressureResourceRelateRemoteCallEntityV2> processRemoteCall_v2(PressureResourceDetailEntity detailEntity) {
         // 通过linkId去查询远程调用
         ApplicationRemoteCallQueryDTO callQueryDTO = new ApplicationRemoteCallQueryDTO();
         callQueryDTO.setLinkId(detailEntity.getLinkId());
@@ -723,8 +764,8 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
         Map<String, InterfaceTypeChildEntity> childEntityMap = interfaceTypeChildDAO.selectToMapWithNameKey();
         List<ApplicationRemoteCallDTO> list = pageList.getList();
         // 保存
-        List<PressureResourceRelateRemoteCallEntity> callEntityList = list.stream().map(item -> {
-            PressureResourceRelateRemoteCallEntity callEntity = new PressureResourceRelateRemoteCallEntity();
+        List<PressureResourceRelateRemoteCallEntityV2> callEntityList = list.stream().map(item -> {
+            PressureResourceRelateRemoteCallEntityV2 callEntity = new PressureResourceRelateRemoteCallEntityV2();
             callEntity.setResourceId(detailEntity.getResourceId());
             callEntity.setDetailId(detailEntity.getId());
             callEntity.setAppName(item.getAppName());
@@ -738,9 +779,7 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             } else {
                 callEntity.setInterfaceChildType(item.getMiddlewareDetail());
             }
-            callEntity.setMd5(RemoteCallUtils.buildRemoteCallName(String.format("%d-%s", callEntity.getResourceId(), callEntity.getAppName()), callEntity.getInterfaceName(), callEntity.getInterfaceType()));
-            // 默认未配置
-            callEntity.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
+            callEntity.setMd5(RemoteCallUtils.buildRemoteCallName(callEntity.getAppName(), callEntity.getInterfaceName(), callEntity.getInterfaceType()));
             callEntity.setManualTag(0);
             callEntity.setTenantId(WebPluginUtils.traceTenantId());
             callEntity.setEnvCode(WebPluginUtils.traceEnvCode());
@@ -748,19 +787,16 @@ public class PressureResourceCommonServiceImpl implements PressureResourceCommon
             String md5 = RemoteCallUtils.buildRemoteCallName(callEntity.getAppName(), callEntity.getInterfaceName(), callEntity.getInterfaceType());
             List<AppRemoteCallEntity> md5List = md5Map.get(md5);
             callEntity.setPass(PassEnum.defaultPass(callEntity.getInterfaceChildType()));
+            callEntity.setFind(false);
             if (CollectionUtils.isNotEmpty(md5List)) {
-                AppRemoteCallEntity tmpEntity = md5List.get(0);
-                callEntity.setServerAppName(tmpEntity.getServerAppName());
-                callEntity.setType(tmpEntity.getType());
-                callEntity.setIsSynchronize(tmpEntity.getIsSynchronize() ? 0 : 1);
                 // 是否放行 - 调用方和非调用方为非http类型的，默认自动放行，开关：开；其余的为关
                 // 0 http 2 feign 1 double
                 if (callEntity.getInterfaceType() != 0 || callEntity.getInterfaceType() != 2) {
                     callEntity.setPass(PassEnum.PASS_YES.getCode());
                 }
+                // 已经找到调用,加个标识，后续直接查询
+                callEntity.setFind(true);
             }
-            // 重新设置下远程调用类型,兼容下原有的类型
-            callEntity.setType(RemoteCallUtil.getType(callEntity));
             callEntity.setStatus(CheckStatusEnum.CHECK_NO.getCode());
             // 设置检测状态,放行的默认不检测，状态默认为检测成功
             if (callEntity.getPass() == PassEnum.PASS_YES.getCode()) {

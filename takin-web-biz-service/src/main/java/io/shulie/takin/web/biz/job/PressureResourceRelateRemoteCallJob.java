@@ -57,6 +57,7 @@ public class PressureResourceRelateRemoteCallJob implements SimpleJob {
         if (CollectionUtils.isEmpty(filterList)) {
             return;
         }
+
         for (int i = 0; i < filterList.size(); i++) {
             PressureResourceEntity resource = filterList.get(i);
             String lockKey = JobRedisUtils.getRedisJobResource(1L, "default", "PressureResourceRelateRemoteCallJob" + resource.getId());

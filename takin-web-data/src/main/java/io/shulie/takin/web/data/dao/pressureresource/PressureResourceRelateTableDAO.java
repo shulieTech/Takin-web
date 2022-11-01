@@ -1,7 +1,8 @@
 package io.shulie.takin.web.data.dao.pressureresource;
 
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntityV2;
+import io.shulie.takin.web.data.model.mysql.pressureresource.RelateTableEntity;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public interface PressureResourceRelateTableDAO {
      *
      * @param dsEntitys
      */
-    void add(List<PressureResourceRelateTableEntity> dsEntitys);
+    void add_V2(List<PressureResourceRelateTableEntityV2> dsEntitys);
 
     /**
      * 分页
@@ -25,18 +26,18 @@ public interface PressureResourceRelateTableDAO {
      * @param param
      * @return
      */
-    PagingList<PressureResourceRelateTableEntity> pageList(PressureResourceTableQueryParam param);
+    PagingList<RelateTableEntity> pageList_v2(PressureResourceTableQueryParam param);
 
     /**
      * @param param
      * @return
      */
-    List<PressureResourceRelateTableEntity> queryList(PressureResourceTableQueryParam param);
+    List<RelateTableEntity> queryList_v2(PressureResourceTableQueryParam param);
 
     /**
      * 批量保存
      *
      * @param tableEntitys
      */
-    void saveOrUpdate(List<PressureResourceRelateTableEntity> tableEntitys);
+    void saveOrUpdate(List<PressureResourceRelateTableEntityV2> tableEntitys);
 }

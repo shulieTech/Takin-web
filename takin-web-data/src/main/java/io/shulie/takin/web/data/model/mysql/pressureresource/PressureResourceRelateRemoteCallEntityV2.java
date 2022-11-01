@@ -19,8 +19,8 @@ import java.util.Date;
 @Data
 @TableName(value = "t_pressure_resource_relate_remote_call")
 @ToString(callSuper = true)
-public class PressureResourceRelateRemoteCallEntity extends TenantBaseEntity {
-    @TableId(value = "ID", type = IdType.AUTO)
+public class PressureResourceRelateRemoteCallEntityV2 extends TenantBaseEntity {
+    @TableId(value = "id", type = IdType.AUTO)
     @ApiModelProperty("ID")
     private Long id;
 
@@ -44,10 +44,6 @@ public class PressureResourceRelateRemoteCallEntity extends TenantBaseEntity {
     @TableField(value = "`interface_type`")
     private Integer interfaceType;
 
-    @ApiModelProperty("服务端应用名")
-    @TableField(value = "`server_app_name`")
-    private String serverAppName;
-
     @ApiModelProperty("应用名")
     @TableField(value = "`app_name`")
     private String appName;
@@ -55,10 +51,6 @@ public class PressureResourceRelateRemoteCallEntity extends TenantBaseEntity {
     @ApiModelProperty("备注")
     @TableField(value = "`remark`")
     private String remark;
-
-    @ApiModelProperty("配置类型0:未配置,1:白名单配置,2:返回值mock,3:转发mock")
-    @TableField(value = "`type`")
-    private Integer type;
 
     @ApiModelProperty("是否放行(0:是 1:否)")
     @TableField(value = "`pass`")
@@ -68,18 +60,6 @@ public class PressureResourceRelateRemoteCallEntity extends TenantBaseEntity {
     @TableField(value = "`rpc_id`")
     private String rpcId;
 
-    @ApiModelProperty("mock返回值")
-    @TableField(value = "`mock_return_value`")
-    private String mockReturnValue;
-
-    @ApiModelProperty("所属用户")
-    @TableField(value = "`user_id`")
-    private Long userId;
-
-    @ApiModelProperty("是否同步")
-    @TableField(value = "`is_synchronize`")
-    private Integer isSynchronize;
-
     @ApiModelProperty("接口子类型")
     @TableField(value = "`interface_child_type`")
     private String interfaceChildType;
@@ -87,14 +67,6 @@ public class PressureResourceRelateRemoteCallEntity extends TenantBaseEntity {
     @ApiModelProperty("是否手动录入 0:否;1:是")
     @TableField(value = "`manual_tag`")
     private Integer manualTag;
-
-    @ApiModelProperty("应用名，接口名称，接口类型，租户id,环境code求md5")
-    @TableField(value = "`md5`")
-    private String md5;
-
-    @ApiModelProperty("是否有效 0:有效;1:无效")
-    @TableField(value = "`is_deleted`")
-    private Integer isDeleted;
 
     @TableField(value = "`gmt_create`")
     @ApiModelProperty("创建时间")
@@ -104,7 +76,17 @@ public class PressureResourceRelateRemoteCallEntity extends TenantBaseEntity {
     @ApiModelProperty("更新时间")
     private Date gmtModified;
 
-    @TableField(value = "`relate_app_remote_call_id`")
-    @ApiModelProperty("关联远程调用表id")
-    private Long relateAppRemoteCallId;
+    @ApiModelProperty("应用名，接口名称，接口类型，租户id,环境code求md5")
+    @TableField(value = "`md5`")
+    private String md5;
+
+    /**
+     * 是否找到客户端调用
+     */
+    @TableField(exist = false)
+    private boolean isFind;
+
+    @ApiModelProperty("mock返回值")
+    @TableField(exist = false)
+    private String mockReturnValue;
 }

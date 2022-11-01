@@ -40,7 +40,7 @@ public class PressureResoureRemoteCallController {
     @ApiOperation("链路压测资源-远程调用-update")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult mock(@RequestBody PressureResourceMockInput input) {
-        pressureResourceRemoteCallService.update(input);
+        pressureResourceRemoteCallService.update_v2(input);
         return ResponseResult.success();
     }
 

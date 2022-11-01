@@ -7,6 +7,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.*;
 import io.shulie.takin.web.biz.service.pressureresource.common.CheckStatusEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.JoinFlagEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
 import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.*;
@@ -20,12 +21,9 @@ import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateAppDA
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceRelateDsDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceDetailMapper;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapper;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapper;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceDetailEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntity;
-import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntity;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateDsMapperV2;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceRelateTableMapperV2;
+import io.shulie.takin.web.data.model.mysql.pressureresource.*;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDetailQueryParam;
@@ -36,6 +34,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -44,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -63,10 +61,10 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     private PressureResourceMapper pressureResourceMapper;
 
     @Resource
-    private PressureResourceRelateDsMapper pressureResourceRelateDsMapper;
+    private PressureResourceRelateDsMapperV2 pressureResourceRelateDsMapperV2;
 
     @Resource
-    private PressureResourceRelateTableMapper pressureResourceRelateTableMapper;
+    private PressureResourceRelateTableMapperV2 pressureResourceRelateTableMapperV2;
 
     @Resource
     private PressureResourceDetailDAO pressureResourceDetailDAO;
@@ -173,14 +171,14 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         pressureResourceDetailMapper.delete(detailWrapper);
 
         // 删除数据源
-        QueryWrapper<PressureResourceRelateDsEntity> dsWrapper = new QueryWrapper<>();
+        QueryWrapper<PressureResourceRelateDsEntityV2> dsWrapper = new QueryWrapper<>();
         dsWrapper.eq("resource_id", resourceId);
-        pressureResourceRelateDsMapper.delete(dsWrapper);
+        pressureResourceRelateDsMapperV2.delete(dsWrapper);
 
         // 删除表
-        QueryWrapper<PressureResourceRelateTableEntity> tableWrapper = new QueryWrapper<>();
+        QueryWrapper<PressureResourceRelateTableEntityV2> tableWrapper = new QueryWrapper<>();
         tableWrapper.eq("resource_id", resourceId);
-        pressureResourceRelateTableMapper.delete(tableWrapper);
+        pressureResourceRelateTableMapperV2.delete(tableWrapper);
 
         // 删除流程
         SceneUpdateParam updateParam = new SceneUpdateParam();
@@ -375,7 +373,12 @@ public class PressureResourceServiceImpl implements PressureResourceService {
     }
 
     private int processStatus(Long id) {
-        Map<String, Integer> processMap = progress(id);
+        Map<String, Integer> processMap = null;
+        try {
+            processMap = progress(id);
+        } catch (Throwable e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
+        }
         // 应用状态是完成,如果其他未开始或已完成,状态就为已完成
         Integer appStatus = processMap.get(ModuleEnum.APP.getCode());
         Integer size = processMap.entrySet().stream()
@@ -482,8 +485,8 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PagingList<PressureResourceRelateAppVO> pageList = pressureResourceAppService.appCheckList(appRequest);
         if (!pageList.isEmpty()) {
             List<PressureResourceRelateAppVO> appVOList = pageList.getList();
-            // 判断状态是否都是正常的
-            int normal = appVOList.stream().filter(app -> app.getStatus() == 0).collect(Collectors.toList()).size();
+            // 判断状态是否都是正常的,不需要检查的,status会设置为null
+            int normal = appVOList.stream().filter(app -> app.getStatus() == null || app.getStatus() == 0).collect(Collectors.toList()).size();
             if (normal == appVOList.size()) {
                 statusMap.put(ModuleEnum.APP.getCode(), FinishStatusEnum.FINSH.getCode());
             }
@@ -496,7 +499,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         // 影子资源检查
         PressureResourceDsQueryParam dsQueryParam = new PressureResourceDsQueryParam();
         dsQueryParam.setResourceId(id);
-        List<PressureResourceRelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam(dsQueryParam);
+        List<RelateDsEntity> dsEntityList = pressureResourceRelateDsDAO.queryByParam_v2(dsQueryParam);
         if (CollectionUtils.isNotEmpty(dsEntityList)) {
             // 判断状态是否都是正常的
             int normal = dsEntityList.stream().filter(ds -> ds.getStatus() == CheckStatusEnum.CHECK_FIN.getCode()).collect(Collectors.toList()).size();
@@ -513,6 +516,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
         PressureResourceRelateRemoteCallRequest callRequest = new PressureResourceRelateRemoteCallRequest();
         callRequest.setResourceId(id);
         callRequest.setPageSize(2000);
+        callRequest.setConvert(true);
         PagingList<PressureResourceRelateRemoteCallVO> callPagingList = pressureResourceRemoteCallService.pageList(callRequest);
         if (!callPagingList.isEmpty()) {
             List<PressureResourceRelateRemoteCallVO> callVOList = callPagingList.getList();
@@ -573,7 +577,7 @@ public class PressureResourceServiceImpl implements PressureResourceService {
                 // 总的应用数
                 extInfo.setTotalSize(appVOList.size());
                 // 正常的应用数
-                Long normalSize = appVOList.stream().filter(app -> app.getStatus() == 0).count();
+                Long normalSize = appVOList.stream().filter(app -> app.getStatus() == 0 || app.getJoinPressure() == JoinFlagEnum.NO.getCode()).count();
                 extInfo.setNormalSize(normalSize.intValue());
                 extInfo.setExceptionSize(appVOList.size() - normalSize.intValue());
             }

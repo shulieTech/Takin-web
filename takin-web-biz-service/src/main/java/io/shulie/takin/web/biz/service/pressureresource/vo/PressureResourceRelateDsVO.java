@@ -28,6 +28,9 @@ public class PressureResourceRelateDsVO extends TenantBaseEntity {
     @ApiModelProperty("应用名称")
     private String appName;
 
+    @ApiModelProperty("数据源+用户名")
+    private String dsKey;
+
     @ApiModelProperty("中间件类型")
     private String middlewareType;
 
@@ -79,6 +82,7 @@ public class PressureResourceRelateDsVO extends TenantBaseEntity {
     private List<PressureResourceDsVO> dsList;
 
     private Integer size;
+
 }
 
 

@@ -111,7 +111,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
         detailResult.setUserName(dsEntity.getBusinessUserName());
         detailResult.setBizDataBase(DbNameUtil.getDbName(dsEntity.getBusinessDatabase()));
         detailResult.setAppId(appId);
-        detailResult.setManualTag(input.getType());
+        detailResult.setManualTag(input.getType() == 0 ? 1 : 0);
         // 加入就是选中
         detailResult.setIsCheck(input.getJoinFlag() == 0 ? 1 : 0);
         List<ApplicationDsDbTableEntity> dsdbList = applicationDsDbTableDAO.batchSave_ext(Arrays.asList(detailResult));

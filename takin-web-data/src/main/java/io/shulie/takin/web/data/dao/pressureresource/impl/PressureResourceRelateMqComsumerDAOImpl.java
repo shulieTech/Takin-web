@@ -186,7 +186,7 @@ public class PressureResourceRelateMqComsumerDAOImpl implements PressureResource
         feature.put("clusterName", object.getString("clusterName"));
         feature.put("clusterAddr", object.getString("monitorUrl"));
         feature.put("providerThreadCount", object.getInteger("poolSize"));
-        feature.put("messageConsumeThreadCount", object.getInteger("messageConsumeThreadCount"));
+        feature.put("consumerThreadCount", object.getInteger("messageConsumeThreadCount"));
         consumer.setFeature(JSON.toJSONString(feature));
     }
 }

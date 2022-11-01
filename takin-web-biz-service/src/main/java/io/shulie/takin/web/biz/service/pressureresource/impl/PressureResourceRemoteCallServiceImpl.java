@@ -167,12 +167,12 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         Double avg = pageList.getList().stream().mapToLong(EntryTraceInfoDTO::getCost).average().orElse(0D);
         mockDetailVO.setResponseTime(String.valueOf(Math.floor(avg)));
         List<String> requests = pageList.getList().stream().map(mock -> {
-            String request = mock.getRequest();
-            if (request.startsWith("{{") && request.endsWith("}}")) {
-                request = request.substring(1);
-                request = request.substring(0, request.length() - 1);
+            String response = mock.getResponse();
+            if (response.startsWith("{{") && response.endsWith("}}")) {
+                response = response.substring(1);
+                response = response.substring(0, response.length() - 1);
             }
-            return request;
+            return response;
         }).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(requests)) {
             mockDetailVO.setRequest(ListUtil.sub(requests, 1, 2));

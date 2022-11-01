@@ -61,6 +61,10 @@ public class ApplicationDsDbTableDAOImpl extends ServiceImpl<ApplicationDsDbTabl
     }
 
     @Override
+    public void saveOrUpdate(List<ApplicationDsDbTableDetailResult> list) {
+    }
+
+    @Override
     public List<ApplicationDsDbTableEntity> batchSave_ext(List<ApplicationDsDbTableDetailResult> list) {
         List<ApplicationDsDbTableEntity> entities = this.getEntitys(list);
         this.saveBatch(entities);
@@ -82,6 +86,11 @@ public class ApplicationDsDbTableDAOImpl extends ServiceImpl<ApplicationDsDbTabl
     @Override
     public ApplicationDsDbTableEntity getOne(Long id) {
         return this.getById(id);
+    }
+
+    @Override
+    public void update_v2(ApplicationDsDbTableEntity entity) {
+        this.updateById(entity);
     }
 
     private ApplicationDsDbTableDetailResult getApplicationDsDbTableDetailResult(ApplicationDsDbTableEntity entity) {

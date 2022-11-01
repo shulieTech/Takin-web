@@ -21,6 +21,7 @@ import io.shulie.takin.web.data.model.mysql.ApplicationDsDbManageEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsDbTableEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateDsEntityV2;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceRelateTableEntityV2;
+import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
 import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsDbTableDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -119,7 +120,7 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
         dsEntity.setBusinessUserName(inputV2.getUsername());
         dsEntity.setRelateId(relateId);
         dsEntity.setBusinessDatabase(inputV2.getUrl());
-        dsEntity.setType(1);
+        dsEntity.setType(inputV2.getType());
         dsEntity.setTenantId(WebPluginUtils.traceTenantId());
         dsEntity.setEnvCode(WebPluginUtils.traceEnvCode());
         dsEntity.setGmtCreate(new Date());
@@ -210,60 +211,85 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
             // 删除，旧的数据不在新的数据里面的
             List<String> delKeyList = oldMap.keySet().stream().filter(nKey -> !newMap.keySet().contains(nKey)).collect(Collectors.toList());
             List<Long> delIds = Lists.newArrayList();
-            for (Map.Entry<String, List<ApplicationDsDbTableDetailResult>> entry : oldMap.entrySet()) {
-                if (delKeyList.contains(entry.getKey())) {
-                    delIds.addAll(entry.getValue().stream().map(it -> it.getId()).collect(Collectors.toList()));
+            if (CollectionUtils.isNotEmpty(delKeyList)) {
+                delKeyList.stream().forEach(delKey -> {
+                    oldMap.get(delKey).stream().forEach(old -> {
+                        delIds.add(old.getId());
+                    });
+                });
+                if (CollectionUtils.isNotEmpty(delIds)) {
+                    dsDbTableDAO.batchDeleted_V2(delIds);
+
+                    // 删除绑定关系
+                    PressureResourceTableQueryParam queryParam = new PressureResourceTableQueryParam();
+                    queryParam.setRelateIds(delIds);
+                    pressureResourceRelateTableDAO.deleteByParam(queryParam);
                 }
-            }
-            if (CollectionUtils.isNotEmpty(delIds)) {
-                dsDbTableDAO.batchDeleted_V2(delIds);
             }
         }
         // 新增,新的key数据不在旧的里面
         List<String> insertKeyList = newMap.keySet().stream().filter(nKey -> !oldMap.keySet().contains(nKey)).collect(Collectors.toList());
         List<ApplicationDsDbTableDetailResult> insertList = Lists.newArrayList();
-        for (Map.Entry<String, List<ApplicationDsDbTableDetailResult>> entry : newMap.entrySet()) {
-            if (insertKeyList.contains(entry.getKey())) {
-                insertList.addAll(entry.getValue());
+        if (CollectionUtils.isNotEmpty(insertKeyList)) {
+            insertKeyList.stream().forEach(insertKey -> {
+                insertList.addAll(newMap.get(insertKey));
+            });
+            List<ApplicationDsDbTableEntity> insertEntitys = dsDbTableDAO.batchSave_ext(insertList);
+            // 新增Id,绑定关系
+            if (inputV2.getResourceId() != null) {
+                List<PressureResourceRelateTableEntityV2> relateTableList = insertEntitys.stream().map(table -> {
+                    PressureResourceRelateTableEntityV2 tableEntityV2 = new PressureResourceRelateTableEntityV2();
+                    tableEntityV2.setRelateId(table.getId());
+                    tableEntityV2.setResourceId(inputV2.getResourceId());
+                    tableEntityV2.setDsKey(DataSourceUtil.generateDsKey_ext(inputV2.getUrl(), inputV2.getUsername()));
+                    tableEntityV2.setType(inputV2.getType() == null ? 0 : inputV2.getType());
+                    tableEntityV2.setTenantId(WebPluginUtils.traceTenantId());
+                    tableEntityV2.setEnvCode(WebPluginUtils.traceEnvCode());
+                    tableEntityV2.setGmtCreate(new Date());
+                    return tableEntityV2;
+                }).collect(Collectors.toList());
+                pressureResourceRelateTableDAO.add_V2(relateTableList);
             }
         }
-        List<ApplicationDsDbTableEntity> insertEntitys = dsDbTableDAO.batchSave_ext(insertList);
-        // 新增Id,绑定关系
-        if (inputV2.getResourceId() != null) {
-            List<PressureResourceRelateTableEntityV2> relateTableList = insertEntitys.stream().map(table -> {
-                PressureResourceRelateTableEntityV2 tableEntityV2 = new PressureResourceRelateTableEntityV2();
-                tableEntityV2.setRelateId(table.getId());
-                tableEntityV2.setResourceId(inputV2.getResourceId());
-                tableEntityV2.setDsKey(DataSourceUtil.generateDsKey_ext(inputV2.getUrl(), inputV2.getUsername()));
-                tableEntityV2.setType(2);
-                tableEntityV2.setTenantId(WebPluginUtils.traceTenantId());
-                tableEntityV2.setEnvCode(WebPluginUtils.traceEnvCode());
-                tableEntityV2.setGmtCreate(new Date());
-                return tableEntityV2;
-            }).collect(Collectors.toList());
-            pressureResourceRelateTableDAO.add_V2(relateTableList);
-        }
+
         // 修改,交集,绑定关系
-        if (inputV2.getResourceId() != null) {
-            List<String> updateKeyList = oldMap.keySet().stream().filter(nKey -> newMap.keySet().contains(nKey)).collect(Collectors.toList());
-            List<PressureResourceRelateTableEntityV2> relateTableList = Lists.newArrayList();
-            for (Map.Entry<String, List<ApplicationDsDbTableDetailResult>> entry : oldMap.entrySet()) {
-                if (updateKeyList.contains(entry.getKey())) {
-                    List<PressureResourceRelateTableEntityV2> tmpList = entry.getValue().stream().map(table -> {
+        List<String> updateKeyList = oldMap.keySet().stream().filter(nKey -> newMap.keySet().contains(nKey)).collect(Collectors.toList());
+        List<PressureResourceRelateTableEntityV2> relateTableList = Lists.newArrayList();
+
+        if (CollectionUtils.isNotEmpty(updateKeyList)) {
+            if (inputV2.getResourceId() == null) {
+                updateKeyList.stream().forEach(updateKey -> {
+                    oldMap.get(updateKey).stream().forEach(oldValue -> {
+                        ApplicationDsDbTableEntity update = new ApplicationDsDbTableEntity();
+                        update.setId(oldValue.getId());
+                        update.setGmtUpdate(new Date());
+                        // 获取新的数据
+                        List<ApplicationDsDbTableDetailResult> newValues = newMap.get(updateKey);
+                        if (CollectionUtils.isNotEmpty(newValues)) {
+                            update.setIsCheck(newValues.get(0).getIsCheck());
+                            dsDbTableDAO.update_v2(update);
+                        }
+                    });
+                });
+            }
+            if (inputV2.getResourceId() != null) {
+                // 关系绑定
+                updateKeyList.stream().forEach(updateKey -> {
+                    List<PressureResourceRelateTableEntityV2> tmpList = oldMap.get(updateKey).stream().map(table -> {
                         PressureResourceRelateTableEntityV2 tableEntityV2 = new PressureResourceRelateTableEntityV2();
-                        tableEntityV2.setRelateId(table.getId());
                         tableEntityV2.setResourceId(inputV2.getResourceId());
+                        tableEntityV2.setRelateId(table.getId());
                         tableEntityV2.setDsKey(DataSourceUtil.generateDsKey_ext(inputV2.getUrl(), inputV2.getUsername()));
-                        tableEntityV2.setType(2);
+                        tableEntityV2.setType(inputV2.getType() == null ? 0 : inputV2.getType());
                         tableEntityV2.setTenantId(WebPluginUtils.traceTenantId());
                         tableEntityV2.setEnvCode(WebPluginUtils.traceEnvCode());
                         tableEntityV2.setGmtCreate(new Date());
                         return tableEntityV2;
                     }).collect(Collectors.toList());
                     relateTableList.addAll(tmpList);
-                }
+                });
+                pressureResourceRelateTableDAO.add_V2(relateTableList);
             }
-            pressureResourceRelateTableDAO.add_V2(relateTableList);
         }
     }
 

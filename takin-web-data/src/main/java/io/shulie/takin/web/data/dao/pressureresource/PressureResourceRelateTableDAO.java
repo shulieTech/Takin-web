@@ -40,4 +40,6 @@ public interface PressureResourceRelateTableDAO {
      * @param tableEntitys
      */
     void saveOrUpdate(List<PressureResourceRelateTableEntityV2> tableEntitys);
+
+    void deleteByParam(PressureResourceTableQueryParam queryParam);
 }

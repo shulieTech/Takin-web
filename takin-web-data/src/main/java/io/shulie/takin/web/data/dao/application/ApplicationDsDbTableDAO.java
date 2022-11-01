@@ -13,18 +13,22 @@ import java.util.List;
  */
 public interface ApplicationDsDbTableDAO {
 
-    List<ApplicationDsDbTableDetailResult> getList(String url,Long appId,String userName);
+    List<ApplicationDsDbTableDetailResult> getList(String url, Long appId, String userName);
 
-    List<ApplicationDsDbTableDetailResult> queryList(String url,Long appId,String userName,String bizTable);
+    List<ApplicationDsDbTableDetailResult> queryList(String url, Long appId, String userName, String bizTable);
 
-    void batchSave(List<ApplicationDsDbTableDetailResult > list);
+    void batchSave(List<ApplicationDsDbTableDetailResult> list);
 
-    List<ApplicationDsDbTableEntity> batchSave_ext(List<ApplicationDsDbTableDetailResult > list);
+    void saveOrUpdate(List<ApplicationDsDbTableDetailResult> list);
 
-    void batchDeleted(List<ApplicationDsDbTableDetailResult > list);
+    List<ApplicationDsDbTableEntity> batchSave_ext(List<ApplicationDsDbTableDetailResult> list);
 
-    void batchDeleted_V2(List<Long > list);
+    void batchDeleted(List<ApplicationDsDbTableDetailResult> list);
+
+    void batchDeleted_V2(List<Long> list);
 
     ApplicationDsDbTableEntity getOne(Long id);
+
+    void update_v2(ApplicationDsDbTableEntity entity);
 }
 

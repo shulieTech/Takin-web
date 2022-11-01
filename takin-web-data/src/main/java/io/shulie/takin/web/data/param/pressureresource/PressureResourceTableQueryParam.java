@@ -4,6 +4,8 @@ import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author xingchen
  * @description: TODO
@@ -25,4 +27,7 @@ public class PressureResourceTableQueryParam extends PageBaseDTO {
 
     @ApiModelProperty("数据源key")
     private String dsKey;
+
+    @ApiModelProperty("relateIds")
+    private List<Long> relateIds;
 }

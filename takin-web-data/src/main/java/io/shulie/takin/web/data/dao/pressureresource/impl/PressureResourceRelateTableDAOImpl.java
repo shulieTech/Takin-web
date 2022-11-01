@@ -127,6 +127,12 @@ public class PressureResourceRelateTableDAOImpl
         });
     }
 
+    @Override
+    public void deleteByParam(PressureResourceTableQueryParam queryParam) {
+        QueryWrapper<PressureResourceRelateTableEntityV2> deleteWrapper = getWrapper_v2(queryParam);
+        pressureResourceRelateTableMapperV2.delete(deleteWrapper);
+    }
+
     private QueryWrapper<PressureResourceRelateTableEntityV2> getWrapper_v2(PressureResourceTableQueryParam param) {
         QueryWrapper<PressureResourceRelateTableEntityV2> queryWrapper = new QueryWrapper<>();
         if (param == null) {
@@ -147,6 +153,9 @@ public class PressureResourceRelateTableDAOImpl
         }
         if (param.getResourceId() != null) {
             queryWrapper.eq("resource_id", param.getResourceId());
+        }
+        if (CollectionUtils.isEmpty(param.getRelateIds())) {
+            queryWrapper.in("relate_id", param.getRelateIds());
         }
         return queryWrapper;
     }

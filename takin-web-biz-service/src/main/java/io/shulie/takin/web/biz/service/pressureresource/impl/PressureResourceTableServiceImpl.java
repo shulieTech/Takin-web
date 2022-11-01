@@ -122,7 +122,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
             tableEntityV2.setResourceId(input.getResourceId());
             tableEntityV2.setRelateId(table.getId());
             tableEntityV2.setDsKey(input.getDsKey());
-            tableEntityV2.setType(1);
+            tableEntityV2.setType(input.getType());
             tableEntityV2.setTenantId(WebPluginUtils.traceTenantId());
             tableEntityV2.setEnvCode(WebPluginUtils.traceEnvCode());
             tableEntityV2.setGmtCreate(new Date());

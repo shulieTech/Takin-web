@@ -154,7 +154,7 @@ public class PressureResourceRelateTableDAOImpl
         if (param.getResourceId() != null) {
             queryWrapper.eq("resource_id", param.getResourceId());
         }
-        if (CollectionUtils.isEmpty(param.getRelateIds())) {
+        if (CollectionUtils.isNotEmpty(param.getRelateIds())) {
             queryWrapper.in("relate_id", param.getRelateIds());
         }
         return queryWrapper;

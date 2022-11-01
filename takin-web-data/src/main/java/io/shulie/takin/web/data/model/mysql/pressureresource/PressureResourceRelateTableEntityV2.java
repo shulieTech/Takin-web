@@ -55,8 +55,4 @@ public class PressureResourceRelateTableEntityV2 extends TenantBaseEntity {
     @TableField(value = "`gmt_modified`")
     @ApiModelProperty("更新时间")
     private Date gmtModified;
-
-    @ApiModelProperty("业务表名")
-    @TableField(value = "`business_table_name`")
-    private String businessTableName;
 }

@@ -181,7 +181,6 @@ public class PressureResourceRelateMqComsumerDAOImpl implements PressureResource
         consumer.setGroup(object.getString("group"));
         consumer.setSystemIdToken(object.getString("systemIdToken"));
         consumer.setTopicTokens(object.getString("topicTokens"));
-
         Map<String, Object> feature = new HashMap<>();
         feature.put("clusterName", object.getString("clusterName"));
         feature.put("clusterAddr", object.getString("monitorUrl"));

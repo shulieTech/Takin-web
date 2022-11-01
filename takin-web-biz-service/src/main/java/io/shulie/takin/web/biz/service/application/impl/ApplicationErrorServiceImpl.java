@@ -155,8 +155,20 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
                         responseList.add(applicationErrorResponse);
                     }
                 } catch (Exception e) {
-                    log.error("异常转换失败：错误信息: {},异常内容{}", message, e.getMessage());
-                    //throw e;
+                    if (e.getMessage().contains("unexpect token error")) {
+                        ApplicationErrorOutput applicationErrorResponse = new ApplicationErrorOutput()
+                                .setExceptionId("web-异常原文显示")
+                                .setAgentIdList(Collections.singletonList(nodeUploadDataDTO.getAgentId()))
+                                .setDescription(message)
+                                .setDetail(message)
+                                .setTime(nodeUploadDataDTO.getExceptionTime());
+                        if (!StringUtil.equals("探针接入异常", applicationErrorResponse.getDetail())
+                                || !StringUtil.equals("探针接入异常", applicationErrorResponse.getDescription())) {
+                            responseList.add(applicationErrorResponse);
+                        }
+                    } else {
+                        log.error("异常转换失败：错误信息: {},异常内容{}", message, e.getMessage());
+                    }
                 }
 
             }

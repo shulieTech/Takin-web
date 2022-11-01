@@ -209,9 +209,7 @@ public class PressureResourceTableServiceImpl implements PressureResourceTableSe
     @Override
     public PagingList<PressureResourceRelateTableVO> pageList_v2(PressureResourceRelateTableRequest request) {
         PressureResourceTableQueryParam param = new PressureResourceTableQueryParam();
-        param.setResourceId(request.getResourceId());
-        param.setDsKey(request.getDsKey());
-
+        BeanUtils.copyProperties(request, param);
         PagingList<RelateTableEntity> pageList = pressureResourceRelateTableDAO.pageList_v2(param);
 
         if (pageList.isEmpty()) {

@@ -79,6 +79,10 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
             if (StringUtils.isNotBlank(vo.getAppName()) && StringUtils.isNotBlank(vo.getServerAppName())) {
                 vo.setInvoke(vo.getAppName() + "调用" + vo.getServerAppName());
             }
+            // mock调整
+            if (StringUtils.isNotBlank(vo.getMockReturnValue())) {
+                vo.setMockInfo(JSON.parseObject(vo.getMockReturnValue(), MockInfo.class));
+            }
             return vo;
         }).collect(Collectors.toList());
         return PagingList.of(returnList, pageList.getTotal());

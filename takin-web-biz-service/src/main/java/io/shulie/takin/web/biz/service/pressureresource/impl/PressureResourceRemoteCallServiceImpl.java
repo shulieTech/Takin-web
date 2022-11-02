@@ -113,15 +113,16 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         if (update.getPass() != null && update.getPass() == PassEnum.PASS_YES.getCode()) {
             update.setStatus(CheckStatusEnum.CHECK_FIN.getCode());
         }
-        // mockReturnValue更新到app_remote_call表中
-        if (mockInput.getMockInfo() != null) {
-            update.setMockReturnValue(JSON.toJSONString(mockInput.getMockInfo()));
-        }
         AppRemoteCallResult callResult = appRemoteCallDAO.queryOne(entity.getAppName(), entity.getInterfaceType(), entity.getInterfaceName());
         AppRemoteCallEntity updateEntity = new AppRemoteCallEntity();
         updateEntity.setId(callResult.getId());
+        // 转换白名单类型
         updateEntity.setType(RemoteCallUtil.getType(update.getMockReturnValue(), update.getPass()));
-        updateEntity.setMockReturnValue(update.getMockReturnValue());
+        // mockReturnValue更新到app_remote_call表中
+        if (mockInput.getMockInfo() != null) {
+            // 转换到远程调用
+            updateEntity.setMockReturnValue(mockInput.getMockInfo().getMockValue());
+        }
         updateEntity.setGmtModified(update.getGmtModified());
         appRemoteCallDAO.updateById(updateEntity);
 

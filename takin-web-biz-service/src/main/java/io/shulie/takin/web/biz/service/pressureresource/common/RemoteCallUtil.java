@@ -26,7 +26,7 @@ public class RemoteCallUtil {
      * @return
      */
     public static Integer getType(String mockReturnValue, Integer pass) {
-        // 假如存在mock的话,判断是什么mock值
+        // 优先匹配mock 假如存在mock的话,判断是什么mock值
         if (StringUtils.isNotBlank(mockReturnValue)) {
             MockInfo mockInfo = JSON.parseObject(mockReturnValue, MockInfo.class);
             // json格式
@@ -39,8 +39,8 @@ public class RemoteCallUtil {
         }
         // 有设置是否通过,而且是未通过的情况，且mock没有值,则为未配置
         if (pass != null && pass == PassEnum.PASS_YES.getCode()) {
-            return 1;
+            return 1; // 白名单
         }
-        return 0;
+        return 0; // 未配置
     }
 }

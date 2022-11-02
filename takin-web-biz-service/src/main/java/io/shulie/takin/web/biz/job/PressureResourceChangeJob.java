@@ -6,6 +6,7 @@ import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
+import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -53,6 +55,10 @@ public class PressureResourceChangeJob implements SimpleJob {
     public void execute(ShardingContext shardingContext) {
         // 查询所有压测资源准备配置
         List<CommandTaskVo> commandTaskVos = pressureResourceCommonService.getTaskFormRedis();
+        CommandTaskVo tmp = new CommandTaskVo();
+        tmp.setResourceId(1580737413246877729L);
+        tmp.setModule(ModuleEnum.DS.getCode());
+        commandTaskVos = Arrays.asList(tmp);
         if (CollectionUtils.isEmpty(commandTaskVos)) {
             return;
         }

@@ -159,6 +159,6 @@ public class InfluxWriter {
         if (StringUtils.isBlank(measurement)) {
             return;
         }
-        influx.query(new Query(String.format("truncate from %s", measurement), database));
+        influx.query(new Query(String.format("truncate %s", measurement), database));
     }
 }

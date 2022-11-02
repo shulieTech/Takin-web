@@ -55,10 +55,6 @@ public class PressureResourceChangeJob implements SimpleJob {
     public void execute(ShardingContext shardingContext) {
         // 查询所有压测资源准备配置
         List<CommandTaskVo> commandTaskVos = pressureResourceCommonService.getTaskFormRedis();
-        CommandTaskVo tmp = new CommandTaskVo();
-        tmp.setResourceId(1580737413246877729L);
-        tmp.setModule(ModuleEnum.DS.getCode());
-        commandTaskVos = Arrays.asList(tmp);
         if (CollectionUtils.isEmpty(commandTaskVos)) {
             return;
         }

@@ -112,6 +112,7 @@ public class DataCalibrationProcessor extends AbstractIndicators
         if (success) {
             // 删除表
             influxWriter.truncateMeasurement(InfluxUtil.getMeasurement(jobId, null, null, null));
+
             Runnable action = () -> {
                 updateReport(jobId);
                 pressureDataCalibration.processCalibrationStatus(jobId, true, "", true);

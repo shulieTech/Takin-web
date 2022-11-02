@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.map.MapUtil;
 import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.fastjson.JSONObject;
 
@@ -128,32 +129,33 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
         }
     }
 
-    private void convertNodeUploadDataList(List<ApplicationErrorOutput> responseList,
-        List<String> nodeUploadDataDTOList) {
+    private void convertNodeUploadDataList(List<ApplicationErrorOutput> responseList, List<String> nodeUploadDataDTOList) {
         nodeUploadDataDTOList.parallelStream().forEach(n -> {
             NodeUploadDataDTO nodeUploadDataDTO = JSONObject.parseObject(n, NodeUploadDataDTO.class);
             Map<String, Object> exceptionMap = nodeUploadDataDTO.getSwitchErrorMap();
-            if (exceptionMap != null && exceptionMap.size() > 0) {
-                for (Map.Entry<String, Object> entry : exceptionMap.entrySet()) {
-                    String message = String.valueOf(entry.getValue());
-                    if (message.contains("errorCode")) {
-                        ExceptionInfo exceptionInfo = null;
-                        try {
-                            exceptionInfo = JSONObject.parseObject(message, ExceptionInfo.class);
-                        } catch (Exception e) {
-                            log.error("异常转换失败：错误信息: {},异常内容{}", message, e.getMessage());
-                        }
-                        ApplicationErrorOutput applicationErrorResponse
-                                = new ApplicationErrorOutput()
-                                .setExceptionId(exceptionInfo != null ? exceptionInfo.getErrorCode() : "web-异常原文显示")
-                                .setAgentIdList(Collections.singletonList(nodeUploadDataDTO.getAgentId()))
-                                .setDescription(exceptionInfo != null ? exceptionInfo.getMessage() : message)
-                                .setDetail(exceptionInfo != null ? exceptionInfo.getDetail() : message)
-                                .setTime(nodeUploadDataDTO.getExceptionTime());
-                        if (!StringUtil.equals("探针接入异常", applicationErrorResponse.getDetail())
-                                || !StringUtil.equals("探针接入异常", applicationErrorResponse.getDescription())) {
+            if (MapUtil.isEmpty(exceptionMap)) {
+                return;
+            }
+            for (Map.Entry<String, Object> entry : exceptionMap.entrySet()) {
+                String message = String.valueOf(entry.getValue());
+                if (!message.contains("errorCode")) {
+                    continue;
+                }
+                ExceptionInfo exceptionInfo = null;
+                try {
+                    exceptionInfo = JSONObject.parseObject(message, ExceptionInfo.class);
+                    ApplicationErrorOutput applicationErrorResponse = new ApplicationErrorOutput().setExceptionId(exceptionInfo != null ? exceptionInfo.getErrorCode() : "web-异常原文显示").setAgentIdList(Collections.singletonList(nodeUploadDataDTO.getAgentId())).setDescription(exceptionInfo != null ? exceptionInfo.getMessage() : message).setDetail(exceptionInfo != null ? exceptionInfo.getDetail() : message).setTime(nodeUploadDataDTO.getExceptionTime());
+                    if (!StringUtil.equals("探针接入异常", applicationErrorResponse.getDetail()) || !StringUtil.equals("探针接入异常", applicationErrorResponse.getDescription())) {
+                        responseList.add(applicationErrorResponse);
+                    }
+                } catch (Exception e) {
+                    if (e.getMessage().contains("unexpect token error")) {
+                        ApplicationErrorOutput applicationErrorResponse = new ApplicationErrorOutput().setExceptionId("web-异常原文显示").setAgentIdList(Collections.singletonList(nodeUploadDataDTO.getAgentId())).setDescription(message).setDetail(message).setTime(nodeUploadDataDTO.getExceptionTime());
+                        if (!StringUtil.equals("探针接入异常", applicationErrorResponse.getDetail()) || !StringUtil.equals("探针接入异常", applicationErrorResponse.getDescription())) {
                             responseList.add(applicationErrorResponse);
                         }
+                    } else {
+                        log.error("异常转换失败：错误信息: {},异常内容{}", message, e.getMessage());
                     }
                 }
             }
@@ -166,7 +168,7 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames);
         applicationResultList.forEach(app -> {
             InstanceInfoResult result = app.getInstanceInfo();
-            if (!result.getInstanceAmount().equals(result.getInstanceOnlineAmount())) {
+            if (result.getInstanceAmount().equals(result.getInstanceOnlineAmount())) {
                 ApplicationExceptionOutput output = new ApplicationExceptionOutput();
                 output.setApplicationName(app.getAppName());
                 output.setAgentIds(Arrays.asList("-"));
@@ -177,44 +179,45 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
             }
             //redisKey改造
             String appUniqueKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
-                WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceTenantCode(),
-                app.getAppId() + ApplicationServiceImpl.PRADAR_SEPERATE_FLAG);
+                    WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceTenantCode(),
+                    app.getAppId() + ApplicationServiceImpl.PRADAR_SEPERATE_FLAG);
             Set<String> keys = redisTemplate.keys(appUniqueKey + "*");
-            if (keys != null) {
-                for (String nodeKey : keys) {
-                    List<String> nodeUploadDataDTOList = redisTemplate.opsForList().range(nodeKey, 0, -1);
-                    if (CollectionUtils.isEmpty(nodeUploadDataDTOList)) {
-                        continue;
-                    } else {
-                        nodeUploadDataDTOList.forEach(n -> {
-                            NodeUploadDataDTO nodeUploadDataDTO = JSONObject.parseObject(n, NodeUploadDataDTO.class);
-                            Map<String, Object> exceptionMap = nodeUploadDataDTO.getSwitchErrorMap();
-                            if (exceptionMap != null && exceptionMap.size() > 0) {
-                                for (Map.Entry<String, Object> entry : exceptionMap.entrySet()) {
-                                    String message = String.valueOf(entry.getValue());
-                                    if (message.contains("errorCode")) {
-                                        try {
-                                            ExceptionInfo exceptionInfo = JSONObject.parseObject(message,
-                                                ExceptionInfo.class);
-                                            ApplicationExceptionOutput output = new ApplicationExceptionOutput();
-                                            output.setApplicationName(app.getAppName());
-                                            output.setAgentIds(Arrays.asList(nodeUploadDataDTO.getAgentId()));
-                                            output.setCode(exceptionInfo.getErrorCode());
-                                            output.setDescription(exceptionInfo.getMessage());
-                                            // todo 时间需要修改
-                                            output.setTime(nodeUploadDataDTO.getExceptionTime());
-                                            // todo 明细不全不传 exceptionInfo.getDetail()
-                                            outputs.add(output);
-                                        } catch (Exception e) {
-                                            log.error(message);
-                                            log.error("异常转换失败：", e);
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                    }
+            if (keys == null) {
+                return;
+            }
+            for (String nodeKey : keys) {
+                List<String> nodeUploadDataDTOList = redisTemplate.opsForList().range(nodeKey, 0, -1);
+                if (CollectionUtils.isEmpty(nodeUploadDataDTOList)) {
+                    continue;
                 }
+                nodeUploadDataDTOList.forEach(n -> {
+                    NodeUploadDataDTO nodeUploadDataDTO = JSONObject.parseObject(n, NodeUploadDataDTO.class);
+                    Map<String, Object> exceptionMap = nodeUploadDataDTO.getSwitchErrorMap();
+                    if (MapUtil.isEmpty(exceptionMap)) {
+                        return;
+                    }
+                    for (Map.Entry<String, Object> entry : exceptionMap.entrySet()) {
+                        String message = String.valueOf(entry.getValue());
+                        if (!message.contains("errorCode")) {
+                            continue;
+                        }
+                        try {
+                            ExceptionInfo exceptionInfo = JSONObject.parseObject(message, ExceptionInfo.class);
+                            ApplicationExceptionOutput output = new ApplicationExceptionOutput();
+                            output.setApplicationName(app.getAppName());
+                            output.setAgentIds(Arrays.asList(nodeUploadDataDTO.getAgentId()));
+                            output.setCode(exceptionInfo.getErrorCode());
+                            output.setDescription(exceptionInfo.getMessage());
+                            // todo 时间需要修改
+                            output.setTime(nodeUploadDataDTO.getExceptionTime());
+                            // todo 明细不全不传 exceptionInfo.getDetail()
+                            outputs.add(output);
+                        } catch (Exception e) {
+                            log.error(message);
+                            log.error("异常转换失败：", e);
+                        }
+                    }
+                });
             }
         });
         return outputs;

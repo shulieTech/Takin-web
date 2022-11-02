@@ -117,7 +117,8 @@ public class PressureResourceRemoteCallServiceImpl implements PressureResourceRe
         AppRemoteCallEntity updateEntity = new AppRemoteCallEntity();
         updateEntity.setId(callResult.getId());
         // 转换白名单类型
-        updateEntity.setType(RemoteCallUtil.getType(update.getMockReturnValue(), update.getPass()));
+        String mockReturnValue = mockInput.getMockInfo() == null ? null : JSON.toJSONString(mockInput.getMockInfo());
+        updateEntity.setType(RemoteCallUtil.getType(mockReturnValue, update.getPass()));
         // mockReturnValue更新到app_remote_call表中
         if (mockInput.getMockInfo() != null) {
             // 转换到远程调用

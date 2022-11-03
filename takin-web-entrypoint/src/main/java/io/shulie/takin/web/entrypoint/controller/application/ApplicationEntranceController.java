@@ -21,17 +21,17 @@ import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -139,6 +139,12 @@ public class ApplicationEntranceController {
             throw new TakinWebException(ExceptionCode.APP_LINK_TOPOLOGY_ERROR, "没有应用名");
         }
         return linkTopologyService.getApplicationEntrancesTopology(request, false);
+    }
+
+    @ApiOperation("入口服务拓扑图导出")
+    @GetMapping("/topology/export")
+    public void export(@Validated ApplicationEntranceTopologyQueryRequest request, HttpServletResponse response) {
+        linkTopologyService.exportTopology(response, request);
     }
 
     @PostMapping("/updateUnknownNode")

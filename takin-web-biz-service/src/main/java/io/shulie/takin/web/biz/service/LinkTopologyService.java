@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -1982,7 +1983,7 @@ public class LinkTopologyService extends CommonService {
         //消息信息
         sheets.add(this.getLinkMqExportVO(applicationEntrancesTopology, request.getServiceName()));
         try {
-            ExcelUtils.exportExcelManySheet(response, "链路信息导出-", sheets);
+            ExcelUtils.exportExcelManySheet(response, "链路信息导出", sheets);
         } catch (Exception e) {
             log.error("链路导出出现异常: {}", e.getMessage(), e);
         }

@@ -24,6 +24,7 @@ public class LinkApplicationInfoExportVO {
     @ExcelProperty(value ="探针数",index = 3)
     private String agentNum;
 
+    @ColumnWidth(15)
     @ExcelProperty(value ="是否加入压测范围",index = 4)
     private String isAddPressureScope;
 }

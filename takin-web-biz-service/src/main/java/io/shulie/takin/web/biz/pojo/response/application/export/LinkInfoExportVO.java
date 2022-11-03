@@ -14,6 +14,7 @@ public class LinkInfoExportVO {
     @ExcelProperty(value ="链路名称",index = 0)
     private String linkName;
 
+    @ColumnWidth(20)
     @ExcelProperty(value ="业务环节名称",index = 1)
     private String entranceName;
 

@@ -15,12 +15,15 @@ public class LinkMqExportVO {
     @ExcelProperty(value ="请求入口url",index = 0)
     private String entranceUrl;
 
+    @ColumnWidth(10)
     @ExcelProperty(value ="topic",index = 1)
     private String topic;
 
+    @ColumnWidth(10)
     @ExcelProperty(value ="生产/消费组",index = 2)
     private String group;
 
+    @ColumnWidth(10)
     @ExcelProperty(value ="MQ类型",index = 3)
     private String mqType;
 
@@ -35,6 +38,7 @@ public class LinkMqExportVO {
     @ExcelProperty(value ="隔离方案",index = 6)
     private String quarantineMethod;
 
+    @ColumnWidth(15)
     @ExcelProperty(value ="是否影子集群",index = 7)
     private String isCluster;
 
@@ -45,6 +49,7 @@ public class LinkMqExportVO {
     @ExcelProperty(value ="集群名称",index = 9)
     private String clusterName;
 
+    @ColumnWidth(10)
     @ExcelProperty(value ="消费线程数",index = 10)
     private String consumerThreadNum;
 }

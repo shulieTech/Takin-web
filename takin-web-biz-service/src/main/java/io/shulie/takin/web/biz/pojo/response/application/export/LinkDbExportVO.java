@@ -18,6 +18,7 @@ public class LinkDbExportVO {
     @ExcelProperty(value ="业务数据源地址",index = 1)
     private String bizDbAddress;
 
+    @ColumnWidth(10)
     @ExcelProperty(value ="中间件类型",index = 2)
     private String middlewareType;
 
@@ -28,15 +29,19 @@ public class LinkDbExportVO {
     @ExcelProperty(value ="应用",index = 4)
     private String applications;
 
+    @ColumnWidth(15)
     @ExcelProperty(value ="业务库",index = 5)
     private String dbName;
 
+    @ColumnWidth(15)
     @ExcelProperty(value ="业务表",index = 6)
     private String dsName;
 
+    @ColumnWidth(5)
     @ExcelProperty(value ="类型",index = 7)
     private String type;
 
+    @ColumnWidth(15)
     @ExcelProperty(value ="是否加入影子表",index = 8)
     private String isAddShadowDs;
 }

@@ -2049,7 +2049,7 @@ public class LinkTopologyService extends CommonService {
         linkMqSheets.setData(linkMqExportVOS);
         linkMqSheets.setExcelModelClass(LinkMqExportVO.class);
         linkMqSheets.setSheetName(LinkSheetEnum.LINK_MQ.getDesc());
-        linkMqSheets.setSheetNum(LinkSheetEnum.values().length - 1);
+        linkMqSheets.setSheetNum(LinkSheetEnum.LINK_MQ.ordinal());
         return linkMqSheets;
     }
 
@@ -2087,7 +2087,7 @@ public class LinkTopologyService extends CommonService {
         remoteCallSheet.setData(remoteCallExportVOS);
         remoteCallSheet.setExcelModelClass(LinkRemoteCallExportVO.class);
         remoteCallSheet.setSheetName(LinkSheetEnum.LINK_REMOTE_CALL.getDesc());
-        remoteCallSheet.setSheetNum(LinkSheetEnum.values().length - 1);
+        remoteCallSheet.setSheetNum(LinkSheetEnum.LINK_REMOTE_CALL.ordinal());
         return remoteCallSheet;
     }
 
@@ -2126,7 +2126,7 @@ public class LinkTopologyService extends CommonService {
         linkDbSheets.setData(linkDbExportVOS);
         linkDbSheets.setExcelModelClass(LinkDbExportVO.class);
         linkDbSheets.setSheetName(LinkSheetEnum.LINK_DB.getDesc());
-        linkDbSheets.setSheetNum(LinkSheetEnum.values().length - 1);
+        linkDbSheets.setSheetNum(LinkSheetEnum.LINK_DB.ordinal());
         return linkDbSheets;
     }
 
@@ -2149,7 +2149,7 @@ public class LinkTopologyService extends CommonService {
         linkApplicationSheets.setData(linkApplicationInfoExportVOS);
         linkApplicationSheets.setExcelModelClass(LinkApplicationInfoExportVO.class);
         linkApplicationSheets.setSheetName(LinkSheetEnum.LINK_APPLICATION_INFO.getDesc());
-        linkApplicationSheets.setSheetNum(LinkSheetEnum.values().length - 1);
+        linkApplicationSheets.setSheetNum(LinkSheetEnum.LINK_APPLICATION_INFO.ordinal());
         return linkApplicationSheets;
     }
 
@@ -2159,7 +2159,7 @@ public class LinkTopologyService extends CommonService {
         remoteCallSheet.setData(new ArrayList<>());
         remoteCallSheet.setExcelModelClass(LinkInfoExportVO.class);
         remoteCallSheet.setSheetName(LinkSheetEnum.LINK_INFO.getDesc());
-        remoteCallSheet.setSheetNum(LinkSheetEnum.values().length - 1);
+        remoteCallSheet.setSheetNum(LinkSheetEnum.LINK_INFO.ordinal());
         return remoteCallSheet;
     }
 

@@ -1991,60 +1991,62 @@ public class LinkTopologyService extends CommonService {
     private ExcelSheetVO<?> getLinkMqExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
         ExcelSheetVO<LinkMqExportVO> linkMqSheets = new ExcelSheetVO<>();
         List<LinkMqExportVO> linkMqExportVOS = new ArrayList<>();
-        List<LinkNodeDTO> mqLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
-                NodeTypeGroupEnum.MQ.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
-        List<LinkEdgeDTO> edges = applicationEntrancesTopology.getEdges();
-        if (CollectionUtils.isNotEmpty(mqLinkNodes)) {
-            mqLinkNodes.forEach(linkNodeDTO -> {
-                List<LinkEdgeDTO> targetLinkEdgeDTOS = edges.stream().filter(o -> linkNodeDTO.getNodeId().equals(o.getTargetId())).collect(Collectors.toList());
-                List<LinkEdgeDTO> sourceLinkEdgeDTOS = edges.stream().filter(o -> linkNodeDTO.getNodeId().equals(o.getSourceId())).collect(Collectors.toList());
-                //目前指向mq，是生产者
-                if (CollectionUtils.isNotEmpty(targetLinkEdgeDTOS)) {
-                    Map<String, List<LinkEdgeDTO>> stringListMap = targetLinkEdgeDTOS.stream().collect(Collectors.groupingBy(o -> o.getService() + "_" + o.getMethod()));
-                    stringListMap.forEach((k, v) -> {
-                        List<String> appNodeIds = v.stream().map(LinkEdgeDTO::getSourceId).collect(Collectors.toList());
-                        List<String> appNodeNames = applicationEntrancesTopology.getNodes().stream().filter(o ->
-                                appNodeIds.contains(o.getNodeId())).map(LinkNodeDTO::getNodeName).collect(Collectors.toList());
-                        LinkEdgeDTO linkEdgeDTO = v.get(0);
-                        LinkMqExportVO linkMqExportVO = new LinkMqExportVO();
-                        linkMqExportVO.setEntranceUrl(serviceName);
-                        linkMqExportVO.setTopic(linkEdgeDTO.getService());
-                        linkMqExportVO.setGroup(linkEdgeDTO.getMethod());
-                        linkMqExportVO.setMqType(linkEdgeDTO.getMiddlewareName());
-                        linkMqExportVO.setSourceApplication(this.listToString(appNodeNames));
-                        linkMqExportVO.setType("生产");
-                        linkMqExportVO.setQuarantineMethod("");
-                        linkMqExportVO.setIsCluster("");
-                        linkMqExportVO.setClusterAddress(linkNodeDTO.getExtendInfo() == null ? "" : linkNodeDTO.getExtendInfo().toString());
-                        linkMqExportVO.setClusterName("");
-                        linkMqExportVO.setConsumerThreadNum("");
-                        linkMqExportVOS.add(linkMqExportVO);
-                    });
-                }
-                //消费者
-                if (CollectionUtils.isNotEmpty(sourceLinkEdgeDTOS)) {
-                    Map<String, List<LinkEdgeDTO>> stringListMap = sourceLinkEdgeDTOS.stream().collect(Collectors.groupingBy(o -> o.getService() + "_" + o.getMethod()));
-                    stringListMap.forEach((k, v) -> {
-                        List<String> appNodeIds = v.stream().map(LinkEdgeDTO::getTargetId).collect(Collectors.toList());
-                        List<String> appNodeNames = applicationEntrancesTopology.getNodes().stream().filter(o ->
-                                appNodeIds.contains(o.getNodeId())).map(LinkNodeDTO::getNodeName).collect(Collectors.toList());
-                        LinkEdgeDTO linkEdgeDTO = v.get(0);
-                        LinkMqExportVO linkMqExportVO = new LinkMqExportVO();
-                        linkMqExportVO.setEntranceUrl(serviceName);
-                        linkMqExportVO.setTopic(linkEdgeDTO.getService());
-                        linkMqExportVO.setGroup(linkEdgeDTO.getMethod());
-                        linkMqExportVO.setMqType(linkEdgeDTO.getMiddlewareName());
-                        linkMqExportVO.setSourceApplication(this.listToString(appNodeNames));
-                        linkMqExportVO.setType("消费");
-                        linkMqExportVO.setQuarantineMethod("");
-                        linkMqExportVO.setIsCluster("");
-                        linkMqExportVO.setClusterAddress(linkNodeDTO.getExtendInfo() == null ? "" : linkNodeDTO.getExtendInfo().toString());
-                        linkMqExportVO.setClusterName("");
-                        linkMqExportVO.setConsumerThreadNum("");
-                        linkMqExportVOS.add(linkMqExportVO);
-                    });
-                }
-            });
+        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())){
+            List<LinkNodeDTO> mqLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                    NodeTypeGroupEnum.MQ.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
+            List<LinkEdgeDTO> edges = applicationEntrancesTopology.getEdges();
+            if (CollectionUtils.isNotEmpty(mqLinkNodes)) {
+                mqLinkNodes.forEach(linkNodeDTO -> {
+                    List<LinkEdgeDTO> targetLinkEdgeDTOS = edges.stream().filter(o -> linkNodeDTO.getNodeId().equals(o.getTargetId())).collect(Collectors.toList());
+                    List<LinkEdgeDTO> sourceLinkEdgeDTOS = edges.stream().filter(o -> linkNodeDTO.getNodeId().equals(o.getSourceId())).collect(Collectors.toList());
+                    //目前指向mq，是生产者
+                    if (CollectionUtils.isNotEmpty(targetLinkEdgeDTOS)) {
+                        Map<String, List<LinkEdgeDTO>> stringListMap = targetLinkEdgeDTOS.stream().collect(Collectors.groupingBy(o -> o.getService() + "_" + o.getMethod()));
+                        stringListMap.forEach((k, v) -> {
+                            List<String> appNodeIds = v.stream().map(LinkEdgeDTO::getSourceId).collect(Collectors.toList());
+                            Set<String> appNodeNames = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                                    appNodeIds.contains(o.getNodeId())).map(LinkNodeDTO::getNodeName).collect(Collectors.toSet());
+                            LinkEdgeDTO linkEdgeDTO = v.get(0);
+                            LinkMqExportVO linkMqExportVO = new LinkMqExportVO();
+                            linkMqExportVO.setEntranceUrl(serviceName);
+                            linkMqExportVO.setTopic(linkEdgeDTO.getService());
+                            linkMqExportVO.setGroup(linkEdgeDTO.getMethod());
+                            linkMqExportVO.setMqType(linkEdgeDTO.getMiddlewareName());
+                            linkMqExportVO.setSourceApplication(this.listToString(new ArrayList<>(appNodeNames)));
+                            linkMqExportVO.setType("生产");
+                            linkMqExportVO.setQuarantineMethod("");
+                            linkMqExportVO.setIsCluster("");
+                            linkMqExportVO.setClusterAddress(linkNodeDTO.getExtendInfo() == null ? "" : linkNodeDTO.getExtendInfo().toString());
+                            linkMqExportVO.setClusterName("");
+                            linkMqExportVO.setConsumerThreadNum("");
+                            linkMqExportVOS.add(linkMqExportVO);
+                        });
+                    }
+                    //消费者
+                    if (CollectionUtils.isNotEmpty(sourceLinkEdgeDTOS)) {
+                        Map<String, List<LinkEdgeDTO>> stringListMap = sourceLinkEdgeDTOS.stream().collect(Collectors.groupingBy(o -> o.getService() + "_" + o.getMethod()));
+                        stringListMap.forEach((k, v) -> {
+                            List<String> appNodeIds = v.stream().map(LinkEdgeDTO::getTargetId).collect(Collectors.toList());
+                            Set<String> appNodeNames = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                                    appNodeIds.contains(o.getNodeId())).map(LinkNodeDTO::getNodeName).collect(Collectors.toSet());
+                            LinkEdgeDTO linkEdgeDTO = v.get(0);
+                            LinkMqExportVO linkMqExportVO = new LinkMqExportVO();
+                            linkMqExportVO.setEntranceUrl(serviceName);
+                            linkMqExportVO.setTopic(linkEdgeDTO.getService());
+                            linkMqExportVO.setGroup(linkEdgeDTO.getMethod());
+                            linkMqExportVO.setMqType(linkEdgeDTO.getMiddlewareName());
+                            linkMqExportVO.setSourceApplication(this.listToString(new ArrayList<>(appNodeNames)));
+                            linkMqExportVO.setType("消费");
+                            linkMqExportVO.setQuarantineMethod("");
+                            linkMqExportVO.setIsCluster("");
+                            linkMqExportVO.setClusterAddress(linkNodeDTO.getExtendInfo() == null ? "" : linkNodeDTO.getExtendInfo().toString());
+                            linkMqExportVO.setClusterName("");
+                            linkMqExportVO.setConsumerThreadNum("");
+                            linkMqExportVOS.add(linkMqExportVO);
+                        });
+                    }
+                });
+            }
         }
         linkMqSheets.setData(linkMqExportVOS);
         linkMqSheets.setExcelModelClass(LinkMqExportVO.class);
@@ -2056,33 +2058,36 @@ public class LinkTopologyService extends CommonService {
     private ExcelSheetVO<?> getLinkRemoteCallExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
         ExcelSheetVO<LinkRemoteCallExportVO> remoteCallSheet = new ExcelSheetVO<>();
         List<LinkRemoteCallExportVO> remoteCallExportVOS = new ArrayList<>();
-        List<LinkNodeDTO> linkNodeDTOS = applicationEntrancesTopology.getNodes();
-        Map<String, List<LinkNodeDTO>> nodeMap = linkNodeDTOS.stream().collect(Collectors.groupingBy(LinkNodeDTO::getNodeId));
-        List<LinkEdgeDTO> linkEdgeDTOS = applicationEntrancesTopology.getEdges().stream().filter(o ->
-                (o.getRpcType().equals(RpcTypeEnum.HTTP.getValue()) || o.getRpcType().equals(RpcTypeEnum.DUBBO.getValue()))
-                        && o.getLogType().equals(PradarLogType.LOG_TYPE_RPC_SERVER + "")).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(linkEdgeDTOS)) {
-            linkEdgeDTOS.forEach(linkEdgeDTO -> {
-                if (!nodeMap.containsKey(linkEdgeDTO.getSourceId()) || !nodeMap.containsKey(linkEdgeDTO.getTargetId())) {
-                    log.info("边链路中的sourceId或者targetId没有找到对应的节点数据");
-                    return;
-                }
-                LinkNodeDTO sourceLinkNodeDTO = nodeMap.get(linkEdgeDTO.getSourceId()).get(0);
-                LinkNodeDTO targetLinkNodeDTO = nodeMap.get(linkEdgeDTO.getTargetId()).get(0);
-                //入口是虚拟应用，说明是入口的url，不进行导出
-                if (sourceLinkNodeDTO.getNodeType().equals(NodeTypeEnum.VIRTUAL.getType())) {
-                    return;
-                }
-                LinkRemoteCallExportVO linkRemoteCallExportVO = new LinkRemoteCallExportVO();
-                linkRemoteCallExportVO.setEntranceUrl(serviceName);
-                linkRemoteCallExportVO.setRemoteCallApiName(linkEdgeDTO.getService());
-                linkRemoteCallExportVO.setSourceName(sourceLinkNodeDTO.getNodeName());
-                linkRemoteCallExportVO.setTargetName(targetLinkNodeDTO.getNodeName());
-                linkRemoteCallExportVO.setType(linkEdgeDTO.getMiddlewareName());
-                linkRemoteCallExportVO.setIsRelease("");
-                linkRemoteCallExportVO.setMockValue("");
-                remoteCallExportVOS.add(linkRemoteCallExportVO);
-            });
+        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())
+                && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getEdges())){
+            List<LinkNodeDTO> linkNodeDTOS = applicationEntrancesTopology.getNodes();
+            Map<String, List<LinkNodeDTO>> nodeMap = linkNodeDTOS.stream().collect(Collectors.groupingBy(LinkNodeDTO::getNodeId));
+            List<LinkEdgeDTO> linkEdgeDTOS = applicationEntrancesTopology.getEdges().stream().filter(o ->
+                    (o.getRpcType().equals(RpcTypeEnum.HTTP.getValue()) || o.getRpcType().equals(RpcTypeEnum.DUBBO.getValue()))
+                            && o.getLogType().equals(PradarLogType.LOG_TYPE_RPC_SERVER + "")).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(linkEdgeDTOS)) {
+                linkEdgeDTOS.forEach(linkEdgeDTO -> {
+                    if (!nodeMap.containsKey(linkEdgeDTO.getSourceId()) || !nodeMap.containsKey(linkEdgeDTO.getTargetId())) {
+                        log.info("边链路中的sourceId或者targetId没有找到对应的节点数据");
+                        return;
+                    }
+                    LinkNodeDTO sourceLinkNodeDTO = nodeMap.get(linkEdgeDTO.getSourceId()).get(0);
+                    LinkNodeDTO targetLinkNodeDTO = nodeMap.get(linkEdgeDTO.getTargetId()).get(0);
+                    //入口是虚拟应用，说明是入口的url，不进行导出
+                    if (sourceLinkNodeDTO.getNodeType().equals(NodeTypeEnum.VIRTUAL.getType())) {
+                        return;
+                    }
+                    LinkRemoteCallExportVO linkRemoteCallExportVO = new LinkRemoteCallExportVO();
+                    linkRemoteCallExportVO.setEntranceUrl(serviceName);
+                    linkRemoteCallExportVO.setRemoteCallApiName(linkEdgeDTO.getService());
+                    linkRemoteCallExportVO.setSourceName(sourceLinkNodeDTO.getNodeName());
+                    linkRemoteCallExportVO.setTargetName(targetLinkNodeDTO.getNodeName());
+                    linkRemoteCallExportVO.setType(linkEdgeDTO.getMiddlewareName());
+                    linkRemoteCallExportVO.setIsRelease("");
+                    linkRemoteCallExportVO.setMockValue("");
+                    remoteCallExportVOS.add(linkRemoteCallExportVO);
+                });
+            }
         }
         remoteCallSheet.setData(remoteCallExportVOS);
         remoteCallSheet.setExcelModelClass(LinkRemoteCallExportVO.class);
@@ -2094,34 +2099,38 @@ public class LinkTopologyService extends CommonService {
     private ExcelSheetVO<?> getLinkDbExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
         ExcelSheetVO<LinkDbExportVO> linkDbSheets = new ExcelSheetVO<>();
         List<LinkDbExportVO> linkDbExportVOS = new ArrayList<>();
-        List<LinkNodeDTO> dbLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
-                NodeTypeGroupEnum.DB.getType().equals(o.getNodeTypeGroup())
-                        || NodeTypeGroupEnum.CACHE.getType().equals(o.getNodeTypeGroup())
-                        || NodeTypeGroupEnum.SEARCH.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
-        List<LinkEdgeDTO> edges = applicationEntrancesTopology.getEdges();
-        if (CollectionUtils.isNotEmpty(dbLinkNodes)) {
-            dbLinkNodes.forEach(linkNodeDTO -> {
-                List<LinkEdgeDTO> linkEdgeDTOS = edges.stream().filter(o -> linkNodeDTO.getNodeId().equals(o.getTargetId())).collect(Collectors.toList());
-                if (CollectionUtils.isNotEmpty(linkEdgeDTOS)) {
-                    Map<String, List<LinkEdgeDTO>> stringListMap = linkEdgeDTOS.stream().collect(Collectors.groupingBy(o -> o.getService() + "_" + o.getMethod()));
-                    stringListMap.forEach((k, v) -> {
-                        List<String> sourceIdList = v.stream().map(LinkEdgeDTO::getSourceId).collect(Collectors.toList());
-                        List<String> appNames = applicationEntrancesTopology.getNodes().stream().filter(o -> sourceIdList.contains(o.getNodeId())).map(LinkNodeDTO::getNodeName).collect(Collectors.toList());
-                        LinkEdgeDTO linkEdgeDTO = v.get(0);
-                        LinkDbExportVO linkDbExportVO = new LinkDbExportVO();
-                        linkDbExportVO.setEntranceUrl(serviceName);
-                        linkDbExportVO.setBizDbAddress(linkNodeDTO.getExtendInfo() == null ? "" : linkNodeDTO.getExtendInfo().toString());
-                        linkDbExportVO.setMiddlewareType(linkEdgeDTO.getMiddlewareName());
-                        linkDbExportVO.setQuarantineMethod("");
-                        linkDbExportVO.setApplications(this.listToString(appNames));
-                        linkDbExportVO.setDbName(linkNodeDTO.getNodeName());
-                        linkDbExportVO.setDsName(linkEdgeDTO.getMethod());
-                        linkDbExportVO.setType("");
-                        linkDbExportVO.setIsAddShadowDs("");
-                        linkDbExportVOS.add(linkDbExportVO);
-                    });
-                }
-            });
+
+        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())){
+            List<LinkNodeDTO> dbLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                    NodeTypeGroupEnum.DB.getType().equals(o.getNodeTypeGroup())
+                            || NodeTypeGroupEnum.CACHE.getType().equals(o.getNodeTypeGroup())
+                            || NodeTypeGroupEnum.SEARCH.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
+            List<LinkEdgeDTO> edges = applicationEntrancesTopology.getEdges();
+            if (CollectionUtils.isNotEmpty(dbLinkNodes)) {
+                dbLinkNodes.forEach(linkNodeDTO -> {
+                    List<LinkEdgeDTO> linkEdgeDTOS = edges.stream().filter(o -> linkNodeDTO.getNodeId().equals(o.getTargetId())).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(linkEdgeDTOS)) {
+                        Map<String, List<LinkEdgeDTO>> stringListMap = linkEdgeDTOS.stream().collect(Collectors.groupingBy(o -> o.getService() + "_" + o.getMethod()));
+                        stringListMap.forEach((k, v) -> {
+                            List<String> sourceIdList = v.stream().map(LinkEdgeDTO::getSourceId).collect(Collectors.toList());
+                            Set<String> appNames = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                                    sourceIdList.contains(o.getNodeId())).map(LinkNodeDTO::getNodeName).collect(Collectors.toSet());
+                            LinkEdgeDTO linkEdgeDTO = v.get(0);
+                            LinkDbExportVO linkDbExportVO = new LinkDbExportVO();
+                            linkDbExportVO.setEntranceUrl(serviceName);
+                            linkDbExportVO.setBizDbAddress(linkNodeDTO.getExtendInfo() == null ? "" : linkNodeDTO.getExtendInfo().toString());
+                            linkDbExportVO.setMiddlewareType(linkEdgeDTO.getMiddlewareName());
+                            linkDbExportVO.setQuarantineMethod("");
+                            linkDbExportVO.setApplications(this.listToString(new ArrayList<>(appNames)));
+                            linkDbExportVO.setDbName(linkEdgeDTO.getService());
+                            linkDbExportVO.setDsName(linkEdgeDTO.getMethod());
+                            linkDbExportVO.setType("");
+                            linkDbExportVO.setIsAddShadowDs("");
+                            linkDbExportVOS.add(linkDbExportVO);
+                        });
+                    }
+                });
+            }
         }
         linkDbSheets.setData(linkDbExportVOS);
         linkDbSheets.setExcelModelClass(LinkDbExportVO.class);
@@ -2133,18 +2142,20 @@ public class LinkTopologyService extends CommonService {
     private ExcelSheetVO<?> getLinkApplicationInfoExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
         ExcelSheetVO<LinkApplicationInfoExportVO> linkApplicationSheets = new ExcelSheetVO<>();
         List<LinkApplicationInfoExportVO> linkApplicationInfoExportVOS = new ArrayList<>();
-        List<LinkNodeDTO> appLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
-                NodeTypeGroupEnum.APP.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(appLinkNodes)) {
-            appLinkNodes.forEach(linkNodeDTO -> {
-                LinkApplicationInfoExportVO linkApplicationInfoExportVO = new LinkApplicationInfoExportVO();
-                linkApplicationInfoExportVO.setEntranceUrl(serviceName);
-                linkApplicationInfoExportVO.setApplicationName(linkNodeDTO.getNodeName());
-                linkApplicationInfoExportVO.setApplicationNodeNum("");
-                linkApplicationInfoExportVO.setAgentNum("");
-                linkApplicationInfoExportVO.setIsAddPressureScope("");
-                linkApplicationInfoExportVOS.add(linkApplicationInfoExportVO);
-            });
+        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())){
+            List<LinkNodeDTO> appLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                    NodeTypeGroupEnum.APP.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(appLinkNodes)) {
+                appLinkNodes.forEach(linkNodeDTO -> {
+                    LinkApplicationInfoExportVO linkApplicationInfoExportVO = new LinkApplicationInfoExportVO();
+                    linkApplicationInfoExportVO.setEntranceUrl(serviceName);
+                    linkApplicationInfoExportVO.setApplicationName(linkNodeDTO.getNodeName());
+                    linkApplicationInfoExportVO.setApplicationNodeNum("");
+                    linkApplicationInfoExportVO.setAgentNum("");
+                    linkApplicationInfoExportVO.setIsAddPressureScope("");
+                    linkApplicationInfoExportVOS.add(linkApplicationInfoExportVO);
+                });
+            }
         }
         linkApplicationSheets.setData(linkApplicationInfoExportVOS);
         linkApplicationSheets.setExcelModelClass(LinkApplicationInfoExportVO.class);

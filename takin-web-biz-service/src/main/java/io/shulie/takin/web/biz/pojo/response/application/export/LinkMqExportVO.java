@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.pojo.response.application.export;
 
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import lombok.Data;
 
 /**
@@ -10,6 +11,7 @@ import lombok.Data;
 @Data
 public class LinkMqExportVO {
 
+    @ColumnWidth(20)
     @ExcelProperty(value ="请求入口url",index = 0)
     private String entranceUrl;
 
@@ -22,9 +24,11 @@ public class LinkMqExportVO {
     @ExcelProperty(value ="MQ类型",index = 3)
     private String mqType;
 
+    @ColumnWidth(25)
     @ExcelProperty(value ="调用应用",index = 4)
     private String sourceApplication;
 
+    @ColumnWidth(10)
     @ExcelProperty(value ="生产/消费",index = 5)
     private String type;
 
@@ -34,6 +38,7 @@ public class LinkMqExportVO {
     @ExcelProperty(value ="是否影子集群",index = 7)
     private String isCluster;
 
+    @ColumnWidth(20)
     @ExcelProperty(value ="集群地址",index = 8)
     private String clusterAddress;
 

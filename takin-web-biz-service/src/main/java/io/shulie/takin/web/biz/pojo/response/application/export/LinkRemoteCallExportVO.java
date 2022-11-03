@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.pojo.response.application.export;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import lombok.Data;
 
 /**
@@ -9,15 +10,19 @@ import lombok.Data;
 @Data
 public class LinkRemoteCallExportVO {
 
+    @ColumnWidth(20)
     @ExcelProperty(value ="请求入口url",index = 0)
     private String entranceUrl;
 
+    @ColumnWidth(20)
     @ExcelProperty(value ="调用接口名称",index = 1)
     private String remoteCallApiName;
 
+    @ColumnWidth(10)
     @ExcelProperty(value ="调用方",index = 2)
     private String sourceName;
 
+    @ColumnWidth(10)
     @ExcelProperty(value ="被调用方",index = 3)
     private String targetName;
 

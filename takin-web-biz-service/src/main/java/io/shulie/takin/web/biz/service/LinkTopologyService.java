@@ -2056,9 +2056,7 @@ public class LinkTopologyService extends CommonService {
                 && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getEdges())) {
             List<LinkNodeDTO> linkNodeDTOS = applicationEntrancesTopology.getNodes();
             Map<String, List<LinkNodeDTO>> nodeMap = linkNodeDTOS.stream().collect(Collectors.groupingBy(LinkNodeDTO::getNodeId));
-            List<LinkEdgeDTO> linkEdgeDTOS = applicationEntrancesTopology.getEdges().stream().filter(o ->
-                    (o.getRpcType().equals(RpcTypeEnum.HTTP.getValue()) || o.getRpcType().equals(RpcTypeEnum.DUBBO.getValue()))
-                            && o.getLogType().equals(PradarLogType.LOG_TYPE_RPC_SERVER + "")).collect(Collectors.toList());
+            List<LinkEdgeDTO> linkEdgeDTOS = applicationEntrancesTopology.getEdges();
             if (CollectionUtils.isNotEmpty(linkEdgeDTOS)) {
                 linkEdgeDTOS.forEach(linkEdgeDTO -> {
                     if (!nodeMap.containsKey(linkEdgeDTO.getSourceId()) || !nodeMap.containsKey(linkEdgeDTO.getTargetId())) {

@@ -5,6 +5,8 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import lombok.Data;
 
+import java.util.Objects;
+
 /**
  * 链路配置导出-mq相关
  */
@@ -52,4 +54,17 @@ public class LinkMqExportVO {
     @ColumnWidth(10)
     @ExcelProperty(value ="消费线程数",index = 10)
     private String consumerThreadNum;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LinkMqExportVO that = (LinkMqExportVO) o;
+        return Objects.equals(entranceUrl, that.entranceUrl) && Objects.equals(topic, that.topic) && Objects.equals(group, that.group) && Objects.equals(mqType, that.mqType) && Objects.equals(sourceApplication, that.sourceApplication) && Objects.equals(type, that.type) && Objects.equals(quarantineMethod, that.quarantineMethod) && Objects.equals(isCluster, that.isCluster) && Objects.equals(clusterAddress, that.clusterAddress) && Objects.equals(clusterName, that.clusterName) && Objects.equals(consumerThreadNum, that.consumerThreadNum);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entranceUrl, topic, group, mqType, sourceApplication, type, quarantineMethod, isCluster, clusterAddress, clusterName, consumerThreadNum);
+    }
 }

@@ -4,6 +4,8 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import lombok.Data;
 
+import java.util.Objects;
+
 /**
  * 链路配置导出-数据库
  */
@@ -44,4 +46,17 @@ public class LinkDbExportVO {
     @ColumnWidth(15)
     @ExcelProperty(value ="是否加入影子表",index = 8)
     private String isAddShadowDs;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LinkDbExportVO that = (LinkDbExportVO) o;
+        return Objects.equals(entranceUrl, that.entranceUrl) && Objects.equals(bizDbAddress, that.bizDbAddress) && Objects.equals(middlewareType, that.middlewareType) && Objects.equals(quarantineMethod, that.quarantineMethod) && Objects.equals(applications, that.applications) && Objects.equals(dbName, that.dbName) && Objects.equals(dsName, that.dsName) && Objects.equals(type, that.type) && Objects.equals(isAddShadowDs, that.isAddShadowDs);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entranceUrl, bizDbAddress, middlewareType, quarantineMethod, applications, dbName, dsName, type, isAddShadowDs);
+    }
 }

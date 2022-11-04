@@ -4,6 +4,8 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import lombok.Data;
 
+import java.util.Objects;
+
 /**
  * 链路配置导出-链路概览
  */
@@ -25,4 +27,17 @@ public class LinkInfoExportVO {
     @ColumnWidth(25)
     @ExcelProperty(value ="应用名称",index = 3)
     private String applicationNames;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LinkInfoExportVO that = (LinkInfoExportVO) o;
+        return Objects.equals(linkName, that.linkName) && Objects.equals(entranceName, that.entranceName) && Objects.equals(entranceUrl, that.entranceUrl) && Objects.equals(applicationNames, that.applicationNames);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(linkName, entranceName, entranceUrl, applicationNames);
+    }
 }

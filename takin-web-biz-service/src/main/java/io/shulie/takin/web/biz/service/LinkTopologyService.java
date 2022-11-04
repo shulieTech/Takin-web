@@ -4,15 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -1991,8 +1983,8 @@ public class LinkTopologyService extends CommonService {
 
     private ExcelSheetVO<?> getLinkMqExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
         ExcelSheetVO<LinkMqExportVO> linkMqSheets = new ExcelSheetVO<>();
-        List<LinkMqExportVO> linkMqExportVOS = new ArrayList<>();
-        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())){
+        Set<LinkMqExportVO> linkMqExportVOS = new HashSet<>();
+        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())) {
             List<LinkNodeDTO> mqLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
                     NodeTypeGroupEnum.MQ.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
             List<LinkEdgeDTO> edges = applicationEntrancesTopology.getEdges();
@@ -2049,7 +2041,8 @@ public class LinkTopologyService extends CommonService {
                 });
             }
         }
-        linkMqSheets.setData(linkMqExportVOS);
+        List<LinkMqExportVO> mqExportVOS = new ArrayList<>(linkMqExportVOS).stream().sorted(Comparator.comparing(LinkMqExportVO::getTopic)).collect(Collectors.toList());
+        linkMqSheets.setData(mqExportVOS);
         linkMqSheets.setExcelModelClass(LinkMqExportVO.class);
         linkMqSheets.setSheetName(LinkSheetEnum.LINK_MQ.getDesc());
         linkMqSheets.setSheetNum(LinkSheetEnum.LINK_MQ.ordinal());
@@ -2058,9 +2051,9 @@ public class LinkTopologyService extends CommonService {
 
     private ExcelSheetVO<?> getLinkRemoteCallExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
         ExcelSheetVO<LinkRemoteCallExportVO> remoteCallSheet = new ExcelSheetVO<>();
-        List<LinkRemoteCallExportVO> remoteCallExportVOS = new ArrayList<>();
+        Set<LinkRemoteCallExportVO> remoteCallExportVOS = new HashSet<>();
         if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())
-                && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getEdges())){
+                && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getEdges())) {
             List<LinkNodeDTO> linkNodeDTOS = applicationEntrancesTopology.getNodes();
             Map<String, List<LinkNodeDTO>> nodeMap = linkNodeDTOS.stream().collect(Collectors.groupingBy(LinkNodeDTO::getNodeId));
             List<LinkEdgeDTO> linkEdgeDTOS = applicationEntrancesTopology.getEdges().stream().filter(o ->
@@ -2090,7 +2083,7 @@ public class LinkTopologyService extends CommonService {
                 });
             }
         }
-        remoteCallSheet.setData(remoteCallExportVOS);
+        remoteCallSheet.setData(new ArrayList<>(remoteCallExportVOS));
         remoteCallSheet.setExcelModelClass(LinkRemoteCallExportVO.class);
         remoteCallSheet.setSheetName(LinkSheetEnum.LINK_REMOTE_CALL.getDesc());
         remoteCallSheet.setSheetNum(LinkSheetEnum.LINK_REMOTE_CALL.ordinal());
@@ -2099,21 +2092,25 @@ public class LinkTopologyService extends CommonService {
 
     private ExcelSheetVO<?> getLinkDbExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
         ExcelSheetVO<LinkDbExportVO> linkDbSheets = new ExcelSheetVO<>();
-        List<LinkDbExportVO> linkDbExportVOS = new ArrayList<>();
+        Set<LinkDbExportVO> linkDbExportVOS = new HashSet<>();
 
-        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())){
+        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())) {
             List<LinkNodeDTO> dbLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
                     NodeTypeGroupEnum.DB.getType().equals(o.getNodeTypeGroup())
                             || NodeTypeGroupEnum.CACHE.getType().equals(o.getNodeTypeGroup())
                             || NodeTypeGroupEnum.SEARCH.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
             List<LinkEdgeDTO> edges = applicationEntrancesTopology.getEdges();
             if (CollectionUtils.isNotEmpty(dbLinkNodes)) {
-                dbLinkNodes.forEach(linkNodeDTO -> {
-                    List<LinkEdgeDTO> linkEdgeDTOS = edges.stream().filter(o -> linkNodeDTO.getNodeId().equals(o.getTargetId())).collect(Collectors.toList());
+                Map<String, List<LinkNodeDTO>> dbNodeListMap = dbLinkNodes.stream().collect(Collectors.groupingBy(o -> o.getNodeName() + "_" + o.getNodeType()));
+                dbNodeListMap.forEach((nodeName, nodes) -> {
+                    List<String> nodeIds = nodes.stream().map(LinkNodeDTO::getNodeId).collect(Collectors.toList());
+                    List<LinkEdgeDTO> linkEdgeDTOS = edges.stream().filter(o -> nodeIds.contains(o.getTargetId())).collect(Collectors.toList());
+                    LinkNodeDTO linkNodeDTO = nodes.get(0);
                     if (CollectionUtils.isNotEmpty(linkEdgeDTOS)) {
-                        Map<String, List<LinkEdgeDTO>> stringListMap = linkEdgeDTOS.stream().collect(Collectors.groupingBy(o -> o.getService() + "_" + o.getMethod()));
+                        Map<String, List<LinkEdgeDTO>> stringListMap = linkEdgeDTOS.stream().collect(Collectors.groupingBy(o -> o.getService() + "_" + o.getMiddlewareName()));
                         stringListMap.forEach((k, v) -> {
                             List<String> sourceIdList = v.stream().map(LinkEdgeDTO::getSourceId).collect(Collectors.toList());
+                            Set<String> methodSet = v.stream().map(LinkEdgeDTO::getMethod).collect(Collectors.toSet());
                             Set<String> appNames = applicationEntrancesTopology.getNodes().stream().filter(o ->
                                     sourceIdList.contains(o.getNodeId())).map(LinkNodeDTO::getNodeName).collect(Collectors.toSet());
                             LinkEdgeDTO linkEdgeDTO = v.get(0);
@@ -2124,7 +2121,7 @@ public class LinkTopologyService extends CommonService {
                             linkDbExportVO.setQuarantineMethod("");
                             linkDbExportVO.setApplications(this.listToString(new ArrayList<>(appNames)));
                             linkDbExportVO.setDbName(linkEdgeDTO.getService());
-                            linkDbExportVO.setDsName(linkEdgeDTO.getMethod());
+                            linkDbExportVO.setDsName(this.listToString(new ArrayList<>(methodSet)));
                             linkDbExportVO.setType("");
                             linkDbExportVO.setIsAddShadowDs("");
                             linkDbExportVOS.add(linkDbExportVO);
@@ -2133,7 +2130,7 @@ public class LinkTopologyService extends CommonService {
                 });
             }
         }
-        linkDbSheets.setData(linkDbExportVOS);
+        linkDbSheets.setData(new ArrayList<>(linkDbExportVOS));
         linkDbSheets.setExcelModelClass(LinkDbExportVO.class);
         linkDbSheets.setSheetName(LinkSheetEnum.LINK_DB.getDesc());
         linkDbSheets.setSheetNum(LinkSheetEnum.LINK_DB.ordinal());
@@ -2142,8 +2139,8 @@ public class LinkTopologyService extends CommonService {
 
     private ExcelSheetVO<?> getLinkApplicationInfoExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
         ExcelSheetVO<LinkApplicationInfoExportVO> linkApplicationSheets = new ExcelSheetVO<>();
-        List<LinkApplicationInfoExportVO> linkApplicationInfoExportVOS = new ArrayList<>();
-        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())){
+        Set<LinkApplicationInfoExportVO> linkApplicationInfoExportVOS = new HashSet<>();
+        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())) {
             List<LinkNodeDTO> appLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
                     NodeTypeGroupEnum.APP.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(appLinkNodes)) {
@@ -2158,7 +2155,7 @@ public class LinkTopologyService extends CommonService {
                 });
             }
         }
-        linkApplicationSheets.setData(linkApplicationInfoExportVOS);
+        linkApplicationSheets.setData(new ArrayList<>(linkApplicationInfoExportVOS));
         linkApplicationSheets.setExcelModelClass(LinkApplicationInfoExportVO.class);
         linkApplicationSheets.setSheetName(LinkSheetEnum.LINK_APPLICATION_INFO.getDesc());
         linkApplicationSheets.setSheetNum(LinkSheetEnum.LINK_APPLICATION_INFO.ordinal());

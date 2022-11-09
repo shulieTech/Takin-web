@@ -70,7 +70,7 @@
 
         <simulator.agent.api.version>5.0.0</simulator.agent.api.version>
         <flyway.version>5.2.4</flyway.version>
-        <redisson.version>3.15.6</redisson.version>
+        <redisson.version>3.17.7</redisson.version>
         <compress.version>1.20</compress.version>
 
         <easypoi-base.version>4.4.0</easypoi-base.version>

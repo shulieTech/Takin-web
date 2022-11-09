@@ -157,7 +157,7 @@ public class InfluxWriter {
     @Async
     public void truncateMeasurement(String measurement) {
         if (StringUtils.isNotBlank(measurement)) {
-            influx.query(new Query(String.format("truncate %s", measurement), database));
+            influx.query(new Query(String.format("delete from %s where time > 0", measurement), database));
         }
     }
 }

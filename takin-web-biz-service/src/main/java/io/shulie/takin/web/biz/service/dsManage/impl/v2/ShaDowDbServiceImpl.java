@@ -86,53 +86,51 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
         }
     }
 
-    private ApplicationDsDbManageEntity buildEntity(ApplicationDsCreateInputV2 inputV2,Boolean isCreate){
+    private ApplicationDsDbManageEntity buildEntity(ApplicationDsCreateInputV2 inputV2,Boolean isCreate) {
         ApplicationDsDbManageEntity entity = new ApplicationDsDbManageEntity();
         WebPluginUtils.fillUserData(inputV2);
-        BeanUtils.copyProperties(inputV2,entity);
+        BeanUtils.copyProperties(inputV2, entity);
         entity.setDsType(inputV2.getDsType());
         entity.setShaDowUrl(inputV2.getShaDowUrl());
         entity.setShaDowUserName(inputV2.getShaDowUserName());
         entity.setShaDowPwd(inputV2.getShaDowPassword());
         entity.setUrl(inputV2.getUrl());
-        entity.setUserName(Objects.equals("-",inputV2.getUsername())?"":inputV2.getUsername());
+        entity.setUserName(Objects.equals("-", inputV2.getUsername()) ? "" : inputV2.getUsername());
         entity.setConnPoolName(inputV2.getConnectionPool());
         entity.setStatus(0);
         String extInfo = inputV2.getExtInfo();
 
-        if(DsTypeEnum.SHADOW_TABLE.getCode().equals(inputV2.getDsType())){
+        if (DsTypeEnum.SHADOW_TABLE.getCode().equals(inputV2.getDsType())) {
             extInfo = JSONObject.parseObject(inputV2.getExtInfo()).get("shaDowTaleInfo").toString();
-        }
-
-        if (StringUtils.isNotBlank(extInfo)) {
+        } else {
             Map<String, String> map = JSON.parseObject(extInfo, Map.class);
             if (map.containsKey("extInfo")) {
                 String fileExtern = map.get("extInfo");
                 map.remove("extInfo");
                 Map<String, String> extMap = JSON.parseObject(fileExtern, Map.class);
                 map.putAll(extMap);
+                extInfo = JSON.toJSONString(map);
             }
-            entity.setShaDowFileExtedn(JSON.toJSONString(map));
         }
+        entity.setShaDowFileExtedn(extInfo);
 
-        if(isCreate){
-            entity.setDbName("");
-            entity.setPwd("");
-            entity.setConfigJson("");
-            entity.setSource(1);
-            entity.setFileExtedn(inputV2.getParseConfig());
-            entity.setConfigJson(inputV2.getIsOld()?"老转新":"");
-            if("other".equals(entity.getConnPoolName())){
-                entity.setAgentSourceType( Converter.TemplateConverter.TemplateEnum._default.getKey());
-            }else if("兼容老版本(影子表)".equals(entity.getConnPoolName())
-                    || "兼容老版本(影子库)".equals(entity.getConnPoolName())){
-                entity.setAgentSourceType( Converter.TemplateConverter.TemplateEnum._2.getKey());
-            }
-            else{
-                Converter.TemplateConverter.TemplateEnum templateEnum = templateParser.convert(entity.getConnPoolName());
-                if (templateEnum != null) {
-                    entity.setAgentSourceType(templateEnum.getKey());
-                }
+        if (!isCreate) {
+            return entity;
+        }
+        entity.setDbName("");
+        entity.setPwd("");
+        entity.setConfigJson("");
+        entity.setSource(1);
+        entity.setFileExtedn(inputV2.getParseConfig());
+        entity.setConfigJson(inputV2.getIsOld() ? "老转新" : "");
+        if ("other".equals(entity.getConnPoolName())) {
+            entity.setAgentSourceType(Converter.TemplateConverter.TemplateEnum._default.getKey());
+        } else if ("兼容老版本(影子表)".equals(entity.getConnPoolName()) || "兼容老版本(影子库)".equals(entity.getConnPoolName())) {
+            entity.setAgentSourceType(Converter.TemplateConverter.TemplateEnum._2.getKey());
+        } else {
+            Converter.TemplateConverter.TemplateEnum templateEnum = templateParser.convert(entity.getConnPoolName());
+            if (templateEnum != null) {
+                entity.setAgentSourceType(templateEnum.getKey());
             }
         }
         return entity;

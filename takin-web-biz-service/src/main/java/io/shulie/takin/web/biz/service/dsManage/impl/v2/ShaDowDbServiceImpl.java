@@ -102,15 +102,6 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
 
         if (DsTypeEnum.SHADOW_TABLE.getCode().equals(inputV2.getDsType())) {
             extInfo = JSONObject.parseObject(inputV2.getExtInfo()).get("shaDowTaleInfo").toString();
-        } else {
-            Map<String, String> map = JSON.parseObject(extInfo, Map.class);
-            if (map.containsKey("extInfo")) {
-                String fileExtern = map.get("extInfo");
-                map.remove("extInfo");
-                Map<String, String> extMap = JSON.parseObject(fileExtern, Map.class);
-                map.putAll(extMap);
-                extInfo = JSON.toJSONString(map);
-            }
         }
         entity.setShaDowFileExtedn(extInfo);
 

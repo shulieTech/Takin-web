@@ -1051,6 +1051,12 @@ public class DsServiceImpl implements DsService {
         matchMap.put("url", String.valueOf(shadowMap.get("shadowUrl")));
         matchMap.put("password", String.valueOf(shadowMap.get("shadowPwd")));
 
+        if (shadowMap.containsKey("extInfo")) {
+            String extInfo = (String) shadowMap.get("extInfo");
+            Map<String, String> extMap = JSON.parseObject(extInfo, Map.class);
+            matchMap.putAll(extMap);
+            shadowMap.remove("extInfo");
+        }
         shadowMap.remove("shadowUserName");
         shadowMap.remove("shadowUrl");
         shadowMap.remove("shadowPwd");

@@ -79,7 +79,6 @@ public class DbTemplateParser extends AbstractTemplateParser {
 
         List<String> attributeArray;
         list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
-        list.add(new InputStyle(INPUT_FILE_EXTRA, INPUT_FILE_EXTRA_NAME, StyleEnums.INPUT.getCode()));
         if (select.isNewVersion()) {
             List<InputWithSelectStyle.NodeDetail> dataSource_username = null;
             dataSource_username.add(new InputWithSelectStyle.NodeDetail(key7, "1"));
@@ -102,6 +101,8 @@ public class DbTemplateParser extends AbstractTemplateParser {
             list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
             list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
         }
+
+        list.add(new InputStyle(INPUT_FILE_EXTRA, INPUT_FILE_EXTRA_NAME, StyleEnums.INPUT.getCode()));
 
         attributeArray = Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData) ? this.reflex() : this.getAttributeArray(templateEnum);
 

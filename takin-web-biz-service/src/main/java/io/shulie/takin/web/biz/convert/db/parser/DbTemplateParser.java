@@ -68,59 +68,56 @@ public class DbTemplateParser extends AbstractTemplateParser {
      * @return
      */
     @Override
-    public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum, ShadowTemplateSelect select) {
+    public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData,
+                                                                      String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum,
+                                                                      ShadowTemplateSelect select) {
         List list = Lists.newArrayList();
-
         if (DsTypeEnum.SHADOW_TABLE.getCode().equals(dsType)) {
             list.add(new ListStyle());
-        } else {
-            List<String> attributeArray;
-            if (select.isNewVersion()) {
-                List<InputWithSelectStyle.NodeDetail> dataSource_username = new ArrayList<>();
-                dataSource_username.add(new InputWithSelectStyle.NodeDetail(key7, "1"));
-                dataSource_username.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
-                List<String> keys_username = Arrays.asList(key3, key4);
-                InputWithSelectStyle.NodeInfo nodeInfo_username = new InputWithSelectStyle.NodeInfo(keys_username, dataSource_username);
-                InputWithSelectStyle selectStyle_username = new InputWithSelectStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT,
-                        StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo_username);
-                list.add(selectStyle_username);
-            } else {
-                list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
-            }
-            list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
-            if (select.isNewVersion()) {
-                List<InputWithSelectStyle.NodeDetail> dataSource_pwd = new ArrayList<>();
-                dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key8, "1"));
-                dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
-                dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key9, "3"));
-
-                List<String> keys_pwd = Arrays.asList(key3, key4);
-                InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
-                InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT,
-                        StyleEnums.SELECT_WITH_INPUT_PWD.getCode(), nodeInfo_pwd);
-                list.add(selectStyle_pwd);
-            } else {
-                list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
-            }
-
-            if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
-                attributeArray = this.reflex();
-            } else {
-                attributeArray = this.getAttributeArray(templateEnum);
-            }
-            attributeArray.forEach(key -> {
-                List<InputWithSelectStyle.NodeDetail> dataSource = new ArrayList<>();
-                dataSource.add(new InputWithSelectStyle.NodeDetail(key1, "1"));
-                dataSource.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
-
-                List<String> keys = Arrays.asList(key3, key4);
-                InputWithSelectStyle.NodeInfo nodeInfo = new InputWithSelectStyle.NodeInfo(keys, dataSource);
-                InputWithSelectStyle selectStyle = new InputWithSelectStyle(key, Objects.equals(DRIVER_CLASSNAME, key) ? DRIVER_CLASSNAME_SHOW_NAME : key,
-                        StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo);
-                list.add(selectStyle);
-            });
-
+            return list;
         }
+
+        List<String> attributeArray;
+        list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
+        if (select.isNewVersion()) {
+            List<InputWithSelectStyle.NodeDetail> dataSource_username = null;
+            dataSource_username.add(new InputWithSelectStyle.NodeDetail(key7, "1"));
+            dataSource_username.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
+            List<String> keys_username = Arrays.asList(key3, key4);
+            InputWithSelectStyle.NodeInfo nodeInfo_username = new InputWithSelectStyle.NodeInfo(keys_username, dataSource_username);
+            InputWithSelectStyle selectStyle_username = new InputWithSelectStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo_username);
+            list.add(selectStyle_username);
+
+            List<InputWithSelectStyle.NodeDetail> dataSource_pwd = new ArrayList<>();
+            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key8, "1"));
+            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
+            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key9, "3"));
+
+            List<String> keys_pwd = Arrays.asList(key3, key4);
+            InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
+            InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.SELECT_WITH_INPUT_PWD.getCode(), nodeInfo_pwd);
+            list.add(selectStyle_pwd);
+        } else {
+            list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
+            list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
+        }
+
+
+        if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
+            attributeArray = this.reflex();
+        } else {
+            attributeArray = this.getAttributeArray(templateEnum);
+        }
+        attributeArray.forEach(key -> {
+            List<InputWithSelectStyle.NodeDetail> dataSource = new ArrayList<>();
+            dataSource.add(new InputWithSelectStyle.NodeDetail(key1, "1"));
+            dataSource.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
+
+            List<String> keys = Arrays.asList(key3, key4);
+            InputWithSelectStyle.NodeInfo nodeInfo = new InputWithSelectStyle.NodeInfo(keys, dataSource);
+            InputWithSelectStyle selectStyle = new InputWithSelectStyle(key, Objects.equals(DRIVER_CLASSNAME, key) ? DRIVER_CLASSNAME_SHOW_NAME : key, StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo);
+            list.add(selectStyle);
+        });
         return list;
     }
 

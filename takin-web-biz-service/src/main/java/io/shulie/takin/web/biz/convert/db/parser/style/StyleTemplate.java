@@ -36,10 +36,6 @@ public interface StyleTemplate {
     String DRIVER_CLASSNAME = "driverClassName";
 
     String DRIVER_CLASSNAME_SHOW_NAME = "驱动";
-
-    String INPUT_FILE_EXTRA = "extInfo";
-    String INPUT_FILE_EXTRA_NAME = "其他配置信息(json)";
-
     String key1 = "跟随业务配置";
 
     String key2 = "自定义";

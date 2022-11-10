@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.dsManage.impl.v2;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.pamirs.attach.plugin.dynamic.one.Converter;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -96,6 +98,15 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
         entity.setConnPoolName(inputV2.getConnectionPool());
         entity.setStatus(0);
         String extInfo = inputV2.getExtInfo();
+        if (StringUtils.isNotBlank(inputV2.getExtInfo())){
+            Map<String, String> map = JSON.parseObject(inputV2.getExtInfo(), Map.class);
+            if (map.containsKey("extInfo")) {
+                String fileExtern = map.get("extInfo");
+                entity.setFileExtedn(fileExtern);
+                map.remove("extInfo");
+            }
+        }
+
         if(DsTypeEnum.SHADOW_TABLE.getCode().equals(inputV2.getDsType())){
             extInfo = JSONObject.parseObject(inputV2.getExtInfo()).get("shaDowTaleInfo").toString();
         }

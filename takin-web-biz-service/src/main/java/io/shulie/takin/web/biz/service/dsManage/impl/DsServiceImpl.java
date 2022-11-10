@@ -1058,7 +1058,11 @@ public class DsServiceImpl implements DsService {
 
         if (shadowMap.containsKey("extra")) {
             Map extraMap = (Map<String, String>) shadowMap.get("extra");
-            shadowMap.putAll(extraMap);
+            if (extraMap.containsKey("tag") && extraMap.get("tag") == "2" && extraMap.containsKey("context")) {
+                Map<String, String> extMap = (Map<String, String>) extraMap.get("context");
+                matchMap.putAll(extMap);
+            }
+            shadowMap.remove("extra");
         }
 
         shadowMap.forEach((k, v) -> {

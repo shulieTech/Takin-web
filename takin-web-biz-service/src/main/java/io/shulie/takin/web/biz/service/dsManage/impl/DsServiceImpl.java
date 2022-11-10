@@ -1060,9 +1060,9 @@ public class DsServiceImpl implements DsService {
             Map extraMap = (Map<String, String>) shadowMap.get("extra");
             if (extraMap.containsKey("tag") && extraMap.get("tag").equals("2") && extraMap.containsKey("context")) {
                 Map<String, String> extMap = JSON.parseObject((String) extraMap.get("context"), Map.class);
-                extMap.forEach((k, v) -> {
-                    matchMap.put(k, v.toString());
-                });
+                for (String key : extMap.keySet()) {
+                    matchMap.put(key, String.valueOf(extMap.get(key)));
+                }
             }
             shadowMap.remove("extra");
         }

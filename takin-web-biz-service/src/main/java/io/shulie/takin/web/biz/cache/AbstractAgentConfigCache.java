@@ -1,13 +1,13 @@
 package io.shulie.takin.web.biz.cache;
 
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
+import io.shulie.takin.web.biz.nacos.event.ShadowConfigRefreshEvent;
 import io.shulie.takin.web.biz.service.DistributedLock;
-import io.shulie.takin.web.biz.service.impl.RedissonDistributedLock;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +15,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -41,6 +42,9 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
 
     @Autowired
     private DistributedLock distributedLock;
+
+    @Resource
+    private ApplicationContext applicationContext;
 
     public AbstractAgentConfigCache(String cacheName, RedisTemplate redisTemplate) {
         this.cacheName = cacheName;
@@ -105,6 +109,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
     @Override
     public void evict(String namespace) {
         redisTemplate.delete(getCacheKey(namespace));
+        applicationContext.publishEvent(new ShadowConfigRefreshEvent(namespace));
     }
 
     /**

@@ -1046,7 +1046,7 @@ public class DsServiceImpl implements DsService {
 
     private Map<String, String> matchShadowDb(String shadowStr) {
         Map<String, String> matchMap = new HashMap<>();
-        Map<?, ?> shadowMap = JSONObject.parseObject(shadowStr, Map.class);
+        Map shadowMap = JSONObject.parseObject(shadowStr, Map.class);
         matchMap.put("username", String.valueOf(shadowMap.get("shadowUserName")));
         matchMap.put("url", String.valueOf(shadowMap.get("shadowUrl")));
         matchMap.put("password", String.valueOf(shadowMap.get("shadowPwd")));
@@ -1056,9 +1056,14 @@ public class DsServiceImpl implements DsService {
         shadowMap.remove("applicationName");
         shadowMap.remove(EXT_FLAG);
 
+        if (shadowMap.containsKey("extra")) {
+            Map extraMap = (Map<String, String>) shadowMap.get("extra");
+            shadowMap.putAll(extraMap);
+        }
+
         shadowMap.forEach((k, v) -> {
             String value = null;
-            Map<?, ?> map = JSONObject.parseObject(String.valueOf(v), Map.class);
+            Map map = JSONObject.parseObject(String.valueOf(v), Map.class);
             if (Objects.equals("2", String.valueOf(map.get("tag")))) {
                 value = String.valueOf(map.get("context"));
             }

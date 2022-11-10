@@ -79,6 +79,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
 
         List<String> attributeArray;
         list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
+        list.add(new InputStyle(INPUT_FILE_EXTRA, INPUT_FILE_EXTRA_NAME, StyleEnums.INPUT.getCode()));
         if (select.isNewVersion()) {
             List<InputWithSelectStyle.NodeDetail> dataSource_username = null;
             dataSource_username.add(new InputWithSelectStyle.NodeDetail(key7, "1"));
@@ -102,12 +103,8 @@ public class DbTemplateParser extends AbstractTemplateParser {
             list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
         }
 
+        attributeArray = Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData) ? this.reflex() : this.getAttributeArray(templateEnum);
 
-        if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
-            attributeArray = this.reflex();
-        } else {
-            attributeArray = this.getAttributeArray(templateEnum);
-        }
         attributeArray.forEach(key -> {
             List<InputWithSelectStyle.NodeDetail> dataSource = new ArrayList<>();
             dataSource.add(new InputWithSelectStyle.NodeDetail(key1, "1"));
@@ -308,8 +305,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
                 return attributeArray;
             }
             Object t = templateEnum.getaClass().newInstance();
-            if (Template.class.isAssignableFrom(t
-                    .getClass())) {
+            if (Template.class.isAssignableFrom(t.getClass())) {
                 Template tem = (Template) t;
                 ConnectpoolConfigTemplateDetailResult template = connectpoolConfigTemplateDAO.queryOne(tem.getName());
                 if (Objects.nonNull(template) && StringUtils.isNotBlank(template.getShadowdbAttribute())) {

@@ -80,7 +80,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
         List<String> attributeArray;
         list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
         if (select.isNewVersion()) {
-            List<InputWithSelectStyle.NodeDetail> dataSource_username = null;
+            List<InputWithSelectStyle.NodeDetail> dataSource_username = new ArrayList<>();
             dataSource_username.add(new InputWithSelectStyle.NodeDetail(key7, "1"));
             dataSource_username.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
             List<String> keys_username = Arrays.asList(key3, key4);

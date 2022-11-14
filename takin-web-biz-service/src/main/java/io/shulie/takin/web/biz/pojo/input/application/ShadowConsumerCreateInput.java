@@ -36,4 +36,8 @@ public class ShadowConsumerCreateInput {
      */
     private String shadowconsumerEnable;
 
+    /**
+     * 来源标识
+     */
+    private Integer manualTag;
 }

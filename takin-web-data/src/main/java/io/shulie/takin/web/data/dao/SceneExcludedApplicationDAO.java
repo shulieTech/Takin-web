@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.dao;
 
 import java.util.List;
 
+import io.shulie.takin.web.data.model.mysql.SceneExcludedApplicationEntity;
 import io.shulie.takin.web.data.param.CreateSceneExcludedApplicationParam;
 
 /**
@@ -34,6 +35,19 @@ public interface SceneExcludedApplicationDAO {
      * @param sceneId 场景id
      */
     void removeBySceneId(Long sceneId);
+
+    /**
+     * 删除场景对应的忽略应用
+     *
+     * @param sceneId 场景id
+     */
+    void removeBySceneIdAndAppId(Long sceneId,Long appId);
+
+    /**
+     *
+     * @param sceneId 场景id
+     */
+    SceneExcludedApplicationEntity query(Long sceneId, Long appId);
 
 }
 

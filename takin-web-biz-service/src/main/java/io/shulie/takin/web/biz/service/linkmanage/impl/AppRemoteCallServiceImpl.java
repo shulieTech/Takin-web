@@ -327,7 +327,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         return String.join(",", middlewareNames);
     }
 
-    private Integer getInterfaceType(String methodName, List<TDictionaryVo> voList) {
+    @Override
+    public Integer getInterfaceType(String methodName, List<TDictionaryVo> voList) {
         InterfaceTypeMainEntity mainEntity = interfaceTypeMainDAO.selectByName(methodName);
         if (mainEntity == null) {
             if (CollectionUtils.isEmpty(voList)) {

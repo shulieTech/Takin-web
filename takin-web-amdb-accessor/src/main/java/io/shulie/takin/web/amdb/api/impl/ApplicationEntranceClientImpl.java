@@ -78,7 +78,9 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             //查询所有的type
             entranceQueryParam.setRpcType("");
         }
-        entranceQueryParam.setAppName(applicationName);
+        if (StringUtils.isNotBlank(applicationName)) {
+            entranceQueryParam.setAppName(applicationName);
+        }
         entranceQueryParam.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         entranceQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         entranceQueryParam.setCurrentPage(currentPage);
@@ -192,10 +194,21 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         }
     }
 
+    /**
+     * @param tempActivity
+     * @param applicationName
+     * @param linkId
+     * @param serviceName
+     * @param method
+     * @param rpcType
+     * @param extend
+     * @param extFlag         是否查询扩展边信息,会返回数据库关联的库信息
+     * @return
+     */
     @Override
     public LinkTopologyDTO getApplicationEntrancesTopology(boolean tempActivity, String applicationName, String linkId,
                                                            String serviceName,
-                                                           String method, String rpcType, String extend) {
+                                                           String method, String rpcType, String extend, boolean extFlag) {
         String url;
         if (tempActivity) {
             url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_TOPOLOGY_PATH_TEMP;
@@ -216,6 +229,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         if (extend != null) {
             topologyQueryParam.setExtend(extend);
         }
+        // 是否关联查询出数据库的详情信息,默认false
+        topologyQueryParam.setExtFlag(extFlag);
         topologyQueryParam.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         topologyQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {

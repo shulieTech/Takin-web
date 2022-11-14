@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * @date 2021-08-30 10:59:59
  */
 @Service
-public class ApplicationDsDbManageDAOImpl  extends ServiceImpl<ApplicationDsDbManageMapper, ApplicationDsDbManageEntity> implements ApplicationDsDbManageDAO, MPUtil<ApplicationDsDbManageEntity> {
+public class ApplicationDsDbManageDAOImpl extends ServiceImpl<ApplicationDsDbManageMapper, ApplicationDsDbManageEntity> implements ApplicationDsDbManageDAO, MPUtil<ApplicationDsDbManageEntity> {
 
     @Override
     public List<ApplicationDsDbManageDetailResult> selectList(ApplicationDsQueryParam param) {
@@ -40,11 +40,11 @@ public class ApplicationDsDbManageDAOImpl  extends ServiceImpl<ApplicationDsDbMa
         }
         if (!Objects.isNull(param.getIsDeleted())) {
             lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getIsDeleted, param.getIsDeleted());
-        }else{
+        } else {
             lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getIsDeleted, 0);
         }
         if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
-            if(!param.getUserIdList().contains(1)){
+            if (!param.getUserIdList().contains(1)) {
                 lambdaQueryWrapper.in(ApplicationDsDbManageEntity::getUserId, param.getUserIdList());
             }
         }
@@ -69,8 +69,8 @@ public class ApplicationDsDbManageDAOImpl  extends ServiceImpl<ApplicationDsDbMa
     @Override
     public void updateById(Long id, ApplicationDsDbManageEntity entity) {
         LambdaQueryWrapper<ApplicationDsDbManageEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
-        lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getId,id);
-        this.update(entity,lambdaQueryWrapper);
+        lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getId, id);
+        this.update(entity, lambdaQueryWrapper);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class ApplicationDsDbManageDAOImpl  extends ServiceImpl<ApplicationDsDbMa
             return null;
         }
         ApplicationDsDbManageEntity entity = new ApplicationDsDbManageEntity();
-        BeanUtils.copyProperties( result,entity);
+        BeanUtils.copyProperties(result, entity);
         return result;
     }
 
@@ -116,13 +116,14 @@ public class ApplicationDsDbManageDAOImpl  extends ServiceImpl<ApplicationDsDbMa
     }
 
     @Override
-    public ApplicationDsDbManageDetailResult selectOne(String appName, String url, String userName,String connPoolName) {
+    public ApplicationDsDbManageDetailResult selectOne(String appName, String url, String userName, String connPoolName) {
         LambdaQueryWrapper<ApplicationDsDbManageEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
-        lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getApplicationName,appName)
-                .eq(ApplicationDsDbManageEntity::getUrl,url)
-                .eq(ApplicationDsDbManageEntity::getUserName,userName)
-                .eq(ApplicationDsDbManageEntity::getConnPoolName,connPoolName)
-                .eq(ApplicationDsDbManageEntity::getIsDeleted,0);
+        lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getApplicationName, appName)
+                .eq(ApplicationDsDbManageEntity::getUrl, url)
+                .eq(ApplicationDsDbManageEntity::getUserName, userName)
+                .eq(ApplicationDsDbManageEntity::getConnPoolName, connPoolName)
+                .eq(ApplicationDsDbManageEntity::getIsDeleted, 0);
+        lambdaQueryWrapper.last(" limit 1");
         return getApplicationDsDbManageDetailResult(this.getOne(lambdaQueryWrapper));
     }
 }

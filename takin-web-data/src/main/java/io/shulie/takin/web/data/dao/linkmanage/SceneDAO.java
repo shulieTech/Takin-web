@@ -14,7 +14,7 @@ import io.shulie.takin.web.data.result.linkmange.SceneResult;
  * @date 2020/11/4 2:56 下午
  */
 public interface SceneDAO {
-    int insert(SceneCreateParam param);
+    Long insert(SceneCreateParam param);
 
     /**
      * 指定责任人-业务流程

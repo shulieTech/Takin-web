@@ -41,6 +41,10 @@ public class JobRedisUtils {
         return String.format(REDIS_JOB_REPORT,tenantId,envCode,reportId);
     }
 
+    public static String getRedisJobResource(Long tenantId,String envCode,Object key) {
+        return String.format(REDIS_JOB_REPORT,tenantId,envCode,key);
+    }
+
     /**
      * 获取job分布式锁
      * @param tenantId

@@ -167,7 +167,7 @@ public class WebPluginUtils {
             userIds = userIds.stream().filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
-            Map<Long, UserExt> userMap = userApi.getUserMapByIds(userIds);
+            Map<Long, UserExt> userMap = userApi.getUserMap(userIds);
             if (null != userMap) {
                 return userMap;
             }

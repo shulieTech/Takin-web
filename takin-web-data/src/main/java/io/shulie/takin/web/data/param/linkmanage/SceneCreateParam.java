@@ -80,4 +80,5 @@ public class SceneCreateParam extends ContextExt {
      * 部门id
      */
     private Long deptId;
+    private String features;
 }

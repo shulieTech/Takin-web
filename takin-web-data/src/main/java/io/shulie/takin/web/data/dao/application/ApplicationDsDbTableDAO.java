@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.dao.application;
 
+import io.shulie.takin.web.data.model.mysql.ApplicationDsDbTableEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDsDbTableDetailResult;
 
 import java.util.List;
@@ -12,11 +13,22 @@ import java.util.List;
  */
 public interface ApplicationDsDbTableDAO {
 
-    List<ApplicationDsDbTableDetailResult> getList(String url,Long appId,String userName);
+    List<ApplicationDsDbTableDetailResult> getList(String url, Long appId, String userName);
 
-    void batchSave(List<ApplicationDsDbTableDetailResult > list);
+    List<ApplicationDsDbTableDetailResult> queryList(String url, Long appId, String userName, String bizTable);
 
+    void batchSave(List<ApplicationDsDbTableDetailResult> list);
 
-    void batchDeleted(List<ApplicationDsDbTableDetailResult > list);
+    void saveOrUpdate(List<ApplicationDsDbTableDetailResult> list);
+
+    List<ApplicationDsDbTableEntity> batchSave_ext(List<ApplicationDsDbTableDetailResult> list);
+
+    void batchDeleted(List<ApplicationDsDbTableDetailResult> list);
+
+    void batchDeleted_V2(List<Long> list);
+
+    ApplicationDsDbTableEntity getOne(Long id);
+
+    void update_v2(ApplicationDsDbTableEntity entity);
 }
 

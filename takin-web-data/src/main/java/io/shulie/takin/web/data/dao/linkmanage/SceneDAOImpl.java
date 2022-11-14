@@ -40,12 +40,12 @@ public class SceneDAOImpl implements SceneDAO {
     private SceneMapper sceneMapper;
 
     @Override
-    public int insert(SceneCreateParam param) {
+    public Long insert(SceneCreateParam param) {
         SceneEntity entity = new SceneEntity();
         BeanUtils.copyProperties(param, entity);
-        int count = sceneMapper.insert(entity);
+        sceneMapper.insert(entity);
         param.setId(entity.getId());
-        return count;
+        return entity.getId();
     }
 
     /**
@@ -58,7 +58,7 @@ public class SceneDAOImpl implements SceneDAO {
     public int allocationUser(SceneUpdateParam param) {
         LambdaUpdateWrapper<SceneEntity> wrapper = new LambdaUpdateWrapper();
         wrapper.set(SceneEntity::getUserId, param.getUserId())
-            .eq(SceneEntity::getId, param.getId());
+                .eq(SceneEntity::getId, param.getId());
         return sceneMapper.update(null, wrapper);
     }
 
@@ -74,10 +74,10 @@ public class SceneDAOImpl implements SceneDAO {
         }
         queryWrapper.eq(SceneEntity::getIsDeleted, 0);
         queryWrapper.select(
-            SceneEntity::getId,
-            SceneEntity::getSceneName,
-            SceneEntity::getTenantId,
-            SceneEntity::getUserId);
+                SceneEntity::getId,
+                SceneEntity::getSceneName,
+                SceneEntity::getTenantId,
+                SceneEntity::getUserId);
         List<SceneEntity> sceneEntityList = sceneMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(sceneEntityList)) {
             sceneResultList = sceneEntityList.stream().map(sceneEntity -> {
@@ -104,10 +104,10 @@ public class SceneDAOImpl implements SceneDAO {
         }
         queryWrapper.eq(SceneEntity::getIsDeleted, 0);
         queryWrapper.select(
-            SceneEntity::getId,
-            SceneEntity::getSceneName,
-            SceneEntity::getTenantId,
-            SceneEntity::getUserId);
+                SceneEntity::getId,
+                SceneEntity::getSceneName,
+                SceneEntity::getTenantId,
+                SceneEntity::getUserId);
         List<SceneEntity> sceneEntityList = sceneMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(sceneEntityList)) {
             sceneResultList = sceneEntityList.stream().map(sceneEntity -> {
@@ -134,7 +134,9 @@ public class SceneDAOImpl implements SceneDAO {
     @Override
     public SceneResult getSceneDetail(Long id) {
         SceneEntity sceneEntity = sceneMapper.selectById(id);
-        if (sceneEntity == null) {return null;}
+        if (sceneEntity == null) {
+            return null;
+        }
         return BeanUtil.copyProperties(sceneEntity, SceneResult.class);
     }
 
@@ -160,6 +162,9 @@ public class SceneDAOImpl implements SceneDAO {
         if (param.getIgnoreType() != null) {
             lambdaQueryWrapper.ne(SceneEntity::getType, param.getIgnoreType());
         }
+        if (param.getQueryGmtModified() != null) {
+            lambdaQueryWrapper.ge(SceneEntity::getUpdateTime, param.getQueryGmtModified());
+        }
         lambdaQueryWrapper.eq(SceneEntity::getIsDeleted, 0);
         lambdaQueryWrapper.orderByDesc(SceneEntity::getUpdateTime);
         Page<SceneEntity> sceneEntityPage = sceneMapper.selectPage(page, lambdaQueryWrapper);
@@ -167,16 +172,16 @@ public class SceneDAOImpl implements SceneDAO {
             return PagingList.of(Lists.newArrayList(), 0);
         }
         List<SceneResult> sceneResultList = BusinessLinkManageConvert.INSTANCE.ofSceneEntityList(
-            sceneEntityPage.getRecords());
+                sceneEntityPage.getRecords());
         return PagingList.of(sceneResultList, sceneEntityPage.getTotal());
     }
 
     @Override
     public boolean existsScene(Long tenantId, String envCode) {
         LambdaQueryWrapper<SceneEntity> wrapper = Wrappers.lambdaQuery(SceneEntity.class)
-            .eq(SceneEntity::getTenantId, tenantId)
-            .eq(SceneEntity::getEnvCode, envCode)
-            .eq(SceneEntity::getIsDeleted, 0);
+                .eq(SceneEntity::getTenantId, tenantId)
+                .eq(SceneEntity::getEnvCode, envCode)
+                .eq(SceneEntity::getIsDeleted, 0);
         return SqlHelper.retBool(sceneMapper.selectCount(wrapper));
     }
 }

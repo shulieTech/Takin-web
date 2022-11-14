@@ -18,7 +18,7 @@ public interface ApplicationEntranceClient {
     List<ServiceInfoDTO> getApplicationEntrances(String applicationName, String entranceType, String serviceName, int currentPage, int pageSize);
 
     LinkTopologyDTO getApplicationEntrancesTopology(boolean tempActivity, String applicationName, String linkId, String serviceName,
-                                                    String method, String rpcType, String extend);
+                                                    String method, String rpcType, String extend,boolean extFlag);
 
     String queryMetricsFromAMDB1(TempTopologyQuery1 tempTopologyQuery1);
     JSONObject queryMetricsFromAMDB2(TempTopologyQuery2 tempTopologyQuery2);

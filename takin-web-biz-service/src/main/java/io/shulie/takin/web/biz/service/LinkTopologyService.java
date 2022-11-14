@@ -136,7 +136,7 @@ public class LinkTopologyService extends CommonService {
         LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
             tempActivity,
             request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
-            request.getRpcType(), request.getExtend());
+            request.getRpcType(), request.getExtend(),false);
 
         // final result
         ApplicationEntranceTopologyResponse applicationEntranceTopologyResponse

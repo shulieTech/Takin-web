@@ -38,7 +38,7 @@ public class SceneManageQueryBean extends ContextExt {
 
     private Integer isDeleted;
 
-	private Integer isArchive;
+    private Integer isArchive;
 
     private List<Integer> statusList;
 
@@ -47,4 +47,6 @@ public class SceneManageQueryBean extends ContextExt {
     private List<Long> userIdList;
 
     private List<Long> deptIdList;
+
+    private Long businessFlowId;
 }

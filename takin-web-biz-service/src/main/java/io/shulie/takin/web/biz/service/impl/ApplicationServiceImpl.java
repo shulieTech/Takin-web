@@ -15,8 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -134,6 +133,7 @@ import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.dom4j.DocumentException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -557,6 +557,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 Collections.singletonList(tApplicationMnt.getApplicationName()));
         ApplicationResult applicationResult = CollectionUtils.isEmpty(applicationResultList)
                 ? null : applicationResultList.get(0);
+
         // 取应用节点版本信息
         ApplicationNodeQueryParam queryParam = new ApplicationNodeQueryParam();
         queryParam.setCurrent(0);
@@ -1384,7 +1385,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         queryApplicationParam.setUpdateStartTime(request.getUpdateStartTime());
         queryApplicationParam.setUpdateEndTime(request.getUpdateEndTime());
         IPage<ApplicationListResult> applicationListResultPage = applicationDAO.pageByParam(queryApplicationParam);
-      
+
         if (org.springframework.util.CollectionUtils.isEmpty(applicationListResultPage.getRecords())) {
             return PagingList.empty();
         }
@@ -1394,10 +1395,14 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
             response.setId(result.getApplicationId().toString());
             WebPluginUtils.fillQueryResponse(response);
-            // 跟应用详情再对比下,同步下状态
-            Response<ApplicationVo> vo = this.getApplicationInfo(response.getId());
-            if (vo.getSuccess() && vo.getData() != null) {
-                response.setAccessStatus(vo.getData().getAccessStatus());
+
+            // 非全量查询的时候，增加不需要处理状态
+            if (!request.isAll()) {
+                // 跟应用详情再对比下,同步下状态,这个接口真慢
+                Response<ApplicationVo> vo = this.getApplicationInfo(response.getId());
+                if (vo.getSuccess() && vo.getData() != null) {
+                    response.setAccessStatus(vo.getData().getAccessStatus());
+                }
             }
             return response;
         }).collect(Collectors.toList());

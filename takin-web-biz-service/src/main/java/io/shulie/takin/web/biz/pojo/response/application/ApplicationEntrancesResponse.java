@@ -14,6 +14,7 @@ import lombok.Data;
 @Data
 @ApiModel("应用入口返回值信息")
 public class ApplicationEntrancesResponse extends WebOptionEntity {
+    private String appName;
 
     private String method;
 

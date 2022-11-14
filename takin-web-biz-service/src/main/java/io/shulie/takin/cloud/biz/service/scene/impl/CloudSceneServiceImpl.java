@@ -129,7 +129,9 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             }
             // 1.   创建场景
             int updateRows = updateStepScene(in.getBasicInfo(), in.getConfig(), in.getAnalysisResult(), in.getDataValidation());
-            if (updateRows == 0) {return false;}
+            if (updateRows == 0) {
+                return false;
+            }
             if (updateRows == 1) {
                 long sceneId = in.getBasicInfo().getSceneId();
                 // 2. 更新场景&业务活动关联关系
@@ -169,9 +171,9 @@ public class CloudSceneServiceImpl implements CloudSceneService {
         response.setDataValidation(getDataValidation(sceneId));
         List<MonitoringGoal> monitoringGoal = getMonitoringGoal(sceneId);
         response.setDestroyMonitoringGoal(
-            monitoringGoal.stream().filter(t -> Integer.valueOf(0).equals(t.getType())).collect(Collectors.toList()));
+                monitoringGoal.stream().filter(t -> Integer.valueOf(0).equals(t.getType())).collect(Collectors.toList()));
         response.setWarnMonitoringGoal(
-            monitoringGoal.stream().filter(t -> !Integer.valueOf(0).equals(t.getType())).collect(Collectors.toList()));
+                monitoringGoal.stream().filter(t -> !Integer.valueOf(0).equals(t.getType())).collect(Collectors.toList()));
         return response;
     }
 
@@ -187,7 +189,8 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             SceneManageEntity scene = getScene(sceneId);
             // 解析拓展字段
             String featureString = scene.getFeatures();
-            Map<String, ?> feature = JSONObject.parseObject(featureString, new TypeReference<Map<String, ?>>() {});
+            Map<String, ?> feature = JSONObject.parseObject(featureString, new TypeReference<Map<String, ?>>() {
+            });
             // 获取值
             String scriptIdString, businessFlowIdString;
             Object scriptIdResult = feature.get("scriptId");
@@ -221,7 +224,8 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             String analysisResultString = scene.getScriptAnalysisResult();
             if (StrUtil.isNotBlank(analysisResultString)) {
                 return JSONObject.parseObject(analysisResultString,
-                    new TypeReference<List<ScriptNode>>() {});
+                        new TypeReference<List<ScriptNode>>() {
+                        });
             }
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "的脚本解析结果不存在");
         } catch (JSONException e) {
@@ -267,10 +271,10 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             SceneManageEntity scene = getScene(sceneId);
             // 获取关联的信息
             List<SceneBusinessActivityRefEntity> activityRefList = sceneBusinessActivityRefMapper.selectList(Wrappers.lambdaQuery(SceneBusinessActivityRefEntity.class)
-                .eq(SceneBusinessActivityRefEntity::getSceneId, scene.getId()));
+                    .eq(SceneBusinessActivityRefEntity::getSceneId, scene.getId()));
             // 构建mao结构
             Map<String, SceneBusinessActivityRefEntity> entityResult = activityRefList.stream()
-                .collect(Collectors.toMap(SceneBusinessActivityRefEntity::getBindRef, t -> t));
+                    .collect(Collectors.toMap(SceneBusinessActivityRefEntity::getBindRef, t -> t));
             Map<String, Content> result = new HashMap<>(entityResult.size());
             // 填充结果
             entityResult.forEach((key, value) -> result.put(key, new Content() {{
@@ -286,7 +290,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             }}));
             return result;
         } catch (
-            JSONException e) {
+                JSONException e) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "施压目标解析错误");
         }
     }
@@ -303,16 +307,16 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             SceneManageEntity scene = getScene(sceneId);
             // 获取关联的信息
             List<SceneBusinessActivityRefEntity> activityRefList = sceneBusinessActivityRefMapper.selectList(Wrappers.lambdaQuery(SceneBusinessActivityRefEntity.class)
-                .eq(SceneBusinessActivityRefEntity::getSceneId, scene.getId()));
+                    .eq(SceneBusinessActivityRefEntity::getSceneId, scene.getId()));
             // 构建mao结构
             Map<String, String> stringResult = activityRefList.stream()
-                .collect(Collectors.toMap(SceneBusinessActivityRefEntity::getBindRef, SceneBusinessActivityRefEntity::getGoalValue));
+                    .collect(Collectors.toMap(SceneBusinessActivityRefEntity::getBindRef, SceneBusinessActivityRefEntity::getGoalValue));
             Map<String, Goal> result = new HashMap<>(stringResult.size());
             // 填充结果
             stringResult.forEach((key, value) -> result.put(key, JSONObject.parseObject(value, OldGoalModel.class).convert()));
             return result;
         } catch (
-            JSONException e) {
+                JSONException e) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "施压目标解析错误");
         }
     }
@@ -327,7 +331,8 @@ public class CloudSceneServiceImpl implements CloudSceneService {
     public PtConfigExt getConfig(long sceneId) {
         try {
             SceneManageEntity scene = getScene(sceneId);
-            return JSONObject.parseObject(scene.getPtConfig(), new TypeReference<PtConfigExt>() {});
+            return JSONObject.parseObject(scene.getPtConfig(), new TypeReference<PtConfigExt>() {
+            });
         } catch (JSONException e) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "压测线程组解析错误");
         }
@@ -345,10 +350,11 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             SceneManageEntity scene = getScene(sceneId);
             // 获取关联的信息
             List<SceneSlaRefEntity> slaResultList = sceneSlaRefMapper.selectList(Wrappers.lambdaQuery(SceneSlaRefEntity.class)
-                .eq(SceneSlaRefEntity::getSceneId, scene.getId()));
+                    .eq(SceneSlaRefEntity::getSceneId, scene.getId()));
             // 构建mao结构
             return slaResultList.stream().map(t -> {
-                Map<String, String> condition = JSONObject.parseObject(t.getCondition(), new TypeReference<Map<String, String>>() {});
+                Map<String, String> condition = JSONObject.parseObject(t.getCondition(), new TypeReference<Map<String, String>>() {
+                });
                 String eventString = condition.getOrDefault(SceneManageConstant.EVENT, "");
                 String compareTypeString = condition.getOrDefault(SceneManageConstant.COMPARE_TYPE, "0");
                 String achieveTimesString = condition.getOrDefault(SceneManageConstant.ACHIEVE_TIMES, "0");
@@ -411,11 +417,12 @@ public class CloudSceneServiceImpl implements CloudSceneService {
      * @return 压测场景主键
      */
     private Long createScene(BasicInfo basicInfo,
-        PtConfigExt config, List<?> analysisResult, DataValidation dataValidation) {
+                             PtConfigExt config, List<?> analysisResult, DataValidation dataValidation) {
         Map<String, Object> feature = assembleFeature(basicInfo.getScriptId(), basicInfo.getBusinessFlowId(), dataValidation);
         // 组装数据实体类
         SceneManageEntity sceneEntity = assembleSceneEntity(basicInfo.getSceneId(), basicInfo.getType(), basicInfo.getName(),
-            basicInfo.getScriptType(), config, feature, analysisResult);
+                basicInfo.getScriptType(), config, feature, analysisResult);
+        sceneEntity.setBusinessFlowId(Long.valueOf(String.valueOf(feature.getOrDefault("businessFlowId","0"))));
         // 设置创建者信息
         sceneEntity.setUserId(CloudPluginUtils.getUserId());
         sceneEntity.setEnvCode(CloudPluginUtils.getEnvCode());
@@ -455,11 +462,11 @@ public class CloudSceneServiceImpl implements CloudSceneService {
      * @return 数据库更新行数 - 应当为 1
      */
     private int updateStepScene(BasicInfo basicInfo,
-        PtConfigExt config, List<?> analysisResult, DataValidation dataValidation) {
+                                PtConfigExt config, List<?> analysisResult, DataValidation dataValidation) {
         Map<String, Object> feature = assembleFeature(basicInfo.getScriptId(), basicInfo.getBusinessFlowId(), dataValidation);
         // 组装数据实体类
         SceneManageEntity sceneEntity = assembleSceneEntity(basicInfo.getSceneId(), basicInfo.getType(), basicInfo.getName(),
-            basicInfo.getScriptType(), config, feature, analysisResult);
+                basicInfo.getScriptType(), config, feature, analysisResult);
         // 执行数据库操作
         int updateRows = sceneManageMapper.updateById(sceneEntity);
         log.info("更新了业务活动「{}」。自增主键：{}。操作行数：{}。", basicInfo.getName(), sceneEntity.getId(), updateRows);
@@ -477,14 +484,18 @@ public class CloudSceneServiceImpl implements CloudSceneService {
     public void buildBusinessActivity(long sceneId, List<Content> content, Map<String, Goal> goalMap) {
         for (Content t : content) {
             Goal goal = goalMap.get(t.getPathMd5());
-            if (goal == null) {throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_UPDATE_ERROR, "压测目标未能匹配:" + t.getPathMd5());}
+            if (goal == null) {
+                throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_UPDATE_ERROR, "压测目标未能匹配:" + t.getPathMd5());
+            }
             SceneBusinessActivityRefEntity activityRef = new SceneBusinessActivityRefEntity() {{
                 setSceneId(sceneId);
                 setBindRef(t.getPathMd5());
                 setBusinessActivityName(t.getName());
                 setBusinessActivityId(t.getBusinessActivityId());
                 // 处理应用主键集合 - 兼容空值
-                if (t.getApplicationId() == null) {t.setApplicationId(new ArrayList<>(0));}
+                if (t.getApplicationId() == null) {
+                    t.setApplicationId(new ArrayList<>(0));
+                }
                 List<String> applicationIdList = t.getApplicationId().stream().filter(StrUtil::isNotBlank).collect(Collectors.toList());
                 setApplicationIds(String.join(",", applicationIdList));
                 setGoalValue(JSONObject.toJSONString(OldGoalModel.convert(goal), SerializerFeature.PrettyFormat));
@@ -569,7 +580,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
                     put(SceneManageConstant.COMPARE_VALUE, mGoal.getFormulaNumber());
                     put(SceneManageConstant.COMPARE_TYPE, mGoal.getFormulaSymbol());
                     put(SceneManageConstant.EVENT, mGoal.getType() == 0 ?
-                        SceneManageConstant.EVENT_DESTORY : SceneManageConstant.EVENT_WARN);
+                            SceneManageConstant.EVENT_DESTORY : SceneManageConstant.EVENT_WARN);
                     put(SceneManageConstant.ACHIEVE_TIMES, mGoal.getNumberOfIgnore());
                 }};
                 setSceneId(sceneId);

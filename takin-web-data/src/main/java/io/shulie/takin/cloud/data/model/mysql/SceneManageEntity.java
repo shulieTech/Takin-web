@@ -121,6 +121,8 @@ public class SceneManageEntity {
     private Long customerId;
     @TableField(value = "is_archive")
     private Integer isArchive;
+    @TableField(value = "business_flow_id")
+    private Long businessFlowId;
 
 
 }

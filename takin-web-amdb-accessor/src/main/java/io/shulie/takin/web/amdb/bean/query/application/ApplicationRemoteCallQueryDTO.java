@@ -16,7 +16,7 @@ public class ApplicationRemoteCallQueryDTO {
     @JsonProperty("currentPage")
     private Integer currentPage;
     @JsonProperty("linkId")
-    private Integer linkId;
+    private String linkId;
     @JsonProperty("methodName")
     private String methodName;
     @JsonProperty("middlewareName")
@@ -37,7 +37,7 @@ public class ApplicationRemoteCallQueryDTO {
     @JsonProperty("userName")
     private String userName;
     @JsonProperty("fieldNames")
-    private String fieldNames = "appName,serviceName,methodName,middlewareName,middlewareDetail,rpcType,extend,upAppName";
+    private String fieldNames = "appName,serviceName,methodName,middlewareName,middlewareDetail,rpcType,extend,upAppName,rpcId,linkId";
     /**
      * 客户端查询
      */

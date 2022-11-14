@@ -68,6 +68,16 @@ public interface WebUserExtApi extends ExtensionPoint {
     Map<Long, UserExt> getUserMapByIds(List<Long> userIds);
 
     /**
+     * 根据用户ids 获取应用
+     * 用于：查询用户数据
+     * todo :或许想办法如何废弃
+     *
+     * @param userIds -
+     * @return -
+     */
+    Map<Long, UserExt> getUserMap(List<Long> userIds);
+
+    /**
      * 查询所有用户
      * 用于：初始化白名单文件
      *
@@ -98,9 +108,9 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @param traceContextExt 溯源数据对象
      */
     void setCloudUserData(ContextExt traceContextExt);
-	
-	Long getCustomerId();
-	
+
+    Long getCustomerId();
+
     /**
      * 获取系统个人信息
      *
@@ -136,8 +146,8 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @return
      */
     UserExt getUser();
-	
-	/**
+
+    /**
      * 获取登录用户
      *
      * @return -

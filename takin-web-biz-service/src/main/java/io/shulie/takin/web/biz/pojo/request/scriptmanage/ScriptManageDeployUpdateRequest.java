@@ -70,4 +70,6 @@ public class ScriptManageDeployUpdateRequest implements Serializable {
      * 是否覆盖大文件
      */
     private Integer ifCoverBigFile;
+
+    private boolean isPressureResource;
 }

@@ -1,6 +1,9 @@
 package io.shulie.takin.web.data.result.linkmange;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -80,4 +83,11 @@ public class SceneResult {
     private String features;
 
     private Long deptId;
+
+    public boolean isPressureResource() {
+        if (StringUtils.isBlank(scriptJmxNode)) {
+            return true;
+        }
+        return false;
+    }
 }

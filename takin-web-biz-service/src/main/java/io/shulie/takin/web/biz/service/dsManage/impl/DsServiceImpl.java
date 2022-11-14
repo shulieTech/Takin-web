@@ -765,7 +765,7 @@ public class DsServiceImpl implements DsService {
                 extObj.put(EXT_FLAG, "true");
                 if ("2".equals(tag) || "3".equals(tag)) {
                     context = dataObj.getString("context");
-                    if("3".equals(tag)){
+                    if ("3".equals(tag)) {
                         extObj.put(EXT_FLAG, "3");
                     }
                 }
@@ -834,7 +834,7 @@ public class DsServiceImpl implements DsService {
     @Override
     public List<SelectVO> querySupperName(String middlewareType) {
         AbstractDsTemplateService templateService = templateServiceMap.get(middlewareType);
-        List<SelectVO> list =  templateService.queryDsSupperName();
+        List<SelectVO> list = templateService.queryDsSupperName();
         List<SelectVO> tmpList = list.stream().filter(a -> {
             if ("兼容老版本(影子库)".equals(a.getLabel()) || "兼容老版本(影子表)".equals(a.getLabel())) {
                 return false;
@@ -1132,8 +1132,9 @@ public class DsServiceImpl implements DsService {
             log.error("从amdb未获取到应用版本信息,当前应用名{}", appName);
             return select;
         }
-        // 获取所有探针版本
+        // 获取所有探针版本，Agent版本有可能为空
         List<String> agentVersionList = dtoList.stream()
+                .filter(agentDto -> agentDto.getAgentVersion() != null)
                 .map(agentDto -> agentDto.getAgentVersion())
                 .collect(Collectors.toList());
         // 倒序排

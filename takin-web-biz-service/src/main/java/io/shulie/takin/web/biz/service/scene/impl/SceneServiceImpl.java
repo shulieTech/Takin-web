@@ -7,7 +7,10 @@ import javax.annotation.Resource;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.cloud.common.utils.CommonUtil;
@@ -30,6 +33,7 @@ import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequ
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceInput;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
@@ -40,6 +44,7 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchRespons
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
@@ -61,8 +66,10 @@ import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
 import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
+import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
@@ -134,6 +141,8 @@ public class SceneServiceImpl implements SceneService {
     private ApplicationBusinessActivityService applicationBusinessActivityService;
     @Resource
     private ApplicationDAO applicationDAO;
+    @Resource
+    private PressureResourceMapper pressureResourceMapper;
 
     @Override
     public List<SceneLinkRelateResult> nodeLinkToBusinessActivity(List<ScriptNode> nodes, Long sceneId) {
@@ -279,13 +288,19 @@ public class SceneServiceImpl implements SceneService {
             }
             testPlanName = testPlan.get(0).getTestName();
         }
+        boolean isPressureResouce = false;
+        if (businessFlowParseRequest.getId() != null) {
+            SceneResult sceneResult = sceneDao.getSceneDetail(businessFlowParseRequest.getId());
+            isPressureResouce = sceneResult.isPressureResource();
+            testPlanName = sceneResult.getSceneName();
+        }
         String businessFlowName = null;
-        if (businessFlowParseRequest.getId() == null) {
-            SceneCreateParam createParam = saveBusinessFlow(businessFlowParseRequest.getSource(), testPlanName, data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
+        if (isPressureResouce || businessFlowParseRequest.getId() == null) {
+            SceneCreateParam createParam = saveBusinessFlow(businessFlowParseRequest.getSource(), testPlanName, data, fileManageCreateRequest, businessFlowParseRequest.getPluginList(), isPressureResouce, businessFlowParseRequest.getId());
             businessFlowParseRequest.setId(createParam.getId());
             businessFlowName = createParam.getSceneName();
         } else {
-            SceneResult sceneResult = updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null, data, businessFlowParseRequest.getPluginList());
+            SceneResult sceneResult = updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null, data, businessFlowParseRequest.getPluginList(), testPlanName);
             businessFlowName = sceneResult.getSceneName();
         }
 
@@ -319,6 +334,28 @@ public class SceneServiceImpl implements SceneService {
         WebPluginUtils.fillCloudUserData(sceneCreateParam);
         sceneDao.insert(sceneCreateParam);
 
+                                             List<PluginConfigCreateRequest> pluginList, boolean isPressureResource, Long extId) {
+        SceneCreateParam sceneCreateParam = new SceneCreateParam();
+        sceneCreateParam.setSceneName(testName);
+        sceneCreateParam.setId(extId);
+        if (!isPressureResource) {
+            SceneQueryParam sceneQueryParam = new SceneQueryParam();
+            sceneQueryParam.setSceneName(testName);
+            List<SceneResult> sceneResultList = sceneDao.selectListByName(sceneQueryParam);
+            if (CollectionUtils.isNotEmpty(sceneResultList)) {
+                testName = testName + "_" + DateUtil.formatDateTime(new Date());
+            }
+            sceneCreateParam.setLinkRelateNum(0);
+            sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
+            sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
+            if (source != null) {
+                sceneCreateParam.setType(source);
+            } else {
+                sceneCreateParam.setType(SceneTypeEnum.JMETER_UPLOAD_SCENE.getType());
+            }
+            WebPluginUtils.fillCloudUserData(sceneCreateParam);
+            sceneDao.insert(sceneCreateParam);
+        }
         //新增脚本文件
         ScriptManageDeployCreateRequest createRequest = new ScriptManageDeployCreateRequest();
         //脚本文件名称去重
@@ -344,6 +381,10 @@ public class SceneServiceImpl implements SceneService {
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
         sceneUpdateParam.setId(sceneCreateParam.getId());
         sceneUpdateParam.setScriptDeployId(scriptManageId);
+        if (isPressureResource) {
+            sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
+            sceneUpdateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
+        }
         sceneDao.update(sceneUpdateParam);
         return sceneCreateParam;
     }
@@ -355,7 +396,11 @@ public class SceneServiceImpl implements SceneService {
         if (sceneResult == null) {
             return result;
         }
-
+        if (StringUtils.isBlank(sceneResult.getScriptJmxNode())) {
+            result.setId(sceneResult.getId());
+            result.setBusinessProcessName(sceneResult.getSceneName());
+            return result;
+        }
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
         //将节点树处理成线程组在最外层的形式
         List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.THREAD_GROUP, scriptNodes);
@@ -406,7 +451,7 @@ public class SceneServiceImpl implements SceneService {
 
     @Override
     public BusinessFlowDetailResponse uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest) {
-        updateBusinessFlow(businessFlowDataFileRequest.getId(), null, businessFlowDataFileRequest, null, businessFlowDataFileRequest.getPluginList());
+        updateBusinessFlow(businessFlowDataFileRequest.getId(), null, businessFlowDataFileRequest, null, businessFlowDataFileRequest.getPluginList(), "");
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
         result.setId(businessFlowDataFileRequest.getId());
         return result;
@@ -641,6 +686,7 @@ public class SceneServiceImpl implements SceneService {
         queryParam.setDeptId(queryRequest.getDeptId());
         WebPluginUtils.fillQueryParam(queryParam);
         queryParam.setIgnoreType(SceneTypeEnum.PERFORMANCE_AUTO_SCENE.getType());
+        queryParam.setQueryGmtModified(queryRequest.getQueryGmtModified());
 
         PagingList<SceneResult> pageList = sceneDao.selectPageList(queryParam);
         List<BusinessFlowListResponse> responses = LinkManageConvert.INSTANCE.ofSceneResultList(pageList.getList());

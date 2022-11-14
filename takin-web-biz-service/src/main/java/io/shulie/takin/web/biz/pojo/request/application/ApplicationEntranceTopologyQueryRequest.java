@@ -33,4 +33,7 @@ public class ApplicationEntranceTopologyQueryRequest {
     private String nodeId;
 
     private EntranceTypeEnum type;
+
+    // 原始的链路拓扑图
+    private boolean isConvert;
 }

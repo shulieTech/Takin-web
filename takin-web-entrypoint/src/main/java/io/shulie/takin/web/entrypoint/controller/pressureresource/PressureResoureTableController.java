@@ -1,0 +1,89 @@
+package io.shulie.takin.web.entrypoint.controller.pressureresource;
+
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableInput;
+import io.shulie.takin.web.biz.pojo.request.pressureresource.PressureResourceRelateTableRequest;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
+import io.shulie.takin.web.biz.service.pressureresource.PressureResourceTableService;
+import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
+import io.shulie.takin.web.biz.service.pressureresource.common.SourceTypeEnum;
+import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
+import io.shulie.takin.web.common.constant.ApiUrls;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+
+/**
+ * 链路资源配置-影子表配置
+ *
+ * @author xingchen
+ * @description: TODO
+ * @date 2022/8/30 2:51 PM
+ */
+@RestController
+@RequestMapping(value = ApiUrls.TAKIN_API_URL + "/pressureResource/table")
+@Api(tags = "接口: 关联表")
+@Slf4j
+public class PressureResoureTableController {
+    @Resource
+    private PressureResourceTableService pressureResourceTableService;
+
+    @Resource
+    private PressureResourceCommonService pressureResourceCommonService;
+
+    @ApiOperation("链路压测资源-影子表新增")
+    @RequestMapping(value = "/save", method = RequestMethod.POST)
+    public ResponseResult save(@RequestBody PressureResourceRelateTableInput input) {
+        input.setType(SourceTypeEnum.MANUAL.getCode());
+        pressureResourceTableService.save_v2(input);
+
+        CommandTaskVo taskVo = new CommandTaskVo();
+        taskVo.setResourceId(input.getResourceId());
+        taskVo.setModule(ModuleEnum.DS.getCode());
+        pressureResourceCommonService.pushRedisCommand(taskVo);
+        return ResponseResult.success();
+    }
+
+    @ApiOperation("链路压测资源-影子表列表")
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    public ResponseResult list(PressureResourceRelateTableRequest request) {
+        return ResponseResult.success(pressureResourceTableService.pageList_v2(request));
+    }
+
+    @ApiOperation("链路压测资源-影子表-修改")
+    @RequestMapping(value = "/update", method = RequestMethod.POST)
+    public ResponseResult update(@RequestBody PressureResourceRelateTableInput input) {
+        pressureResourceTableService.update_v2(input);
+
+        CommandTaskVo taskVo = new CommandTaskVo();
+        taskVo.setResourceId(input.getResourceId());
+        taskVo.setModule(ModuleEnum.DS.getCode());
+        pressureResourceCommonService.pushRedisCommand(taskVo);
+        return ResponseResult.success();
+    }
+
+    @ApiOperation("链路压测资源-影子表-修改加入状态")
+    @RequestMapping(value = "/batchUpdate", method = RequestMethod.POST)
+    public ResponseResult batchUpdate(@RequestBody PressureResourceRelateTableInput input) {
+        pressureResourceTableService.batchUpdate(input);
+
+        CommandTaskVo taskVo = new CommandTaskVo();
+        taskVo.setResourceId(input.getResourceId());
+        taskVo.setModule(ModuleEnum.DS.getCode());
+        pressureResourceCommonService.pushRedisCommand(taskVo);
+        return ResponseResult.success();
+    }
+
+    @ApiOperation("链路压测资源-影子表-删除")
+    @RequestMapping(value = "/del", method = RequestMethod.GET)
+    public ResponseResult del(PressureResourceRelateTableInput input) {
+        pressureResourceTableService.delete_v2(input.getId());
+        return ResponseResult.success();
+    }
+}

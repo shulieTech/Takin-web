@@ -22,13 +22,17 @@ import io.shulie.takin.web.biz.cache.agentimpl.ShadowHbaseConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.ShadowJobConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.ShadowKafkaClusterConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.ShadowServerConfigAgentCache;
+import io.shulie.takin.web.biz.nacos.event.SwitchConfigRefreshEvent;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowServerConfigurationOutput;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Resource;
 
 /**
  * @author shiyajian
@@ -76,6 +80,9 @@ public class AgentConfigCacheManager {
     @Autowired
     private ApplicationPluginConfigAgentCache applicationPluginConfigAgentCache;
 
+    @Resource
+    private ApplicationContext applicationContext;
+
     /**
      * 清除所有缓存
      */
@@ -107,6 +114,7 @@ public class AgentConfigCacheManager {
      */
     public void evictAllowListSwitch() {
         allowListSwitchConfigCache.evict(null);
+        applicationContext.publishEvent(new SwitchConfigRefreshEvent());
     }
 
     public List<TShadowJobConfig> getShadowJobs(String appName) {
@@ -165,6 +173,7 @@ public class AgentConfigCacheManager {
 
     public void evictPressureSwitch() {
         pressureSwitchConfigCache.evict(null);
+        applicationContext.publishEvent(new SwitchConfigRefreshEvent());
     }
 
     public List<ShadowConsumerVO> getShadowConsumer(String appName) {

@@ -27,6 +27,6 @@ public class ApplicationEcsCenterEntity extends NewBaseEntity implements Seriali
      */
     private String ecsCenterName;
 
-
+    private String applicationName;
 
 }

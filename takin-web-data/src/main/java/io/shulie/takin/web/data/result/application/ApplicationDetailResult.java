@@ -37,4 +37,5 @@ public class ApplicationDetailResult extends TenantCommonExt {
     private Long userId;
     private String md5;
     private Long deptId;
+    private String clusterName;
 }

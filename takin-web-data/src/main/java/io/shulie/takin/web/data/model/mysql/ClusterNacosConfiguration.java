@@ -1,27 +1,33 @@
 package io.shulie.takin.web.data.model.mysql;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.annocation.EnableSign;
-import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-@TableName(value = "t_ecs_nacos_info")
+@TableName(value = "t_cluster_nacos_configuration")
 @ToString(callSuper = true)
 @EnableSign
-public class EcsCenterNacosEntity extends NewBaseEntity implements Serializable {
+public class ClusterNacosConfiguration implements Serializable {
 
     private static final long serialVersionUID = 339110573810927775L;
 
     /**
+     * 主键
+     */
+    @TableId(type = IdType.AUTO,value = "id")
+    private Long id;
+
+    /**
      * ecs中心名称
      */
-    private String ecsCenterName;
+    private String clusterName;
 
     /**
      * nacos服务地址
@@ -31,11 +37,16 @@ public class EcsCenterNacosEntity extends NewBaseEntity implements Serializable 
     /**
      * nacos命名空间
      */
-    private String nacosNameSpace;
+    private String nacosNamespace;
 
     /**
-     * 是否是中心nacos
+     * 创建时间
      */
-    private Integer isCenterNacos;
+    private Date gmtCreate;
+
+    /**
+     * 更新时间
+     */
+    private Date gmtUpdate;
 
 }

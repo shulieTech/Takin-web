@@ -8,7 +8,6 @@ import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.pamirs.takin.common.constant.ConfigConstants;
-import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.config.WhiteListSwitchDTO;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.cache.agentimpl.ApplicationApiManageAmdbCache;
@@ -24,6 +23,7 @@ import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentConfigQueryParam;
 import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -33,7 +33,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -61,6 +60,8 @@ public class NacosConfigManager {
 
     @Resource
     private ApplicationDAO applicationDAO;
+
+    private Map<String,String> applicationNacosServerAddrCache = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -95,9 +96,6 @@ public class NacosConfigManager {
         int processors = Runtime.getRuntime().availableProcessors();
         threadPool = new ThreadPoolExecutor(processors + 1, 2 * processors, 1L, TimeUnit.MINUTES,
                 new LinkedBlockingQueue<Runnable>(100), factory, handler);
-
-        refreshSwitchConfigs(new SwitchConfigRefreshEvent());
-
     }
 
     /**
@@ -111,23 +109,40 @@ public class NacosConfigManager {
             return;
         }
         String appName = event.getAppName();
-        ApplicationQueryParam param = new ApplicationQueryParam();
-        param.setApplicationName(appName);
-        param.setEnvCode(event.getEnvCode());
-        param.setTenantId(event.getTenantId());
-
-        List<ApplicationDetailResult> result = applicationDAO.getApplicationList(param);
-        if (result == null || result.isEmpty()) {
-            return;
-        }
-        String clusterName = result.get(0).getClusterName();
+        TenantCommonExt commonExt = event.getCommonExt();
+        String clusterName = queryClusterName(appName, commonExt.getEnvCode(), commonExt.getTenantId());
         if (clusterName == null) {
             return;
         }
         if (!configServices.containsKey(clusterName)) {
             log.warn("不存在应用指定的集群中心nacos配置，应用名称:{}, 集群名称:{}", appName, clusterName);
         }
-        threadPool.submit(new ShadowConfigsRefreshTask(appName, event.getTenantId(), event.getEnvCode(), event.getUserAppKey(), configServices.get(clusterName)));
+        threadPool.submit(new ShadowConfigsRefreshTask(appName, commonExt, configServices.get(clusterName)));
+    }
+
+    public String queryClusterName(String appName, String envCode, Long tenantId){
+        if (configServices.isEmpty()) {
+            return null;
+        }
+        String key = buildCacheKey(appName, envCode, tenantId);
+        if(applicationNacosServerAddrCache.containsKey(key)){
+            return applicationNacosServerAddrCache.get(key);
+        }
+        ApplicationQueryParam param = new ApplicationQueryParam();
+        param.setApplicationName(appName);
+        param.setEnvCode(envCode);
+        param.setTenantId(tenantId);
+        List<ApplicationDetailResult> result = applicationDAO.getApplicationList(param);
+        if (result == null || result.isEmpty()) {
+            return null;
+        }
+        String clusterName = result.get(0).getClusterName();
+        applicationNacosServerAddrCache.put(key, clusterName);
+        return clusterName;
+    }
+
+    private String buildCacheKey(String appName, String envCode, Long tenantId){
+        return String.format("%s:%s:%s", tenantId, envCode, appName);
     }
 
     /**
@@ -144,13 +159,14 @@ public class NacosConfigManager {
             threadPool.submit(new GlobalDynamicConfigRefreshTask());
             return;
         }
+        WebPluginUtils.setTraceTenantContext(event.getCommonExt());
         // 刷新应用配置
         ApplicationDetailResult result = applicationDAO.getApplicationByTenantIdAndName(appName);
         String clusterName = result.getClusterName();
         if (result == null || clusterName == null) {
             return;
         }
-        threadPool.submit(new ShadowConfigsRefreshTask(appName, event.getTenantId(), event.getEnvCode(), event.getUserAppKey(), configServices.get(clusterName)));
+        threadPool.submit(new ShadowConfigsRefreshTask(appName, event.getCommonExt(), configServices.get(clusterName)));
 
     }
 
@@ -203,21 +219,19 @@ public class NacosConfigManager {
     private class ShadowConfigsRefreshTask implements Runnable {
 
         private String appName;
-        private Long tenantId;
-        private String envCode;
-        private String userAppKey;
+        private TenantCommonExt commonExt;
         private ConfigService configService;
 
-        public ShadowConfigsRefreshTask(String appName, Long tenantId, String envCode, String userAppKey, ConfigService configService) {
+        public ShadowConfigsRefreshTask(String appName, TenantCommonExt commonExt, ConfigService configService) {
             this.appName = appName;
-            this.tenantId = tenantId;
-            this.envCode = envCode;
-            this.userAppKey = userAppKey;
+            this.commonExt = commonExt;
             this.configService = configService;
         }
 
         @Override
         public void run() {
+            WebPluginUtils.setTraceTenantContext(commonExt);
+
             Map<String, Object> configs = new HashMap<>();
             configs.put("datasource", agentConfigCacheManager.getShadowDb(appName));
             configs.put("job", agentConfigCacheManager.getShadowJobs(appName));
@@ -228,7 +242,7 @@ public class NacosConfigManager {
             configs.put("es", agentConfigCacheManager.getShadowEsServers(appName));
             configs.put("mock", agentConfigCacheManager.getGuards(appName));
             configs.put("trace_rule", applicationApiManageAmdbCache.get(appName));
-            configs.put("dynamicConfig", buildApplicationDynamicConfigs(appName, tenantId, envCode, userAppKey));
+            configs.put("dynamicConfig", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
             pushNacosConfigs(appName, "APP", configService, JSON.toJSONString(configs));
         }
     }

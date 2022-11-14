@@ -11,6 +11,7 @@ import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.job.ResourceContextUtil;
+import io.shulie.takin.web.biz.nacos.NacosConfigManager;
 import io.shulie.takin.web.biz.pojo.request.pressureresource.MockInfo;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.common.*;
@@ -37,6 +38,7 @@ import io.shulie.takin.web.data.model.mysql.pressureresource.*;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceDsQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.pressureresource.PressureResourceTableQueryParam;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +49,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -86,6 +89,8 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     private PressureResourceRelateDsDAO pressureResourceRelateDsDAO;
     @Resource
     private PressureResourceRelateTableDAO pressureResourceRelateTableDAO;
+    @Resource
+    private NacosConfigManager nacosConfigManager;
 
     /**
      * 下发校验命令并更新数据库
@@ -226,6 +231,9 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     }
 
     private boolean sendCommand(List<TakinCommand> commandList) {
+        // 填充nacos服务地址
+        TenantCommonExt commonExt = WebPluginUtils.traceTenantCommonExt();
+        commandList.stream().forEach(takinCommand -> takinCommand.setNacosServerAddr(nacosConfigManager.queryClusterName(takinCommand.getAppName(), takinCommand.getEnvCode(), commonExt.getTenantId())));
         //下发命令
         String url = joinUrl(agentManagerHost, PUSH_COMMAND_URL);
         String post = HttpUtil.post(url, JSON.toJSONString(commandList));

@@ -30,6 +30,7 @@ public class TakinCommand implements Serializable {
 
     private String appName;
 
+    private String nacosServerAddr;
 
     private String commandParam;
 
@@ -90,4 +91,11 @@ public class TakinCommand implements Serializable {
         this.commandParam = commandParam;
     }
 
+    public String getNacosServerAddr() {
+        return nacosServerAddr;
+    }
+
+    public void setNacosServerAddr(String nacosServerAddr) {
+        this.nacosServerAddr = nacosServerAddr;
+    }
 }

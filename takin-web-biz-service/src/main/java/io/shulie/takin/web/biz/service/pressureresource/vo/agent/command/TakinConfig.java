@@ -31,6 +31,8 @@ public class TakinConfig implements Serializable {
 
     private String configParam;
 
+    private String nacosServerAddr;
+
     public String getConfigId() {
         return configId;
     }
@@ -85,5 +87,13 @@ public class TakinConfig implements Serializable {
 
     public void setAppName(String appName) {
         this.appName = appName;
+    }
+
+    public String getNacosServerAddr() {
+        return nacosServerAddr;
+    }
+
+    public void setNacosServerAddr(String nacosServerAddr) {
+        this.nacosServerAddr = nacosServerAddr;
     }
 }

@@ -2,7 +2,10 @@ package io.shulie.takin.web.biz.job;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.pamirs.takin.common.constant.AppSwitchEnum;
+import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
@@ -17,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
@@ -51,8 +55,20 @@ public class PressureResourceChangeJob implements SimpleJob {
     @Resource
     private PressureResourceMapper pressureResourceMapper;
 
+    @Resource
+    private AgentConfigCacheManager agentConfigCacheManager;
+
+    @PostConstruct
+    public void init(){
+        execute(null);
+    }
+
     @Override
     public void execute(ShardingContext shardingContext) {
+        // 如果压测开关关闭或者静默开关打开，则不发送命令
+        if (!shouldSendCommand()) {
+            return;
+        }
         // 查询所有压测资源准备配置
         List<CommandTaskVo> commandTaskVos = pressureResourceCommonService.getTaskFormRedis();
         if (CollectionUtils.isEmpty(commandTaskVos)) {
@@ -83,5 +99,15 @@ public class PressureResourceChangeJob implements SimpleJob {
                 }
             });
         });
+    }
+
+    /**
+     * 如果压测开关关闭或者静默开关打开，则不发送命令
+     *
+     * @return
+     */
+    private boolean shouldSendCommand() {
+        ApplicationSwitchStatusDTO pressureSwitch = agentConfigCacheManager.getPressureSwitch();
+        return AppSwitchEnum.OPENED.getCode().equals(pressureSwitch.getSwitchStatus()) && AppSwitchEnum.CLOSED.getCode().equals(pressureSwitch.getSilenceSwitchOn());
     }
 }

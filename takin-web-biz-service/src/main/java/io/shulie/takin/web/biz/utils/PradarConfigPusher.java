@@ -2,6 +2,10 @@ package io.shulie.takin.web.biz.utils;
 
 import javax.annotation.PostConstruct;
 
+import com.alibaba.nacos.api.PropertyKeyConst;
+import com.alibaba.nacos.api.config.ConfigFactory;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.exception.NacosException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -11,13 +15,15 @@ import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Properties;
+
 /**
  * @author liuchuan
  * @date 2021/11/11 8:59 下午
  */
 @Slf4j
 @Service
-public class ZkHelper {
+public class PradarConfigPusher {
 
     @Value("${takin.config.zk.addr}")
     private String zkAddr;
@@ -25,17 +31,54 @@ public class ZkHelper {
     @Value("${takin.config.zk.timeout: 3000}")
     private Integer timeout;
 
+    @Value("${takin.config.nacos.enable}")
+    private String enbaleNacos;
+
+    @Value("${takin.config.nacos.addr}")
+    private String nacosAddr;
+
     private CuratorFramework client;
+
+    private ConfigService configService;
+
+    private static final String DATA_ID = "pradarConfig";
+    private static final String GROUP = "PRADAR_CONFIG";
 
     @PostConstruct
     public void init() {
-        client = CuratorFrameworkFactory
-            .builder()
-            .connectString(zkAddr)
-            .sessionTimeoutMs(timeout)
-            .retryPolicy(new ExponentialBackoffRetry(1000, 3))
-            .build();
-        client.start();
+        if ("true".equals(enbaleNacos)) {
+            try {
+                Properties properties = new Properties();
+                properties.put(PropertyKeyConst.SERVER_ADDR, nacosAddr);
+                configService = ConfigFactory.createConfigService(properties);
+            } catch (Exception e) {
+                configService = null;
+                log.info("初始化pradar config的nacos客户端失败, nacos地址:{}, 不实用nacos作为配置中心", nacosAddr, e);
+            }
+            return;
+        }
+        try {
+            client = CuratorFrameworkFactory
+                    .builder()
+                    .connectString(zkAddr)
+                    .sessionTimeoutMs(timeout)
+                    .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+                    .build();
+            client.start();
+        } catch (Exception e) {
+            log.error("初始化pradar config的zk客户端失败, zk地址:{},不使用zk作为配置中心", zkAddr, e);
+        }
+
+
+    }
+
+    /**
+     * 是否使用nacos做配置中心
+     *
+     * @return
+     */
+    public boolean useNaocsForConfigCenter() {
+        return client == null && configService != null;
     }
 
     /**
@@ -96,14 +139,14 @@ public class ZkHelper {
     /**
      * 创建永久节点与值
      *
-     * @param path 路径
+     * @param path  路径
      * @param value 值
      */
     public void addPersistentNode(String path, String value) {
         try {
             client.create().creatingParentContainersIfNeeded()
-                .withMode(CreateMode.PERSISTENT)
-                .forPath(path, value.getBytes());
+                    .withMode(CreateMode.PERSISTENT)
+                    .forPath(path, value.getBytes());
         } catch (Exception e) {
             log.error("创建zk数据节点失败;path={},data={}", path, value, e);
             throw new RuntimeException(String.format("创建永久节点失败, 错误信息: %s", e.getMessage()));
@@ -113,7 +156,7 @@ public class ZkHelper {
     /**
      * 更新节点的值
      *
-     * @param path 路径
+     * @param path  路径
      * @param value 值
      */
     public void updateNode(String path, String value) {
@@ -136,6 +179,14 @@ public class ZkHelper {
         } catch (Exception e) {
             log.error("删除zk数据节点失败;path={}", path, e);
             throw new RuntimeException(String.format("删除节点失败, 错误信息: %s", e.getMessage()));
+        }
+    }
+
+    public void pushConfigToNacos(String config) {
+        try {
+            configService.publishConfig(DATA_ID, GROUP, config);
+        } catch (NacosException e) {
+            log.error("推送配置到nacos发生异常,dataId:{}, group:{}, config:{}", DATA_ID, GROUP, config, e);
         }
     }
 

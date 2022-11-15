@@ -49,7 +49,6 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -233,7 +232,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
     private boolean sendCommand(List<TakinCommand> commandList) {
         // 填充nacos服务地址
         TenantCommonExt commonExt = WebPluginUtils.traceTenantCommonExt();
-        commandList.stream().forEach(takinCommand -> takinCommand.setNacosServerAddr(nacosConfigManager.queryClusterName(takinCommand.getAppName(), takinCommand.getEnvCode(), commonExt.getTenantId())));
+        commandList.stream().forEach(takinCommand -> takinCommand.setNacosServerAddr(nacosConfigManager.queryNacosServerAddr(takinCommand.getAppName(), takinCommand.getEnvCode(), commonExt.getTenantId())));
         //下发命令
         String url = joinUrl(agentManagerHost, PUSH_COMMAND_URL);
         String post = HttpUtil.post(url, JSON.toJSONString(commandList));
@@ -502,6 +501,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             takinConfig.setAppName(appName);
             takinConfig.setAgentSpecification(TakinCommand.SIMULATOR_AGENT);
             takinConfig.setEnvCode(resource.getEnvCode());
+            takinConfig.setNacosServerAddr(nacosConfigManager.queryNacosServerAddr(appName, resource.getEnvCode(), tenantInfoExt.getTenantId()));
             takinConfig.setTenantCode(tenantInfoExt.getTenantCode());
             takinConfig.setConfigType(PressureResourceTypeEnum.MQ.getCode());
             takinConfig.setConfigParam(JSON.toJSONString(collect));
@@ -550,6 +550,7 @@ public class PressureResourceCommandServiceImpl implements PressureResourceComma
             takinConfig.setEnvCode(resource.getEnvCode());
             takinConfig.setTenantCode(tenantInfoExt.getTenantCode());
             takinConfig.setConfigType(PressureResourceTypeEnum.DATABASE.getCode());
+            takinConfig.setNacosServerAddr(nacosConfigManager.queryNacosServerAddr(appName, resource.getEnvCode(), tenantInfoExt.getTenantId()));
             List<DataSourceConfig> collect = dsList.stream().map(dsEntity -> mapping_v2(resource.getIsolateType(), dsEntity)).collect(Collectors.toList());
             JdbcTableConfig jdbcTableConfig = new JdbcTableConfig();
             jdbcTableConfig.setData(collect);

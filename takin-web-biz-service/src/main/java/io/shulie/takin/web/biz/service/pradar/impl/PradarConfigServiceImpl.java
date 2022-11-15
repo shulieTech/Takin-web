@@ -1,17 +1,23 @@
 package io.shulie.takin.web.biz.service.pradar.impl;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSON;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.nacos.NacosConfigManager;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigDeleteRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.pradar.PradarZKConfigResponse;
 import io.shulie.takin.web.biz.service.pradar.PradarConfigService;
-import io.shulie.takin.web.biz.utils.ZkHelper;
+import io.shulie.takin.web.biz.utils.PradarConfigPusher;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.pradar.PradarZkConfigDAO;
@@ -32,20 +38,31 @@ public class PradarConfigServiceImpl implements PradarConfigService {
     private PradarZkConfigDAO pradarZkConfigDAO;
 
     @Autowired
-    private ZkHelper zkHelper;
+    private PradarConfigPusher pradarConfigPusher;
 
     @Override
     public void initZooKeeperData() {
         // 放入zk，只放入系统的
+        if (pradarConfigPusher.useNaocsForConfigCenter()) {
+            pradarConfigPusher.pushConfigToNacos(buildNacosConfigs());
+            return;
+        }
         for (PradarZkConfigResult config : pradarZkConfigDAO.list()) {
             this.processZk(config.getZkPath(), config.getValue());
         }
     }
 
+    private String buildNacosConfigs() {
+        List<PradarZkConfigResult> configResults = pradarZkConfigDAO.list();
+        Map<String, String> values = new HashMap<>();
+        configResults.stream().forEach(result -> values.put(result.getZkPath(), result.getValue()));
+        return JSON.toJSONString(values);
+    }
+
     @Override
     public PagingList<PradarZKConfigResponse> page(PradarZKConfigQueryRequest queryRequest) {
         PagingList<PradarZkConfigResult> page = pradarZkConfigDAO.page(WebPluginUtils.SYS_DEFAULT_TENANT_ID,
-            WebPluginUtils.SYS_DEFAULT_ENV_CODE, queryRequest);
+                WebPluginUtils.SYS_DEFAULT_ENV_CODE, queryRequest);
         if (page.getTotal() == 0) {
             return PagingList.empty();
         }
@@ -64,7 +81,7 @@ public class PradarConfigServiceImpl implements PradarConfigService {
 
             // 记录日志
             OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME, config.getZkPath());
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_VALUE,updateRequest.getValue());
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_VALUE, updateRequest.getValue());
         }
     }
 
@@ -82,8 +99,8 @@ public class PradarConfigServiceImpl implements PradarConfigService {
             this.processZk(zkPath, createRequest.getValue());
 
             // 记录日志
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME,createRequest.getZkPath());
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_VALUE,createRequest.getValue());
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME, createRequest.getZkPath());
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_VALUE, createRequest.getValue());
         }
     }
 
@@ -93,9 +110,13 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         PradarZkConfigResult config = pradarZkConfigDAO.getById(deleteRequest.getId());
         Assert.notNull(config, "配置不存在！");
         if (pradarZkConfigDAO.deleteById(deleteRequest.getId())) {
-            zkHelper.deleteNode(config.getZkPath());
+            if(pradarConfigPusher.useNaocsForConfigCenter()){
+                pradarConfigPusher.pushConfigToNacos(buildNacosConfigs());
+            }else{
+                pradarConfigPusher.deleteNode(config.getZkPath());
+            }
             // 记录日志
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME,config.getZkPath());
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME, config.getZkPath());
         }
     }
 
@@ -103,15 +124,19 @@ public class PradarConfigServiceImpl implements PradarConfigService {
      * 处理 zk
      *
      * @param zkPath zk 路径
-     * @param value 值
+     * @param value  值
      */
     private void processZk(String zkPath, String value) {
+        if(pradarConfigPusher.useNaocsForConfigCenter()){
+            pradarConfigPusher.pushConfigToNacos(buildNacosConfigs());
+            return;
+        }
         // 如果zk存在, 更新值
-        if (zkHelper.isNodeExists(zkPath)) {
-            zkHelper.updateNode(zkPath, value);
+        if (pradarConfigPusher.isNodeExists(zkPath)) {
+            pradarConfigPusher.updateNode(zkPath, value);
         } else {
             // 不存在, 插入
-            zkHelper.addPersistentNode(zkPath, value);
+            pradarConfigPusher.addPersistentNode(zkPath, value);
         }
     }
 

@@ -45,7 +45,6 @@ public class NacosConfigManager {
     private ThreadPoolExecutor threadPool;
 
     private Map<String, ConfigService> configServices = new HashMap<>();
-    private Map<String, String> nacosServerAddrCache = new HashMap<>();
 
     @Resource
     private AgentConfigCacheManager agentConfigCacheManager;
@@ -61,8 +60,6 @@ public class NacosConfigManager {
 
     @Resource
     private ApplicationDAO applicationDAO;
-
-    private Map<String, String> applicationNacosServerAddrCache = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -84,7 +81,6 @@ public class NacosConfigManager {
                 }
                 ConfigService service = ConfigFactory.createConfigService(properties);
                 configServices.put(entity.getClusterName(), service);
-                nacosServerAddrCache.put(entity.getClusterName(), entity.getNacosServerAddr());
             }
         } catch (Exception e) {
             log.error("创建nacos连接时失败, 不使用nacos作为配置中心", e);
@@ -112,7 +108,7 @@ public class NacosConfigManager {
         }
         String appName = event.getAppName();
         TenantCommonExt commonExt = event.getCommonExt();
-        String clusterName = queryNacosServerAddr(appName, commonExt.getEnvCode(), commonExt.getTenantId());
+        String clusterName = queryClusterName(appName, commonExt.getEnvCode(), commonExt.getTenantId());
         if (clusterName == null) {
             return;
         }
@@ -157,13 +153,6 @@ public class NacosConfigManager {
         threadPool.submit(new SwitchConfigRefreshTask());
     }
 
-    /**
-     * 刷新大数据的配置
-     */
-    public void refreshPradarConfigs(){
-
-    }
-
     public void pushNacosConfigs(String dataId, String group, ConfigService configService, String configs) {
         try {
             configService.publishConfig(dataId, group, configs);
@@ -172,14 +161,11 @@ public class NacosConfigManager {
         }
     }
 
-    public String queryNacosServerAddr(String appName, String envCode, Long tenantId) {
+    public String queryClusterName(String appName, String envCode, Long tenantId) {
         if (configServices.isEmpty()) {
             return null;
         }
         String key = buildCacheKey(appName, envCode, tenantId);
-        if (applicationNacosServerAddrCache.containsKey(key)) {
-            return applicationNacosServerAddrCache.get(key);
-        }
         ApplicationQueryParam param = new ApplicationQueryParam();
         param.setApplicationName(appName);
         param.setEnvCode(envCode);
@@ -188,10 +174,7 @@ public class NacosConfigManager {
         if (result == null || result.isEmpty()) {
             return null;
         }
-        String clusterName = result.get(0).getClusterName();
-        String serverAddr = nacosServerAddrCache.get(clusterName);
-        applicationNacosServerAddrCache.put(key, serverAddr);
-        return serverAddr;
+        return result.get(0).getClusterName();
     }
 
     private String buildCacheKey(String appName, String envCode, Long tenantId) {

@@ -1,17 +1,10 @@
 package io.shulie.takin.web.biz.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -24,6 +17,8 @@ import cn.hutool.json.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.pradar.MiddlewareType;
+import com.pamirs.takin.common.constant.AppConfigSheetEnum;
+import com.pamirs.takin.common.constant.LinkSheetEnum;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.MD5Util;
 import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
@@ -37,6 +32,7 @@ import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForOSSDTO;
 import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForSearchDTO;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.amdb.common.enums.NodeTypeGroupEnum;
+import io.shulie.surge.data.deploy.pradar.parser.PradarLogType;
 import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
@@ -71,9 +67,13 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopo
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologySearchNodeResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyUnknownNodeResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyVirtualNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.export.*;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
+import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
+import io.shulie.takin.web.common.vo.excel.ApplicationRemoteCallConfigExcelVO;
+import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
@@ -90,6 +90,8 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 链路拓扑图 接口--拓扑图信息从AMDB获取
@@ -130,17 +132,17 @@ public class LinkTopologyService extends CommonService {
      * @return 拓扑图相关
      */
     public ApplicationEntranceTopologyResponse getApplicationEntrancesTopology(
-        ApplicationEntranceTopologyQueryRequest request, boolean tempActivity) {
+            ApplicationEntranceTopologyQueryRequest request, boolean tempActivity) {
 
         // 大数据查询拓扑图
         LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
-            tempActivity,
-            request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
-            request.getRpcType(), request.getExtend());
+                tempActivity,
+                request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
+                request.getRpcType(), request.getExtend());
 
         // final result
         ApplicationEntranceTopologyResponse applicationEntranceTopologyResponse
-            = new ApplicationEntranceTopologyResponse();
+                = new ApplicationEntranceTopologyResponse();
 
         // 查询 amdb 失败的情况
         if (applicationEntrancesTopology == null) {
@@ -157,9 +159,9 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void processData(
-        ApplicationEntranceTopologyQueryRequest request,
-        LinkTopologyDTO applicationEntrancesTopology,
-        ApplicationEntranceTopologyResponse applicationEntranceTopologyResponse) {
+            ApplicationEntranceTopologyQueryRequest request,
+            LinkTopologyDTO applicationEntrancesTopology,
+            ApplicationEntranceTopologyResponse applicationEntranceTopologyResponse) {
 
         /* key:nodeId ,value: node */
         Map<String, LinkNodeDTO> nodeMap = Maps.newHashMap();
@@ -189,14 +191,14 @@ public class LinkTopologyService extends CommonService {
 
         // 节点转换
         applicationEntranceTopologyResponse.setNodes(this.convertNodes(applicationEntrancesTopology, nodeMap,
-            providerEdgeMap, callEdgeMap, managerMap, appNodeMap));
+                providerEdgeMap, callEdgeMap, managerMap, appNodeMap));
         // 边 转换
         applicationEntranceTopologyResponse.setEdges(this.convertEdges(applicationEntrancesTopology, nodeMap,
-            providerEdgeMap, callEdgeMap, request, applicationEntranceTopologyResponse));
+                providerEdgeMap, callEdgeMap, request, applicationEntranceTopologyResponse));
 
         // 异常转换
         applicationEntranceTopologyResponse.setExceptions(
-            this.getExceptionsFromNodes(applicationEntranceTopologyResponse.getNodes()));
+                this.getExceptionsFromNodes(applicationEntranceTopologyResponse.getNodes()));
     }
 
     /**
@@ -205,10 +207,10 @@ public class LinkTopologyService extends CommonService {
      * @param allTotalCountStartDateTimeUseInInFluxDB 拓扑图的 线上总调用量指标的 开始时间
      */
     public void fillMetrics(ActivityInfoQueryRequest request,
-        ApplicationEntranceTopologyResponse topologyResponse,
-        LocalDateTime startTimeUseInInFluxDB,
-        LocalDateTime endTimeUseInInFluxDB,
-        LocalDateTime allTotalCountStartDateTimeUseInInFluxDB) {
+                            ApplicationEntranceTopologyResponse topologyResponse,
+                            LocalDateTime startTimeUseInInFluxDB,
+                            LocalDateTime endTimeUseInInFluxDB,
+                            LocalDateTime allTotalCountStartDateTimeUseInInFluxDB) {
 
         Boolean metricsType = null;
         // 压测流量(true)，业务流量(false)，混合流量(null)
@@ -221,7 +223,7 @@ public class LinkTopologyService extends CommonService {
         // startTime
         long startMilliUseInInFluxDB = startTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
         long allTotalCountStartMilliUseInInFluxDB = allTotalCountStartDateTimeUseInInFluxDB.toInstant(
-            ZoneOffset.of("+0")).toEpochMilli();
+                ZoneOffset.of("+0")).toEpochMilli();
 
         // endTime
         long endMilliUseInInFluxDB = endTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
@@ -233,15 +235,15 @@ public class LinkTopologyService extends CommonService {
 
         // 查询 该业务活动 的所有开关状态
         List<ActivityNodeState> dbActivityNodeServiceState = activityService.getActivityNodeServiceState(
-            request.getActivityId());
+                request.getActivityId());
 
         List<ApplicationEntranceTopologyEdgeResponse> reduceEdges = topologyResponse.getEdges();
         List<AbstractTopologyNodeResponse> allNodes = topologyResponse.getNodes();
 
         // 找到 root 节点
         final AbstractTopologyNodeResponse rootNode = allNodes.stream()
-            .filter(AbstractTopologyNodeResponse::getRoot)
-            .findFirst().get();
+                .filter(AbstractTopologyNodeResponse::getRoot)
+                .findFirst().get();
 
         // 仅在 临时业务活动时，圈定一个入口范围
         String response1 = "";
@@ -254,17 +256,17 @@ public class LinkTopologyService extends CommonService {
         Map<String, JSONObject> metricsMap = Maps.newHashMap();
         if (!request.isTempActivity()) {
             metricsMap = queryBatchMetricsFromAMDB(startMilliUseInInFluxDB, endMilliUseInInFluxDB,
-                metricsType, this.getAllEagleIds(allNodes));
+                    metricsType, this.getAllEagleIds(allNodes));
         }
 
         for (AbstractTopologyNodeResponse node : allNodes) {
             // 填充 节点服务的 总调用量 / 总成功率 / 总Tps / 总Rt
-            TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
+            TopologyAppNodeResponse appnode = (TopologyAppNodeResponse) node;
             if (appnode.getProviderService() != null) {
                 List<AppProviderInfo> appProviderInfos =
-                    fillAppNodeServiceSuccessRateAndRt(
-                        request, appnode, startTimeUseInInFluxDB, bottleneckConfigMap,
-                        dbActivityNodeServiceState, response1, metricsMap);
+                        fillAppNodeServiceSuccessRateAndRt(
+                                request, appnode, startTimeUseInInFluxDB, bottleneckConfigMap,
+                                dbActivityNodeServiceState, response1, metricsMap);
 
                 // 设置 拓扑图中节点上显示哪一个服务性能指标
                 setTopologyNodeServiceMetrics(node, appProviderInfos);
@@ -302,17 +304,17 @@ public class LinkTopologyService extends CommonService {
      * @return
      */
     private Map<String, List<E2eExceptionConfigInfoExt>> getBatchExceptionConfig(
-        List<AbstractTopologyNodeResponse> allNodes) {
+            List<AbstractTopologyNodeResponse> allNodes) {
         List<String> allNodeService = new ArrayList<>();
         for (AbstractTopologyNodeResponse node : allNodes) {
-            TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
+            TopologyAppNodeResponse appnode = (TopologyAppNodeResponse) node;
             if (appnode.getProviderService() != null) {
                 List<AppProviderInfo> providerService = node.getProviderService();
                 for (AppProviderInfo appProviderInfo : providerService) {
                     for (AppProvider appProvider : appProviderInfo.getDataSource()) {
                         for (LinkEdgeDTO linkEdgeDTO : appProvider.getContainEdgeList()) {
                             String service = appProvider.getOwnerApps() + "#" + appProvider.getServiceName() + "#"
-                                + linkEdgeDTO.getRpcType();
+                                    + linkEdgeDTO.getRpcType();
                             allNodeService.add(service);
                         }
                     }
@@ -320,7 +322,7 @@ public class LinkTopologyService extends CommonService {
             }
         }
         return this.doGetServiceExceptionConfig(
-            allNodeService);
+                allNodeService);
     }
 
     /**
@@ -332,14 +334,14 @@ public class LinkTopologyService extends CommonService {
     private List<String> getAllEagleIds(List<AbstractTopologyNodeResponse> allNodes) {
         List<String> allEagleIds = new ArrayList<>();
         for (AbstractTopologyNodeResponse node : allNodes) {
-            TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
+            TopologyAppNodeResponse appnode = (TopologyAppNodeResponse) node;
             if (appnode.getProviderService() != null) {
                 List<AppProviderInfo> providerService = node.getProviderService();
                 for (AppProviderInfo appProviderInfo : providerService) {
                     for (AppProvider appProvider : appProviderInfo.getDataSource()) {
                         List<String> eagleIds = appProvider.getContainEdgeList().stream().map(LinkEdgeDTO::getEagleId)
-                            .collect(
-                                Collectors.toList());
+                                .collect(
+                                        Collectors.toList());
                         if (CollectionUtils.isNotEmpty(eagleIds)) {
                             allEagleIds.addAll(eagleIds);
                         }
@@ -351,17 +353,17 @@ public class LinkTopologyService extends CommonService {
     }
 
     private String getString(ActivityInfoQueryRequest request, AbstractTopologyNodeResponse rootNode, String response1,
-        List<ApplicationEntranceTopologyEdgeResponse> reduceEdges, List<AbstractTopologyNodeResponse> allNodes) {
+                             List<ApplicationEntranceTopologyEdgeResponse> reduceEdges, List<AbstractTopologyNodeResponse> allNodes) {
         if (request.isTempActivity()) {
 
             // 找到 连接 root 节点的边
             ApplicationEntranceTopologyEdgeResponse rootEdge = reduceEdges.stream()
-                .filter(s -> s.getSource().equals(rootNode.getId()))
-                .findFirst().get();
+                    .filter(s -> s.getSource().equals(rootNode.getId()))
+                    .findFirst().get();
 
             // 找到 对应的 linkEdgeDTO
             for (AbstractTopologyNodeResponse node : allNodes) {
-                TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
+                TopologyAppNodeResponse appnode = (TopologyAppNodeResponse) node;
                 if (appnode.getProviderService() != null) {
                     for (AppProviderInfo appProviderInfo : node.getProviderService()) {
                         for (AppProvider appProvider : appProviderInfo.getDataSource()) {
@@ -369,7 +371,9 @@ public class LinkTopologyService extends CommonService {
                             for (LinkEdgeDTO linkEdgeDTO : appProvider.getContainEdgeList()) {
                                 String eagleId = linkEdgeDTO.getEagleId();
 
-                                if (!rootEdge.getId().equals(eagleId)) { continue; }
+                                if (!rootEdge.getId().equals(eagleId)) {
+                                    continue;
+                                }
 
                                 String serviceName = appProvider.getServiceName();
                                 String[] split = serviceName.split("#");
@@ -381,13 +385,13 @@ public class LinkTopologyService extends CommonService {
                                 String endTime = DateUtils.formatLocalDateTime(request.getEndTime());
 
                                 TempTopologyQuery1 query1 = TempTopologyQuery1.builder()
-                                    .inAppName(appProvider.getOwnerApps())
-                                    .inService(service)
-                                    .inMethod(method)
-                                    .startTime(startTime)
-                                    .endTime(endTime)
-                                    .timeGap(request.getTimeGap())
-                                    .build();
+                                        .inAppName(appProvider.getOwnerApps())
+                                        .inService(service)
+                                        .inMethod(method)
+                                        .startTime(startTime)
+                                        .endTime(endTime)
+                                        .timeGap(request.getTimeGap())
+                                        .build();
 
                                 response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
                             }
@@ -413,8 +417,8 @@ public class LinkTopologyService extends CommonService {
     }
 
     private double getAllServiceAllTotalCount(
-        List<AbstractTopologyNodeResponse> allNodes,
-        ApplicationEntranceTopologyEdgeResponse edge) {
+            List<AbstractTopologyNodeResponse> allNodes,
+            ApplicationEntranceTopologyEdgeResponse edge) {
 
         double allServiceAllTotalCount = 0.0;
 
@@ -431,9 +435,9 @@ public class LinkTopologyService extends CommonService {
                     for (AppProvider appProvider : appProviderInfo.getDataSource()) {
                         for (AppProvider realProvider : appProvider.getContainRealAppProvider()) {
                             if ((realProvider.getSource().equals(edge.getSource()) &&
-                                realProvider.getTarget().equals(edge.getTarget()))) {
+                                    realProvider.getTarget().equals(edge.getTarget()))) {
                                 allServiceAllTotalCount = bigDecimalAdd(allServiceAllTotalCount,
-                                    realProvider.getServiceAllTotalCount());
+                                        realProvider.getServiceAllTotalCount());
                             }
                         }
                     }
@@ -444,7 +448,7 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void setTopologyNodeServiceMetrics(AbstractTopologyNodeResponse node,
-        List<AppProviderInfo> appProviderInfos) {
+                                               List<AppProviderInfo> appProviderInfos) {
         AppProvider appProviderContainer = AppProvider.buildInit();
 
         for (AppProviderInfo appProviderInfo : appProviderInfos) {
@@ -461,42 +465,46 @@ public class LinkTopologyService extends CommonService {
 
     private AppProvider avgComputer(AppProvider appProviderContainer, List<AppProvider> appProviderList) {
         appProviderList.stream()
-            // 如果服务打开，则更新值
-            .filter(a -> {
-                if (a.getSwitchState() == null) { return true; } else { return a.getSwitchState(); }
-            })
-            .forEach(appProvider -> {
-                appProviderContainer.setServiceAllTotalCount(
-                    bigDecimalAdd(appProviderContainer.getServiceAllTotalCount(), appProvider.getServiceAllTotalCount())
-                );
-                appProviderContainer.setAllSuccessCount(
-                    bigDecimalAdd(appProviderContainer.getAllSuccessCount(), appProvider.getAllSuccessCount())
-                );
-                appProviderContainer.setServiceAllTotalTps(
-                    bigDecimalAdd(appProviderContainer.getServiceAllTotalTps(), appProvider.getServiceAllTotalTps())
-                );
-                appProviderContainer.setAllTotalRt(
-                    bigDecimalAdd(appProviderContainer.getAllTotalRt(), appProvider.getAllTotalRt())
-                );
-                appProviderContainer.setServiceAllMaxRt(
-                    Math.max(appProviderContainer.getServiceAllMaxRt(), appProvider.getServiceAllMaxRt())
-                );
-            });
+                // 如果服务打开，则更新值
+                .filter(a -> {
+                    if (a.getSwitchState() == null) {
+                        return true;
+                    } else {
+                        return a.getSwitchState();
+                    }
+                })
+                .forEach(appProvider -> {
+                    appProviderContainer.setServiceAllTotalCount(
+                            bigDecimalAdd(appProviderContainer.getServiceAllTotalCount(), appProvider.getServiceAllTotalCount())
+                    );
+                    appProviderContainer.setAllSuccessCount(
+                            bigDecimalAdd(appProviderContainer.getAllSuccessCount(), appProvider.getAllSuccessCount())
+                    );
+                    appProviderContainer.setServiceAllTotalTps(
+                            bigDecimalAdd(appProviderContainer.getServiceAllTotalTps(), appProvider.getServiceAllTotalTps())
+                    );
+                    appProviderContainer.setAllTotalRt(
+                            bigDecimalAdd(appProviderContainer.getAllTotalRt(), appProvider.getAllTotalRt())
+                    );
+                    appProviderContainer.setServiceAllMaxRt(
+                            Math.max(appProviderContainer.getServiceAllMaxRt(), appProvider.getServiceAllMaxRt())
+                    );
+                });
 
         appProviderContainer.setServiceAllSuccessRate(
-            bigDecimalDivide(appProviderContainer.getAllSuccessCount(), appProviderContainer.getServiceAllTotalCount())
+                bigDecimalDivide(appProviderContainer.getAllSuccessCount(), appProviderContainer.getServiceAllTotalCount())
         );
         appProviderContainer.setServiceRt(
-            bigDecimalDivide(appProviderContainer.getAllTotalRt(), appProviderContainer.getServiceAllTotalCount())
+                bigDecimalDivide(appProviderContainer.getAllTotalRt(), appProviderContainer.getServiceAllTotalCount())
         );
 
         return appProviderContainer;
     }
 
     private List<AppProviderInfo> fillAppNodeServiceSuccessRateAndRt(
-        ActivityInfoQueryRequest request, TopologyAppNodeResponse node,
-        LocalDateTime startTimeUseInInFluxDB, Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap,
-        List<ActivityNodeState> dbActivityNodeServiceState, String response1, Map<String, JSONObject> metricsMap) {
+            ActivityInfoQueryRequest request, TopologyAppNodeResponse node,
+            LocalDateTime startTimeUseInInFluxDB, Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap,
+            List<ActivityNodeState> dbActivityNodeServiceState, String response1, Map<String, JSONObject> metricsMap) {
 
         // 节点 所有有服务，包含 不同的中间件，不同的 serviceMethod
         List<AppProvider> allAppProviderServiceList = new ArrayList<>();
@@ -512,13 +520,13 @@ public class LinkTopologyService extends CommonService {
 
                 // 计算瓶颈
                 appProvider.getContainRealAppProvider().stream()
-                    // 如果不是初始值，再计算瓶颈
-                    .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT))
-                    .forEach(appProviderFromDb -> {
-                        // 瓶颈计算 and 落库
-                        computeBottleneck(startTimeUseInInFluxDB, request.getActivityId(), bottleneckConfigMap,
-                            appProviderFromDb);
-                    });
+                        // 如果不是初始值，再计算瓶颈
+                        .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT))
+                        .forEach(appProviderFromDb -> {
+                            // 瓶颈计算 and 落库
+                            computeBottleneck(startTimeUseInInFluxDB, request.getActivityId(), bottleneckConfigMap,
+                                    appProviderFromDb);
+                        });
 
                 // 计算出每条真实边的指标后，再计算平均指标，用来对节点的某一服务赋值, 当开关打开时，在拓扑图中展示
                 // 一个API（这个API有多个上游）的平均指标
@@ -542,30 +550,30 @@ public class LinkTopologyService extends CommonService {
 
     public Map<String, List<E2eExceptionConfigInfoExt>> doGetServiceExceptionConfig(List<String> services) {
         return E2ePluginUtils.getBatchExceptionConfig(
-            WebPluginUtils.traceTenantId(),
-            WebPluginUtils.traceEnvCode(), services);
+                WebPluginUtils.traceTenantId(),
+                WebPluginUtils.traceEnvCode(), services);
     }
 
     private void mergeSameBeforeApp(AppProvider appProvider) {
         Map<String, AppProvider> appProviderHashMap = appProvider.getContainRealAppProvider().stream()
-            .collect(Collectors.toMap(
-                AppProvider::getBeforeApps,
-                Function.identity(),
-                (existingValue, newValue) -> {
-                    ArrayList<AppProvider> arrayList = new ArrayList();
-                    arrayList.add(newValue);
+                .collect(Collectors.toMap(
+                        AppProvider::getBeforeApps,
+                        Function.identity(),
+                        (existingValue, newValue) -> {
+                            ArrayList<AppProvider> arrayList = new ArrayList();
+                            arrayList.add(newValue);
 
-                    avgComputer(existingValue, arrayList);
+                            avgComputer(existingValue, arrayList);
 
-                    existingValue.setEagleId(existingValue.getEagleId() + "," + newValue.getEagleId());
-                    return existingValue;
-                }));
+                            existingValue.setEagleId(existingValue.getEagleId() + "," + newValue.getEagleId());
+                            return existingValue;
+                        }));
 
         appProvider.setContainRealAppProvider(new ArrayList(appProviderHashMap.values()));
     }
 
     private void fillMetrixFromAMDB(ActivityInfoQueryRequest request, AppProvider appProvider, String response1,
-        Map<String, JSONObject> metricsMap) {
+                                    Map<String, JSONObject> metricsMap) {
         appProvider.setContainRealAppProvider(new ArrayList<>());
 
         HashMap<String, Boolean> isContainSame = new HashMap<>();
@@ -578,7 +586,7 @@ public class LinkTopologyService extends CommonService {
             if (request.isTempActivity()) {
                 // 应用管理->服务监控  查询 临时业务活动时 使用
                 appProviderFromDb = queryTempMetricsFromAMDB(response1, isContainSame, beforeApps,
-                    appProvider.getOwnerApps(), appProvider.getMiddlewareName(), appProvider.getServiceName(), request);
+                        appProvider.getOwnerApps(), appProvider.getMiddlewareName(), appProvider.getServiceName(), request);
             } else {
                 if (metricsMap.containsKey(eagleId)) {
                     appProviderFromDb = queryMetricsFromAMDB(metricsMap.get(eagleId));
@@ -604,8 +612,8 @@ public class LinkTopologyService extends CommonService {
     }
 
     private AppProvider queryTempMetricsFromAMDB(
-        String response1, HashMap<String, Boolean> isContainSame, String beforeApps, String toAppName,
-        String middlewareName, String serviceName, ActivityInfoQueryRequest request) {
+            String response1, HashMap<String, Boolean> isContainSame, String beforeApps, String toAppName,
+            String middlewareName, String serviceName, ActivityInfoQueryRequest request) {
 
         String[] split = serviceName.split("#");
         String service = split[0];
@@ -629,42 +637,42 @@ public class LinkTopologyService extends CommonService {
         Integer realSeconds = 0;
 
         TempTopologyQuery2 query2 = TempTopologyQuery2.builder()
-            .fromAppName(beforeApps)
-            .appName(toAppName)
-            .middlewareName(middlewareName)
-            .service(service)
-            .method(method)
-            .entranceStr(response1)
-            .clusterTest(request.getFlowTypeEnum().getType())
-            .startTime(startTime)
-            .endTime(endTime)
-            .timeGap(request.getTimeGap())
-            .build();
+                .fromAppName(beforeApps)
+                .appName(toAppName)
+                .middlewareName(middlewareName)
+                .service(service)
+                .method(method)
+                .entranceStr(response1)
+                .clusterTest(request.getFlowTypeEnum().getType())
+                .startTime(startTime)
+                .endTime(endTime)
+                .timeGap(request.getTimeGap())
+                .build();
 
         JSONObject jsonObject = applicationEntranceClient.queryMetricsFromAMDB2(query2);
 
         fillTraceMetricsResultList(traceMetricsResultList, jsonObject);
 
-        realSeconds = (Integer)jsonObject.get("realSeconds");
+        realSeconds = (Integer) jsonObject.get("realSeconds");
 
         AppProvider appProvider = getAppProvider(realSeconds, traceMetricsResultList);
         return appProvider;
     }
 
     private void fillTraceMetricsResultList(ArrayList<TraceMetricsResult> traceMetricsResultList,
-        JSONObject jsonObject) {
+                                            JSONObject jsonObject) {
         TraceMetricsResult traceMetricsResult = TraceMetricsResult.builder().build();
 
-        Integer allTotalCount = (Integer)jsonObject.get("allTotalCount");
+        Integer allTotalCount = (Integer) jsonObject.get("allTotalCount");
         traceMetricsResult.setAllTotalCount(allTotalCount.doubleValue());
 
-        Integer allSuccessCount = (Integer)jsonObject.get("allSuccessCount");
+        Integer allSuccessCount = (Integer) jsonObject.get("allSuccessCount");
         traceMetricsResult.setAllSuccessCount(allSuccessCount.doubleValue());
 
-        Integer allTotalRt = (Integer)jsonObject.get("allTotalRt");
+        Integer allTotalRt = (Integer) jsonObject.get("allTotalRt");
         traceMetricsResult.setAllTotalRt(allTotalRt.doubleValue());
 
-        Integer allMaxRt = (Integer)jsonObject.get("allMaxRt");
+        Integer allMaxRt = (Integer) jsonObject.get("allMaxRt");
         traceMetricsResult.setAllMaxRt(allMaxRt.doubleValue());
 
         traceMetricsResultList.add(traceMetricsResult);
@@ -702,7 +710,7 @@ public class LinkTopologyService extends CommonService {
                 }
 
                 if (RpcTypeEnum.APP.getValue().equals(appProvider.getRpcType()) ||
-                    RpcTypeEnum.DB.getValue().equals(appProvider.getRpcType())) {
+                        RpcTypeEnum.DB.getValue().equals(appProvider.getRpcType())) {
                     if ((appProvider.getAllSuccessRateBottleneckType() == 1)) {
                         hasL1Bottleneck = true;
                         L1bottleneckNum++;
@@ -748,8 +756,8 @@ public class LinkTopologyService extends CommonService {
     }
 
     public void computeBottleneck(
-        LocalDateTime startTimeUseInInFluxDB, Long activityId,
-        Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap, AppProvider appProvider) {
+            LocalDateTime startTimeUseInInFluxDB, Long activityId,
+            Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap, AppProvider appProvider) {
 
         E2eStorageRequest storageRequest = new E2eStorageRequest();
         storageRequest.setRt(appProvider.getServiceAvgRt());
@@ -759,7 +767,7 @@ public class LinkTopologyService extends CommonService {
         //SY:调用瓶颈计算接口
         //获取接口瓶颈配置
         String service = appProvider.getOwnerApps() + "#" + appProvider.getServiceName() + "#"
-            + appProvider.getRpcType();
+                + appProvider.getRpcType();
         List<E2eExceptionConfigInfoExt> bottleneckConfig = bottleneckConfigMap.get(service);
         Map<Integer, Integer> resultMap = E2ePluginUtils.bottleneckCompute(storageRequest, bottleneckConfig);
 
@@ -826,8 +834,8 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void setNodeServiceState(Long activityId, TopologyAppNodeResponse node,
-        List<ActivityNodeState> dbActivityNodeServiceState,
-        List<AppProvider> appProviderList) {
+                                     List<ActivityNodeState> dbActivityNodeServiceState,
+                                     List<AppProvider> appProviderList) {
 
         String nodeLabel = node.getLabel();
 
@@ -859,23 +867,23 @@ public class LinkTopologyService extends CommonService {
     }
 
     private AppProvider queryMetricsFromAMDB(long startMilli, long endMilli,
-        Boolean metricsType, String eagleId) {
+                                             Boolean metricsType, String eagleId) {
 
         QueryMetricsFromAMDB queryMetricsFromAMDB = QueryMetricsFromAMDB.builder()
-            .startMilli(startMilli)
-            .endMilli(endMilli)
-            .metricsType(metricsType)
-            .eagleId(eagleId)
-            .tenantAppKey(WebPluginUtils.traceTenantAppKey())
-            .envCode(WebPluginUtils.traceEnvCode())
-            .build();
+                .startMilli(startMilli)
+                .endMilli(endMilli)
+                .metricsType(metricsType)
+                .eagleId(eagleId)
+                .tenantAppKey(WebPluginUtils.traceTenantAppKey())
+                .envCode(WebPluginUtils.traceEnvCode())
+                .build();
 
         JSONObject jsonObject = applicationEntranceClient.queryMetrics(queryMetricsFromAMDB);
 
         ArrayList<TraceMetricsResult> allTotalTpsAndRtCountResults = new ArrayList<>();
         fillTraceMetricsResultList(allTotalTpsAndRtCountResults, jsonObject);
 
-        long realSeconds = (Integer)jsonObject.get("realSeconds");
+        long realSeconds = (Integer) jsonObject.get("realSeconds");
         AppProvider appProvider = getAppProvider(realSeconds, allTotalTpsAndRtCountResults);
         return appProvider;
     }
@@ -884,34 +892,34 @@ public class LinkTopologyService extends CommonService {
         ArrayList<TraceMetricsResult> allTotalTpsAndRtCountResults = new ArrayList<>();
         fillTraceMetricsResultList(allTotalTpsAndRtCountResults, jsonObject);
 
-        long realSeconds = (Integer)jsonObject.get("realSeconds");
+        long realSeconds = (Integer) jsonObject.get("realSeconds");
         AppProvider appProvider = getAppProvider(realSeconds, allTotalTpsAndRtCountResults);
         return appProvider;
     }
 
     private Map<String, JSONObject> queryBatchMetricsFromAMDB(Long startMilli, Long endMilli,
-        Boolean metricsType, List<String> eagleIds) {
+                                                              Boolean metricsType, List<String> eagleIds) {
 
         if (CollectionUtils.isEmpty(eagleIds)) {
             return Maps.newHashMap();
         }
 
         QueryMetricsFromAMDB queryMetricsFromAMDB = QueryMetricsFromAMDB.builder()
-            .startMilli(startMilli)
-            .endMilli(endMilli)
-            // 压测流量(true:1)，业务流量(false:0)，混合流量(null:-1)
-            .metricsType(metricsType)
-            .eagleIds(eagleIds)
-            .tenantAppKey(WebPluginUtils.traceTenantAppKey())
-            .envCode(WebPluginUtils.traceEnvCode())
-            .build();
+                .startMilli(startMilli)
+                .endMilli(endMilli)
+                // 压测流量(true:1)，业务流量(false:0)，混合流量(null:-1)
+                .metricsType(metricsType)
+                .eagleIds(eagleIds)
+                .tenantAppKey(WebPluginUtils.traceTenantAppKey())
+                .envCode(WebPluginUtils.traceEnvCode())
+                .build();
 
         List<JSONObject> jsonObjects = applicationEntranceClient.queryBatchMetrics(queryMetricsFromAMDB);
         if (CollectionUtils.isEmpty(jsonObjects)) {
             return Maps.newHashMap();
         }
         Map<String, JSONObject> metricsMap = jsonObjects.stream().collect(
-            Collectors.toMap(jsonObject -> String.valueOf(jsonObject.get("edgeId")), self -> self));
+                Collectors.toMap(jsonObject -> String.valueOf(jsonObject.get("edgeId")), self -> self));
         return metricsMap;
     }
 
@@ -964,9 +972,9 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void setMainEdge(
-        List<ApplicationEntranceTopologyEdgeResponse> allEdges,
-        String node,
-        int loopCounter) {
+            List<ApplicationEntranceTopologyEdgeResponse> allEdges,
+            String node,
+            int loopCounter) {
 
         // 防止 (from / to) 是一个 node, 循环调用自己
         if (loopCounter++ > allEdges.size()) {
@@ -978,8 +986,8 @@ public class LinkTopologyService extends CommonService {
         for (ApplicationEntranceTopologyEdgeResponse edge : allEdges) {
             if (node.equals(edge.getSource())) {
                 if (edge.getLabel().equalsIgnoreCase("tomcat")
-                    || edge.getLabel().equalsIgnoreCase("dubbo")
-                    || edge.getLabel().equalsIgnoreCase("http")) {
+                        || edge.getLabel().equalsIgnoreCase("dubbo")
+                        || edge.getLabel().equalsIgnoreCase("http")) {
                     edgeListOfNode.add(edge);
                 }
             }
@@ -1038,19 +1046,19 @@ public class LinkTopologyService extends CommonService {
             return Maps.newHashMap();
         }
         List<String> appNames = nodes.stream()
-            //.filter(node -> node.getNodeTypeGroup().equalsIgnoreCase(NodeTypeGroupEnum.APP.name()))
-            .map(LinkNodeDTO::getNodeName)
-            .collect(Collectors.toList());
+                //.filter(node -> node.getNodeTypeGroup().equalsIgnoreCase(NodeTypeGroupEnum.APP.name()))
+                .map(LinkNodeDTO::getNodeName)
+                .collect(Collectors.toList());
         ApplicationNodeQueryDTO applicationNodeQueryDTO = new ApplicationNodeQueryDTO();
         applicationNodeQueryDTO.setPageSize(9999);
         applicationNodeQueryDTO.setAppNames(StringUtils.join(appNames, ","));
         PagingList<ApplicationNodeDTO> applicationNodeDtoPagingList = applicationClient.pageApplicationNodes(
-            applicationNodeQueryDTO);
+                applicationNodeQueryDTO);
         if (applicationNodeDtoPagingList.getTotal() == 0) {
             return Maps.newHashMap();
         }
         return applicationNodeDtoPagingList.getList().stream().collect(
-            Collectors.groupingBy(ApplicationNodeDTO::getAppName));
+                Collectors.groupingBy(ApplicationNodeDTO::getAppName));
     }
 
     private Map<String, String> getManagers(List<LinkNodeDTO> nodes) {
@@ -1058,17 +1066,17 @@ public class LinkTopologyService extends CommonService {
             return Maps.newHashMap();
         }
         List<String> applicationNames = nodes.stream()
-            .filter(node -> nodeIsApp(node) && !isVirtualNode(node))
-            .map(LinkNodeDTO::getNodeName)
-            .collect(Collectors.toList());
+                .filter(node -> nodeIsApp(node) && !isVirtualNode(node))
+                .map(LinkNodeDTO::getNodeName)
+                .collect(Collectors.toList());
 
         List<ApplicationResult> applicationsByName = applicationDAO.getApplicationByName(applicationNames);
         if (CollectionUtils.isEmpty(applicationsByName)) {
             return Maps.newHashMap();
         }
         Map<String, String> appNameManagerNameMap = applicationsByName.stream()
-            .filter(app -> StringUtils.isNotBlank(app.getAppManagerName()))
-            .collect(Collectors.toMap(ApplicationResult::getAppName, ApplicationResult::getAppManagerName));
+                .filter(app -> StringUtils.isNotBlank(app.getAppManagerName()))
+                .collect(Collectors.toMap(ApplicationResult::getAppName, ApplicationResult::getAppManagerName));
         Map<String, String> map = Maps.newHashMap();
         for (LinkNodeDTO node : nodes) {
             if (nodeIsApp(node) && !isVirtualNode(node)) {
@@ -1079,10 +1087,10 @@ public class LinkTopologyService extends CommonService {
     }
 
     private List<AbstractTopologyNodeResponse> convertNodes(
-        LinkTopologyDTO applicationEntrancesTopology,
-        Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap, Map<String, String> managerMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+            LinkTopologyDTO applicationEntrancesTopology,
+            Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+            Map<String, List<LinkEdgeDTO>> callEdgeMap, Map<String, String> managerMap,
+            Map<String, List<ApplicationNodeDTO>> appNodeMap) {
 
         if (CollectionUtils.isEmpty(applicationEntrancesTopology.getNodes())) {
             return Lists.newArrayList();
@@ -1091,75 +1099,75 @@ public class LinkTopologyService extends CommonService {
         AtomicLong nextNumber = new AtomicLong();
 
         return applicationEntrancesTopology.getNodes().stream().map(node -> {
-            // other
-            if (NodeTypeGroupEnum.OTHER.getType().equals(node.getNodeTypeGroup())) {
+                    // other
+                    if (NodeTypeGroupEnum.OTHER.getType().equals(node.getNodeTypeGroup())) {
 
-                if (isVirtualNode(node)) {
-                    TopologyVirtualNodeResponse nodeResponse = new TopologyVirtualNodeResponse();
-                    setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setVirtualResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                        appNodeMap);
-                    return nodeResponse;
-                } else if (isOuterService(node)) {
-                    TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
-                    setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
-                    return nodeResponse;
-                } else if (isUnknownNode(node)) {
-                    TopologyUnknownNodeResponse nodeResponse = new TopologyUnknownNodeResponse();
-                    setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setUnknownResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                        appNodeMap);
-                    return nodeResponse;
-                } else {
-                    TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
-                    setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
-                    return nodeResponse;
-                }
+                        if (isVirtualNode(node)) {
+                            TopologyVirtualNodeResponse nodeResponse = new TopologyVirtualNodeResponse();
+                            setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                            setVirtualResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
+                                    appNodeMap);
+                            return nodeResponse;
+                        } else if (isOuterService(node)) {
+                            TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
+                            setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                            setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
+                            return nodeResponse;
+                        } else if (isUnknownNode(node)) {
+                            TopologyUnknownNodeResponse nodeResponse = new TopologyUnknownNodeResponse();
+                            setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                            setUnknownResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
+                                    appNodeMap);
+                            return nodeResponse;
+                        } else {
+                            TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
+                            setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                            setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
+                            return nodeResponse;
+                        }
 
-                // 能区分类型的
-            } else if (NodeTypeGroupEnum.APP.getType().equals(node.getNodeTypeGroup())) {
-                TopologyAppNodeResponse nodeResponse = new TopologyAppNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setAppNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
-                return nodeResponse;
-            } else if (NodeTypeGroupEnum.OSS.getType().equals(node.getNodeTypeGroup())) {
-                TopologyOssNodeResponse nodeResponse = new TopologyOssNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setOssNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                return nodeResponse;
-            } else if (NodeTypeGroupEnum.CACHE.getType().equals(node.getNodeTypeGroup())) {
-                TopologyCacheNodeResponse nodeResponse = new TopologyCacheNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setCacheNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                return nodeResponse;
-            } else if (NodeTypeGroupEnum.DB.getType().equals(node.getNodeTypeGroup())) {
-                TopologyDbNodeResponse nodeResponse = new TopologyDbNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setDbNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                return nodeResponse;
-            } else if (NodeTypeGroupEnum.MQ.getType().equals(node.getNodeTypeGroup())) {
-                TopologyMqNodeResponse nodeResponse = new TopologyMqNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setMqNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                return nodeResponse;
-            } else if (NodeTypeGroupEnum.SEARCH.getType().equals(node.getNodeTypeGroup())) {
-                TopologySearchNodeResponse nodeResponse = new TopologySearchNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setSearchNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                return nodeResponse;
-            }
-            return null;
-        })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+                        // 能区分类型的
+                    } else if (NodeTypeGroupEnum.APP.getType().equals(node.getNodeTypeGroup())) {
+                        TopologyAppNodeResponse nodeResponse = new TopologyAppNodeResponse();
+                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                        setAppNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
+                        return nodeResponse;
+                    } else if (NodeTypeGroupEnum.OSS.getType().equals(node.getNodeTypeGroup())) {
+                        TopologyOssNodeResponse nodeResponse = new TopologyOssNodeResponse();
+                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                        setOssNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                        return nodeResponse;
+                    } else if (NodeTypeGroupEnum.CACHE.getType().equals(node.getNodeTypeGroup())) {
+                        TopologyCacheNodeResponse nodeResponse = new TopologyCacheNodeResponse();
+                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                        setCacheNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                        return nodeResponse;
+                    } else if (NodeTypeGroupEnum.DB.getType().equals(node.getNodeTypeGroup())) {
+                        TopologyDbNodeResponse nodeResponse = new TopologyDbNodeResponse();
+                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                        setDbNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                        return nodeResponse;
+                    } else if (NodeTypeGroupEnum.MQ.getType().equals(node.getNodeTypeGroup())) {
+                        TopologyMqNodeResponse nodeResponse = new TopologyMqNodeResponse();
+                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                        setMqNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                        return nodeResponse;
+                    } else if (NodeTypeGroupEnum.SEARCH.getType().equals(node.getNodeTypeGroup())) {
+                        TopologySearchNodeResponse nodeResponse = new TopologySearchNodeResponse();
+                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                        setSearchNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                        return nodeResponse;
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     private void setUnknownResponse(TopologyUnknownNodeResponse nodeResponse, LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap, Map<String, String> managerMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                    Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+                                    Map<String, List<LinkEdgeDTO>> callEdgeMap, Map<String, String> managerMap,
+                                    Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         nodeResponse.setNodes(getNodeDetails(node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap));
         nodeResponse.setProviderService(convertAppNodeProviderService(node, nodeMap, providerEdgeMap));
     }
@@ -1170,13 +1178,13 @@ public class LinkTopologyService extends CommonService {
      * @return
      */
     private List<String> getUpAppNames(LinkNodeDTO node, Map<String, LinkNodeDTO> nodeMap,
-        Map<String, List<LinkEdgeDTO>> providerEdgeMap) {
+                                       Map<String, List<LinkEdgeDTO>> providerEdgeMap) {
         if (MapUtils.isEmpty(providerEdgeMap) || CollectionUtils.isEmpty(providerEdgeMap.get(node.getNodeId()))) {
             return new ArrayList<>();
         }
         List<String> updateNodeIdList = providerEdgeMap.get(node.getNodeId()).stream().map(LinkEdgeDTO::getSourceId)
-            .collect(
-                Collectors.toList());
+                .collect(
+                        Collectors.toList());
         return updateNodeIdList.stream().map(upNodeId -> {
             LinkNodeDTO linkNodeDTO = nodeMap.get(upNodeId);
             if (linkNodeDTO != null) {
@@ -1187,26 +1195,26 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void setOtherResponse(TopologyOtherNodeResponse nodeResponse, LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap, Map<String, String> managerMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                  Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+                                  Map<String, List<LinkEdgeDTO>> callEdgeMap, Map<String, String> managerMap,
+                                  Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         nodeResponse.setNodes(getNodeDetails(node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap));
         nodeResponse.setProviderService(convertAppNodeProviderService(node, nodeMap, providerEdgeMap));
     }
 
     private void setVirtualResponse(TopologyVirtualNodeResponse nodeResponse, LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap, Map<String, String> managerMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                    Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+                                    Map<String, List<LinkEdgeDTO>> callEdgeMap, Map<String, String> managerMap,
+                                    Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         nodeResponse.setNodes(getNodeDetails(node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap));
         nodeResponse.setProviderService(convertAppNodeProviderService(node, nodeMap, providerEdgeMap));
     }
 
     private void setMqNodeResponse(TopologyMqNodeResponse nodeResponse,
-        LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                   LinkNodeDTO node,
+                                   Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+                                   Map<String, List<LinkEdgeDTO>> callEdgeMap,
+                                   Map<String, List<ApplicationNodeDTO>> appNodeMap) {
 
         List<LinkEdgeDTO> linkEdgeDtoList = providerEdgeMap.get(node.getNodeId());
         List<MqInfo> mqs = Lists.newArrayList();
@@ -1224,10 +1232,10 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void setDbNodeResponse(TopologyDbNodeResponse nodeResponse,
-        LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                   LinkNodeDTO node,
+                                   Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+                                   Map<String, List<LinkEdgeDTO>> callEdgeMap,
+                                   Map<String, List<ApplicationNodeDTO>> appNodeMap) {
 
         List<LinkEdgeDTO> linkEdgeDtoListS = providerEdgeMap.get(node.getNodeId());
         List<DbInfo> dbs = Lists.newArrayList();
@@ -1244,29 +1252,29 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void setCacheNodeResponse(TopologyCacheNodeResponse nodeResponse,
-        LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                      LinkNodeDTO node,
+                                      Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+                                      Map<String, List<LinkEdgeDTO>> callEdgeMap,
+                                      Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         nodeResponse.setNodes(getNodeDetails(node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap));
         nodeResponse.setProviderService(convertAppNodeProviderService(node, nodeMap, providerEdgeMap));
     }
 
     private void setSearchNodeResponse(TopologySearchNodeResponse nodeResponse,
-        LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                       LinkNodeDTO node,
+                                       Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+                                       Map<String, List<LinkEdgeDTO>> callEdgeMap,
+                                       Map<String, List<ApplicationNodeDTO>> appNodeMap) {
 
         nodeResponse.setNodes(getNodeDetails(node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap));
         nodeResponse.setProviderService(convertAppNodeProviderService(node, nodeMap, providerEdgeMap));
     }
 
     private void setOssNodeResponse(TopologyOssNodeResponse nodeResponse,
-        LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                    LinkNodeDTO node,
+                                    Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+                                    Map<String, List<LinkEdgeDTO>> callEdgeMap,
+                                    Map<String, List<ApplicationNodeDTO>> appNodeMap) {
 
         List<LinkEdgeDTO> linkEdgeDtoList = providerEdgeMap.get(node.getNodeId());
         List<OssInfo> ossInfoLists = Lists.newArrayList();
@@ -1283,21 +1291,21 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void setAppNodeResponse(TopologyAppNodeResponse nodeResponse,
-        LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap, Map<String, String> managerMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                    LinkNodeDTO node,
+                                    Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+                                    Map<String, List<LinkEdgeDTO>> callEdgeMap, Map<String, String> managerMap,
+                                    Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         nodeResponse.setManager(managerMap.get(node.getNodeName()));
         nodeResponse.setNodes(getNodeDetails(node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap));
         nodeResponse.setCallService(
-            convertAppNodeCallService(node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap));
+                convertAppNodeCallService(node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap));
         nodeResponse.setProviderService(convertAppNodeProviderService(node, nodeMap, providerEdgeMap));
     }
 
     private List<AppProviderInfo> convertAppNodeProviderService(
-        LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap,
-        Map<String, List<LinkEdgeDTO>> providerEdgeMap) {
+            LinkNodeDTO node,
+            Map<String, LinkNodeDTO> nodeMap,
+            Map<String, List<LinkEdgeDTO>> providerEdgeMap) {
 
         // 本节点提供的边
         List<LinkEdgeDTO> providerEdge = providerEdgeMap.get(node.getNodeId());
@@ -1307,7 +1315,7 @@ public class LinkTopologyService extends CommonService {
 
         // 根据 中间件 分组
         Map<String, List<LinkEdgeDTO>> providerEdgeByMiddlewareName = providerEdge.stream().collect(
-            Collectors.groupingBy(LinkEdgeDTO::getMiddlewareName));
+                Collectors.groupingBy(LinkEdgeDTO::getMiddlewareName));
 
         List<AppProviderInfo> collect = providerEdgeByMiddlewareName.entrySet().stream().map(edgeByMiddlewareName -> {
             AppProviderInfo appProviderInfo = new AppProviderInfo();
@@ -1322,9 +1330,9 @@ public class LinkTopologyService extends CommonService {
     }
 
     private List<AppProvider> getDatasource(LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap,
-        Map.Entry<String, List<LinkEdgeDTO>> edgeByMiddlewareName,
-        List<AppProvider> datasource) {
+                                            Map<String, LinkNodeDTO> nodeMap,
+                                            Map.Entry<String, List<LinkEdgeDTO>> edgeByMiddlewareName,
+                                            List<AppProvider> datasource) {
 
         if (CollectionUtils.isEmpty(edgeByMiddlewareName.getValue())) {
             return datasource;
@@ -1332,7 +1340,7 @@ public class LinkTopologyService extends CommonService {
 
         // 根据 ServiceMethod 再次分组
         Map<String, List<LinkEdgeDTO>> serviceMethodGroup = edgeByMiddlewareName.getValue().stream().collect(
-            Collectors.groupingBy(this::getServiceMethod));
+                Collectors.groupingBy(this::getServiceMethod));
 
         datasource = serviceMethodGroup.entrySet().stream().map(item -> {
             AppProvider appProvider = new AppProvider();
@@ -1346,9 +1354,9 @@ public class LinkTopologyService extends CommonService {
                 appProvider.setBeforeAppsMap(sourceIdToNodeName);
 
                 List<String> keyList = item.getValue().stream()
-                    .filter(Objects::nonNull)
-                    .map(LinkEdgeDTO::getSourceId)
-                    .collect(Collectors.toList());
+                        .filter(Objects::nonNull)
+                        .map(LinkEdgeDTO::getSourceId)
+                        .collect(Collectors.toList());
 
                 for (String id : keyList) {
                     LinkNodeDTO linkNodeDTO = nodeMap.get(id);
@@ -1360,14 +1368,14 @@ public class LinkTopologyService extends CommonService {
 
                 // 设置上游应用(逗号分割的列表)
                 String collect = item.getValue().stream()
-                    .filter(Objects::nonNull)
-                    .map(LinkEdgeDTO::getSourceId)
-                    .filter(StrUtil::isNotBlank)
-                    .map(nodeMap::get)
-                    .filter(Objects::nonNull)
-                    .map(LinkNodeDTO::getNodeName)
-                    .filter(StrUtil::isNotBlank)
-                    .collect(Collectors.joining(","));
+                        .filter(Objects::nonNull)
+                        .map(LinkEdgeDTO::getSourceId)
+                        .filter(StrUtil::isNotBlank)
+                        .map(nodeMap::get)
+                        .filter(Objects::nonNull)
+                        .map(LinkNodeDTO::getNodeName)
+                        .filter(StrUtil::isNotBlank)
+                        .collect(Collectors.joining(","));
 
                 appProvider.setBeforeApps(collect);
             }
@@ -1383,9 +1391,9 @@ public class LinkTopologyService extends CommonService {
     }
 
     private List<AppCallInfo> convertAppNodeCallService(LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap,
-        Map<String, List<LinkEdgeDTO>> providerEdgeMap, Map<String, List<LinkEdgeDTO>> callEdgeMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                                        Map<String, LinkNodeDTO> nodeMap,
+                                                        Map<String, List<LinkEdgeDTO>> providerEdgeMap, Map<String, List<LinkEdgeDTO>> callEdgeMap,
+                                                        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         // 本服务调用的边
         // (应该是本节点)
         List<LinkEdgeDTO> callEdges = callEdgeMap.get(node.getNodeId());
@@ -1393,19 +1401,19 @@ public class LinkTopologyService extends CommonService {
             return Lists.newArrayList();
         }
         Map<String, List<LinkEdgeDTO>> excludeMqNodeWithEdge = callEdges.stream().collect(
-            Collectors.groupingBy(LinkEdgeDTO::getTargetId));
+                Collectors.groupingBy(LinkEdgeDTO::getTargetId));
         return getCallInfo(nodeMap, excludeMqNodeWithEdge, appNodeMap);
     }
 
     public List<AppCallInfo> getCallInfo(Map<String, LinkNodeDTO> nodeMap,
-        Map<String, List<LinkEdgeDTO>> excludeMqNodeWithEdge,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                         Map<String, List<LinkEdgeDTO>> excludeMqNodeWithEdge,
+                                         Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         return excludeMqNodeWithEdge.entrySet().stream().map(entry -> {
             LinkNodeDTO linkNodeDTO = nodeMap.get(entry.getKey());
             AppCallInfo appCallInfo
-                = new AppCallInfo();
+                    = new AppCallInfo();
             appCallInfo.setNodeType(NodeTypeResponseEnum
-                .getTypeByAmdbType(linkNodeDTO.getNodeTypeGroup()));
+                    .getTypeByAmdbType(linkNodeDTO.getNodeTypeGroup()));
             appCallInfo.setLabel(linkNodeDTO.getNodeType().toUpperCase());
             appCallInfo.setDataSource(convertCallTypeInfo(entry.getValue(), linkNodeDTO, nodeMap, appNodeMap));
             return appCallInfo;
@@ -1413,9 +1421,9 @@ public class LinkTopologyService extends CommonService {
     }
 
     private List<AppCallDatasourceInfo> convertCallTypeInfo(List<LinkEdgeDTO> edges,
-        LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                                            LinkNodeDTO node,
+                                                            Map<String, LinkNodeDTO> nodeMap,
+                                                            Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         if (CollectionUtils.isEmpty(edges)) {
             return Lists.newArrayList();
         }
@@ -1424,28 +1432,28 @@ public class LinkTopologyService extends CommonService {
             List<AppCallDatasourceInfo> infos = new ArrayList<>();
 
             AppCallDatasourceInfo info1
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info1.setLabel("节点名称");
             info1.setDataSource(Lists.newArrayList(node.getNodeName()));
             infos.add(info1);
 
             AppCallDatasourceInfo info2
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info2.setLabel("节点");
             List<ApplicationNodeDTO> applicationNodeDtoList = appNodeMap.get(node.getNodeName());
             if (CollectionUtils.isNotEmpty(applicationNodeDtoList)) {
                 info2.setDataSource(applicationNodeDtoList.stream().map(ApplicationNodeDTO::getIpAddress).collect(
-                    Collectors.toList()));
+                        Collectors.toList()));
             } else {
                 info2.setDataSource(Lists.newArrayList());
             }
             infos.add(info2);
 
             AppCallDatasourceInfo info3
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info3.setLabel("服务");
             info3.setDataSource(
-                edges.stream().map(this::getServiceMethod).distinct().collect(Collectors.toList()));
+                    edges.stream().map(this::getServiceMethod).distinct().collect(Collectors.toList()));
             infos.add(info3);
 
             return infos;
@@ -1455,10 +1463,10 @@ public class LinkTopologyService extends CommonService {
             List<AppCallDatasourceInfo> infos = new ArrayList<>();
 
             AppCallDatasourceInfo info1
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info1.setLabel("节点");
             NodeExtendInfoForCacheDTO extend = convertNodeExtendInfo(node.getExtendInfo(),
-                NodeExtendInfoForCacheDTO.class);
+                    NodeExtendInfoForCacheDTO.class);
             info1.setDataSource(Lists.newArrayList(extend.getIp() + ":" + extend.getPort()));
             infos.add(info1);
 
@@ -1468,7 +1476,7 @@ public class LinkTopologyService extends CommonService {
             List<AppCallDatasourceInfo> infos = new ArrayList<>();
 
             AppCallDatasourceInfo info2
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info2.setLabel("文件路径");
             info2.setDataSource(edges.stream().map(LinkEdgeDTO::getService).collect(Collectors.toList()));
             infos.add(info2);
@@ -1479,13 +1487,13 @@ public class LinkTopologyService extends CommonService {
             List<AppCallDatasourceInfo> infos = new ArrayList<>();
 
             AppCallDatasourceInfo info1
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info1.setLabel("节点名称");
             info1.setDataSource(Lists.newArrayList(node.getNodeName()));
             infos.add(info1);
 
             AppCallDatasourceInfo info2
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info2.setLabel("Topic");
             info2.setDataSource(edges.stream().map(LinkEdgeDTO::getService).collect(Collectors.toList()));
             infos.add(info2);
@@ -1496,23 +1504,23 @@ public class LinkTopologyService extends CommonService {
             List<AppCallDatasourceInfo> infos = new ArrayList<>();
 
             AppCallDatasourceInfo info1
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info1.setLabel("节点名称");
             info1.setDataSource(Lists.newArrayList(node.getNodeName()));
             infos.add(info1);
 
             AppCallDatasourceInfo info2
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info2.setLabel("库名称");
             info2.setDataSource(Lists.newArrayList(edges.stream().map(LinkEdgeDTO::getService).distinct()
-                .collect(Collectors.joining(","))));
+                    .collect(Collectors.joining(","))));
             infos.add(info2);
 
             AppCallDatasourceInfo info3
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info3.setLabel("表名称");
             info3.setDataSource(Lists.newArrayList(edges.stream().map(LinkEdgeDTO::getMethod).distinct()
-                .collect(Collectors.joining(","))));
+                    .collect(Collectors.joining(","))));
             infos.add(info3);
 
             return infos;
@@ -1520,7 +1528,7 @@ public class LinkTopologyService extends CommonService {
         if (NodeTypeGroupEnum.SEARCH.name().equals(node.getNodeTypeGroup())) {
             List<AppCallDatasourceInfo> infos = new ArrayList<>();
             AppCallDatasourceInfo info1
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info1.setLabel("节点名称");
             info1.setDataSource(Lists.newArrayList(node.getNodeName()));
             infos.add(info1);
@@ -1529,7 +1537,7 @@ public class LinkTopologyService extends CommonService {
         if (NodeTypeGroupEnum.OTHER.name().equals(node.getNodeTypeGroup())) {
             List<AppCallDatasourceInfo> infos = new ArrayList<>();
             AppCallDatasourceInfo info1
-                = new AppCallDatasourceInfo();
+                    = new AppCallDatasourceInfo();
             info1.setLabel("节点名称");
             info1.setDataSource(Lists.newArrayList(node.getNodeName()));
             infos.add(info1);
@@ -1539,15 +1547,15 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void setNodeDefaultResponse(AbstractTopologyNodeResponse nodeResponse,
-        LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap,
-        Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap,
-        AtomicLong nextNumber) {
+                                        LinkNodeDTO node,
+                                        Map<String, LinkNodeDTO> nodeMap,
+                                        Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+                                        Map<String, List<LinkEdgeDTO>> callEdgeMap,
+                                        AtomicLong nextNumber) {
         // 不是未知且不是三方服务
         if (!isUnknownNode(node) && !isOuterService(node)) {
             nodeResponse.setNodeType(
-                NodeTypeResponseEnum.getTypeByAmdbType(node.getNodeTypeGroup()));
+                    NodeTypeResponseEnum.getTypeByAmdbType(node.getNodeTypeGroup()));
         }
         // 如果是未知服务
         if (isUnknownNode(node)) {
@@ -1571,13 +1579,13 @@ public class LinkTopologyService extends CommonService {
      * 代码暂时看着是一模一样，未来不同类型应该是不一样的，这样写为了拓展。
      */
     private List<NodeDetailDatasourceInfo> getNodeDetails(LinkNodeDTO node,
-        Map<String, LinkNodeDTO> nodeMap,
-        Map<String, List<LinkEdgeDTO>> providerEdgeMap, Map<String, List<LinkEdgeDTO>> callEdgeMap,
-        Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+                                                          Map<String, LinkNodeDTO> nodeMap,
+                                                          Map<String, List<LinkEdgeDTO>> providerEdgeMap, Map<String, List<LinkEdgeDTO>> callEdgeMap,
+                                                          Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         // 未知应用或者外部应用
         if (this.isUnknownNode(node) || this.isOuterService(node)) {
             NodeExtendInfoBaseDTO extendInfo = this.convertNodeExtendInfo(node.getExtendInfo(),
-                NodeExtendInfoBaseDTO.class);
+                    NodeExtendInfoBaseDTO.class);
             NodeDetailDatasourceInfo nodeDetailDatasourceInfo = new NodeDetailDatasourceInfo();
             if (extendInfo == null) {
                 nodeDetailDatasourceInfo.setNode("");
@@ -1590,41 +1598,41 @@ public class LinkTopologyService extends CommonService {
 
         if (NodeTypeGroupEnum.MQ.name().equals(node.getNodeTypeGroup())) {
             NodeExtendInfoForMQDTO extendInfo = convertNodeExtendInfo(node.getExtendInfo(),
-                NodeExtendInfoForMQDTO.class);
+                    NodeExtendInfoForMQDTO.class);
             NodeDetailDatasourceInfo nodeDetailDatasourceInfo
-                = new NodeDetailDatasourceInfo();
+                    = new NodeDetailDatasourceInfo();
             nodeDetailDatasourceInfo.setNode(extendInfo.getIp() + ":" + extendInfo.getPort());
             return Lists.newArrayList(nodeDetailDatasourceInfo);
         }
         if (NodeTypeGroupEnum.CACHE.name().equals(node.getNodeTypeGroup())) {
             NodeExtendInfoForCacheDTO extendInfo = convertNodeExtendInfo(node.getExtendInfo(),
-                NodeExtendInfoForCacheDTO.class);
+                    NodeExtendInfoForCacheDTO.class);
             NodeDetailDatasourceInfo nodeDetailDatasourceInfo
-                = new NodeDetailDatasourceInfo();
+                    = new NodeDetailDatasourceInfo();
             nodeDetailDatasourceInfo.setNode(extendInfo.getIp() + ":" + extendInfo.getPort());
             return Lists.newArrayList(nodeDetailDatasourceInfo);
         }
         if (NodeTypeGroupEnum.DB.name().equals(node.getNodeTypeGroup())) {
             NodeExtendInfoForDBDTO extendInfo = convertNodeExtendInfo(node.getExtendInfo(),
-                NodeExtendInfoForDBDTO.class);
+                    NodeExtendInfoForDBDTO.class);
             NodeDetailDatasourceInfo nodeDetailDatasourceInfo
-                = new NodeDetailDatasourceInfo();
+                    = new NodeDetailDatasourceInfo();
             nodeDetailDatasourceInfo.setNode(extendInfo.getIp() + ":" + extendInfo.getPort());
             return Lists.newArrayList(nodeDetailDatasourceInfo);
         }
         if (NodeTypeGroupEnum.OSS.name().equals(node.getNodeTypeGroup())) {
             NodeExtendInfoForOSSDTO extendInfo = convertNodeExtendInfo(node.getExtendInfo(),
-                NodeExtendInfoForOSSDTO.class);
+                    NodeExtendInfoForOSSDTO.class);
             NodeDetailDatasourceInfo nodeDetailDatasourceInfo
-                = new NodeDetailDatasourceInfo();
+                    = new NodeDetailDatasourceInfo();
             nodeDetailDatasourceInfo.setNode(extendInfo.getIp() + ":" + extendInfo.getPort());
             return Lists.newArrayList(nodeDetailDatasourceInfo);
         }
         if (NodeTypeGroupEnum.SEARCH.name().equals(node.getNodeTypeGroup())) {
             NodeExtendInfoForSearchDTO extendInfo = convertNodeExtendInfo(node.getExtendInfo(),
-                NodeExtendInfoForSearchDTO.class);
+                    NodeExtendInfoForSearchDTO.class);
             NodeDetailDatasourceInfo nodeDetailDatasourceInfo
-                = new NodeDetailDatasourceInfo();
+                    = new NodeDetailDatasourceInfo();
             nodeDetailDatasourceInfo.setNode(extendInfo.getIp() + ":" + extendInfo.getPort());
             return Lists.newArrayList(nodeDetailDatasourceInfo);
         }
@@ -1655,24 +1663,24 @@ public class LinkTopologyService extends CommonService {
 
         // 未知节点异常
         List<ExceptionListResponse> unknownExceptions = nodes.stream().filter(this::isUnknownResponseNode)
-            .map(node -> {
-                ExceptionListResponse exception = new ExceptionListResponse();
-                StringBuilder exceptionTitle = new StringBuilder();
-                exceptionTitle.append("节点\"")
-                    .append(StringUtils.join(node.getUpAppNames(), ","))
-                    .append("\"下游存在应用未接入探针");
-                if (CollectionUtils.isNotEmpty(node.getNodes())) {
-                    exceptionTitle.append("，节点IP:")
-                        .append(StringUtils.join(node.getNodes().stream()
-                            .map(NodeDetailDatasourceInfo::getNode)
-                            .collect(Collectors.toList()), ","));
-                }
+                .map(node -> {
+                    ExceptionListResponse exception = new ExceptionListResponse();
+                    StringBuilder exceptionTitle = new StringBuilder();
+                    exceptionTitle.append("节点\"")
+                            .append(StringUtils.join(node.getUpAppNames(), ","))
+                            .append("\"下游存在应用未接入探针");
+                    if (CollectionUtils.isNotEmpty(node.getNodes())) {
+                        exceptionTitle.append("，节点IP:")
+                                .append(StringUtils.join(node.getNodes().stream()
+                                        .map(NodeDetailDatasourceInfo::getNode)
+                                        .collect(Collectors.toList()), ","));
+                    }
 
-                exception.setTitle(exceptionTitle.toString());
-                exception.setType("应用未接入探针");
-                exception.setSuggest("确认该服务为外部服务或内部服务提供，若为外部服务请将其标记为外部服务；若为内部应用请将其接入探针");
-                return exception;
-            }).collect(Collectors.toList());
+                    exception.setTitle(exceptionTitle.toString());
+                    exception.setType("应用未接入探针");
+                    exception.setSuggest("确认该服务为外部服务或内部服务提供，若为外部服务请将其标记为外部服务；若为内部应用请将其接入探针");
+                    return exception;
+                }).collect(Collectors.toList());
 
         // 应用的中间件异常
         List<ExceptionListResponse> middlewareExceptions = this.getMiddlewareExceptionList(nodes);
@@ -1693,7 +1701,7 @@ public class LinkTopologyService extends CommonService {
     private List<ExceptionListResponse> getMiddlewareExceptionList(List<AbstractTopologyNodeResponse> nodes) {
         // 收集所有的 应用名称
         List<String> applicationNameList = nodes.stream().flatMap(node -> node.getUpAppNames().stream())
-            .distinct().collect(Collectors.toList());
+                .distinct().collect(Collectors.toList());
         if (applicationNameList.isEmpty()) {
             return Collections.emptyList();
         }
@@ -1706,7 +1714,7 @@ public class LinkTopologyService extends CommonService {
 
         // 查询出所有的 名称对应的中间件状态
         Map<String, Map<Integer, Integer>> applicationNameAboutStatusCountMap = applicationMiddlewareService
-            .getApplicationNameAboutStatusCountMap(applicationIds);
+                .getApplicationNameAboutStatusCountMap(applicationIds);
         if (applicationNameAboutStatusCountMap.isEmpty()) {
             return Collections.emptyList();
         }
@@ -1720,104 +1728,104 @@ public class LinkTopologyService extends CommonService {
         // 所以 页数的个数 是一样的
         // skip 从 0 开始, 0, 1; 2, 3; 4, 5; xxx
         return Stream.iterate(0, f -> f + 1).limit(page).parallel().flatMap(currentPage ->
-            applicationNameList.stream().skip(currentPage * size).limit(size)
-                .map(applicationName -> {
-                    Map<Integer, Integer> statusAboutCount =
-                        applicationNameAboutStatusCountMap.get(applicationName);
-                    if (statusAboutCount == null) {
-                        return null;
-                    }
+                        applicationNameList.stream().skip(currentPage * size).limit(size)
+                                .map(applicationName -> {
+                                    Map<Integer, Integer> statusAboutCount =
+                                            applicationNameAboutStatusCountMap.get(applicationName);
+                                    if (statusAboutCount == null) {
+                                        return null;
+                                    }
 
-                    ExceptionListResponse exception = new ExceptionListResponse();
-                    exception.setTitle(String.format("应用: %s 存在不支持的中间件", applicationName));
-                    exception.setType("应用中间件不支持");
+                                    ExceptionListResponse exception = new ExceptionListResponse();
+                                    exception.setTitle(String.format("应用: %s 存在不支持的中间件", applicationName));
+                                    exception.setType("应用中间件不支持");
 
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("该应用存在 ");
-                    if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.NONE.getCode()) != null
-                        && statusAboutCount.get(ApplicationMiddlewareStatusEnum.NONE.getCode()) > 0) {
-                        sb.append("无状态 ");
-                    }
+                                    StringBuilder sb = new StringBuilder();
+                                    sb.append("该应用存在 ");
+                                    if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.NONE.getCode()) != null
+                                            && statusAboutCount.get(ApplicationMiddlewareStatusEnum.NONE.getCode()) > 0) {
+                                        sb.append("无状态 ");
+                                    }
 
-                    if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.UNKNOWN.getCode()) != null
-                        && statusAboutCount.get(ApplicationMiddlewareStatusEnum.UNKNOWN.getCode()) > 0) {
-                        sb.append("未知 ");
-                    }
+                                    if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.UNKNOWN.getCode()) != null
+                                            && statusAboutCount.get(ApplicationMiddlewareStatusEnum.UNKNOWN.getCode()) > 0) {
+                                        sb.append("未知 ");
+                                    }
 
-                    if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode()) != null
-                        && statusAboutCount.get(ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode()) > 0) {
-                        sb.append("未支持 ");
-                    }
+                                    if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode()) != null
+                                            && statusAboutCount.get(ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode()) > 0) {
+                                        sb.append("未支持 ");
+                                    }
 
-                    sb.append("的中间件, 请前往查看");
-                    exception.setSuggest(sb.toString());
-                    return exception;
-                }).filter(Objects::nonNull).collect(Collectors.toList()).stream())
-            .collect(Collectors.toList());
+                                    sb.append("的中间件, 请前往查看");
+                                    exception.setSuggest(sb.toString());
+                                    return exception;
+                                }).filter(Objects::nonNull).collect(Collectors.toList()).stream())
+                .collect(Collectors.toList());
     }
 
     private List<ApplicationEntranceTopologyEdgeResponse> convertEdges(
-        LinkTopologyDTO applicationEntrancesTopology,
-        Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
-        Map<String, List<LinkEdgeDTO>> callEdgeMap, ApplicationEntranceTopologyQueryRequest request,
-        ApplicationEntranceTopologyResponse applicationEntranceTopologyResponse) {
+            LinkTopologyDTO applicationEntrancesTopology,
+            Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> providerEdgeMap,
+            Map<String, List<LinkEdgeDTO>> callEdgeMap, ApplicationEntranceTopologyQueryRequest request,
+            ApplicationEntranceTopologyResponse applicationEntranceTopologyResponse) {
 
         if (CollectionUtils.isEmpty(applicationEntrancesTopology.getEdges())) {
             return Lists.newArrayList();
         }
 
         List<ApplicationEntranceTopologyEdgeResponse> edgeResponseList = applicationEntrancesTopology.getEdges()
-            .stream()
-            //.filter(linkEdgeDTO -> EdgeTypeEnum.getEdgeTypeEnum(linkEdgeDTO.getMiddlewareName()) != EdgeTypeEnum
-            // .UNKNOWN)
-            .map(edge -> {
-                ApplicationEntranceTopologyEdgeResponse
-                    applicationEntranceTopologyEdgeResponse
-                    = new ApplicationEntranceTopologyEdgeResponse();
+                .stream()
+                //.filter(linkEdgeDTO -> EdgeTypeEnum.getEdgeTypeEnum(linkEdgeDTO.getMiddlewareName()) != EdgeTypeEnum
+                // .UNKNOWN)
+                .map(edge -> {
+                    ApplicationEntranceTopologyEdgeResponse
+                            applicationEntranceTopologyEdgeResponse
+                            = new ApplicationEntranceTopologyEdgeResponse();
 
-                // 虚拟入口边
-                if ("VIRTUAL".equals(edge.getEagleType())) {
-                    //edge.setEagleType(request.getType().getType());
-                    //edge.setEagleTypeGroup(EdgeTypeGroupEnum.getEdgeTypeEnum(request.getType().getType()).getType());
-                    edge.setMethod(request.getMethod());
-                    edge.setService(request.getServiceName());
-                    edge.setMiddlewareName(request.getType().getType());
-                }
+                    // 虚拟入口边
+                    if ("VIRTUAL".equals(edge.getEagleType())) {
+                        //edge.setEagleType(request.getType().getType());
+                        //edge.setEagleTypeGroup(EdgeTypeGroupEnum.getEdgeTypeEnum(request.getType().getType()).getType());
+                        edge.setMethod(request.getMethod());
+                        edge.setService(request.getServiceName());
+                        edge.setMiddlewareName(request.getType().getType());
+                    }
 
-                applicationEntranceTopologyEdgeResponse.setSource(edge.getSourceId());
-                applicationEntranceTopologyEdgeResponse.setTarget(edge.getTargetId());
-                //EdgeTypeEnum edgeTypeEnum = EdgeTypeEnum.getEdgeTypeEnum(edge.getMiddlewareName());
-                //applicationEntranceTopologyEdgeResponse.setLabel(edgeTypeEnum.name());
-                applicationEntranceTopologyEdgeResponse.setType(edge.getRpcType());
-                applicationEntranceTopologyEdgeResponse.setLabel(edge.getMiddlewareName());
-                //applicationEntranceTopologyEdgeResponse.setType(edgeTypeEnum.name());
-                applicationEntranceTopologyEdgeResponse.setInfo(convertEdgeInfo(edge, nodeMap));
-                applicationEntranceTopologyEdgeResponse.setId(edge.getEagleId() != null ? edge.getEagleId()
-                    : MD5Util.getMD5(edge.getService() + "|" + edge.getMethod()));
-                return applicationEntranceTopologyEdgeResponse;
-            }).collect(Collectors.toList());
+                    applicationEntranceTopologyEdgeResponse.setSource(edge.getSourceId());
+                    applicationEntranceTopologyEdgeResponse.setTarget(edge.getTargetId());
+                    //EdgeTypeEnum edgeTypeEnum = EdgeTypeEnum.getEdgeTypeEnum(edge.getMiddlewareName());
+                    //applicationEntranceTopologyEdgeResponse.setLabel(edgeTypeEnum.name());
+                    applicationEntranceTopologyEdgeResponse.setType(edge.getRpcType());
+                    applicationEntranceTopologyEdgeResponse.setLabel(edge.getMiddlewareName());
+                    //applicationEntranceTopologyEdgeResponse.setType(edgeTypeEnum.name());
+                    applicationEntranceTopologyEdgeResponse.setInfo(convertEdgeInfo(edge, nodeMap));
+                    applicationEntranceTopologyEdgeResponse.setId(edge.getEagleId() != null ? edge.getEagleId()
+                            : MD5Util.getMD5(edge.getService() + "|" + edge.getMethod()));
+                    return applicationEntranceTopologyEdgeResponse;
+                }).collect(Collectors.toList());
 
         Map<String, Map<String, Set<String>>> collect = edgeResponseList.stream()
-            .collect(
-                Collectors.groupingBy(ApplicationEntranceTopologyEdgeResponse::getSource,
-                    Collectors.groupingBy(ApplicationEntranceTopologyEdgeResponse::getTarget,
-                        Collectors.mapping(ApplicationEntranceTopologyEdgeResponse::getInfo, Collectors.toSet()))));
+                .collect(
+                        Collectors.groupingBy(ApplicationEntranceTopologyEdgeResponse::getSource,
+                                Collectors.groupingBy(ApplicationEntranceTopologyEdgeResponse::getTarget,
+                                        Collectors.mapping(ApplicationEntranceTopologyEdgeResponse::getInfo, Collectors.toSet()))));
 
         edgeResponseList
-            .forEach(edge -> {
-                Map<String, Set<String>> stringListMap = collect.get(edge.getSource());
-                Set<String> strings = stringListMap.get(edge.getTarget());
-                edge.setInfo(null);
-                edge.setInfos(strings);
-            });
+                .forEach(edge -> {
+                    Map<String, Set<String>> stringListMap = collect.get(edge.getSource());
+                    Set<String> strings = stringListMap.get(edge.getTarget());
+                    edge.setInfo(null);
+                    edge.setInfos(strings);
+                });
 
         // 这里会将 Source --> Target 只保留一条边
         ArrayList<ApplicationEntranceTopologyEdgeResponse> collectResult =
-            edgeResponseList.stream().collect(
-                Collectors.collectingAndThen(
-                    Collectors.toCollection(() ->
-                        new TreeSet<>(Comparator.comparing(this::fetchingGroupKey))),
-                    ArrayList::new));
+                edgeResponseList.stream().collect(
+                        Collectors.collectingAndThen(
+                                Collectors.toCollection(() ->
+                                        new TreeSet<>(Comparator.comparing(this::fetchingGroupKey))),
+                                ArrayList::new));
 
         return collectResult;
     }
@@ -1892,7 +1900,7 @@ public class LinkTopologyService extends CommonService {
         if (isRoot(node)) {
             label = "入口";
         } else if (node.getNodeTypeGroup().equalsIgnoreCase(NodeTypeGroupEnum.APP.getType())
-            || node.getNodeTypeGroup().equalsIgnoreCase(NodeTypeGroupEnum.CACHE.getType())) {
+                || node.getNodeTypeGroup().equalsIgnoreCase(NodeTypeGroupEnum.CACHE.getType())) {
             label = node.getNodeName();
         }
         // 未知应用
@@ -1942,5 +1950,234 @@ public class LinkTopologyService extends CommonService {
 
     private String fetchingGroupKey(ApplicationEntranceTopologyEdgeResponse response) {
         return response.getSource() + "@" + response.getTarget();
+    }
+
+    public void exportTopology(HttpServletResponse response, ApplicationEntranceTopologyQueryRequest request) {
+        // 大数据查询拓扑图
+        LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
+                false,
+                request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
+                request.getRpcType(), request.getExtend());
+
+        List<ExcelSheetVO<?>> sheets = new ArrayList<>();
+        //链路概览信息
+        sheets.add(this.getLinkInfoExportVO(applicationEntrancesTopology));
+
+        //应用信息
+        sheets.add(this.getLinkApplicationInfoExportVO(applicationEntrancesTopology, request.getServiceName()));
+
+        //远程调用
+        sheets.add(this.getLinkRemoteCallExportVO(applicationEntrancesTopology, request.getServiceName()));
+
+        //数据库信息
+        sheets.add(this.getLinkDbExportVO(applicationEntrancesTopology, request.getServiceName()));
+
+        //消息信息
+        sheets.add(this.getLinkMqExportVO(applicationEntrancesTopology, request.getServiceName()));
+        try {
+            ExcelUtils.exportExcelManySheet(response, "链路信息导出", sheets);
+        } catch (Exception e) {
+            log.error("链路导出出现异常: {}", e.getMessage(), e);
+        }
+    }
+
+    private ExcelSheetVO<?> getLinkMqExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
+        ExcelSheetVO<LinkMqExportVO> linkMqSheets = new ExcelSheetVO<>();
+        Set<LinkMqExportVO> linkMqExportVOS = new HashSet<>();
+        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())) {
+            List<LinkNodeDTO> mqLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                    NodeTypeGroupEnum.MQ.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
+            List<LinkEdgeDTO> edges = applicationEntrancesTopology.getEdges();
+            if (CollectionUtils.isNotEmpty(mqLinkNodes)) {
+                mqLinkNodes.forEach(linkNodeDTO -> {
+                    List<LinkEdgeDTO> targetLinkEdgeDTOS = edges.stream().filter(o -> linkNodeDTO.getNodeId().equals(o.getTargetId())).collect(Collectors.toList());
+                    List<LinkEdgeDTO> sourceLinkEdgeDTOS = edges.stream().filter(o -> linkNodeDTO.getNodeId().equals(o.getSourceId())).collect(Collectors.toList());
+                    //目前指向mq，是生产者
+                    if (CollectionUtils.isNotEmpty(targetLinkEdgeDTOS)) {
+                        Map<String, List<LinkEdgeDTO>> stringListMap = targetLinkEdgeDTOS.stream().collect(Collectors.groupingBy(o -> o.getService() + "_" + o.getMethod()));
+                        stringListMap.forEach((k, v) -> {
+                            List<String> appNodeIds = v.stream().map(LinkEdgeDTO::getSourceId).collect(Collectors.toList());
+                            Set<String> appNodeNames = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                                    appNodeIds.contains(o.getNodeId())).map(LinkNodeDTO::getNodeName).collect(Collectors.toSet());
+                            LinkEdgeDTO linkEdgeDTO = v.get(0);
+                            LinkMqExportVO linkMqExportVO = new LinkMqExportVO();
+                            linkMqExportVO.setEntranceUrl(serviceName);
+                            linkMqExportVO.setTopic(linkEdgeDTO.getService());
+                            linkMqExportVO.setGroup(linkEdgeDTO.getMethod());
+                            linkMqExportVO.setMqType(linkEdgeDTO.getMiddlewareName());
+                            linkMqExportVO.setSourceApplication(this.listToString(new ArrayList<>(appNodeNames)));
+                            linkMqExportVO.setType("生产");
+                            linkMqExportVO.setQuarantineMethod("");
+                            linkMqExportVO.setIsCluster("");
+                            linkMqExportVO.setClusterAddress(linkNodeDTO.getExtendInfo() == null ? "" : linkNodeDTO.getExtendInfo().toString());
+                            linkMqExportVO.setClusterName("");
+                            linkMqExportVO.setConsumerThreadNum("");
+                            linkMqExportVOS.add(linkMqExportVO);
+                        });
+                    }
+                    //消费者
+                    if (CollectionUtils.isNotEmpty(sourceLinkEdgeDTOS)) {
+                        Map<String, List<LinkEdgeDTO>> stringListMap = sourceLinkEdgeDTOS.stream().collect(Collectors.groupingBy(o -> o.getService() + "_" + o.getMethod()));
+                        stringListMap.forEach((k, v) -> {
+                            List<String> appNodeIds = v.stream().map(LinkEdgeDTO::getTargetId).collect(Collectors.toList());
+                            Set<String> appNodeNames = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                                    appNodeIds.contains(o.getNodeId())).map(LinkNodeDTO::getNodeName).collect(Collectors.toSet());
+                            LinkEdgeDTO linkEdgeDTO = v.get(0);
+                            LinkMqExportVO linkMqExportVO = new LinkMqExportVO();
+                            linkMqExportVO.setEntranceUrl(serviceName);
+                            linkMqExportVO.setTopic(linkEdgeDTO.getService());
+                            linkMqExportVO.setGroup(linkEdgeDTO.getMethod());
+                            linkMqExportVO.setMqType(linkEdgeDTO.getMiddlewareName());
+                            linkMqExportVO.setSourceApplication(this.listToString(new ArrayList<>(appNodeNames)));
+                            linkMqExportVO.setType("消费");
+                            linkMqExportVO.setQuarantineMethod("");
+                            linkMqExportVO.setIsCluster("");
+                            linkMqExportVO.setClusterAddress(linkNodeDTO.getExtendInfo() == null ? "" : linkNodeDTO.getExtendInfo().toString());
+                            linkMqExportVO.setClusterName("");
+                            linkMqExportVO.setConsumerThreadNum("");
+                            linkMqExportVOS.add(linkMqExportVO);
+                        });
+                    }
+                });
+            }
+        }
+        List<LinkMqExportVO> mqExportVOS = new ArrayList<>(linkMqExportVOS).stream().sorted(Comparator.comparing(LinkMqExportVO::getTopic)).collect(Collectors.toList());
+        linkMqSheets.setData(mqExportVOS);
+        linkMqSheets.setExcelModelClass(LinkMqExportVO.class);
+        linkMqSheets.setSheetName(LinkSheetEnum.LINK_MQ.getDesc());
+        linkMqSheets.setSheetNum(LinkSheetEnum.LINK_MQ.ordinal());
+        return linkMqSheets;
+    }
+
+    private ExcelSheetVO<?> getLinkRemoteCallExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
+        ExcelSheetVO<LinkRemoteCallExportVO> remoteCallSheet = new ExcelSheetVO<>();
+        Set<LinkRemoteCallExportVO> remoteCallExportVOS = new HashSet<>();
+        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())
+                && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getEdges())) {
+            List<LinkNodeDTO> linkNodeDTOS = applicationEntrancesTopology.getNodes();
+            Map<String, List<LinkNodeDTO>> nodeMap = linkNodeDTOS.stream().collect(Collectors.groupingBy(LinkNodeDTO::getNodeId));
+            List<LinkEdgeDTO> linkEdgeDTOS = applicationEntrancesTopology.getEdges();
+            if (CollectionUtils.isNotEmpty(linkEdgeDTOS)) {
+                linkEdgeDTOS.forEach(linkEdgeDTO -> {
+                    if (!nodeMap.containsKey(linkEdgeDTO.getSourceId()) || !nodeMap.containsKey(linkEdgeDTO.getTargetId())) {
+                        log.info("边链路中的sourceId或者targetId没有找到对应的节点数据");
+                        return;
+                    }
+                    LinkNodeDTO sourceLinkNodeDTO = nodeMap.get(linkEdgeDTO.getSourceId()).get(0);
+                    LinkNodeDTO targetLinkNodeDTO = nodeMap.get(linkEdgeDTO.getTargetId()).get(0);
+                    //入口是虚拟应用，说明是入口的url，不进行导出
+                    if (sourceLinkNodeDTO.getNodeType().equals(NodeTypeEnum.VIRTUAL.getType())) {
+                        return;
+                    }
+                    LinkRemoteCallExportVO linkRemoteCallExportVO = new LinkRemoteCallExportVO();
+                    linkRemoteCallExportVO.setEntranceUrl(serviceName);
+                    linkRemoteCallExportVO.setRemoteCallApiName(linkEdgeDTO.getService());
+                    linkRemoteCallExportVO.setSourceName(sourceLinkNodeDTO.getNodeName());
+                    linkRemoteCallExportVO.setTargetName(targetLinkNodeDTO.getNodeName());
+                    linkRemoteCallExportVO.setType(linkEdgeDTO.getMiddlewareName());
+                    linkRemoteCallExportVO.setIsRelease("");
+                    linkRemoteCallExportVO.setMockValue("");
+                    remoteCallExportVOS.add(linkRemoteCallExportVO);
+                });
+            }
+        }
+        remoteCallSheet.setData(new ArrayList<>(remoteCallExportVOS));
+        remoteCallSheet.setExcelModelClass(LinkRemoteCallExportVO.class);
+        remoteCallSheet.setSheetName(LinkSheetEnum.LINK_REMOTE_CALL.getDesc());
+        remoteCallSheet.setSheetNum(LinkSheetEnum.LINK_REMOTE_CALL.ordinal());
+        return remoteCallSheet;
+    }
+
+    private ExcelSheetVO<?> getLinkDbExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
+        ExcelSheetVO<LinkDbExportVO> linkDbSheets = new ExcelSheetVO<>();
+        Set<LinkDbExportVO> linkDbExportVOS = new HashSet<>();
+
+        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())) {
+            List<LinkNodeDTO> dbLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                    NodeTypeGroupEnum.DB.getType().equals(o.getNodeTypeGroup())
+                            || NodeTypeGroupEnum.CACHE.getType().equals(o.getNodeTypeGroup())
+                            || NodeTypeGroupEnum.SEARCH.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
+            List<LinkEdgeDTO> edges = applicationEntrancesTopology.getEdges();
+            if (CollectionUtils.isNotEmpty(dbLinkNodes)) {
+                Map<String, List<LinkNodeDTO>> dbNodeListMap = dbLinkNodes.stream().collect(Collectors.groupingBy(o -> o.getNodeName() + "_" + o.getNodeType()));
+                dbNodeListMap.forEach((nodeName, nodes) -> {
+                    List<String> nodeIds = nodes.stream().map(LinkNodeDTO::getNodeId).collect(Collectors.toList());
+                    List<LinkEdgeDTO> linkEdgeDTOS = edges.stream().filter(o -> nodeIds.contains(o.getTargetId())).collect(Collectors.toList());
+                    LinkNodeDTO linkNodeDTO = nodes.get(0);
+                    if (CollectionUtils.isNotEmpty(linkEdgeDTOS)) {
+                        Map<String, List<LinkEdgeDTO>> stringListMap = linkEdgeDTOS.stream().collect(Collectors.groupingBy(o -> o.getService() + "_" + o.getMiddlewareName()));
+                        stringListMap.forEach((k, v) -> {
+                            List<String> sourceIdList = v.stream().map(LinkEdgeDTO::getSourceId).collect(Collectors.toList());
+                            Set<String> methodSet = v.stream().map(LinkEdgeDTO::getMethod).collect(Collectors.toSet());
+                            Set<String> appNames = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                                    sourceIdList.contains(o.getNodeId())).map(LinkNodeDTO::getNodeName).collect(Collectors.toSet());
+                            LinkEdgeDTO linkEdgeDTO = v.get(0);
+                            LinkDbExportVO linkDbExportVO = new LinkDbExportVO();
+                            linkDbExportVO.setEntranceUrl(serviceName);
+                            linkDbExportVO.setBizDbAddress(linkNodeDTO.getExtendInfo() == null ? "" : linkNodeDTO.getExtendInfo().toString());
+                            linkDbExportVO.setMiddlewareType(linkEdgeDTO.getMiddlewareName());
+                            linkDbExportVO.setQuarantineMethod("");
+                            linkDbExportVO.setApplications(this.listToString(new ArrayList<>(appNames)));
+                            linkDbExportVO.setDbName(linkEdgeDTO.getService());
+                            linkDbExportVO.setDsName(this.listToString(new ArrayList<>(methodSet)));
+                            linkDbExportVO.setType("");
+                            linkDbExportVO.setIsAddShadowDs("");
+                            linkDbExportVOS.add(linkDbExportVO);
+                        });
+                    }
+                });
+            }
+        }
+        linkDbSheets.setData(new ArrayList<>(linkDbExportVOS));
+        linkDbSheets.setExcelModelClass(LinkDbExportVO.class);
+        linkDbSheets.setSheetName(LinkSheetEnum.LINK_DB.getDesc());
+        linkDbSheets.setSheetNum(LinkSheetEnum.LINK_DB.ordinal());
+        return linkDbSheets;
+    }
+
+    private ExcelSheetVO<?> getLinkApplicationInfoExportVO(LinkTopologyDTO applicationEntrancesTopology, String serviceName) {
+        ExcelSheetVO<LinkApplicationInfoExportVO> linkApplicationSheets = new ExcelSheetVO<>();
+        Set<LinkApplicationInfoExportVO> linkApplicationInfoExportVOS = new HashSet<>();
+        if (applicationEntrancesTopology != null && CollectionUtils.isNotEmpty(applicationEntrancesTopology.getNodes())) {
+            List<LinkNodeDTO> appLinkNodes = applicationEntrancesTopology.getNodes().stream().filter(o ->
+                    NodeTypeGroupEnum.APP.getType().equals(o.getNodeTypeGroup())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(appLinkNodes)) {
+                appLinkNodes.forEach(linkNodeDTO -> {
+                    LinkApplicationInfoExportVO linkApplicationInfoExportVO = new LinkApplicationInfoExportVO();
+                    linkApplicationInfoExportVO.setEntranceUrl(serviceName);
+                    linkApplicationInfoExportVO.setApplicationName(linkNodeDTO.getNodeName());
+                    linkApplicationInfoExportVO.setApplicationNodeNum("");
+                    linkApplicationInfoExportVO.setAgentNum("");
+                    linkApplicationInfoExportVO.setIsAddPressureScope("");
+                    linkApplicationInfoExportVOS.add(linkApplicationInfoExportVO);
+                });
+            }
+        }
+        linkApplicationSheets.setData(new ArrayList<>(linkApplicationInfoExportVOS));
+        linkApplicationSheets.setExcelModelClass(LinkApplicationInfoExportVO.class);
+        linkApplicationSheets.setSheetName(LinkSheetEnum.LINK_APPLICATION_INFO.getDesc());
+        linkApplicationSheets.setSheetNum(LinkSheetEnum.LINK_APPLICATION_INFO.ordinal());
+        return linkApplicationSheets;
+    }
+
+    private ExcelSheetVO<LinkInfoExportVO> getLinkInfoExportVO(LinkTopologyDTO applicationEntrancesTopology) {
+        ExcelSheetVO<LinkInfoExportVO> remoteCallSheet = new ExcelSheetVO<>();
+        //当前链路概览信息为空
+        remoteCallSheet.setData(new ArrayList<>());
+        remoteCallSheet.setExcelModelClass(LinkInfoExportVO.class);
+        remoteCallSheet.setSheetName(LinkSheetEnum.LINK_INFO.getDesc());
+        remoteCallSheet.setSheetNum(LinkSheetEnum.LINK_INFO.ordinal());
+        return remoteCallSheet;
+    }
+
+    private String listToString(List<String> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String s : list) {
+            sb.append(s).append(",");
+        }
+        return sb.substring(0, sb.length() - 1);
     }
 }

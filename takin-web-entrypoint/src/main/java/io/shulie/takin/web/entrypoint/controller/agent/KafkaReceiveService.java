@@ -11,8 +11,10 @@ import io.shulie.takin.sdk.kafka.entity.MessageEntity;
 import io.shulie.takin.sdk.kafka.impl.KafkaSendServiceFactory;
 import io.shulie.takin.web.biz.pojo.perfomanceanaly.PerformanceBaseDataReq;
 import io.shulie.takin.web.biz.pojo.request.agent.PushMiddlewareRequest;
+import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.TakinAck;
 import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
 import io.shulie.takin.web.entrypoint.controller.perfomanceanaly.PerformanceBaseDataController;
+import io.shulie.takin.web.entrypoint.controller.pressureresource.PressureResourceAckController;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -33,6 +35,8 @@ public class KafkaReceiveService implements InitializingBean {
     private ExecutorService kafkaReceivePool;
     @Resource
     private AgentApplicationController agentApplicationController;
+    @Resource
+    private PressureResourceAckController pressureResourceAckController;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -189,6 +193,22 @@ public class KafkaReceiveService implements InitializingBean {
                                 body.get("agentVersion") == null ? null : body.get("agentVersion").toString(),
                                 body.get("pradarVersion") == null ? null : body.get("pradarVersion").toString());
                     }
+                }
+
+                @Override
+                public void fail(String errorMessage) {
+                    log.error("agent版本信息上报接口，接收kafka消息失败:{}", errorMessage);
+                }
+            });
+        });
+
+        kafkaReceivePool.execute(() -> {
+            messageReceiveService.receive(ListUtil.of("stress-test-pressureResource-agent"), new MessageReceiveCallBack() {
+                @Override
+                public void success(MessageEntity messageEntity) {
+                    String jsonString = JSONObject.toJSONString(messageEntity.getBody());
+                    TakinAck takinAck = JSONObject.parseObject(jsonString, TakinAck.class);
+                    pressureResourceAckController.commandAck(takinAck);
                 }
 
                 @Override

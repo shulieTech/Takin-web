@@ -31,8 +31,8 @@ public class PradarConfigPusher {
     @Value("${takin.config.zk.timeout: 3000}")
     private Integer timeout;
 
-    @Value("${takin.config.nacos.enable}")
-    private String enbaleNacos;
+    @Value("${takin.config.middleware}")
+    private String configCenterType;
 
     @Value("${takin.config.nacos.addr}")
     private String nacosAddr;
@@ -46,7 +46,7 @@ public class PradarConfigPusher {
 
     @PostConstruct
     public void init() {
-        if ("true".equals(enbaleNacos)) {
+        if ("nacos".equals(configCenterType)) {
             try {
                 Properties properties = new Properties();
                 properties.put(PropertyKeyConst.SERVER_ADDR, nacosAddr);

@@ -108,4 +108,9 @@ public class ScheduleConfig {
     public ScheduledExecutorService pressureStopExecutor() {
         return Executors.newScheduledThreadPool(5, new NamedThreadFactory("pressure_stop", true));
     }
+
+    @Bean(name = "kafkaReceivePool")
+    public ScheduledExecutorService kafkaReceiveExecutor() {
+        return Executors.newScheduledThreadPool(10, new NamedThreadFactory("kafka_receive", true));
+    }
 }

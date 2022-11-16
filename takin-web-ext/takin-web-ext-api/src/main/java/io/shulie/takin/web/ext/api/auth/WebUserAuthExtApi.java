@@ -15,4 +15,6 @@ public interface WebUserAuthExtApi extends ExtensionPoint {
      * @return -
      */
     boolean validateAdmin();
+
+    boolean validateAgentAuth(String userAppKey, String tenantAppKey, String envCode, String userIdHeader, String agentExpand);
 }

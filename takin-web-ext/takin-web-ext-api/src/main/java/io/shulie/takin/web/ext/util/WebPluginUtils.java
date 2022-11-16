@@ -360,6 +360,13 @@ public class WebPluginUtils {
         }
         return false;
     }
+
+    public static boolean validateAgentAuth(String userAppKey, String tenantAppKey, String envCode, String userIdHeader, String agentExpand){
+        if (Objects.nonNull(dataAuthApi)) {
+            return userAuthExtApi.validateAgentAuth(userAppKey,tenantAppKey,envCode, userIdHeader,agentExpand);
+        }
+        return true;
+    }
     //********************************用户权限模块**********************************//
 
     //********************************租户插件模块**********************************//

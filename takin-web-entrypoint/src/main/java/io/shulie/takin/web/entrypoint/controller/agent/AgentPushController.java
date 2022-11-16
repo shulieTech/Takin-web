@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.collection.ListUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 
@@ -17,6 +18,11 @@ import com.pamirs.takin.entity.domain.vo.TUploadInterfaceVo;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery;
 import io.shulie.takin.channel.bean.CommandPacket;
+import io.shulie.takin.cloud.model.request.job.pressure.MetricsInfo;
+import io.shulie.takin.sdk.kafka.MessageReceiveCallBack;
+import io.shulie.takin.sdk.kafka.MessageReceiveService;
+import io.shulie.takin.sdk.kafka.entity.MessageEntity;
+import io.shulie.takin.sdk.kafka.impl.KafkaSendServiceFactory;
 import io.shulie.takin.web.biz.utils.XmlUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.AgentUrls;
@@ -35,6 +41,7 @@ import io.shulie.takin.web.biz.service.perfomanceanaly.TraceManageService;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
 import lombok.extern.slf4j.Slf4j;
 import io.swagger.annotations.Api;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.MediaType;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -226,4 +233,6 @@ public class AgentPushController {
     public void uploadConfigInfo(@Validated @RequestBody ConfigReportInputParam inputParam) {
         reportDetailService.uploadConfigInfo(inputParam);
     }
+
+
 }

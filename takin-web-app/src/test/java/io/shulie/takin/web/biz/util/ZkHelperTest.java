@@ -1,7 +1,7 @@
 package io.shulie.takin.web.biz.util;
 
 import io.shulie.takin.web.app.Application;
-import io.shulie.takin.web.biz.utils.ZkHelper;
+import io.shulie.takin.web.biz.utils.PradarConfigPusher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class ZkHelperTest {
 
     @Autowired
-    private ZkHelper zkHelper;
+    private PradarConfigPusher zkHelper;
 
     @Test
     public void test() {

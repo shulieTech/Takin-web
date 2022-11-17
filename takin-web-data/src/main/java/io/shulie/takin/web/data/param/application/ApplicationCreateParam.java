@@ -71,6 +71,8 @@ public class ApplicationCreateParam extends UserCommonExt {
     private String alarmPerson;
     private String pradarVersion;
 
+    private String clusterName;
+
     /**
      * 2018年5月17日
      *

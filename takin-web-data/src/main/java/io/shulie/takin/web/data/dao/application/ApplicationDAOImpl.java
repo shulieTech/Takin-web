@@ -308,6 +308,9 @@ public class ApplicationDAOImpl
         if (StringUtils.isNotBlank(param.getEnvCode())) {
             wrapper.eq(ApplicationMntEntity::getEnvCode, param.getEnvCode());
         }
+        if(StringUtils.isNotBlank(param.getApplicationName())){
+            wrapper.eq(ApplicationMntEntity::getApplicationName, param.getApplicationName());
+        }
         return getApplicationDetailResults(wrapper);
     }
 

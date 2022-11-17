@@ -70,6 +70,7 @@ import com.pamirs.takin.entity.domain.vo.TUploadInterfaceDataVo;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.common.CommonService;
+import io.shulie.takin.web.biz.nacos.event.ShadowConfigRefreshEvent;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.biz.service.linkmanage.impl.WhiteListFileService;
 import io.shulie.takin.web.common.common.Response;
@@ -99,6 +100,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -148,6 +150,9 @@ public class ConfCenterService extends CommonService {
     @Resource(name = "redisTemplate")
     private RedisTemplate redisTemplate;
 
+    @Resource
+    private ApplicationContext applicationContext;
+
     public static final String APPLICATION_CACHE_PREFIX = "application:cache";
 
     @PostConstruct
@@ -190,12 +195,20 @@ public class ConfCenterService extends CommonService {
 
     @Transactional(rollbackFor = Exception.class)
     public void saveAgentRegisterApplication(ApplicationCreateParam tApplicationMnt) {
-        int applicationExist = applicationDAO.applicationExistByTenantIdAndAppName(
-                WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), tApplicationMnt.getApplicationName());
-        if (applicationExist > 0) {
+        ApplicationDetailResult application = applicationDAO.getApplicationByTenantIdAndName(tApplicationMnt.getApplicationName());
+        if(application != null){
             OperationLogContextHolder.ignoreLog();
+            // 先创建应用，再接探针,需要更新clusterName
+            if(application.getClusterName() == null){
+                application.setClusterName(tApplicationMnt.getClusterName());
+                applicationDAO.updateApplicationInfo(tApplicationMnt);
+                // 刚更新了clusteName, 向此cluste的nacos推送配置
+                applicationContext.publishEvent(new ShadowConfigRefreshEvent(tApplicationMnt.getApplicationName()));
+                // 如果是刚通过注册创建的应用,则一点配置都没有,不需要向nacos推送
+            }
             return;
         }
+
         addApplication(tApplicationMnt);
         addApplicationToDataBuild(tApplicationMnt);
         addApplicationToLinkDetection(tApplicationMnt);

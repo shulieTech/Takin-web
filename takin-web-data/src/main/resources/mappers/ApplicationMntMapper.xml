@@ -256,6 +256,9 @@
             <if test="alarmPerson != null">
                 ALARM_PERSON=#{alarmPerson},
             </if>
+            <if test="clusterName != null">
+                CLUSTER_NAME=#{clusterName},
+            </if>
             UPDATE_TIME=now()
         </set>
         where APPLICATION_ID=#{applicationId}

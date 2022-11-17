@@ -21,6 +21,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.AgentConfigClient;
 import io.shulie.takin.web.amdb.bean.query.fastagentaccess.AgentConfigQueryDTO;
 import io.shulie.takin.web.biz.constant.LoginConstant;
+import io.shulie.takin.web.biz.nacos.event.DynamicConfigRefreshEvent;
 import io.shulie.takin.web.biz.pojo.bo.ConfigListQueryBO;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigEffectQueryRequest;
@@ -51,6 +52,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -74,6 +76,9 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
     @Autowired
     private AgentConfigService agentConfigService;
+
+    @Resource
+    private ApplicationContext applicationContext;
 
     /**
      * 对应的zk地址key
@@ -190,10 +195,10 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         String projectName = updateRequest.getProjectName();
         if (StrUtil.isBlank(projectName)) {
             this.updateWithoutProjectName(updateRequest, detailResult);
-            return;
+        }else{
+            this.updateWithProjectName(updateRequest, detailResult);
         }
-
-        this.updateWithProjectName(updateRequest, detailResult);
+        applicationContext.publishEvent(new DynamicConfigRefreshEvent(projectName));
     }
 
     /**

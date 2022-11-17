@@ -2,7 +2,11 @@ package io.shulie.takin.web.biz.job;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.pamirs.takin.common.constant.AppSwitchEnum;
+import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
+import io.shulie.takin.web.biz.nacos.NacosConfigManager;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
@@ -46,8 +50,15 @@ public class PressureResourceCommandJob implements SimpleJob {
     @Resource
     private DistributedLock distributedLock;
 
+    @Resource
+    private NacosConfigManager nacosConfigManager;
+
     @Override
     public void execute(ShardingContext shardingContext) {
+        // 如果使用nacos做配置中心，则只在配置修改时才发送命令
+        if (nacosConfigManager.useNacosForConfigCenter()) {
+            return;
+        }
         // 查询所有压测资源准备配置
         List<PressureResourceEntity> resourceList = pressureResourceDAO.getAll();
         if (CollectionUtils.isEmpty(resourceList)) {
@@ -84,4 +95,5 @@ public class PressureResourceCommandJob implements SimpleJob {
             });
         });
     }
+
 }

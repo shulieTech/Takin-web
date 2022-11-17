@@ -2697,6 +2697,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         dbData.setAccessStatus(param.getAccessStatus());
         dbData.setExceptionInfo(param.getExceptionInfo());
         dbData.setSwitchStatus(param.getSwitchStutus());
+        dbData.setClusterName(param.getClusterName());
         if (param.getAccessStatus() == null) {
             dbData.setAccessStatus(1);
         } else {

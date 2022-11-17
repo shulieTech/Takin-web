@@ -148,4 +148,10 @@ public class ApplicationMntEntity extends UserBaseEntity {
     @TableField(value = "dept_id")
     private Long deptId;
 
+    /**
+     * 集群名称
+     */
+    @TableField("cluster_name")
+    private String clusterName;
+
 }

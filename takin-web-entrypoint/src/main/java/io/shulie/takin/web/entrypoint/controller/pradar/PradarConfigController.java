@@ -52,6 +52,7 @@ public class PradarConfigController {
         return pradarConfigService.page(queryRequest);
     }
 
+
     @RequestMapping(value = "/update", method = {RequestMethod.PUT, RequestMethod.POST})
     @ApiOperation("PRADAR配置修改")
     @ModuleDef(

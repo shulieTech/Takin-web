@@ -31,8 +31,8 @@ public class PradarConfigPusher {
     @Value("${takin.config.zk.timeout: 3000}")
     private Integer timeout;
 
-    @Value("${takin.config.middleware}")
-    private String configCenterType;
+    @Value("${takin.config.nacos.enbale: false}")
+    private String nacosEnbaled;
 
     @Value("${takin.config.nacos.addr}")
     private String nacosAddr;
@@ -46,7 +46,7 @@ public class PradarConfigPusher {
 
     @PostConstruct
     public void init() {
-        if ("nacos".equals(configCenterType)) {
+        if("true".equals(nacosEnbaled)){
             try {
                 Properties properties = new Properties();
                 properties.put(PropertyKeyConst.SERVER_ADDR, nacosAddr);
@@ -55,8 +55,8 @@ public class PradarConfigPusher {
                 configService = null;
                 log.info("初始化pradar config的nacos客户端失败, nacos地址:{}, 不实用nacos作为配置中心", nacosAddr, e);
             }
-            return;
         }
+
         try {
             client = CuratorFrameworkFactory
                     .builder()

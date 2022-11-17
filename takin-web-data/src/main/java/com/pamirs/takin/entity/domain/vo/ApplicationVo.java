@@ -79,4 +79,7 @@ public class ApplicationVo extends AuthQueryResponseCommonExt implements Seriali
 
     @ApiModelProperty(name = "silenceEnable", value = "静默开关，true：开")
     private Boolean silenceEnable = true;
+
+    @ApiModelProperty(name = "clusterName", value = "应用所在集群名称")
+    private String clusterName;
 }

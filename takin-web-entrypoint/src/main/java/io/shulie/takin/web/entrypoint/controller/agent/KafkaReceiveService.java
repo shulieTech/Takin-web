@@ -1,9 +1,11 @@
 package io.shulie.takin.web.entrypoint.controller.agent;
 
 import cn.hutool.core.collection.ListUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.TUploadInterfaceVo;
 import io.shulie.takin.sdk.kafka.MessageReceiveCallBack;
 import io.shulie.takin.sdk.kafka.MessageReceiveService;
@@ -35,8 +37,6 @@ public class KafkaReceiveService implements InitializingBean {
     private ExecutorService kafkaReceivePool;
     @Resource
     private AgentApplicationController agentApplicationController;
-    @Resource
-    private PressureResourceAckController pressureResourceAckController;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -203,20 +203,24 @@ public class KafkaReceiveService implements InitializingBean {
         });
 
         kafkaReceivePool.execute(() -> {
-            messageReceiveService.receive(ListUtil.of("stress-test-pressureResource-agent"), new MessageReceiveCallBack() {
+            messageReceiveService.receive(ListUtil.of("stress-test-application-center-app-info"), new MessageReceiveCallBack() {
                 @Override
                 public void success(MessageEntity messageEntity) {
-                    String jsonString = JSONObject.toJSONString(messageEntity.getBody());
-                    TakinAck takinAck = JSONObject.parseObject(jsonString, TakinAck.class);
-                    pressureResourceAckController.commandAck(takinAck);
+                    if (!validateAgentAuth(messageEntity.getHeaders())) {
+                        log.error("agent权限鉴定失败，消费失败");
+                    } else {
+                        ApplicationVo applicationVo = JSONObject.parseObject(JSON.toJSONString(messageEntity.getBody()), ApplicationVo.class);
+                        agentPushController.addApplication(applicationVo);
+                    }
                 }
 
                 @Override
                 public void fail(String errorMessage) {
-                    log.error("agent版本信息上报接口，接收kafka消息失败:{}", errorMessage);
+                    log.error("agent添加应用接口，接收kafka消息失败:{}", errorMessage);
                 }
             });
         });
+
     }
 
     private boolean validateAgentAuth(Map<String, Object> headers) {

@@ -41,8 +41,8 @@ public class KafkaReceiveService implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         log.info("开始kafka消息监听");
-        MessageReceiveService messageReceiveService = new KafkaSendServiceFactory().getKafkaMessageReceiveInstance();
         kafkaReceivePool.execute(() -> {
+            MessageReceiveService messageReceiveService = new KafkaSendServiceFactory().getKafkaMessageReceiveInstance();
             messageReceiveService.receive(ListUtil.of("stress-test-agent-performance-basedata"), new MessageReceiveCallBack() {
                 @Override
                 public void success(MessageEntity messageEntity) {
@@ -63,6 +63,7 @@ public class KafkaReceiveService implements InitializingBean {
         });
 
         kafkaReceivePool.execute(() -> {
+            MessageReceiveService messageReceiveService = new KafkaSendServiceFactory().getKafkaMessageReceiveInstance();
             messageReceiveService.receive(ListUtil.of("stress-test-confcenter-interface-add-interfaceData"), new MessageReceiveCallBack() {
                 @Override
                 public void success(MessageEntity messageEntity) {
@@ -83,6 +84,7 @@ public class KafkaReceiveService implements InitializingBean {
         });
 
         kafkaReceivePool.execute(() -> {
+            MessageReceiveService messageReceiveService = new KafkaSendServiceFactory().getKafkaMessageReceiveInstance();
             messageReceiveService.receive(ListUtil.of("stress-test-agent-api-register"), new MessageReceiveCallBack() {
                 @Override
                 public void success(MessageEntity messageEntity) {
@@ -102,6 +104,7 @@ public class KafkaReceiveService implements InitializingBean {
         });
 
         kafkaReceivePool.execute(() -> {
+            MessageReceiveService messageReceiveService = new KafkaSendServiceFactory().getKafkaMessageReceiveInstance();
             messageReceiveService.receive(ListUtil.of("stress-test-application-agent-access-status"), new MessageReceiveCallBack() {
                 @Override
                 public void success(MessageEntity messageEntity) {
@@ -122,6 +125,7 @@ public class KafkaReceiveService implements InitializingBean {
         });
 
         kafkaReceivePool.execute(() -> {
+            MessageReceiveService messageReceiveService = new KafkaSendServiceFactory().getKafkaMessageReceiveInstance();
             messageReceiveService.receive(ListUtil.of("stress-test-shadow-job-update"), new MessageReceiveCallBack() {
                 @Override
                 public void success(MessageEntity messageEntity) {
@@ -142,6 +146,7 @@ public class KafkaReceiveService implements InitializingBean {
         });
 
         kafkaReceivePool.execute(() -> {
+            MessageReceiveService messageReceiveService = new KafkaSendServiceFactory().getKafkaMessageReceiveInstance();
             messageReceiveService.receive(ListUtil.of("stress-test-agent-push-application-config"), new MessageReceiveCallBack() {
                 @Override
                 public void success(MessageEntity messageEntity) {
@@ -162,6 +167,7 @@ public class KafkaReceiveService implements InitializingBean {
         });
 
         kafkaReceivePool.execute(() -> {
+            MessageReceiveService messageReceiveService = new KafkaSendServiceFactory().getKafkaMessageReceiveInstance();
             messageReceiveService.receive(ListUtil.of("stress-test-agent-push-application-middleware"), new MessageReceiveCallBack() {
                 @Override
                 public void success(MessageEntity messageEntity) {
@@ -182,6 +188,7 @@ public class KafkaReceiveService implements InitializingBean {
         });
 
         kafkaReceivePool.execute(() -> {
+            MessageReceiveService messageReceiveService = new KafkaSendServiceFactory().getKafkaMessageReceiveInstance();
             messageReceiveService.receive(ListUtil.of("stress-test-confcenter-applicationmnt-update-applicationagent"), new MessageReceiveCallBack() {
                 @Override
                 public void success(MessageEntity messageEntity) {
@@ -203,6 +210,7 @@ public class KafkaReceiveService implements InitializingBean {
         });
 
         kafkaReceivePool.execute(() -> {
+            MessageReceiveService messageReceiveService = new KafkaSendServiceFactory().getKafkaMessageReceiveInstance();
             messageReceiveService.receive(ListUtil.of("stress-test-application-center-app-info"), new MessageReceiveCallBack() {
                 @Override
                 public void success(MessageEntity messageEntity) {

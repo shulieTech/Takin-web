@@ -239,8 +239,8 @@ public class KafkaReceiveService implements InitializingBean {
         Object agentExpand = headers.get("agentExpand");
         return WebPluginUtils.validateAgentAuth(userAppKey == null ? null : userAppKey.toString(),
                 tenantAppKey == null ? null : tenantAppKey.toString(),
-                userId == null ? null : userId.toString(),
                 envCode == null ? null : envCode.toString(),
+                userId == null ? null : userId.toString(),
                 agentExpand == null ? null : agentExpand.toString());
     }
 }

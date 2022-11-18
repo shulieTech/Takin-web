@@ -14,6 +14,7 @@ import io.shulie.takin.web.biz.cache.agentimpl.ApplicationApiManageAmdbCache;
 import io.shulie.takin.web.biz.nacos.event.DynamicConfigRefreshEvent;
 import io.shulie.takin.web.biz.nacos.event.ShadowConfigRefreshEvent;
 import io.shulie.takin.web.biz.nacos.event.SwitchConfigRefreshEvent;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.fastagentaccess.impl.AgentConfigDAOImpl;
@@ -232,6 +233,7 @@ public class NacosConfigManager {
 
         @Override
         public void run() {
+            commonExt.setSource(ContextSourceEnum.FRONT.getCode());
             WebPluginUtils.setTraceTenantContext(commonExt);
 
             Map<String, Object> configs = new HashMap<>();

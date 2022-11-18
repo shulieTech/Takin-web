@@ -243,8 +243,9 @@ public class NacosConfigManager {
             configs.put("redis", agentConfigCacheManager.getShadowServer(appName));
             configs.put("es", agentConfigCacheManager.getShadowEsServers(appName));
             configs.put("mock", agentConfigCacheManager.getGuards(appName));
-            configs.put("trace_rule", applicationApiManageAmdbCache.get(appName));
-            configs.put("dynamicConfig", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
+            Map<String, List<String>> values = applicationApiManageAmdbCache.get(appName);
+            configs.put("trace_rule", values == null ? new HashMap<>() : values);
+            configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
             pushNacosConfigs(appName, "APP", configService, JSON.toJSONString(configs));
         }
     }

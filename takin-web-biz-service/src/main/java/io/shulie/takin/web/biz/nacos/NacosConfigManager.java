@@ -8,6 +8,7 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.gson.Gson;
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.entity.domain.dto.config.WhiteListSwitchDTO;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
@@ -249,8 +250,7 @@ public class NacosConfigManager {
             Map<String, List<String>> values = applicationApiManageAmdbCache.get(appName);
             configs.put("trace_rule", values == null ? new HashMap<>() : values);
             configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
-            TypeUtils.compatibleWithJavaBean = true;
-            pushNacosConfigs(appName, "APP", configService, JSON.toJSONString(configs));
+            pushNacosConfigs(appName, "APP", configService, new Gson().toJson(configs));
         }
     }
 

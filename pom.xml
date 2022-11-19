@@ -81,7 +81,7 @@
         <log4j.version>2.16.0</log4j.version>
         <logback.version>1.2.9</logback.version>
         <tomcat.version>9.0.67</tomcat.version>
-        <fastjson.version>2.0.6</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
     </properties>
 
     <modules>

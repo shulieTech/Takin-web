@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.nacos;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.util.TypeUtils;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
@@ -248,6 +249,7 @@ public class NacosConfigManager {
             Map<String, List<String>> values = applicationApiManageAmdbCache.get(appName);
             configs.put("trace_rule", values == null ? new HashMap<>() : values);
             configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
+            TypeUtils.compatibleWithJavaBean = true;
             pushNacosConfigs(appName, "APP", configService, JSON.toJSONString(configs));
         }
     }

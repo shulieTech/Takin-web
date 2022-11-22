@@ -707,7 +707,8 @@ public class SceneTaskServiceImpl extends AbstractIndicators implements SceneTas
         context.setTenantId(WebPluginUtils.traceTenantId());
         context.setMachineId(machineId);
         context.setMachineType(tenantEngine.getType().getType());
-
+        // 设置是否定时
+        context.setIsTiming(param.getIsTiming());
 
         SceneManageQueryOptions options = new SceneManageQueryOptions();
         options.setIncludeBusinessActivity(true);

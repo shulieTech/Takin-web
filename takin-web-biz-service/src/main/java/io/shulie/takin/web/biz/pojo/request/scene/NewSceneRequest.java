@@ -78,7 +78,7 @@ public class NewSceneRequest {
         @NotNull(message = "是否定时执行配置不能为空")
         private Boolean isScheduler;
         @ApiModelProperty(name = "executeTime", value = "定时执行时间")
-        @JsonFormat(pattern = "yyyy-MM-dd hh:mm", timezone = "GMT+8")
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
         private Date executeTime;
     }
 

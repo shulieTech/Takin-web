@@ -172,6 +172,7 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                         param.setSceneId(scheduler.getSceneId());
                         param.setMachineId(engineClusterService.selectOne().getId());
                         param.setUserId(scheduler.getUserId());
+                        param.setIsTiming(true);
                         CheckResultVo resultVo;
                         do {
                             resultVo = sceneTaskService.preCheck(param);

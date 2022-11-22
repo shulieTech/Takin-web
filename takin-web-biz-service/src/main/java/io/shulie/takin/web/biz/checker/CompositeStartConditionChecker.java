@@ -98,6 +98,7 @@ public class CompositeStartConditionChecker implements InitializingBean {
         SceneTaskStartInput input = new SceneTaskStartInput();
         input.setOperateId(WebPluginUtils.traceUserId());
         input.setAssetType(AssetTypeEnum.PRESS_REPORT.getCode());
+        input.setIsTiming(context.getIsTiming());
         context.setInput(input);
 
         SceneManageIdReq req = new SceneManageIdReq();

@@ -39,4 +39,9 @@ public class SceneActionParam extends ContextExt {
      * 选择的压力机集群
      */
     private String machineId;
+
+    /**
+     * 是否定时任务
+     */
+    private Boolean isTiming = false;
 }

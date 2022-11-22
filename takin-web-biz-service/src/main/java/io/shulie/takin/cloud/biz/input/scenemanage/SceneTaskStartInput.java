@@ -37,4 +37,9 @@ public class SceneTaskStartInput extends ContextExt {
     private Long operateId;
 
     private String operateName;
+
+    /**
+     * 是否定时
+     */
+    private Boolean isTiming;
 }

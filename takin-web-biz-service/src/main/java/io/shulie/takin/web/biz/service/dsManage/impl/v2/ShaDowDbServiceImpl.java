@@ -93,7 +93,7 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
         entity.setDsType(inputV2.getDsType());
         entity.setShaDowUrl(inputV2.getShaDowUrl());
         entity.setShaDowUserName(inputV2.getShaDowUserName());
-        entity.setShaDowPwd(inputV2.getShaDowPassword());
+        entity.setShaDowPwd(inputV2.getShaDowPwd());
         entity.setUrl(inputV2.getUrl());
         entity.setUserName(Objects.equals("-", inputV2.getUsername()) ? "" : inputV2.getUsername());
         entity.setConnPoolName(inputV2.getConnectionPool());
@@ -108,8 +108,8 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
         if (!isCreate) {
             return entity;
         }
-        entity.setDbName("");
-        entity.setPwd("");
+//        entity.setDbName("");
+//        entity.setPwd("");
         entity.setConfigJson("");
         entity.setSource(1);
         entity.setFileExtedn(inputV2.getParseConfig());

@@ -52,7 +52,7 @@ public class ApplicationDsCreateInputV2 extends UserCommonExt {
     private String shaDowUserName;
 
     @ApiModelProperty(name = "shaDowPassword", value = "影子数据源密码")
-    private String shaDowPassword;
+    private String shaDowPwd;
 
 
     /**

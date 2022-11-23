@@ -185,9 +185,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
         String shadowPwdStr = extObj.getString("shadowPwd");
         if (StringUtils.isBlank(shadowPwdStr)) {
             pwdMap.put("tag", "1");
-        }
-
-        if(extFlag == null){
+        }else if(extFlag == null){
             pwdMap.put("tag", "2");
             pwdMap.put("context", shadowPwdStr);
         } else if("true".equals(extFlag)){

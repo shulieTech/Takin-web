@@ -45,14 +45,14 @@ public class ApplicationDsCreateInputV2 extends UserCommonExt {
     @ApiModelProperty(name = "dsType", value = "方案类型",required =true)
     private Integer dsType;
 
-    @ApiModelProperty(name = "shadowUrl", value = "影子数据源")
-    private String shadowUrl;
+    @ApiModelProperty(name = "shaDowUrl", value = "影子数据源")
+    private String shaDowUrl;
 
-    @ApiModelProperty(name = "shadowUserName", value = "影子数据源用户名")
-    private String shadowUserName;
+    @ApiModelProperty(name = "shaDowUserName", value = "影子数据源用户名")
+    private String shaDowUserName;
 
     @ApiModelProperty(name = "shaDowPassword", value = "影子数据源密码")
-    private String shadowPwd;
+    private String shaDowPassword;
 
 
     /**

@@ -135,9 +135,8 @@ public class DbTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setUsername(StringUtils.isBlank(convert.getUserName()) ? "-" : convert.getUserName());
         shadowDetailResponse.setPassword(convert.getPwd());
         shadowDetailResponse.setIsManual(convert.getSource());
-
         String shaDowFileExtedn = convert.getShaDowFileExtedn();
-        if (StringUtils.isBlank(convert.getShaDowFileExtedn())
+        if (StringUtils.isBlank(shaDowFileExtedn)
                 || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())) {
             shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
         }

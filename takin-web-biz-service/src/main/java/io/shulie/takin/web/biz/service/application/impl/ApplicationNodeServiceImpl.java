@@ -164,7 +164,7 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
                 DateUtil.getYYYYMMDDHHMMSS(applicationNodeResponse.getAgentUpdateTime()));
             applicationNodeResponse.setProcessNo(applicationNodeResponse.getProgressId());
             applicationNodeResponse.setIp(applicationNodeResponse.getIpAddress());
-
+            applicationNodeResponse.setAppIds(Arrays.asList(node.getAppId()));
             MatchApplicationNodeProbeStateDTO matchApplicationNodeProbeStateDTO
                 = new MatchApplicationNodeProbeStateDTO();
             matchApplicationNodeProbeStateDTO.setAmdbProbeState(applicationNodeResponse.getProbeStatus());

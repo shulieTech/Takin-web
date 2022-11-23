@@ -54,6 +54,7 @@ import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +114,7 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
             .map(instance -> {
                 ApplicationNodeResponse response = new ApplicationNodeResponse();
                 BeanUtils.copyProperties(instance, response);
+                response.setAppIds(Arrays.asList(Long.valueOf(ObjectUtils.defaultIfNull(instance.getAppId(),"0"))));
                 response.setIp(instance.getNodeIp());
 
                 return response;

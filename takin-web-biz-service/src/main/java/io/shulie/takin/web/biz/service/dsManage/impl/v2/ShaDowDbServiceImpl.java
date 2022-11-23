@@ -91,9 +91,9 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
         WebPluginUtils.fillUserData(inputV2);
         BeanUtils.copyProperties(inputV2, entity);
         entity.setDsType(inputV2.getDsType());
-        entity.setShaDowUrl(inputV2.getShaDowUrl());
-        entity.setShaDowUserName(inputV2.getShaDowUserName());
-        entity.setShaDowPwd(inputV2.getShaDowPwd());
+        entity.setShaDowUrl(inputV2.getShadowUrl());
+        entity.setShaDowUserName(inputV2.getShadowUserName());
+        entity.setShaDowPwd(inputV2.getShadowPwd());
         entity.setUrl(inputV2.getUrl());
         entity.setUserName(Objects.equals("-", inputV2.getUsername()) ? "" : inputV2.getUsername());
         entity.setConnPoolName(inputV2.getConnectionPool());

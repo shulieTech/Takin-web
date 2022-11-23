@@ -160,6 +160,7 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
             BeanUtils.copyProperties(node, applicationNodeResponse);
 
             // 基础数据
+            applicationNodeResponse.setAppIds(Arrays.asList(node.getAppId()));
             applicationNodeResponse.setUpdateTime(
                 DateUtil.getYYYYMMDDHHMMSS(applicationNodeResponse.getAgentUpdateTime()));
             applicationNodeResponse.setProcessNo(applicationNodeResponse.getProgressId());

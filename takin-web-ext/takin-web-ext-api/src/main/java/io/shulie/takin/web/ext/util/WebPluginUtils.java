@@ -784,6 +784,9 @@ public class WebPluginUtils {
         ext.setEnvCode(traceEnvCode());
         ext.setTenantAppKey(traceTenantAppKey());
         ext.setTenantCode(traceTenantCode());
+        if (userApi != null){
+            ext.setSource(userApi.traceSource());
+        }
         return ext;
     }
     //********************************http线程上下文模块**********************************//

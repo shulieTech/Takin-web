@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.utils;
 
 import javax.annotation.PostConstruct;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
@@ -15,6 +16,7 @@ import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -182,9 +184,17 @@ public class PradarConfigPusher {
         }
     }
 
-    public void pushConfigToNacos(String config) {
+    public void pushConfigToNacos(Map<String, String> config) {
         try {
-            configService.publishConfig(DATA_ID, GROUP, config);
+            String serviceConfig = configService.getConfig(DATA_ID, GROUP, 3000);
+            Map serviceConfigMap;
+            if (serviceConfig != null){
+                serviceConfigMap = JSON.parseObject(serviceConfig, Map.class);
+                serviceConfigMap.putAll(config);
+            } else {
+                serviceConfigMap = config;
+            }
+            configService.publishConfig(DATA_ID, GROUP, JSON.toJSONString(serviceConfigMap));
         } catch (NacosException e) {
             log.error("推送配置到nacos发生异常,dataId:{}, group:{}, config:{}", DATA_ID, GROUP, config, e);
         }

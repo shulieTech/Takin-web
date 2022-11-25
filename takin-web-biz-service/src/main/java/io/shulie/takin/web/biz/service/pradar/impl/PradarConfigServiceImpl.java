@@ -52,11 +52,11 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         }
     }
 
-    private String buildNacosConfigs() {
+    private Map<String, String>  buildNacosConfigs() {
         List<PradarZkConfigResult> configResults = pradarZkConfigDAO.list();
         Map<String, String> values = new HashMap<>();
         configResults.stream().forEach(result -> values.put(result.getZkPath(), result.getValue()));
-        return JSON.toJSONString(values);
+        return values;
     }
 
     @Override

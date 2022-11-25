@@ -16,6 +16,10 @@ import io.shulie.takin.web.biz.cache.agentimpl.ApplicationApiManageAmdbCache;
 import io.shulie.takin.web.biz.nacos.event.DynamicConfigRefreshEvent;
 import io.shulie.takin.web.biz.nacos.event.ShadowConfigRefreshEvent;
 import io.shulie.takin.web.biz.nacos.event.SwitchConfigRefreshEvent;
+import io.shulie.takin.web.biz.pojo.bo.ConfigListQueryBO;
+import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigListResponse;
+import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -63,6 +67,9 @@ public class NacosConfigManager {
 
     @Resource
     private ApplicationDAO applicationDAO;
+
+    @Resource
+    private AgentConfigService agentConfigService;
 
     @PostConstruct
     public void init() {
@@ -132,7 +139,7 @@ public class NacosConfigManager {
         String appName = event.getAppName();
         // 刷新全局配置
         if (appName == null) {
-            threadPool.submit(new GlobalDynamicConfigRefreshTask());
+            threadPool.submit(new GlobalDynamicConfigRefreshTask(event.getCommonExt()));
             return;
         }
         WebPluginUtils.setTraceTenantContext(event.getCommonExt());
@@ -186,17 +193,20 @@ public class NacosConfigManager {
 
     private Map<String, String> buildApplicationDynamicConfigs(String appName, Long tenantId, String envCode, String userAppKey) {
         // 租户全局配置
+        AgentConfigQueryRequest queryRequest = new AgentConfigQueryRequest();
+        queryRequest.setReadProjectConfig(false);
+        List<AgentConfigListResponse> globalConfigList = agentConfigService.list(queryRequest);
+        Map<String, AgentConfigListResponse> configMap = globalConfigList.stream().collect(Collectors.toMap(AgentConfigListResponse::getEnKey, x -> x, (v1, v2) -> v2));
+
         AgentConfigQueryParam queryParam = new AgentConfigQueryParam();
         queryParam.setEffectMechanism(1);
         queryParam.setTenantId(tenantId);
         queryParam.setEnvCode(envCode);
         queryParam.setType(AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
-        List<AgentConfigDetailResult> globalConfigList = agentConfigDAO.listByTypeAndTenantIdAndEnvCode(queryParam);
-        Map<String, AgentConfigDetailResult> configMap = globalConfigList.stream().collect(Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));
-
         // 应用配置
         queryParam.setUserAppKey(userAppKey);
         queryParam.setProjectName(appName);
+        Map<String,String> appMap = new HashMap<>();
         List<AgentConfigDetailResult> projectConfigList = agentConfigDAO.findProjectList(queryParam);
         // 3、将应用配置替换掉全局配置
         for (AgentConfigDetailResult detailResult : projectConfigList) {
@@ -204,9 +214,9 @@ public class NacosConfigManager {
             if (!configMap.containsKey(detailResult.getEnKey())) {
                 continue;
             }
-            configMap.put(detailResult.getEnKey(), detailResult);
+            appMap.put(detailResult.getEnKey(),detailResult.getDefaultValue());
         }
-        return globalConfigList.stream().collect(Collectors.toMap(AgentConfigDetailResult::getEnKey, AgentConfigDetailResult::getDefaultValue));
+        return appMap;
     }
 
     /**
@@ -259,16 +269,20 @@ public class NacosConfigManager {
      */
     private class GlobalDynamicConfigRefreshTask implements Runnable {
 
+        private TenantCommonExt commonExt;
+
+        public GlobalDynamicConfigRefreshTask(TenantCommonExt commonExt) {
+            this.commonExt = commonExt;
+        }
+
         @Override
         public void run() {
             // 全局配置
-            AgentConfigQueryParam queryParam = new AgentConfigQueryParam();
-            queryParam.setEffectMechanism(1);
-            queryParam.setTenantId(WebPluginUtils.SYS_DEFAULT_TENANT_ID);
-            queryParam.setEnvCode(WebPluginUtils.SYS_DEFAULT_ENV_CODE);
-            queryParam.setType(AgentConfigTypeEnum.GLOBAL.getVal());
-            List<AgentConfigDetailResult> globalConfigList = agentConfigDAO.listByTypeAndTenantIdAndEnvCode(queryParam);
-            Map<String, String> configMap = globalConfigList.stream().collect(Collectors.toMap(AgentConfigDetailResult::getEnKey, AgentConfigDetailResult::getDefaultValue));
+            WebPluginUtils.setTraceTenantContext(commonExt);
+            AgentConfigQueryRequest queryRequest = new AgentConfigQueryRequest();
+            queryRequest.setReadProjectConfig(false);
+            List<AgentConfigListResponse> configListResponses = agentConfigService.list(queryRequest);
+            Map<String, String> configMap = configListResponses.stream().collect(Collectors.toMap(AgentConfigListResponse::getEnKey, AgentConfigListResponse::getDefaultValue));
             // 全局配置每个nacos都推送
             configServices.entrySet().forEach(entry -> pushNacosConfigs("globalConfig", "GLOBAL_CONFIG", entry.getValue(), JSON.toJSONString(configMap)));
         }

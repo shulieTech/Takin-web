@@ -48,7 +48,7 @@ public class PradarConfigPusher {
 
     @PostConstruct
     public void init() {
-        if("true".equals(nacosEnbaled)){
+        if("nacos".equals(nacosEnbaled)){
             try {
                 Properties properties = new Properties();
                 properties.put(PropertyKeyConst.SERVER_ADDR, nacosAddr);

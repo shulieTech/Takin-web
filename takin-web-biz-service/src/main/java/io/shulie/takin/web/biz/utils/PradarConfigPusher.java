@@ -80,7 +80,7 @@ public class PradarConfigPusher {
      * @return
      */
     public boolean useNaocsForConfigCenter() {
-        return client == null && configService != null;
+        return configService != null;
     }
 
     /**

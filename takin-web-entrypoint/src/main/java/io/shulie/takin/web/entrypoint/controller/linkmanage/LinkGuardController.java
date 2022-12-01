@@ -8,6 +8,7 @@ import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
 import io.shulie.takin.web.common.common.Response;
@@ -60,15 +61,15 @@ public class LinkGuardController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.CREATE
     )
-    public Response storetechLink(@RequestBody LinkGuardVo vo) {
+    public ResponseResult storetechLink(@RequestBody LinkGuardVo vo) {
         // 备注字段上限
         if (StringUtils.isNotBlank(vo.getRemark()) && vo.getRemark().length() > 200) {
             throw new TakinWebException(ExceptionCode.GUARD_PARAM_ERROR, "备注长度不得超过200字符");
         }
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.CLASS_METHOD_NAME, vo.getMethodInfo());
-        return linkGuardService.addGuard(vo);
-
+//        return linkGuardService.addGuard(vo);
+        return ResponseResult.fail("失败","出现异常");
     }
 
     /**

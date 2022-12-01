@@ -61,15 +61,14 @@ public class LinkGuardController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.CREATE
     )
-    public ResponseResult storetechLink(@RequestBody LinkGuardVo vo) {
+    public Response storetechLink(@RequestBody LinkGuardVo vo) {
         // 备注字段上限
         if (StringUtils.isNotBlank(vo.getRemark()) && vo.getRemark().length() > 200) {
             throw new TakinWebException(ExceptionCode.GUARD_PARAM_ERROR, "备注长度不得超过200字符");
         }
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.CLASS_METHOD_NAME, vo.getMethodInfo());
-//        return linkGuardService.addGuard(vo);
-        return ResponseResult.fail("失败","出现异常");
+        return linkGuardService.addGuard(vo);
     }
 
     /**

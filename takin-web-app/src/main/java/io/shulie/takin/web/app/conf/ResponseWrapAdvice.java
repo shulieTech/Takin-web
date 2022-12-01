@@ -4,9 +4,11 @@ import java.io.File;
 import java.util.Set;
 import java.util.HashSet;
 
+import io.shulie.takin.web.common.domain.ErrorInfo;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import com.github.pagehelper.PageInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.core.MethodParameter;
@@ -58,8 +60,21 @@ public class ResponseWrapAdvice implements ResponseBodyAdvice<Object> {
             headers.add(Response.PAGE_TOTAL_HEADER);
             header.set(accessControlExposeHeaderName, String.join(",", headers));
         }
-        if (body instanceof Response
-            || body instanceof WebResponse
+        if (body instanceof Response){
+            Object data = ((Response<?>) body).getData();
+            ErrorInfo error = ((Response<?>) body).getError();
+            Boolean success = ((Response<?>) body).getSuccess();
+            String total = ((Response<?>) body).getTotal();
+            if (!success){
+                return io.shulie.takin.common.beans.response.ResponseResult.fail(error.getMsg(),"");
+            }
+            if (StringUtils.isNotBlank(total)){
+                return io.shulie.takin.common.beans.response.ResponseResult.success(data, Long.parseLong(total));
+            }
+            return io.shulie.takin.common.beans.response.ResponseResult.success(data);
+        }
+
+        if (body instanceof WebResponse
             || body instanceof File
             || body instanceof ResponseResult
             || body instanceof io.shulie.takin.common.beans.response.ResponseResult) {

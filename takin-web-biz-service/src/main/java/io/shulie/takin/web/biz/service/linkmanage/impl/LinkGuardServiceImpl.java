@@ -19,6 +19,7 @@ import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.GuardEnableConstants;
+import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -67,10 +68,10 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         } else {
         }
         if (StringUtils.isBlank(vo.getApplicationName()) || StringUtils.isBlank(vo.getMethodInfo())) {
-            return Response.fail(FALSE_CORE, "applicationName和methodInfo不能为空");
+            throw new TakinWebException(ExceptionCode.GUARD_PARAM_ERROR, "applicationName和methodInfo不能为空");
         }
         if (!vo.getMethodInfo().contains("#")) {
-            return Response.fail(FALSE_CORE, "类名方法名用'#'分割，如Aa#bb");
+            throw new TakinWebException(ExceptionCode.GUARD_PARAM_ERROR, "类名方法名用'#'分割，如Aa#bb");
         }
         LinkGuardQueryParam param = new LinkGuardQueryParam();
         param.setMethodInfo(vo.getMethodInfo());
@@ -79,7 +80,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         }
         List<LinkGuardEntity> dbList = tLinkGuardMapper.selectByExample(param, null);
         if (dbList != null && dbList.size() > 0) {
-            return Response.fail(FALSE_CORE, "同一个methodInfo只能设置一个挡板");
+            throw new TakinWebException(ExceptionCode.GUARD_PARAM_ERROR, "同一个methodInfo只能设置一个挡板");
         }
         LinkGuardCreateParam createParam = new LinkGuardCreateParam();
         createParam.setIsEnable(vo.getIsEnable());
@@ -93,7 +94,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
             linkGuardDAO.insert2(createParam);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return Response.fail(FALSE_CORE, "创建挡板失败");
+            throw new TakinWebException(ExceptionCode.GUARD_PARAM_ERROR, "创建挡板失败");
         }
         applicationService.modifyAccessStatus(vo.getApplicationId(), AppAccessTypeEnum.UNUPLOAD.getValue(), null);
         configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), Long.parseLong(vo.getApplicationId()), vo.getApplicationName());

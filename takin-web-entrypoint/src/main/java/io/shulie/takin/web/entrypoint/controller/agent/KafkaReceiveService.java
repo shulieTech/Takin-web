@@ -13,8 +13,10 @@ import io.shulie.takin.sdk.kafka.entity.MessageEntity;
 import io.shulie.takin.sdk.kafka.impl.KafkaSendServiceFactory;
 import io.shulie.takin.web.biz.pojo.perfomanceanaly.PerformanceBaseDataReq;
 import io.shulie.takin.web.biz.pojo.request.agent.PushMiddlewareRequest;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentHeartbeatRequest;
 import io.shulie.takin.web.biz.service.pressureresource.vo.agent.command.TakinAck;
 import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
+import io.shulie.takin.web.entrypoint.controller.agentupgradeonline.AgentHeartbeatController;
 import io.shulie.takin.web.entrypoint.controller.perfomanceanaly.PerformanceBaseDataController;
 import io.shulie.takin.web.entrypoint.controller.pressureresource.PressureResourceAckController;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -37,6 +39,8 @@ public class KafkaReceiveService implements InitializingBean {
     private ExecutorService kafkaReceivePool;
     @Resource
     private AgentApplicationController agentApplicationController;
+    @Resource
+    private AgentHeartbeatController agentHeartbeatController;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -219,6 +223,26 @@ public class KafkaReceiveService implements InitializingBean {
                     } else {
                         ApplicationVo applicationVo = JSONObject.parseObject(JSON.toJSONString(messageEntity.getBody()), ApplicationVo.class);
                         agentPushController.addApplication(applicationVo);
+                    }
+                }
+
+                @Override
+                public void fail(String errorMessage) {
+                    log.error("agent添加应用接口，接收kafka消息失败:{}", errorMessage);
+                }
+            });
+        });
+
+        kafkaReceivePool.execute(() -> {
+            MessageReceiveService messageReceiveService = new KafkaSendServiceFactory().getKafkaMessageReceiveInstance();
+            messageReceiveService.receive(ListUtil.of("stress-test-api-agent-heartbeat"), new MessageReceiveCallBack() {
+                @Override
+                public void success(MessageEntity messageEntity) {
+                    if (!validateAgentAuth(messageEntity.getHeaders())) {
+                        log.error("stress-test-api-agent-heartbeat接收,agent权限鉴定失败，消费失败");
+                    } else {
+                        AgentHeartbeatRequest heartbeatRequest = JSONObject.parseObject(JSON.toJSONString(messageEntity.getBody()), AgentHeartbeatRequest.class);
+                        agentHeartbeatController.process(heartbeatRequest);
                     }
                 }
 

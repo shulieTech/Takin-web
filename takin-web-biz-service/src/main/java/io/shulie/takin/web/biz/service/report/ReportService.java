@@ -176,6 +176,6 @@ public interface ReportService {
      * @param threadNum
      * @return
      */
-    ScriptNodeSummaryBean queryNode(Long reportId, String xpathMd5, Integer threadNum);
+    ScriptNodeSummaryBean queryNode(Long reportId, String xpathMd5, Double threadNum);
 
 }

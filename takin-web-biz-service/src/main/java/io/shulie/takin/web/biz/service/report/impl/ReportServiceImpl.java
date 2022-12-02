@@ -376,7 +376,7 @@ public class ReportServiceImpl implements ReportService {
                 sb.append(" or ");
             }
         }
-        String measurement = InfluxUtil.getMeasurement(report.getJobId(), report.getSceneId(), report.getId(), report.getTenantId());
+        String measurement = InfluxUtil.getMetricsMeasurement(report.getJobId(), report.getSceneId(), report.getId(), report.getTenantId());
 
         int threadNumInt = new BigDecimal(threadNum).intValue();
         String threadNumSql = "active_threads = " + threadNumInt;
@@ -384,7 +384,7 @@ public class ReportServiceImpl implements ReportService {
             threadNumSql = threadNumSql + " or active_threads = " + (threadNumInt + 1);
         }
 
-        String sql = String.format("select count, fail_count, avg_tps , avg_rt, sa_count, active_threads, transaction " +
+        String sql = String.format("select count, fail_count, avg_tps , max_rt, min_rt, sum_rt, sa_count, active_threads, transaction " +
                 "from %s where (%s) and (%s) ", measurement, threadNumSql, sb);
 
         List<Map> queryResult = influxWriter.query(sql, Map.class);
@@ -393,16 +393,22 @@ public class ReportServiceImpl implements ReportService {
         if (queryResult != null && !queryResult.isEmpty()) {
             // 按xpathMd5分组
             Map<String, List<Map>> groupedResult = queryResult.stream().collect(Collectors.groupingBy(map -> (String) map.get("transaction")));
+
             // 分组后合并的结果
             for (Map.Entry<String, List<Map>> entry : groupedResult.entrySet()) {
                 groupMergedResult.put(entry.getKey(), mergeResult(entry.getValue()));
             }
-            Map<String, Object> rootResult = groupMergedResult.get(scriptNode.getXpathMd5());
-            // 最大RT和最小RT调整
-            double maxRt = groupMergedResult.entrySet().stream().mapToDouble(value -> ((BigDecimal) value.getValue().get("maxRt")).doubleValue()).max().getAsDouble();
-            double minRt = groupMergedResult.entrySet().stream().mapToDouble(value -> ((BigDecimal) value.getValue().get("minRt")).doubleValue()).min().getAsDouble();
-            rootResult.put("maxRt", new BigDecimal(maxRt).setScale(0, BigDecimal.ROUND_HALF_UP));
-            rootResult.put("minRt", new BigDecimal(minRt).setScale(0, BigDecimal.ROUND_HALF_UP));
+
+            Map<String, Object> rootGroupResult = mergeResult(queryResult);
+
+            double maxTps = groupMergedResult.entrySet().stream().map(entry -> (BigDecimal) entry.getValue().get("maxTps")).mapToDouble(value -> value.doubleValue()).sum();
+            rootGroupResult.put("maxTps", new BigDecimal(maxTps).setScale(1, BigDecimal.ROUND_HALF_UP));
+
+            double tps = groupMergedResult.entrySet().stream().map(entry -> (BigDecimal) entry.getValue().get("tps")).mapToDouble(value -> value.doubleValue()).sum();
+            rootGroupResult.put("tps", new BigDecimal(tps).setScale(1, BigDecimal.ROUND_HALF_UP));
+
+            groupMergedResult.put(xpathMd5, rootGroupResult);
+
         }
 
         // 补充目标信息等
@@ -465,7 +471,7 @@ public class ReportServiceImpl implements ReportService {
             summaryBean.setMaxRt((BigDecimal) objectMap.get("maxRt"));
             summaryBean.setMinRt((BigDecimal) objectMap.get("minRt"));
             Object totalRequest = objectMap.get("totalRequest");
-            if(totalRequest != null){
+            if (totalRequest != null) {
                 summaryBean.setTotalRequest(new Double((double) totalRequest).longValue());
             }
             summaryBean.setAvgConcurrenceNum(new BigDecimal(threadNum));
@@ -488,17 +494,19 @@ public class ReportServiceImpl implements ReportService {
         double totalResultNum = values.stream().mapToDouble(value -> transform(value.get("count"))).sum();
         v.put("totalRequest", totalResultNum);
         //TPS
-        double maxTps = values.stream().mapToDouble(value -> transform(value.get("avg_tps"))).max().getAsDouble();
+        double maxTps = values.stream().map(map -> ((BigDecimal) map.get("count")).divide(new BigDecimal(5), 1, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).max().getAsDouble();
         v.put("maxTps", new BigDecimal(maxTps).setScale(1, BigDecimal.ROUND_HALF_UP));
-        double avgTps = values.stream().mapToDouble(value -> transform(value.get("avg_tps"))).average().getAsDouble();
+
+        double avgTps = values.stream().map(map -> ((BigDecimal) map.get("count")).divide(new BigDecimal(5), 1, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).average().getAsDouble();
         v.put("tps", new BigDecimal(avgTps).setScale(2, BigDecimal.ROUND_HALF_UP));
 
         //rt
-        double maxRt = values.stream().mapToDouble(value -> transform(value.get("avg_rt"))).max().getAsDouble();
+        double maxRt = values.stream().mapToDouble(value -> transform(value.get("max_rt"))).max().getAsDouble();
         v.put("maxRt", new BigDecimal(maxRt).setScale(1, BigDecimal.ROUND_HALF_UP));
-        double minRt = values.stream().mapToDouble(value -> transform(value.get("avg_rt"))).min().getAsDouble();
+        double minRt = values.stream().mapToDouble(value -> transform(value.get("min_rt"))).min().getAsDouble();
         v.put("minRt", new BigDecimal(minRt).setScale(1, BigDecimal.ROUND_HALF_UP));
-        double avgRt = values.stream().mapToDouble(value -> transform(value.get("avg_rt"))).average().getAsDouble();
+
+        double avgRt = values.stream().map(map -> ((BigDecimal) map.get("sum_rt")).divide((BigDecimal) map.get("count"), 2, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).average().getAsDouble();
         v.put("avgRt", new BigDecimal(avgRt).setScale(2, BigDecimal.ROUND_HALF_UP));
 
         //请求成功率

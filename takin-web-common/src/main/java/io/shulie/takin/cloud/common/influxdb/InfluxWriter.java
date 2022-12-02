@@ -19,6 +19,7 @@ import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
@@ -153,6 +154,7 @@ public class InfluxWriter {
         return true;
     }
 
+    @Async
     public void truncateMeasurement(String measurement) {
         if (StringUtils.isNotBlank(measurement)) {
             influx.query(new Query(String.format("delete from %s where time > 0", measurement), database));

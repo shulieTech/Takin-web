@@ -1,6 +1,7 @@
 package io.shulie.takin.adapter.api.model;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.shulie.takin.adapter.api.model.common.DataBean;
@@ -76,6 +77,11 @@ public class ScriptNodeSummaryBean {
     @ApiModelProperty(value = "关联应用的ID")
     private String applicationIds;
 
+    @ApiModelProperty(value = "并发阶梯递增模式线程数")
+    private List<Integer> concurrentStageThreadNum;
+
     private List<ScriptNodeSummaryBean> children;
+
+
 
 }

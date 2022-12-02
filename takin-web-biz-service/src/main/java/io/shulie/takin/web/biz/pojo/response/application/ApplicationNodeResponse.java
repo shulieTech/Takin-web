@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.pojo.response.application;
 
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
@@ -66,5 +67,9 @@ public class ApplicationNodeResponse {
      */
     @ApiModelProperty(hidden = true)
     private String progressId;
-
+    /**
+     * 应用id列表
+     */
+    @ApiModelProperty("应用id列表")
+    private List<Long> appIds;
 }

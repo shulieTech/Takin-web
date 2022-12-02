@@ -297,6 +297,9 @@ public class SceneTaskServiceImpl extends AbstractIndicators implements SceneTas
         if (user != null) {
             param.setUserId(user.getId());
             param.setUserName(user.getName());
+        }else {
+            param.setUserId(param.getUserId());
+            param.setUserName(param.getUserName());
         }
 
         //兼容老版本
@@ -704,6 +707,8 @@ public class SceneTaskServiceImpl extends AbstractIndicators implements SceneTas
         context.setTenantId(WebPluginUtils.traceTenantId());
         context.setMachineId(machineId);
         context.setMachineType(tenantEngine.getType().getType());
+        // 设置是否定时
+        context.setIsTiming(param.getIsTiming());
 
         SceneManageQueryOptions options = new SceneManageQueryOptions();
         options.setIncludeBusinessActivity(true);

@@ -171,6 +171,8 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                         SceneActionParam param = new SceneActionParam();
                         param.setSceneId(scheduler.getSceneId());
                         param.setMachineId(engineClusterService.selectOne().getId());
+                        param.setUserId(scheduler.getUserId());
+                        param.setIsTiming(true);
                         CheckResultVo resultVo;
                         do {
                             resultVo = sceneTaskService.preCheck(param);
@@ -185,12 +187,14 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                         startParam.setEnvCode(scheduler.getEnvCode());
                         startParam.setTenantId(scheduler.getTenantId());
                         // 补充定时任务的执行用户
+                        startParam.setUserId(scheduler.getId());
                         UserExt userInfo = WebPluginUtils.getUserExtByUserId(scheduler.getUserId());
                         if (userInfo != null) {
                             WebPluginUtils.setCloudUserData(new ContextExt() {{
                                 setUserId(userInfo.getId());
                                 setUserName(userInfo.getName());
                             }});
+                            startParam.setUserName(userInfo.getName());
                         }
                         sceneTaskService.startTask(startParam);
                     } catch (Exception e) {

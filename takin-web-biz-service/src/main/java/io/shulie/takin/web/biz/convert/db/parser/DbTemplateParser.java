@@ -135,9 +135,8 @@ public class DbTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setUsername(StringUtils.isBlank(convert.getUserName()) ? "-" : convert.getUserName());
         shadowDetailResponse.setPassword(convert.getPwd());
         shadowDetailResponse.setIsManual(convert.getSource());
-
         String shaDowFileExtedn = convert.getShaDowFileExtedn();
-        if (StringUtils.isBlank(convert.getShaDowFileExtedn())
+        if (StringUtils.isBlank(shaDowFileExtedn)
                 || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())) {
             shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
         }
@@ -186,6 +185,9 @@ public class DbTemplateParser extends AbstractTemplateParser {
         String shadowPwdStr = extObj.getString("shadowPwd");
         if (StringUtils.isBlank(shadowPwdStr)) {
             pwdMap.put("tag", "1");
+        }else if(extFlag == null){
+            pwdMap.put("tag", "2");
+            pwdMap.put("context", shadowPwdStr);
         } else if("true".equals(extFlag)){
             pwdMap.put("tag", "2");
             pwdMap.put("context", shadowPwdStr);

@@ -30,6 +30,11 @@ public class StartConditionCheckerContext {
     private String uniqueKey;
     private long time = System.currentTimeMillis();
 
+    /**
+     * 是否定时
+     */
+    private Boolean isTiming;
+
     private StartConditionCheckerContext(Long sceneId) {
         this.sceneId = sceneId;
     }

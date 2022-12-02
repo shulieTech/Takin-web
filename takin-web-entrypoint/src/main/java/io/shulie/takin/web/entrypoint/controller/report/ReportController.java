@@ -2,10 +2,12 @@ package io.shulie.takin.web.entrypoint.controller.report;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
+import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
@@ -25,6 +27,8 @@ import io.shulie.takin.web.biz.pojo.response.report.ReportJtlDownloadResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -144,6 +148,18 @@ public class ReportController {
         return ResponseResult.success(reportService.queryReportActivityBySceneId(sceneId));
     }
 
+    @PostConstruct
+    public void init(){
+        TenantCommonExt ext = new TenantCommonExt();
+        ext.setEnvCode("test");
+        ext.setTenantAppKey("926614c4-bc9d-4fc6-a2c8-fa55f35b6e5b");
+        ext.setTenantCode("b");
+        ext.setTenantId(2L);
+        WebPluginUtils.setTraceTenantContext(ext);
+
+        getSummaryForThreadGroup(790L, "3e28e54a021a746688a31e176c67224f", 2);
+    }
+
     @GetMapping("/report/businessActivity/summary/list")
     @ApiOperation("压测明细")
     @AuthVerification(
@@ -152,6 +168,24 @@ public class ReportController {
     )
     public ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId) {
         return ResponseResult.success(reportService.querySummaryList(reportId));
+    }
+
+    /**
+     * 获取指定阶梯递增线程组的指定线程数压测明细
+     *
+     * @param reportId
+     * @param xpathMd5
+     * @param threadNum
+     * @return
+     */
+    @GetMapping("/report/businessActivity/summary/threadGroup")
+    @ApiOperation("阶梯递增压测明细")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.START_STOP
+    )
+    public ResponseResult<ScriptNodeSummaryBean> getSummaryForThreadGroup(Long reportId, String xpathMd5, Integer threadNum){
+        return ResponseResult.success(reportService.queryNode(reportId, xpathMd5, threadNum));
     }
 
     @GetMapping("/report/getJtlDownLoadUrl")

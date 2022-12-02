@@ -148,7 +148,7 @@ public class ReportController {
         return ResponseResult.success(reportService.queryReportActivityBySceneId(sceneId));
     }
 
-    @PostConstruct
+//    @PostConstruct
     public void init(){
         TenantCommonExt ext = new TenantCommonExt();
         ext.setEnvCode("test");

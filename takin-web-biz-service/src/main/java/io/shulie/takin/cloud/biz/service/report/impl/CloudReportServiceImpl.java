@@ -540,7 +540,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private List<ScriptNodeSummaryBean> getScriptNodeSummaryBeans(Long reportId, String nodeTree,
                                                                   List<ReportBusinessActivityDetail> details) {
 
-        Map<String, List<Integer>> threadNumStages = getSummaryConcurrentStageThreadNum(reportId);
+        Map<String, List<BigDecimal>> threadNumStages = getSummaryConcurrentStageThreadNum(reportId);
 
         Map<String, Map<String, Object>> resultMap = new HashMap<>(details.size());
         if (StringUtils.isNotBlank(nodeTree)) {
@@ -587,7 +587,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      * @param reportId
      * @return
      */
-    private Map<String, List<Integer>> getSummaryConcurrentStageThreadNum(Long reportId) {
+    private Map<String, List<BigDecimal>> getSummaryConcurrentStageThreadNum(Long reportId) {
         ReportOutput reportOutput = cloudReportService.selectById(reportId);
         Long sceneId = reportOutput.getSceneId();
         SceneManageEntity manageEntity = sceneManageMapper.selectById(sceneId);
@@ -599,7 +599,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (configMap == null || configMap.isEmpty()) {
             return Collections.emptyMap();
         }
-        Map<String, List<Integer>> stages = new HashMap<>();
+        Map<String, List<BigDecimal>> stages = new HashMap<>();
         for (Map.Entry<String, ThreadGroupConfigExt> entry : configMap.entrySet()) {
             ThreadGroupConfigExt value = entry.getValue();
             if (value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3) {
@@ -608,9 +608,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             // 阶梯递增模式
             Integer steps = value.getSteps();
             Integer threadNum = value.getThreadNum();
-            List<Integer> stepList = new ArrayList<>(steps);
+            List<BigDecimal> stepList = new ArrayList<>(steps);
             for (Integer i = 1; i <= steps; i++) {
-                stepList.add(threadNum * i / steps);
+                stepList.add(new BigDecimal(threadNum * i).divide(new BigDecimal(steps), 2, BigDecimal.ROUND_HALF_UP));
             }
             stages.put(entry.getKey(), stepList);
         }
@@ -1442,7 +1442,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 && StringUtils.isNotEmpty(jsonObject.getString(ReportConstants.SLA_ERROR_MSG));
     }
 
-    private Map<String, Object> fillReportMap(ReportBusinessActivityDetail detail, Map<String, List<Integer>> threadNumStages) {
+    private Map<String, Object> fillReportMap(ReportBusinessActivityDetail detail, Map<String, List<BigDecimal>> threadNumStages) {
         if (Objects.nonNull(detail)) {
             Map<String, Object> resultMap = new HashMap<>(13);
             resultMap.put("avgRt", new DataBean(detail.getRt(), detail.getTargetRt()));

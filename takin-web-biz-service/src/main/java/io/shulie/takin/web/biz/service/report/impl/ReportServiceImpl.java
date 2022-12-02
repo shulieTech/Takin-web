@@ -357,7 +357,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ScriptNodeSummaryBean queryNode(Long reportId, String xpathMd5, Integer threadNum) {
+    public ScriptNodeSummaryBean queryNode(Long reportId, String xpathMd5, Double threadNum) {
         ReportResult report = reportDao.selectById(reportId);
         SceneManageEntity sceneManageEntity = sceneManageMapper.selectById(report.getSceneId());
         List<ScriptNode> scriptAnalysis = JSON.parseArray(sceneManageEntity.getScriptAnalysisResult(), ScriptNode.class);
@@ -378,8 +378,14 @@ public class ReportServiceImpl implements ReportService {
         }
         String measurement = InfluxUtil.getMeasurement(report.getJobId(), report.getSceneId(), report.getId(), report.getTenantId());
 
+        int threadNumInt = new BigDecimal(threadNum).intValue();
+        String threadNumSql = "active_threads = " + threadNumInt;
+        if (threadNum != threadNumInt) {
+            threadNumSql = threadNumSql + " or active_threads = " + (threadNumInt + 1);
+        }
+
         String sql = String.format("select count, fail_count, avg_tps , avg_rt, sa_count, active_threads, transaction " +
-                "from %s where (active_threads = %d or active_threads = %d) and (%s) ", measurement, threadNum, threadNum + 1, sb);
+                "from %s where (%s) and (%s) ", measurement, threadNumSql, sb);
 
         List<Map> queryResult = influxWriter.query(sql, Map.class);
         if (queryResult == null || queryResult.isEmpty()) {
@@ -416,7 +422,7 @@ public class ReportServiceImpl implements ReportService {
      *
      * @return
      */
-    private List<Integer> getSummaryConcurrentStageThreadNum(String xpathMd5, SceneManageEntity manageEntity) {
+    private List<BigDecimal> getSummaryConcurrentStageThreadNum(String xpathMd5, SceneManageEntity manageEntity) {
 
         PtConfigExt ext = JSON.parseObject(manageEntity.getPtConfig(), PtConfigExt.class);
         Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
@@ -432,15 +438,15 @@ public class ReportServiceImpl implements ReportService {
         // 阶梯递增模式
         Integer steps = value.getSteps();
         Integer threadNum = value.getThreadNum();
-        List<Integer> stepList = new ArrayList<>(steps);
+        List<BigDecimal> stepList = new ArrayList<>(steps);
         for (Integer i = 1; i <= steps; i++) {
-            stepList.add(threadNum * i / steps);
+            stepList.add(new BigDecimal(threadNum * i).divide(new BigDecimal(steps), 2, BigDecimal.ROUND_HALF_UP));
         }
         return stepList;
 
     }
 
-    private ScriptNodeSummaryBean buildNodeSummaryBean(Integer threadNum, ScriptNode node, Map<String, Map<String, Object>> groupMergedResult, Map<String, ReportBusinessActivityDetail> detailMap) {
+    private ScriptNodeSummaryBean buildNodeSummaryBean(Double threadNum, ScriptNode node, Map<String, Map<String, Object>> groupMergedResult, Map<String, ReportBusinessActivityDetail> detailMap) {
         ScriptNodeSummaryBean summaryBean = new ScriptNodeSummaryBean();
         summaryBean.setName(node.getName());
         summaryBean.setTestName(node.getTestName());

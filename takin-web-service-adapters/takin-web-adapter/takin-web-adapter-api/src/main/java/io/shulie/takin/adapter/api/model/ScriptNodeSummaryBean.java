@@ -78,7 +78,7 @@ public class ScriptNodeSummaryBean {
     private String applicationIds;
 
     @ApiModelProperty(value = "并发阶梯递增模式线程数")
-    private List<Integer> concurrentStageThreadNum;
+    private List<BigDecimal> concurrentStageThreadNum;
 
     private List<ScriptNodeSummaryBean> children;
 

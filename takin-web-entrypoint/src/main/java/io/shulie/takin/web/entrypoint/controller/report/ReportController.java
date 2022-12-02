@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
@@ -148,6 +149,17 @@ public class ReportController {
         return ResponseResult.success(reportService.queryReportActivityBySceneId(sceneId));
     }
 
+//    @PostConstruct
+    public void init(){
+        TenantCommonExt ext = new TenantCommonExt();
+        ext.setEnvCode("test");
+        ext.setTenantAppKey("926614c4-bc9d-4fc6-a2c8-fa55f35b6e5b");
+        ext.setTenantCode("b");
+        ext.setTenantId(2L);
+        WebPluginUtils.setTraceTenantContext(ext);
+        ResponseResult<ScriptNodeSummaryBean> summary = getSummaryForThreadGroup(790L, "3e28e54a021a746688a31e176c67224f", 2D);
+    }
+
     @GetMapping("/report/businessActivity/summary/list")
     @ApiOperation("压测明细")
     @AuthVerification(
@@ -172,7 +184,7 @@ public class ReportController {
             moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
             needAuth = ActionTypeEnum.START_STOP
     )
-    public ResponseResult<ScriptNodeSummaryBean> getSummaryForThreadGroup(Long reportId, String xpathMd5, Integer threadNum){
+    public ResponseResult<ScriptNodeSummaryBean> getSummaryForThreadGroup(Long reportId, String xpathMd5, Double threadNum){
         return ResponseResult.success(reportService.queryNode(reportId, xpathMd5, threadNum));
     }
 

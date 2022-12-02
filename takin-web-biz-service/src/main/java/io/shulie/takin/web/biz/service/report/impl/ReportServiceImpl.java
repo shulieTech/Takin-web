@@ -388,24 +388,22 @@ public class ReportServiceImpl implements ReportService {
                 "from %s where (%s) and (%s) ", measurement, threadNumSql, sb);
 
         List<Map> queryResult = influxWriter.query(sql, Map.class);
-        if (queryResult == null || queryResult.isEmpty()) {
-            return null;
-        }
-        // 按xpathMd5分组
-        Map<String, List<Map>> groupedResult = queryResult.stream().collect(Collectors.groupingBy(map -> (String) map.get("transaction")));
-        // 分组后合并的结果
+
         Map<String, Map<String, Object>> groupMergedResult = new HashMap<>();
-
-        for (Map.Entry<String, List<Map>> entry : groupedResult.entrySet()) {
-            groupMergedResult.put(entry.getKey(), mergeResult(entry.getValue()));
+        if (queryResult != null && !queryResult.isEmpty()) {
+            // 按xpathMd5分组
+            Map<String, List<Map>> groupedResult = queryResult.stream().collect(Collectors.groupingBy(map -> (String) map.get("transaction")));
+            // 分组后合并的结果
+            for (Map.Entry<String, List<Map>> entry : groupedResult.entrySet()) {
+                groupMergedResult.put(entry.getKey(), mergeResult(entry.getValue()));
+            }
+            Map<String, Object> rootResult = groupMergedResult.get(scriptNode.getXpathMd5());
+            // 最大RT和最小RT调整
+            double maxRt = groupMergedResult.entrySet().stream().mapToDouble(value -> ((BigDecimal) value.getValue().get("maxRt")).doubleValue()).max().getAsDouble();
+            double minRt = groupMergedResult.entrySet().stream().mapToDouble(value -> ((BigDecimal) value.getValue().get("minRt")).doubleValue()).min().getAsDouble();
+            rootResult.put("maxRt", new BigDecimal(maxRt).setScale(2, BigDecimal.ROUND_HALF_UP));
+            rootResult.put("minRt", new BigDecimal(minRt).setScale(2, BigDecimal.ROUND_HALF_UP));
         }
-
-        Map<String, Object> rootResult = groupMergedResult.get(scriptNode.getXpathMd5());
-        // 最大RT和最小RT调整
-        double maxRt = groupMergedResult.entrySet().stream().mapToDouble(value -> ((BigDecimal) value.getValue().get("maxRt")).doubleValue()).max().getAsDouble();
-        double minRt = groupMergedResult.entrySet().stream().mapToDouble(value -> ((BigDecimal) value.getValue().get("minRt")).doubleValue()).min().getAsDouble();
-        rootResult.put("maxRt", new BigDecimal(maxRt).setScale(2, BigDecimal.ROUND_HALF_UP));
-        rootResult.put("minRt", new BigDecimal(minRt).setScale(2, BigDecimal.ROUND_HALF_UP));
 
         // 补充目标信息等
         List<ReportBusinessActivityDetail> activityDetails = tReportBusinessActivityDetailMapper.queryReportBusinessActivityDetailByReportId(reportId);
@@ -429,8 +427,6 @@ public class ReportServiceImpl implements ReportService {
         if (configMap == null || configMap.isEmpty()) {
             return Collections.emptyList();
         }
-        Map<String, List<Integer>> stages = new HashMap<>();
-
         ThreadGroupConfigExt value = configMap.get(xpathMd5);
         if (value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3) {
             return Collections.emptyList();
@@ -457,6 +453,8 @@ public class ReportServiceImpl implements ReportService {
         summaryBean.setXpathMd5(xpathMd5);
 
         Map<String, Object> objectMap = groupMergedResult.get(xpathMd5);
+        objectMap = objectMap == null ? new HashMap<>() : objectMap;
+
         if (objectMap != null) {
             ReportBusinessActivityDetail activityDetail = detailMap.get(xpathMd5);
             summaryBean.setTps(new DataBean(objectMap.get("tps"), activityDetail.getTargetTps()));
@@ -466,7 +464,10 @@ public class ReportServiceImpl implements ReportService {
             summaryBean.setMaxTps((BigDecimal) objectMap.get("maxTps"));
             summaryBean.setMaxRt((BigDecimal) objectMap.get("maxRt"));
             summaryBean.setMinRt((BigDecimal) objectMap.get("minRt"));
-            summaryBean.setTotalRequest(new Double((double) objectMap.get("totalRequest")).longValue());
+            Object totalRequest = objectMap.get("totalRequest");
+            if(totalRequest != null){
+                summaryBean.setTotalRequest(new Double((double) totalRequest).longValue());
+            }
             summaryBean.setAvgConcurrenceNum(new BigDecimal(threadNum));
             summaryBean.setPassFlag(activityDetail.getPassFlag());
         }

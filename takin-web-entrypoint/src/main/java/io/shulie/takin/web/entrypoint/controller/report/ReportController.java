@@ -1,11 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.report;
 
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
@@ -28,8 +22,6 @@ import io.shulie.takin.web.biz.pojo.response.report.ReportJtlDownloadResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -38,6 +30,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author 莫问
@@ -147,17 +142,6 @@ public class ReportController {
     @ApiOperation("报告的业务活动")
     public ResponseResult<List<ActivityResponse>> queryReportActivityBySceneId(Long sceneId) {
         return ResponseResult.success(reportService.queryReportActivityBySceneId(sceneId));
-    }
-
-//    @PostConstruct
-    public void init(){
-        TenantCommonExt ext = new TenantCommonExt();
-        ext.setEnvCode("test");
-        ext.setTenantAppKey("926614c4-bc9d-4fc6-a2c8-fa55f35b6e5b");
-        ext.setTenantCode("b");
-        ext.setTenantId(2L);
-        WebPluginUtils.setTraceTenantContext(ext);
-        ResponseResult<ScriptNodeSummaryBean> summary = getSummaryForThreadGroup(790L, "3e28e54a021a746688a31e176c67224f", 2D);
     }
 
     @GetMapping("/report/businessActivity/summary/list")

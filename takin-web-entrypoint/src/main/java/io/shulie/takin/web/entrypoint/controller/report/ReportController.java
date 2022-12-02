@@ -177,6 +177,7 @@ public class ReportController {
         return ResponseResult.success(reportService.queryNode(reportId, xpathMd5, threadNum));
     }
 
+
     @GetMapping("/report/getJtlDownLoadUrl")
     @ApiOperation(value = "获取jtl文件下载路径")
     @AuthVerification(

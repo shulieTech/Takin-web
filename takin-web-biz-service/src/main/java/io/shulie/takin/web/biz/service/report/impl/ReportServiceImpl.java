@@ -401,8 +401,8 @@ public class ReportServiceImpl implements ReportService {
             // 最大RT和最小RT调整
             double maxRt = groupMergedResult.entrySet().stream().mapToDouble(value -> ((BigDecimal) value.getValue().get("maxRt")).doubleValue()).max().getAsDouble();
             double minRt = groupMergedResult.entrySet().stream().mapToDouble(value -> ((BigDecimal) value.getValue().get("minRt")).doubleValue()).min().getAsDouble();
-            rootResult.put("maxRt", new BigDecimal(maxRt).setScale(2, BigDecimal.ROUND_HALF_UP));
-            rootResult.put("minRt", new BigDecimal(minRt).setScale(2, BigDecimal.ROUND_HALF_UP));
+            rootResult.put("maxRt", new BigDecimal(maxRt).setScale(0, BigDecimal.ROUND_HALF_UP));
+            rootResult.put("minRt", new BigDecimal(minRt).setScale(0, BigDecimal.ROUND_HALF_UP));
         }
 
         // 补充目标信息等
@@ -489,26 +489,26 @@ public class ReportServiceImpl implements ReportService {
         v.put("totalRequest", totalResultNum);
         //TPS
         double maxTps = values.stream().mapToDouble(value -> transform(value.get("avg_tps"))).max().getAsDouble();
-        v.put("maxTps", new BigDecimal(maxTps).setScale(2, BigDecimal.ROUND_HALF_UP));
+        v.put("maxTps", new BigDecimal(maxTps).setScale(1, BigDecimal.ROUND_HALF_UP));
         double avgTps = values.stream().mapToDouble(value -> transform(value.get("avg_tps"))).average().getAsDouble();
         v.put("tps", new BigDecimal(avgTps).setScale(2, BigDecimal.ROUND_HALF_UP));
 
         //rt
         double maxRt = values.stream().mapToDouble(value -> transform(value.get("avg_rt"))).max().getAsDouble();
-        v.put("maxRt", new BigDecimal(maxRt).setScale(2, BigDecimal.ROUND_HALF_UP));
+        v.put("maxRt", new BigDecimal(maxRt).setScale(1, BigDecimal.ROUND_HALF_UP));
         double minRt = values.stream().mapToDouble(value -> transform(value.get("avg_rt"))).min().getAsDouble();
-        v.put("minRt", new BigDecimal(minRt).setScale(2, BigDecimal.ROUND_HALF_UP));
+        v.put("minRt", new BigDecimal(minRt).setScale(1, BigDecimal.ROUND_HALF_UP));
         double avgRt = values.stream().mapToDouble(value -> transform(value.get("avg_rt"))).average().getAsDouble();
         v.put("avgRt", new BigDecimal(avgRt).setScale(2, BigDecimal.ROUND_HALF_UP));
 
         //请求成功率
         double totalFailedRequestNum = values.stream().mapToDouble(value -> transform(value.get("fail_count"))).sum();
         double successRate = (totalResultNum - totalFailedRequestNum) * 100 / totalResultNum;
-        v.put("successRate", new BigDecimal(successRate).setScale(2, BigDecimal.ROUND_HALF_UP));
+        v.put("successRate", new BigDecimal(successRate).setScale(0, BigDecimal.ROUND_HALF_UP));
 
         //sa
         double sa = values.stream().mapToDouble(value -> transform(value.get("sa_count"))).average().getAsDouble();
-        v.put("sa", new BigDecimal(sa).setScale(2, BigDecimal.ROUND_HALF_UP));
+        v.put("sa", new BigDecimal(sa).setScale(0, BigDecimal.ROUND_HALF_UP));
 
         return v;
     }

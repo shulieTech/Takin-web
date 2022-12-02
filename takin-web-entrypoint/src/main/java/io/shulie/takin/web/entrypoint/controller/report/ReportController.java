@@ -169,6 +169,11 @@ public class ReportController {
             needAuth = ActionTypeEnum.START_STOP
     )
     public ResponseResult<ScriptNodeSummaryBean> getSummaryForThreadGroup(Long reportId, String xpathMd5, Double threadNum){
+        if(threadNum == null){
+            NodeTreeSummaryResp summaryResp = reportService.querySummaryList(reportId);
+            ScriptNodeSummaryBean scriptNodeSummaryBean = summaryResp.getScriptNodeSummaryBeans().get(0).getChildren().stream().filter(bean -> xpathMd5.equals(bean.getXpathMd5())).findFirst().get();
+            return ResponseResult.success(scriptNodeSummaryBean);
+        }
         return ResponseResult.success(reportService.queryNode(reportId, xpathMd5, threadNum));
     }
 

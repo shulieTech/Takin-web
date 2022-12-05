@@ -1,7 +1,14 @@
 package io.shulie.takin.web.entrypoint.controller.file;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,7 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ArrayUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
 import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
 import io.shulie.takin.cloud.sdk.model.request.file.DeleteTempRequest;
@@ -18,13 +24,12 @@ import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
 import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,6 +55,9 @@ public class FileController {
      */
     @Value("${takin.data.path}")
     private String uploadPath;
+
+    @Value("${takin.data.allow.file.type:''}")
+    private String fileType;
 
     @Resource
     private CloudFileApi cloudFileApi;
@@ -107,8 +115,23 @@ public class FileController {
             if (null == multipartFile || multipartFile.isEmpty()) {
                 throw new RuntimeException("上传文件不能为空");
             }
-        }
-        return cloudFileApi.upload(new UploadRequest() {{
+            // 类型检测
+            if (StringUtils.isNotBlank(fileType)) {
+                // 用逗号隔开
+                List<String> fileTypes = Arrays.asList(fileType.split(","));
+                Boolean flag = false;
+                for (String type : fileTypes) {
+                    if(multipartFile.getOriginalFilename() != null && multipartFile.getOriginalFilename().endsWith(type)) {
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag) {
+                    throw new RuntimeException("上传文件仅允许" + fileType);
+                }
+
+            }
+        } return cloudFileApi.upload(new UploadRequest() {{
             setFileList(FileUtil.convertMultipartFileList(file));
         }});
     }
@@ -123,7 +146,8 @@ public class FileController {
             setFileList(FileUtil.convertMultipartFileList(file));
         }});
         FileUtil.deleteTempFile(file);
-        List<FileDTO> dtoList = response.stream().map(t -> BeanUtil.copyProperties(t, FileDTO.class)).peek(t -> t.setFileType(2)).collect(Collectors.toList());
+        List<FileDTO> dtoList = response.stream().map(t -> BeanUtil.copyProperties(t, FileDTO.class)).peek(t -> t.setFileType(2)).collect(
+            Collectors.toList());
         return WebResponse.success(dtoList);
     }
 

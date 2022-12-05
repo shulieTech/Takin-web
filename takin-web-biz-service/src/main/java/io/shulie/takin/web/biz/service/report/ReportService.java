@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
+import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
 import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
@@ -166,5 +167,15 @@ public interface ReportService {
     ReportDetailOutput getReportById(Long id);
 
     String downloadPDFPath(Long reportId);
+
+    /**
+     * 查询阶梯递增模式下指定线程数的明细
+     *
+     * @param reportId
+     * @param xpathMd5
+     * @param threadNum
+     * @return
+     */
+    ScriptNodeSummaryBean queryNode(Long reportId, String xpathMd5, Double threadNum);
 
 }

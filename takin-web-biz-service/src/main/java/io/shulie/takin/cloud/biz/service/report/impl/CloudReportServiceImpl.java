@@ -1,33 +1,12 @@
 package io.shulie.takin.cloud.biz.service.report.impl;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -46,6 +25,7 @@ import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import com.pamirs.takin.cloud.entity.domain.entity.report.Report;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.WarnDetail;
+import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.common.DistributeBean;
@@ -89,15 +69,10 @@ import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
-import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
-import io.shulie.takin.cloud.common.utils.CommonUtil;
-import io.shulie.takin.cloud.common.utils.GsonUtil;
-import io.shulie.takin.cloud.common.utils.JsonPathUtil;
-import io.shulie.takin.cloud.common.utils.JsonUtil;
-import io.shulie.takin.cloud.common.utils.NumberUtil;
-import io.shulie.takin.cloud.common.utils.TestTimeUtil;
+import io.shulie.takin.cloud.common.utils.*;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
+import io.shulie.takin.cloud.data.mapper.mysql.SceneManageMapper;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
@@ -120,6 +95,7 @@ import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
+import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
@@ -130,6 +106,17 @@ import org.influxdb.impl.TimeUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author 莫问
@@ -145,6 +132,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     @Resource
     TReportMapper tReportMapper;
     @Resource
+    private CloudReportService cloudReportService;
+    @Resource
     PluginManager pluginManager;
     @Resource
     SceneManageDAO sceneManageDao;
@@ -158,6 +147,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     StringRedisTemplate stringRedisTemplate;
     @Resource
     SceneTaskEventService sceneTaskEventService;
+    @Resource
+    private SceneManageMapper sceneManageMapper;
     @Resource
     TReportBusinessActivityDetailMapper tReportBusinessActivityDetailMapper;
     @Resource
@@ -259,7 +250,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             JSONObject jsonObject = JSON.parseObject(report.getFeatures());
             if (jsonObject.containsKey(ReportConstants.SLA_ERROR_MSG)) {
                 detail.setSlaMsg(
-                    JsonHelper.json2Bean(jsonObject.getString(ReportConstants.SLA_ERROR_MSG), SlaBean.class));
+                        JsonHelper.json2Bean(jsonObject.getString(ReportConstants.SLA_ERROR_MSG), SlaBean.class));
             }
             String ptlPath = jsonObject.getString(PressureStartCache.FEATURES_MACHINE_PTL_PATH);
             if (StringUtils.isNotBlank(ptlPath)) {
@@ -271,7 +262,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     }
 
     private void buildFailActivitiesByNodeDetails(List<ScriptNodeSummaryBean> reportNodeDetail,
-        List<BusinessActivitySummaryBean> result) {
+                                                  List<BusinessActivitySummaryBean> result) {
         if (CollectionUtils.isEmpty(reportNodeDetail)) {
             return;
         }
@@ -301,8 +292,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     private List<ScriptNodeSummaryBean> getReportNodeDetail(String scriptNodeTree, Long reportId) {
         List<ReportBusinessActivityDetail> activities = tReportBusinessActivityDetailMapper
-            .queryReportBusinessActivityDetailByReportId(reportId);
-        return getScriptNodeSummaryBeans(scriptNodeTree, activities);
+                .queryReportBusinessActivityDetailByReportId(reportId);
+        return getScriptNodeSummaryBeans(reportId, scriptNodeTree, activities);
     }
 
     @Override
@@ -377,7 +368,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     });
             String resultTree = JsonPathUtil.putNodesToJson(nodeTree, resultMap);
             reportDetail.setNodeDetail(JsonUtil.parseArray(resultTree,
-                ScriptNodeSummaryBean.class));
+                    ScriptNodeSummaryBean.class));
         } else {
             List<ScriptNodeSummaryBean> nodeDetails = reportBusinessActivityDetails.stream()
                     .filter(Objects::nonNull)
@@ -534,7 +525,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (Objects.isNull(reportResult)) {
             throw new TakinCloudException(TakinCloudExceptionEnum.REPORT_GET_ERROR, "未查询到报告" + reportId);
         }
-        resp.setScriptNodeSummaryBeans(getScriptNodeSummaryBeans(reportResult.getScriptNodeTree(),
+        resp.setScriptNodeSummaryBeans(getScriptNodeSummaryBeans(reportId, reportResult.getScriptNodeTree(),
                 reportBusinessActivityDetailList));
         return resp;
     }
@@ -546,13 +537,16 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      * @param details  业务活动详情
      * @return -
      */
-    private List<ScriptNodeSummaryBean> getScriptNodeSummaryBeans(String nodeTree,
+    private List<ScriptNodeSummaryBean> getScriptNodeSummaryBeans(Long reportId, String nodeTree,
                                                                   List<ReportBusinessActivityDetail> details) {
+
+        Map<String, List<BigDecimal>> threadNumStages = getSummaryConcurrentStageThreadNum(reportId);
+
         Map<String, Map<String, Object>> resultMap = new HashMap<>(details.size());
         if (StringUtils.isNotBlank(nodeTree)) {
             details.stream().filter(Objects::nonNull)
                     .forEach(detail -> {
-                        Map<String, Object> objectMap = fillReportMap(detail);
+                        Map<String, Object> objectMap = fillReportMap(detail, threadNumStages);
                         if (Objects.nonNull(objectMap)) {
                             resultMap.put(detail.getBindRef(), objectMap);
                         }
@@ -566,6 +560,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 .map(detail -> {
                     ScriptNodeSummaryBean bean = new ScriptNodeSummaryBean();
                     bean.setXpathMd5(detail.getBindRef());
+                    if(threadNumStages.containsKey(detail.getBindRef())){
+                        bean.setConcurrentStageThreadNum(threadNumStages.get(detail.getBindRef()));
+                    }
                     bean.setTestName(detail.getBusinessActivityName());
                     bean.setTotalRequest(detail.getRequest());
                     bean.setAvgConcurrenceNum(detail.getAvgConcurrenceNum());
@@ -582,6 +579,43 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     bean.setSa(new DataBean(detail.getSa(), detail.getTargetSa()));
                     return bean;
                 }).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取阶梯递增的阶段线程数
+     *
+     * @param reportId
+     * @return
+     */
+    private Map<String, List<BigDecimal>> getSummaryConcurrentStageThreadNum(Long reportId) {
+        ReportOutput reportOutput = cloudReportService.selectById(reportId);
+        Long sceneId = reportOutput.getSceneId();
+        SceneManageEntity manageEntity = sceneManageMapper.selectById(sceneId);
+        if(manageEntity == null || manageEntity.getPtConfig() == null){
+            return Collections.emptyMap();
+        }
+        PtConfigExt ext = JSON.parseObject(manageEntity.getPtConfig(), PtConfigExt.class);
+        Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
+        if (configMap == null || configMap.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, List<BigDecimal>> stages = new HashMap<>();
+        for (Map.Entry<String, ThreadGroupConfigExt> entry : configMap.entrySet()) {
+            ThreadGroupConfigExt value = entry.getValue();
+            if (value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3) {
+                continue;
+            }
+            // 阶梯递增模式
+            Integer steps = value.getSteps();
+            Integer threadNum = value.getThreadNum();
+            List<BigDecimal> stepList = new ArrayList<>(steps);
+            for (Integer i = 1; i <= steps; i++) {
+                stepList.add(new BigDecimal(threadNum * i).divide(new BigDecimal(steps), 2, BigDecimal.ROUND_HALF_UP));
+            }
+            stages.put(entry.getKey(), stepList);
+        }
+        return stages;
+
     }
 
     @Override
@@ -674,9 +708,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (!reportResult.getPressureType().equals(PressureSceneEnum.DEFAULT.getCode())) {
             reportDao.finishReport(reportId);
             cloudSceneManageService.updateSceneLifeCycle(
-                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                    .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING,
-                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                            .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING,
+                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
             doneReport(reportResult);
             pressureEnd(reportResult);
             return true;
@@ -710,14 +744,14 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         SceneManageEntity sceneManage = sceneManageDao.getSceneById(reportResult.getSceneId());
         //如果是强制停止 不需要更新
         log.info("finish scene {}, state :{}", reportResult.getSceneId(), Optional.ofNullable(sceneManage)
-            .map(SceneManageEntity::getStatus)
-            .map(SceneManageStatusEnum::getSceneManageStatusEnum)
-            .map(SceneManageStatusEnum::getDesc).orElse("未找到场景"));
+                .map(SceneManageEntity::getStatus)
+                .map(SceneManageStatusEnum::getSceneManageStatusEnum)
+                .map(SceneManageStatusEnum::getDesc).orElse("未找到场景"));
         if (sceneManage != null && !sceneManage.getType().equals(SceneManageStatusEnum.FORCE_STOP.getValue())) {
             cloudSceneManageService.updateSceneLifeCycle(
-                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                    .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING, SceneManageStatusEnum.WAIT,
-                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                            .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING, SceneManageStatusEnum.WAIT,
+                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
         }
         //报告结束应该放在场景之后
         reportDao.finishReport(reportId);
@@ -740,8 +774,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
 
         cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(),
-                reportResult.getTenantId())
-            .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.FORCE_STOP).build());
+                        reportResult.getTenantId())
+                .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.FORCE_STOP).build());
         pressureEnd(reportResult);
     }
 
@@ -1012,22 +1046,24 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             // 等待时间 influxDB完成
             Thread.sleep(2000);
             long start = System.currentTimeMillis();
-            TaskResult taskResult = (TaskResult)event.getExt();
+            TaskResult taskResult = (TaskResult) event.getExt();
             log.info("通知报告模块，开始生成本次压测{}-{}-{}的报告", taskResult.getSceneId(), taskResult.getTaskId(),
-                taskResult.getTenantId());
+                    taskResult.getTenantId());
             modifyReport(taskResult);
             log.info("本次压测{}-{}-{}的报告生成时间-{}", taskResult.getSceneId(), taskResult.getTaskId(),
-                taskResult.getTenantId(), System.currentTimeMillis() - start);
+                    taskResult.getTenantId(), System.currentTimeMillis() - start);
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：生成报告异常 --> 【通知报告模块】处理finished事件异常: {}",
-                TakinCloudExceptionEnum.TASK_STOP_DEAL_REPORT_ERROR, e);
+                    TakinCloudExceptionEnum.TASK_STOP_DEAL_REPORT_ERROR, e);
         }
     }
 
     @Override
     public ReportOutput selectById(Long id) {
         ReportResult reportResult = reportDao.selectById(id);
-        if (reportResult == null) {return null;}
+        if (reportResult == null) {
+            return null;
+        }
         return BeanUtil.copyProperties(reportResult, ReportOutput.class);
     }
 
@@ -1117,9 +1153,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             doneReport(reportResult);
             //更新场景 压测引擎停止压测---> 待启动  版本不一样，关闭不一样
             cloudSceneManageService.updateSceneLifeCycle(
-                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                    .checkEnum(
-                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                            .checkEnum(
+                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
         }
 
     }
@@ -1240,7 +1276,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             List<ReportBusinessActivityDetailEntity> activities = reportDao.getActivityByReportIds(reportIds);
             if (CollectionUtils.isNotEmpty(activities)) {
                 Map<Long, List<ReportBusinessActivityDetailEntity>> activityMap = activities.stream().filter(
-                        Objects::nonNull)
+                                Objects::nonNull)
                         .collect(Collectors.groupingBy(ReportBusinessActivityDetailEntity::getReportId));
                 return reportEntities.stream().filter(Objects::nonNull)
                         .map(entity -> {
@@ -1279,7 +1315,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      */
     private boolean isPass(ReportBusinessActivityDetail detail) {
         if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(
-            detail.getSuccessRate()) > 0) {
+                detail.getSuccessRate()) > 0) {
             return false;
         } else if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
             return false;
@@ -1406,7 +1442,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 && StringUtils.isNotEmpty(jsonObject.getString(ReportConstants.SLA_ERROR_MSG));
     }
 
-    private Map<String, Object> fillReportMap(ReportBusinessActivityDetail detail) {
+    private Map<String, Object> fillReportMap(ReportBusinessActivityDetail detail, Map<String, List<BigDecimal>> threadNumStages) {
         if (Objects.nonNull(detail)) {
             Map<String, Object> resultMap = new HashMap<>(13);
             resultMap.put("avgRt", new DataBean(detail.getRt(), detail.getTargetRt()));
@@ -1429,6 +1465,10 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             if (detail.getBusinessActivityId() > -1 && StringUtils.isNotBlank(detail.getApplicationIds())) {
                 resultMap.put("applicationIds", detail.getApplicationIds());
             }
+            String xpathMd5 = detail.getBindRef();
+            if(threadNumStages.containsKey(xpathMd5)){
+                resultMap.put("concurrentStageThreadNum", threadNumStages.get(xpathMd5));
+            }
             return resultMap;
         }
         return null;
@@ -1439,7 +1479,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         List<DistributeBean> result;
         if (StringUtils.isNoneBlank(distributes)) {
             Map<String, String> distributeMap = JsonHelper.string2Obj(distributes,
-                new TypeReference<Map<String, String>>() {});
+                    new TypeReference<Map<String, String>>() {
+                    });
             List<DistributeBean> distributeBeans = Lists.newArrayList();
             distributeMap.forEach((key, value) -> {
                 DistributeBean distribute = new DistributeBean();
@@ -1575,7 +1616,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
         String features = reportResult.getFeatures();
         if (StringUtils.isNotBlank(features)
-            && JSONObject.parseObject(features).containsKey(PressureStartCache.FEATURES_MACHINE_PTL_PATH)) {
+                && JSONObject.parseObject(features).containsKey(PressureStartCache.FEATURES_MACHINE_PTL_PATH)) {
             return "";
         }
         String realJtlPath = pressureEngineJtlPath;
@@ -1613,7 +1654,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 return jtlPath + "/" + "Jmeter.zip";
             }
             throw new TakinCloudException(TakinCloudExceptionEnum.FILE_ZIP_ERROR, "查看" + jtlPath);
-        } else {return "";}
+        } else {
+            return "";
+        }
     }
 
     @Override

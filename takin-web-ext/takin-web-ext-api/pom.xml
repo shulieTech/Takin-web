@@ -76,6 +76,7 @@
                     <artifactId>takin-common-beans</artifactId>
                 </exclusion>
             </exclusions>
+            <version>${takin.cloud.version}</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>

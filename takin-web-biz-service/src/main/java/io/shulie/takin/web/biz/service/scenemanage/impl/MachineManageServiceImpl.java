@@ -2,6 +2,8 @@ package io.shulie.takin.web.biz.service.scenemanage.impl;
 
 import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
+import cn.hutool.poi.excel.ExcelReader;
+import cn.hutool.poi.excel.ExcelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -35,9 +37,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -84,10 +89,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private Integer dockerStartTimeout;
 
     private SymmetricCrypto des;
-    private final static ExecutorService THREAD_POOL = new ThreadPoolExecutor(20, 40,
-            300L, TimeUnit.SECONDS,
-            new ArrayBlockingQueue<>(100), new ThreadFactoryBuilder()
-            .setNameFormat("machine-manage-exec-%d").build(), new ThreadPoolExecutor.AbortPolicy());
+    private final static ExecutorService THREAD_POOL = new ThreadPoolExecutor(20, 40, 300L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), new ThreadFactoryBuilder().setNameFormat("machine-manage-exec-%d").build(), new ThreadPoolExecutor.AbortPolicy());
 
     private static final ConcurrentHashMap<Long, String> deployStatusMap = new ConcurrentHashMap<>();
 
@@ -278,11 +280,10 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         if (manageDAOById.getPassword() == null) {
             return "当前机器没有密码，请先补充密码";
         }
-        SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
-                manageDAOById.getUserName());
+        SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()), manageDAOById.getUserName());
         //机器联通测试
         String checkMachineExec = sshInitUtil.execute("echo machine_test");
-        if (checkMachineExec == null || !checkMachineExec.contains("machine_test")){
+        if (checkMachineExec == null || !checkMachineExec.contains("machine_test")) {
             return "机器连通性验证未通过，请确认用户名和密码是否正确";
         }
         MachineAddReq machineAddReq = new MachineAddReq();
@@ -306,11 +307,10 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         if (manageDAOById == null) {
             return "没有找到对应机器数据，请刷新页面再试";
         }
-        SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
-                manageDAOById.getUserName());
+        SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()), manageDAOById.getUserName());
         //机器联通测试
         String checkMachineExec = sshInitUtil.execute("echo machine_test");
-        if (checkMachineExec == null || !checkMachineExec.contains("machine_test")){
+        if (checkMachineExec == null || !checkMachineExec.contains("machine_test")) {
             return "机器连通性验证未通过，请确认用户名和密码是否正确";
         }
         if (MachineManageConstants.TYPE_TAKIN.equals(manageDAOById.getDeployType())) {
@@ -421,11 +421,10 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         if (manageDAOById.getPassword() == null) {
             return "当前机器没有密码，请先补充密码";
         }
-        SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()),
-                manageDAOById.getUserName());
+        SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()), manageDAOById.getUserName());
         //机器联通测试
         String checkMachineExec = sshInitUtil.execute("echo machine_test");
-        if (checkMachineExec == null || !checkMachineExec.contains("machine_test")){
+        if (checkMachineExec == null || !checkMachineExec.contains("machine_test")) {
             return "机器连通性验证未通过，请确认用户名和密码是否正确";
         }
 
@@ -485,19 +484,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 log.info("启动容器日志：" + dockerRunExec);
 
                 //替换配置文件
-                String dockerReplaceAndRun = dockerReplaceAndRunCmd + " && sed -i 's/LOCAL_PASSWORD/" + des.decryptStr(manageDAOById.getPassword()) + "/' ./pressure-engine/config/application-engine.yml && " +
-                        "sed -i 's/TAKIN_LITE_IP/" + benchmarkServerIp + "/' ./pressure-engine/config/application-engine.yml && " +
-                        "sed -i 's/TAKIN_LITE_PORT/" + benchmarkServerPort + "/' ./pressure-engine/config/application-engine.yml && " +
-                        "sed -i 's/LOCALHOST_IP/" + manageDAOById.getMachineIp() + "/' ./pressure-engine/config/application-engine.yml && " +
-                        "sed -i 's/USER_APPKEY/" + benchmarkUserAppKey + "/' ./pressure-engine/config/application-engine.yml && " +
-                        "sed -i 's/SUITE_NAME/" + manageDAOById.getBenchmarkSuiteName() + "/' ./pressure-engine/config/application-engine.yml && " +
-                        "sed -i 's/TENANT_ID/" + WebPluginUtils.traceTenantId() + "/' ./pressure-engine/config/application-engine.yml && " +
-                        "sed -i 's/ENV_CODE/" + WebPluginUtils.traceEnvCode() + "/' ./pressure-engine/config/application-engine.yml ";
+                String dockerReplaceAndRun = dockerReplaceAndRunCmd + " && sed -i 's/LOCAL_PASSWORD/" + des.decryptStr(manageDAOById.getPassword()) + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/TAKIN_LITE_IP/" + benchmarkServerIp + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/TAKIN_LITE_PORT/" + benchmarkServerPort + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/LOCALHOST_IP/" + manageDAOById.getMachineIp() + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/USER_APPKEY/" + benchmarkUserAppKey + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/SUITE_NAME/" + manageDAOById.getBenchmarkSuiteName() + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/TENANT_ID/" + WebPluginUtils.traceTenantId() + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/ENV_CODE/" + WebPluginUtils.traceEnvCode() + "/' ./pressure-engine/config/application-engine.yml ";
                 //替换并启动
-                dockerReplaceAndRun = dockerReplaceAndRun + " && rm -f pressure-engine.zip && zip -r pressure-engine.zip ./pressure-engine && " +
-                        "docker cp pressure-engine.zip " + manageDAOById.getBenchmarkSuiteName() + ":/data/pressure-engine.zip && rm -f pressure-engine.zip && rm -rf ./pressure-engine " +
-                        "&& docker exec " + manageDAOById.getBenchmarkSuiteName() + " /bin/bash -c 'cd /data && mv pressure-engine pressure-engine_bak " +
-                        "&& unzip pressure-engine.zip && cd pressure-engine && sh start.sh'";
+                dockerReplaceAndRun = dockerReplaceAndRun + " && rm -f pressure-engine.zip && zip -r pressure-engine.zip ./pressure-engine && " + "docker cp pressure-engine.zip " + manageDAOById.getBenchmarkSuiteName() + ":/data/pressure-engine.zip && rm -f pressure-engine.zip && rm -rf ./pressure-engine " + "&& docker exec " + manageDAOById.getBenchmarkSuiteName() + " /bin/bash -c 'cd /data && mv pressure-engine pressure-engine_bak " + "&& unzip pressure-engine.zip && cd pressure-engine && sh start.sh'";
                 deployStatusMap.put(request.getId(), "启动服务");
                 String replaceAndRunExec = sshInitUtil.execute(dockerReplaceAndRun);
                 log.info("替换配置并启动服务日志：" + replaceAndRunExec);
@@ -512,8 +501,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         Thread.sleep(3000);
                         List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(headerMap);
                         if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
-                            long count = pressureMachineDTOS.stream().filter(o -> manageDAOById.getMachineIp().equals(o.getConfigIp())
-                                    && manageDAOById.getBenchmarkSuiteName().trim().equals(o.getTypeMachine().trim())).count();
+                            long count = pressureMachineDTOS.stream().filter(o -> manageDAOById.getMachineIp().equals(o.getConfigIp()) && manageDAOById.getBenchmarkSuiteName().trim().equals(o.getTypeMachine().trim())).count();
                             if (count > 0) {
                                 deployStatusMap.put(request.getId(), "启动成功");
                                 log.info("启动成功，结束监听");
@@ -571,6 +559,19 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         return PagingList.empty();
     }
 
+    @Override
+    public String readExcelBachtCreate(MultipartFile file) throws IOException {
+        if (file == null) {
+            return null;
+        }
+        //读取文件流
+        InputStream inputStream = file.getInputStream();
+        //文件名
+        String fileName = file.getOriginalFilename();
+        ExcelReader excelReader = ExcelUtil.getReader(inputStream);
+        return null;
+    }
+
     private Map<String, String> getHeaderMap(HttpServletRequest httpRequest) {
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("token", Objects.requireNonNull(httpRequest.getHeader("x-token")));
@@ -580,8 +581,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     private void unInstallBenchmark(Map<String, String> headerMap, String ip, String suiteName) {
-        HttpClientUtil.sendGet(benchmarkUnInstallUrl + "?configIp=" + ip + "&typeMachine="
-                + suiteName + "&userAppKey=" + benchmarkUserAppKey, headerMap);
+        HttpClientUtil.sendGet(benchmarkUnInstallUrl + "?configIp=" + ip + "&typeMachine=" + suiteName + "&userAppKey=" + benchmarkUserAppKey, headerMap);
     }
 
     private List<PressureMachineDTO> getPressureMachineDTOList(Map<String, String> headerMap) {
@@ -604,7 +604,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                             }
                             o.setIp(ip);
                         }
-                        if (o.getConfigIp() == null){
+                        if (o.getConfigIp() == null) {
                             o.setConfigIp(o.getIp());
                         }
                     });

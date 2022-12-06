@@ -46,6 +46,7 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-ext</artifactId>
             <scope>provided</scope>
+            <version>${takin.cloud.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.validation</groupId>

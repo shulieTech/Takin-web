@@ -4,8 +4,10 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.scene.*;
 import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 public interface MachineManageService {
 
@@ -26,4 +28,6 @@ public interface MachineManageService {
     String benchmarkEnable(PressureMachineBaseRequest request,HttpServletRequest httpRequest);
 
     PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpServletRequest httpRequest);
+
+    String readExcelBachtCreate(MultipartFile file) throws IOException;
 }

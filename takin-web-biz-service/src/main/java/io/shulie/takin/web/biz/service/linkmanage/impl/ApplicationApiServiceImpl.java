@@ -117,6 +117,7 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
                             manage.setIsAgentRegiste(1);
                             manage.setTenantId(WebPluginUtils.traceTenantId());
                             manage.setEnvCode(WebPluginUtils.traceEnvCode());
+                            manage.setDeptId(applicationDetailResult.getDeptId());
                             batch.add(manage);
                         }
 
@@ -133,6 +134,7 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
                         manage.setIsAgentRegiste(1);
                         manage.setTenantId(WebPluginUtils.traceTenantId());
                         manage.setEnvCode(WebPluginUtils.traceEnvCode());
+                        manage.setDeptId(applicationDetailResult.getDeptId());
                         batch.add(manage);
                     }
 
@@ -165,6 +167,7 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
                 manage.setTenantId(single.getTenantId());
                 manage.setUserId(single.getUserId());
                 manage.setIsAgentRegiste(single.getIsAgentRegiste());
+                manage.setDeptId(single.getDeptId());
                 applicationApiDAO.insertSelective(manage);
             } catch (TakinWebException e1) {
                 log.error(e1.getMessage(), e1);

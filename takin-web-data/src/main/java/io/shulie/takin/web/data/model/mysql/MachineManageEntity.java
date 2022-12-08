@@ -64,4 +64,7 @@ public class MachineManageEntity extends TenantBaseEntity {
      */
     @TableField(value = "is_deleted")
     private Integer isDeleted;
+
+    @TableField(value = "tag")
+    private String tag;
 }

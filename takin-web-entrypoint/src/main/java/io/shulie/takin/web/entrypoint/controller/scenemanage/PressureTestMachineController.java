@@ -8,13 +8,16 @@ import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.scene.*;
 import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
 import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
+import io.shulie.takin.web.biz.utils.ExcelUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Arrays;
 
 @RestController
 @RequestMapping("/api/pressureMachine")
@@ -96,7 +99,7 @@ public class PressureTestMachineController {
     @PostMapping("/disable")
     @ApiOperation("卸载压力机")
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<String> disable(@RequestBody @Valid PressureMachineBaseRequest request,HttpServletRequest httpRequest) {
+    public ResponseResult<String> disable(@RequestBody @Valid PressureMachineBaseRequest request, HttpServletRequest httpRequest) {
         String failContent = machineManageService.disable(request,httpRequest);
         if (failContent != null) {
             return ResponseResult.fail("卸载失败" + failContent, null);
@@ -110,5 +113,43 @@ public class PressureTestMachineController {
     public ResponseResult<String> syncMachine() {
         machineManageService.syncMachine();
         return ResponseResult.success("同步成功");
+    }
+
+    @PostMapping("/createMachinebByExecl")
+    @ApiOperation("根据excel批量新增机器")
+    @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
+    public void createMachinebByExecl(@RequestParam(value = "file") MultipartFile file, @RequestParam(value = "tag") String tag) {
+        //校验文件
+        MultipartFile[] files = {file};
+        try {
+            new ExcelUtil().verify(files);
+            this.machineManageService.readExcelBachtCreate(file, tag);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PostMapping("/benchmarkEnableByTag")
+    @ApiOperation("benchmark-批量部署压力机根据tag")
+    @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
+    public ResponseResult<String> benchmarkEnableByTag(@RequestParam(value = "tag") String tag, HttpServletRequest httpRequest) {
+        String failContent = machineManageService.benchmarkEnableByTag(httpRequest, tag);
+        if (failContent != null) {
+            return ResponseResult.fail("部署失败" + failContent, null);
+        }
+        return ResponseResult.success("部署成功");
+    }
+
+    @PostMapping("/getAllTag")
+    @ApiOperation("benchmark-获取所有机器tag")
+    @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
+    public ResponseResult<String> getAllTag(){
+        return null;
+    }
+    @PostMapping("/listMachinesByTag")
+    @ApiOperation("benchmark-批量获取压力机根据tag")
+    @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
+    public ResponseResult<PagingList<PressureMachineResponse>> listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request) {
+        return ResponseResult.success(this.machineManageService.listMachinesByTag(httpRequest, request));
     }
 }

@@ -34,6 +34,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -41,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -170,54 +172,59 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         Page<MachineManageEntity> manageEntityPage = machineManageDAO.page(page, queryWrapper);
         List<PressureMachineResponse> pressureMachineResponses = BeanCopyUtils.copyList(manageEntityPage.getRecords(), PressureMachineResponse.class);
         //查询引擎数据
-        if (CollectionUtils.isNotEmpty(pressureMachineResponses)) {
-            long takinCount = pressureMachineResponses.stream().filter(o -> MachineManageConstants.TYPE_TAKIN.equals(o.getDeployType())).count();
-            if (takinCount > 0) {
-                ContextExt req = new ContextExt();
-                WebPluginUtils.fillCloudUserData(req);
-                ResponseResult<List<NodeMetricsResp>> list = cloudMachineApi.list(req);
-                if (list != null && CollectionUtils.isNotEmpty(list.getData())) {
-                    Map<String, List<NodeMetricsResp>> stringListMap = list.getData().stream().collect(Collectors.groupingBy(NodeMetricsResp::getNodeIp));
-                    pressureMachineResponses.forEach(pressureMachineResponse -> {
-                        List<NodeMetricsResp> nodeMetrics = stringListMap.get(pressureMachineResponse.getMachineIp());
-                        if (CollectionUtils.isNotEmpty(nodeMetrics)) {
-                            NodeMetricsResp nodeMetricsResp = nodeMetrics.get(0);
-                            pressureMachineResponse.setCpu(nodeMetricsResp.getCpu() == null ? "" : nodeMetricsResp.getCpu().toString());
-                            pressureMachineResponse.setMemory(nodeMetricsResp.getMemory() == null ? "" : nodeMetricsResp.getMemory().divide(new BigDecimal(1024 * 1024), 2, RoundingMode.HALF_UP) + "G");
-                            pressureMachineResponse.setEngineStatus(nodeMetricsResp.getStatus());
-                        }
-                    });
-                }
-            }
-            long benchmarkCount = pressureMachineResponses.stream().filter(o -> MachineManageConstants.TYPE_BENCHMARK.equals(o.getDeployType())).count();
-            if (benchmarkCount > 0) {
-                List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(getHeaderMap(httpRequest));
-                if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
-                    Map<String, List<PressureMachineDTO>> stringListMap = pressureMachineDTOS.stream().collect(Collectors.groupingBy(PressureMachineDTO::getConfigIp));
-                    pressureMachineResponses.forEach(pressureMachineResponse -> {
-                        List<PressureMachineDTO> machineDTOS = stringListMap.get(pressureMachineResponse.getMachineIp());
-                        if (CollectionUtils.isNotEmpty(machineDTOS)) {
-                            PressureMachineDTO pressureMachineDTO = machineDTOS.get(0);
-                            pressureMachineResponse.setCpu(pressureMachineDTO.getCpuNum() + "");
-                            pressureMachineResponse.setMemory(pressureMachineDTO.getMemory());
-                            pressureMachineResponse.setEngineStatus("ready");
-                        }
-                    });
-                }
-            }
-            //如果机器为已部署，然后没有上报信息，状态为不可用
-            pressureMachineResponses.forEach(pressureMachineResponse -> {
-                if (deployStatusMap.containsKey(pressureMachineResponse.getId())) {
-                    pressureMachineResponse.setDeployProgressList(deployProgressList);
-                    String progress = deployStatusMap.get(pressureMachineResponse.getId());
-                    pressureMachineResponse.setCurrentProgressIndex(deployProgressList.indexOf(progress));
-                }
-                if (pressureMachineResponse.getStatus() == 2 && pressureMachineResponse.getEngineStatus() == null) {
-                    pressureMachineResponse.setEngineStatus("not ready");
-                }
-            });
+        if (CollectionUtils.isEmpty(pressureMachineResponses)) {
+            return PagingList.of(pressureMachineResponses, manageEntityPage.getTotal());
         }
+        fillPressureMachineData(httpRequest, pressureMachineResponses);
         return PagingList.of(pressureMachineResponses, manageEntityPage.getTotal());
+    }
+
+    private void fillPressureMachineData(HttpServletRequest httpRequest, List<PressureMachineResponse> pressureMachineResponses) {
+        long takinCount = pressureMachineResponses.stream().filter(o -> MachineManageConstants.TYPE_TAKIN.equals(o.getDeployType())).count();
+        if (takinCount > 0) {
+            ContextExt req = new ContextExt();
+            WebPluginUtils.fillCloudUserData(req);
+            ResponseResult<List<NodeMetricsResp>> list = cloudMachineApi.list(req);
+            if (list != null && CollectionUtils.isNotEmpty(list.getData())) {
+                Map<String, List<NodeMetricsResp>> stringListMap = list.getData().stream().collect(Collectors.groupingBy(NodeMetricsResp::getNodeIp));
+                pressureMachineResponses.forEach(pressureMachineResponse -> {
+                    List<NodeMetricsResp> nodeMetrics = stringListMap.get(pressureMachineResponse.getMachineIp());
+                    if (CollectionUtils.isNotEmpty(nodeMetrics)) {
+                        NodeMetricsResp nodeMetricsResp = nodeMetrics.get(0);
+                        pressureMachineResponse.setCpu(nodeMetricsResp.getCpu() == null ? "" : nodeMetricsResp.getCpu().toString());
+                        pressureMachineResponse.setMemory(nodeMetricsResp.getMemory() == null ? "" : nodeMetricsResp.getMemory().divide(new BigDecimal(1024 * 1024), 2, RoundingMode.HALF_UP) + "G");
+                        pressureMachineResponse.setEngineStatus(nodeMetricsResp.getStatus());
+                    }
+                });
+            }
+        }
+        long benchmarkCount = pressureMachineResponses.stream().filter(o -> MachineManageConstants.TYPE_BENCHMARK.equals(o.getDeployType())).count();
+        if (benchmarkCount > 0) {
+            List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(getHeaderMap(httpRequest));
+            if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
+                Map<String, List<PressureMachineDTO>> stringListMap = pressureMachineDTOS.stream().collect(Collectors.groupingBy(PressureMachineDTO::getConfigIp));
+                pressureMachineResponses.forEach(pressureMachineResponse -> {
+                    List<PressureMachineDTO> machineDTOS = stringListMap.get(pressureMachineResponse.getMachineIp());
+                    if (CollectionUtils.isNotEmpty(machineDTOS)) {
+                        PressureMachineDTO pressureMachineDTO = machineDTOS.get(0);
+                        pressureMachineResponse.setCpu(pressureMachineDTO.getCpuNum() + "");
+                        pressureMachineResponse.setMemory(pressureMachineDTO.getMemory());
+                        pressureMachineResponse.setEngineStatus("ready");
+                    }
+                });
+            }
+        }
+        //如果机器为已部署，然后没有上报信息，状态为不可用
+        pressureMachineResponses.forEach(pressureMachineResponse -> {
+            if (deployStatusMap.containsKey(pressureMachineResponse.getId())) {
+                pressureMachineResponse.setDeployProgressList(deployProgressList);
+                String progress = deployStatusMap.get(pressureMachineResponse.getId());
+                pressureMachineResponse.setCurrentProgressIndex(deployProgressList.indexOf(progress));
+            }
+            if (pressureMachineResponse.getStatus() == 2 && pressureMachineResponse.getEngineStatus() == null) {
+                pressureMachineResponse.setEngineStatus("not ready");
+            }
+        });
     }
 
 
@@ -560,15 +567,163 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public String readExcelBachtCreate(MultipartFile file) throws IOException {
+    public String readExcelBachtCreate(MultipartFile file, String tag) {
         if (file == null) {
             return null;
         }
-        //读取文件流
-        InputStream inputStream = file.getInputStream();
-        //文件名
-        String fileName = file.getOriginalFilename();
-        ExcelReader excelReader = ExcelUtil.getReader(inputStream);
+        try {
+            InputStream stream = new BufferedInputStream(file.getInputStream());
+            ExcelReader reader = ExcelUtil.getReader(stream);
+            List<List<Object>> readList = reader.read();
+            List<MachineManageEntity> machineManageEntities = new ArrayList<>();
+            readList.forEach(read -> {
+                List<Object> sheets = read;
+                MachineManageEntity machineManageEntity = new MachineManageEntity();
+                machineManageEntity.setMachineName(Objects.nonNull(sheets.get(0)) ? sheets.get(0).toString() : null);
+                machineManageEntity.setMachineIp(Objects.nonNull(sheets.get(1)) ? sheets.get(0).toString() : null);
+                machineManageEntity.setUserName(Objects.nonNull(sheets.get(2)) ? sheets.get(0).toString() : null);
+                machineManageEntity.setPassword(Objects.nonNull(sheets.get(3)) ? sheets.get(0).toString() : null);
+                machineManageEntity.setStatus(0);
+                machineManageEntity.setTag(tag);
+                machineManageEntities.add(machineManageEntity);
+            });
+
+            String machineNameStr = getMachineName(machineManageEntities);
+            if (StringUtils.isNotBlank(machineNameStr)) {
+                return machineNameStr;
+            }
+            String machineIpStr = getMachineIp(machineManageEntities);
+            if (StringUtils.isNotBlank(machineIpStr)) {
+                return machineIpStr;
+            }
+            getNodeMsg(machineManageEntities);
+            machineManageDAO.saveBatch(machineManageEntities);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    /**
+     * 根据tag批量部署机器
+     *
+     * @param tag
+     * @return
+     */
+    @Override
+    public String benchmarkEnableByTag(HttpServletRequest httpRequest, String tag) {
+        ExecutorService executorService = Executors.newFixedThreadPool(8);
+        List<MachineManageEntity> list = getAllMachineByTag(tag);
+        if (CollectionUtils.isEmpty(list)) {
+            return "部署失败";
+        }
+
+        for (MachineManageEntity machineManageEntity : list) {
+            PressureMachineBaseRequest request = new PressureMachineBaseRequest();
+            request.setId(machineManageEntity.getId());
+            request.setBenchmarkSuiteName(machineManageEntity.getBenchmarkSuiteName());
+            FutureTask<String> task = new FutureTask<>(() -> benchmarkEnable(request, httpRequest));
+            executorService.submit(task);
+        }
+        return "部署成功";
+    }
+
+    private List<MachineManageEntity> getAllMachineByTag(String tag) {
+        QueryWrapper<MachineManageEntity> ipQueryWrapper = new QueryWrapper<>();
+        ipQueryWrapper.lambda().eq(MachineManageEntity::getTag, tag);
+        List<MachineManageEntity> list = machineManageDAO.list(ipQueryWrapper);
+        return list;
+    }
+
+    /**
+     * 获取所有tag
+     *
+     * @return
+     */
+    @Override
+    public List<String> getAllTag() {
+        QueryWrapper<MachineManageEntity> ipQueryWrapper = new QueryWrapper<>();
+        ipQueryWrapper.select("distinct tag").isNotNull("tag");
+        List<MachineManageEntity> machineManageEntities = machineManageDAO.list(ipQueryWrapper);
+        List<String> tags = machineManageEntities.stream().map(MachineManageEntity::getTag).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(tags)) {
+            return Collections.EMPTY_LIST;
+        }
+        return tags;
+    }
+
+    /**
+     * 根据tag获取机器列表
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    public PagingList<PressureMachineResponse> listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request) {
+        Page<MachineManageEntity> page = new Page<>(request.getCurrent() + 1, request.getPageSize());
+        QueryWrapper<MachineManageEntity> ipQueryWrapper = new QueryWrapper<>();
+        ipQueryWrapper.lambda().in(MachineManageEntity::getTag, request.getTags());
+        Page<MachineManageEntity> machineManageEntityPage = machineManageDAO.page(page, ipQueryWrapper);
+        List<PressureMachineResponse> pressureMachineResponses = BeanCopyUtils.copyList(machineManageEntityPage.getRecords(), PressureMachineResponse.class);
+        if (CollectionUtils.isEmpty(pressureMachineResponses)) {
+            return PagingList.of(pressureMachineResponses, machineManageEntityPage.getTotal());
+        }
+
+        fillPressureMachineData(httpRequest, pressureMachineResponses);
+        return PagingList.of(pressureMachineResponses, machineManageEntityPage.getTotal());
+    }
+
+    /**
+     * 查询这个机器是否已经是节点机器
+     *
+     * @param machineManageEntities
+     */
+    private void getNodeMsg(List<MachineManageEntity> machineManageEntities) {
+        //
+        ContextExt req = new ContextExt();
+        WebPluginUtils.fillCloudUserData(req);
+        ResponseResult<List<NodeMetricsResp>> list = cloudMachineApi.list(req);
+        if (list != null && CollectionUtils.isNotEmpty(list.getData())) {
+            List<String> nodeIpList = list.getData().stream().map(NodeMetricsResp::getNodeIp).collect(Collectors.toList());
+            machineManageEntities.stream().filter(a -> nodeIpList.contains(a.getMachineIp())).map(b -> {
+                b.setStatus(2);
+                b.setMachineName("");
+                return b;
+            }).collect(Collectors.toList());
+        }
+    }
+
+    private String getMachineIp(List<MachineManageEntity> machineManageEntities) {
+        StringBuffer errorString = new StringBuffer();
+        List<String> machineIpList = machineManageEntities.stream()
+                .map(MachineManageEntity::getMachineIp)
+                .filter(a -> StringUtils.isNotBlank(a))
+                .collect(Collectors.toList());
+        QueryWrapper<MachineManageEntity> ipQueryWrapper = new QueryWrapper<>();
+        ipQueryWrapper.lambda().in(MachineManageEntity::getMachineIp, machineIpList);
+        List<MachineManageEntity> ipList = machineManageDAO.list(ipQueryWrapper);
+        if (CollectionUtils.isNotEmpty(ipList)) {
+            String machineIp = ipList.stream().map(MachineManageEntity::getMachineIp).collect(Collectors.joining(","));
+            errorString.append(machineIp).append(",").append("机器ip已存在");
+            return errorString.toString();
+        }
+        return null;
+    }
+
+    private String getMachineName(List<MachineManageEntity> machineManageEntities) {
+        StringBuffer errorString = new StringBuffer();
+        List<String> machineNameList = machineManageEntities.stream()
+                .map(MachineManageEntity::getMachineName)
+                .filter(a -> StringUtils.isNotBlank(a))
+                .collect(Collectors.toList());
+        QueryWrapper<MachineManageEntity> nameQueryWrapper = new QueryWrapper<>();
+        nameQueryWrapper.lambda().in(MachineManageEntity::getMachineName, machineNameList);
+        List<MachineManageEntity> nameList = machineManageDAO.list(nameQueryWrapper);
+        if (CollectionUtils.isNotEmpty(nameList)) {
+            String machineName = nameList.stream().map(MachineManageEntity::getMachineName).collect(Collectors.joining(","));
+            errorString.append(machineName).append(",").append("机器名称已存在");
+            return errorString.toString();
+        }
         return null;
     }
 

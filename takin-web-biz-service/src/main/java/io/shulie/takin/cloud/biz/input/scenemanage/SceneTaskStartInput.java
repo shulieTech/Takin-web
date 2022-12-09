@@ -1,10 +1,10 @@
 package io.shulie.takin.cloud.biz.input.scenemanage;
 
-import java.util.List;
-
 import io.shulie.takin.cloud.ext.content.enums.AssetTypeEnum;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author qianshui
@@ -41,5 +41,5 @@ public class SceneTaskStartInput extends ContextExt {
     /**
      * 是否定时
      */
-    private Boolean isTiming;
+    private Boolean isTiming = false;
 }

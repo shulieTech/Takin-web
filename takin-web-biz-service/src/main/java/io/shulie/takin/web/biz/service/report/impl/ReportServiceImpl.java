@@ -543,36 +543,13 @@ public class ReportServiceImpl implements ReportService {
             return reportTrend;
         }
 
-        String testPlanXpathMd5 = getTestPlanXpathMd5(reportResult.getScriptNodeTree());
-        String transaction = StringUtils.isBlank(testPlanXpathMd5) ? ReportConstants.ALL_BUSINESS_ACTIVITY
-                : testPlanXpathMd5;
-        if (StringUtils.isNotBlank(reportTrendQuery.getXpathMd5())) {
-            transaction = reportTrendQuery.getXpathMd5();
-        }
-        StringBuilder influxDbSql = new StringBuilder();
-        influxDbSql.append("select");
-        influxDbSql.append(
-                " time, avg_tps as tps , sum_rt as sumRt, count as totalRequest, active_threads as  avgConcurrenceNum");
-        influxDbSql.append(" from ");
-        influxDbSql.append(
-                InfluxUtil.getMeasurement(reportResult.getJobId(), reportResult.getSceneId(),
-                        reportResult.getId(), reportResult.getTenantId()));
-        influxDbSql.append(" where ");
-        influxDbSql.append(" transaction = ").append("'").append(transaction).append("'");
-
-        List<StatReportDTO> list = new ArrayList<>();
-        if (StringUtils.isNotEmpty(transaction)) {
-            list = influxWriter.query(influxDbSql.toString(), StatReportDTO.class);
-        }
-        if (CollectionUtils.isEmpty(list)) {
-            return null;
-        }
         String ptConfig = reportResult.getPtConfig();
         PtConfigExt ext = JSON.parseObject(ptConfig, PtConfigExt.class);
         Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
         if (configMap == null || configMap.isEmpty()) {
             return null;
         }
+
         //根据xpathMd5找到上级对应线程组的md5
         Map<String, String> threadGroupChildMap = new HashMap<>();
         List<ScriptNode> allThreadGroup = JsonPathUtil.getNodeListByType(reportResult.getScriptNodeTree(), NodeTypeEnum.THREAD_GROUP);
@@ -583,42 +560,32 @@ public class ReportServiceImpl implements ReportService {
             childControllers.forEach(o -> threadGroupChildMap.put(o.getXpathMd5(), scriptNode.getXpathMd5()));
             childSamplers.forEach(o -> threadGroupChildMap.put(o.getXpathMd5(), scriptNode.getXpathMd5()));
         });
-        if (!threadGroupChildMap.containsKey(transaction)){
+        if (!threadGroupChildMap.containsKey(reportTrendQuery.getXpathMd5())){
             return null;
         }
-        ThreadGroupConfigExt value = configMap.get(threadGroupChildMap.get(transaction));
+        ThreadGroupConfigExt value = configMap.get(threadGroupChildMap.get(reportTrendQuery.getXpathMd5()));
         if (value == null || value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3 || value.getSteps() == null) {
             return null;
         }
         // 阶梯递增模式
         Integer steps = value.getSteps();
-        Integer rampUp = value.getRampUp();
-        Long rampUpTime = (rampUp * 60L * 1000L) / steps;
         Integer threadNum = value.getThreadNum();
 
         List<String> rt = new ArrayList<>();
         List<String> tps = new ArrayList<>();
         List<String> concurrent = new ArrayList<>(steps);
         for (Integer i = 1; i <= steps; i++) {
-            long startTime = reportResult.getStartTime().getTime();
-            int finalI = i - 1;
-            List<BigDecimal> sumRtList = list.stream().filter(o -> o.getSumRt() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= (startTime + finalI * rampUpTime)
-                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < (startTime + (finalI + 1) * rampUpTime)).map(StatReportDTO::getSumRt)
-                    .collect(Collectors.toList());
-            long sumCount = list.stream().filter(o -> o.getTotalRequest() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= (startTime + finalI * rampUpTime)
-                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < (startTime + (finalI + 1) * rampUpTime)).mapToLong(StatReportDTO::getTotalRequest)
-                    .sum();
-            List<BigDecimal> tpsList = list.stream().filter(o -> o.getTps() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= (startTime + finalI * rampUpTime)
-                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < (startTime + (finalI + 1) * rampUpTime)).map(StatReportDTO::getTps)
-                    .collect(Collectors.toList());
-            rt.add(getAvg(sumRtList, sumCount));
-            tps.add(getAvg(tpsList, null));
             concurrent.add(new BigDecimal(threadNum * i).divide(new BigDecimal(steps), 0, BigDecimal.ROUND_HALF_UP).toString());
         }
         if (CollectionUtils.isEmpty(concurrent)) {
             return null;
         }
         reportTrend.setConcurrent(concurrent);
+        for (String num : concurrent){
+            ScriptNodeSummaryBean scriptNodeSummaryBean = this.queryNode(reportTrendQuery.getReportId(), reportTrendQuery.getXpathMd5(), Double.parseDouble(num));
+            rt.add(scriptNodeSummaryBean.getAvgRt() != null ? scriptNodeSummaryBean.getAvgRt().getResult().toString() : "0");
+            tps.add(scriptNodeSummaryBean.getTps() != null ? scriptNodeSummaryBean.getTps().getResult().toString() : "0");
+        }
         reportTrend.setRt(rt);
         reportTrend.setTps(tps);
         if (CollectionUtils.isNotEmpty(reportTrend.getConcurrent()) && CollectionUtils.isNotEmpty(reportTrend.getRt()) && !"0".equals(reportTrend.getRt().get(0))) {

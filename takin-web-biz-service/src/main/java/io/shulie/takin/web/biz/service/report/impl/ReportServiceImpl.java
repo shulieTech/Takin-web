@@ -45,6 +45,7 @@ import io.shulie.takin.web.biz.utils.PDFUtil;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
@@ -96,6 +97,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private DistributedLock distributedLock;
+
+    @Resource
+    private RedisClientUtil redisClientUtil;
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -526,6 +530,12 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public ThreadReportTrendResp queryReportTrendByThread(ReportTrendQueryReq reportTrendQuery) {
+
+        String key = "reportTrendByThread:" + JSON.toJSONString(reportTrendQuery);
+        if (redisClientUtil.hasKey(key)) {
+            return JSON.parseObject(redisClientUtil.getString(key), ThreadReportTrendResp.class);
+        }
+
         ThreadReportTrendResp reportTrend = new ThreadReportTrendResp();
         ReportResult reportResult = reportDao.selectById(reportTrendQuery.getReportId());
         if (reportResult == null) {
@@ -592,10 +602,13 @@ public class ReportServiceImpl implements ReportService {
         if (CollectionUtils.isEmpty(concurrent)){
             return null;
         }
-
         reportTrend.setConcurrent(concurrent);
         reportTrend.setRt(rt);
         reportTrend.setTps(tps);
+        if (CollectionUtils.isNotEmpty(reportTrend.getConcurrent()) && CollectionUtils.isNotEmpty(reportTrend.getRt()) && !"0".equals(reportTrend.getRt().get(0))){
+            redisClientUtil.setString(key, JSON.toJSONString(reportTrend));
+            redisClientUtil.expire(key, 1000 * 60 * 120);
+        }
         return reportTrend;
 
     }

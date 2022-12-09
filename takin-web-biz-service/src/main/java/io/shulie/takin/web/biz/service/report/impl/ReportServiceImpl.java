@@ -593,7 +593,7 @@ public class ReportServiceImpl implements ReportService {
         // 阶梯递增模式
         Integer steps = value.getSteps();
         Integer rampUp = value.getRampUp();
-        Long rampUpTime = rampUp * 60L * 1000L;
+        Long rampUpTime = (rampUp * 60L * 1000L) / steps;
         Integer threadNum = value.getThreadNum();
 
         List<String> rt = new ArrayList<>();

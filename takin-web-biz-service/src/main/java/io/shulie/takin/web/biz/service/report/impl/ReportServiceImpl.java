@@ -566,7 +566,7 @@ public class ReportServiceImpl implements ReportService {
             return null;
         }
         ThreadGroupConfigExt value = configMap.get(transaction);
-        if (value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3 || value.getSteps() == null) {
+        if (value == null || value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3 || value.getSteps() == null) {
             return null;
         }
         // 阶梯递增模式

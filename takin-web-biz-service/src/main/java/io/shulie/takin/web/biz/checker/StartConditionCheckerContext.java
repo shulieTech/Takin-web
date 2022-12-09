@@ -33,7 +33,7 @@ public class StartConditionCheckerContext {
     /**
      * 是否定时
      */
-    private Boolean isTiming;
+    private Boolean isTiming = false;
 
     private StartConditionCheckerContext(Long sceneId) {
         this.sceneId = sceneId;

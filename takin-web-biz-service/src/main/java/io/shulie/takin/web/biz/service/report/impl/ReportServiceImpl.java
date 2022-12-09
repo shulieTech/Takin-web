@@ -592,6 +592,8 @@ public class ReportServiceImpl implements ReportService {
         }
         // 阶梯递增模式
         Integer steps = value.getSteps();
+        Integer rampUp = value.getRampUp();
+        Long rampUpTime = rampUp * 60L * 1000L;
         Integer threadNum = value.getThreadNum();
 
         List<String> rt = new ArrayList<>();
@@ -599,15 +601,15 @@ public class ReportServiceImpl implements ReportService {
         List<String> concurrent = new ArrayList<>(steps);
         for (Integer i = 1; i <= steps; i++) {
             long startTime = reportResult.getStartTime().getTime();
-            int finalI = i;
-            List<BigDecimal> sumRtList = list.stream().filter(o -> o.getSumRt() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= startTime * finalI
-                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < startTime * (finalI + 1)).map(StatReportDTO::getSumRt)
+            int finalI = i - 1;
+            List<BigDecimal> sumRtList = list.stream().filter(o -> o.getSumRt() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= (startTime + finalI * rampUpTime)
+                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < (startTime + (finalI + 1) * rampUpTime)).map(StatReportDTO::getSumRt)
                     .collect(Collectors.toList());
-            long sumCount = list.stream().filter(o -> o.getTotalRequest() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= startTime * finalI
-                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < startTime * (finalI + 1)).mapToLong(StatReportDTO::getTotalRequest)
+            long sumCount = list.stream().filter(o -> o.getTotalRequest() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= (startTime + finalI * rampUpTime)
+                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < (startTime + (finalI + 1) * rampUpTime)).mapToLong(StatReportDTO::getTotalRequest)
                     .sum();
-            List<BigDecimal> tpsList = list.stream().filter(o -> o.getTps() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= startTime * finalI
-                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < startTime * (finalI + 1)).map(StatReportDTO::getTps)
+            List<BigDecimal> tpsList = list.stream().filter(o -> o.getTps() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= (startTime + finalI * rampUpTime)
+                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < (startTime + (finalI + 1) * rampUpTime)).map(StatReportDTO::getTps)
                     .collect(Collectors.toList());
             rt.add(getAvg(sumRtList, sumCount));
             tps.add(getAvg(tpsList, null));

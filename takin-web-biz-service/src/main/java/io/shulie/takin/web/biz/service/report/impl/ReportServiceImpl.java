@@ -1,56 +1,35 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
-import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
+import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
+import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.DataBean;
-import io.shulie.takin.cloud.biz.output.report.ReportOutput;
+import io.shulie.takin.adapter.api.model.request.report.*;
+import io.shulie.takin.adapter.api.model.response.report.*;
+import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.cloud.common.constants.ReportConstants;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
+import io.shulie.takin.cloud.common.utils.JsonPathUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.mapper.mysql.SceneManageMapper;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
+import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
-import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
-import io.shulie.takin.adapter.api.model.request.report.ReportDetailByIdReq;
-import io.shulie.takin.adapter.api.model.request.report.ReportDetailBySceneIdReq;
-import io.shulie.takin.adapter.api.model.request.report.ReportQueryReq;
-import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
-import io.shulie.takin.adapter.api.model.request.report.ScriptNodeTreeQueryReq;
-import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
-import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
-import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
-import io.shulie.takin.adapter.api.model.response.report.MetricesResponse;
-import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportDetailResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
-import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
-import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
@@ -73,10 +52,17 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.influxdb.impl.TimeUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -538,4 +524,102 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
+    @Override
+    public ThreadReportTrendResp queryReportTrendByThread(ReportTrendQueryReq reportTrendQuery) {
+        ThreadReportTrendResp reportTrend = new ThreadReportTrendResp();
+        ReportResult reportResult = reportDao.selectById(reportTrendQuery.getReportId());
+        if (reportResult == null) {
+            return reportTrend;
+        }
+
+        String testPlanXpathMd5 = getTestPlanXpathMd5(reportResult.getScriptNodeTree());
+        String transaction = StringUtils.isBlank(testPlanXpathMd5) ? ReportConstants.ALL_BUSINESS_ACTIVITY
+                : testPlanXpathMd5;
+        if (StringUtils.isNotBlank(reportTrendQuery.getXpathMd5())) {
+            transaction = reportTrendQuery.getXpathMd5();
+        }
+        StringBuilder influxDbSql = new StringBuilder();
+        influxDbSql.append("select");
+        influxDbSql.append(
+                " sum(count) as tempRequestCount,  mean(avg_tps) as tps , sum(sum_rt)/sum"
+                        + "(count) as "
+                        + "avgRt, sum(sa_count) as saCount, count(avg_rt) as recordCount ,mean(active_threads) as "
+                        + "avgConcurrenceNum ");
+        influxDbSql.append(" from ");
+        influxDbSql.append(
+                InfluxUtil.getMeasurement(reportResult.getJobId(), reportResult.getSceneId(),
+                        reportResult.getId(), reportResult.getTenantId()));
+        influxDbSql.append(" where ");
+        influxDbSql.append(" transaction = ").append("'").append(transaction).append("'");
+
+        List<StatReportDTO> list = new ArrayList<>();
+        if (StringUtils.isNotEmpty(transaction)) {
+            list = influxWriter.query(influxDbSql.toString(), StatReportDTO.class);
+        }
+        if (CollectionUtils.isEmpty(list)){
+            return null;
+        }
+        String ptConfig = reportResult.getPtConfig();
+        PtConfigExt ext = JSON.parseObject(ptConfig, PtConfigExt.class);
+        Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
+        if (configMap == null || configMap.isEmpty()) {
+            return null;
+        }
+        ThreadGroupConfigExt value = configMap.get(transaction);
+        if (value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3 || value.getSteps() == null) {
+            return null;
+        }
+        // 阶梯递增模式
+        Integer steps = value.getSteps();
+        Integer threadNum = value.getThreadNum();
+
+        List<String> rt = new ArrayList<>();
+        List<String> tps = new ArrayList<>();
+        List<String> concurrent = new ArrayList<>(steps);
+        for (Integer i = 1; i <= steps; i++) {
+            long startTime = reportResult.getStartTime().getTime();
+            int finalI = i;
+            List<BigDecimal> avgRtList = list.stream().filter(o -> o.getAvgRt() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= startTime * finalI
+                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < startTime * (finalI + 1)).map(StatReportDTO::getAvgRt)
+                    .collect(Collectors.toList());
+            List<BigDecimal> tpsList = list.stream().filter(o -> o.getTps() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= startTime * finalI
+                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < startTime * (finalI + 1)).map(StatReportDTO::getTps)
+                    .collect(Collectors.toList());
+            rt.add(getAvg(avgRtList));
+            tps.add(getAvg(tpsList));
+            concurrent.add(new BigDecimal(threadNum * i).divide(new BigDecimal(steps), 0, BigDecimal.ROUND_HALF_UP).toString());
+        }
+        if (CollectionUtils.isEmpty(concurrent)){
+            return null;
+        }
+
+        reportTrend.setConcurrent(concurrent);
+        reportTrend.setRt(rt);
+        reportTrend.setTps(tps);
+        return reportTrend;
+
+    }
+
+    private String getAvg(List<BigDecimal> list){
+        BigDecimal sum = new BigDecimal(0);
+        if (CollectionUtils.isEmpty(list)){
+            return "0";
+        }
+        for (BigDecimal b : list){
+            sum = sum.add(b);
+        }
+        return sum.divide(new BigDecimal(list.size()),0, BigDecimal.ROUND_HALF_UP).toString();
+    }
+
+    private String getTestPlanXpathMd5(String scriptNodeTree) {
+        if (StringUtils.isBlank(scriptNodeTree)) {
+            return null;
+        }
+        List<ScriptNode> currentNodeByType = JsonPathUtil.getCurrentNodeByType(scriptNodeTree,
+                NodeTypeEnum.TEST_PLAN.name());
+        if (CollectionUtils.isNotEmpty(currentNodeByType) && currentNodeByType.size() == 1) {
+            return currentNodeByType.get(0).getXpathMd5();
+        }
+        return null;
+    }
 }

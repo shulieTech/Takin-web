@@ -9,11 +9,7 @@ import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
 import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
-import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
-import io.shulie.takin.adapter.api.model.response.report.MetricesResponse;
-import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
-import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.adapter.api.model.response.report.*;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
@@ -178,4 +174,5 @@ public interface ReportService {
      */
     ScriptNodeSummaryBean queryNode(Long reportId, String xpathMd5, Double threadNum);
 
+    ThreadReportTrendResp queryReportTrendByThread(ReportTrendQueryReq reportTrendQuery);
 }

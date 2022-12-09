@@ -248,7 +248,7 @@ public class KafkaReceiveService implements InitializingBean {
 
                 @Override
                 public void fail(String errorMessage) {
-                    log.error("agent添加应用接口，接收kafka消息失败:{}", errorMessage);
+                    log.error("agent应用接口，接收kafka消息失败:{}", errorMessage);
                 }
             });
         });

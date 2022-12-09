@@ -41,5 +41,5 @@ public class SceneTaskStartInput extends ContextExt {
     /**
      * 是否定时
      */
-    private Boolean isTiming;
+    private Boolean isTiming = false;
 }

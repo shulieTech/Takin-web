@@ -43,4 +43,7 @@ public class ScriptDebugRequestListResponse {
     @ApiModelProperty("断言详情列表")
     private List<RequestAssertDetailVO> assertDetailList = Collections.emptyList();
 
+    @ApiModelProperty("总耗时")
+    private Long cost;
+
 }

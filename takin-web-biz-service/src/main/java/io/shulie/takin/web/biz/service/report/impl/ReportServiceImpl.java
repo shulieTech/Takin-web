@@ -552,7 +552,7 @@ public class ReportServiceImpl implements ReportService {
         StringBuilder influxDbSql = new StringBuilder();
         influxDbSql.append("select");
         influxDbSql.append(
-                " select time, avg_tps as tps , sum_rt as sumRt, count as totalRequest, active_threads as  avgConcurrenceNum");
+                " time, avg_tps as tps , sum_rt as sumRt, count as totalRequest, active_threads as  avgConcurrenceNum");
         influxDbSql.append(" from ");
         influxDbSql.append(
                 InfluxUtil.getMeasurement(reportResult.getJobId(), reportResult.getSceneId(),
@@ -573,7 +573,20 @@ public class ReportServiceImpl implements ReportService {
         if (configMap == null || configMap.isEmpty()) {
             return null;
         }
-        ThreadGroupConfigExt value = configMap.get(transaction);
+        //根据xpathMd5找到上级对应线程组的md5
+        Map<String, String> threadGroupChildMap = new HashMap<>();
+        List<ScriptNode> allThreadGroup = JsonPathUtil.getNodeListByType(reportResult.getScriptNodeTree(), NodeTypeEnum.THREAD_GROUP);
+        allThreadGroup.forEach(scriptNode -> {
+            threadGroupChildMap.put(scriptNode.getXpathMd5(), scriptNode.getXpathMd5());
+            List<ScriptNode> childControllers = JsonPathUtil.getChildControllers(reportResult.getScriptNodeTree(), scriptNode.getXpathMd5());
+            List<ScriptNode> childSamplers = JsonPathUtil.getChildSamplers(reportResult.getScriptNodeTree(), scriptNode.getXpathMd5());
+            childControllers.forEach(o -> threadGroupChildMap.put(o.getXpathMd5(), scriptNode.getXpathMd5()));
+            childSamplers.forEach(o -> threadGroupChildMap.put(o.getXpathMd5(), scriptNode.getXpathMd5()));
+        });
+        if (!threadGroupChildMap.containsKey(transaction)){
+            return null;
+        }
+        ThreadGroupConfigExt value = configMap.get(threadGroupChildMap.get(transaction));
         if (value == null || value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3 || value.getSteps() == null) {
             return null;
         }

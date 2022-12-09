@@ -84,7 +84,7 @@ public class AgentConfigClientImpl implements AgentConfigClient {
             //设置租户表示和环境编码
             queryDTO.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             queryDTO.setEnvCode(WebPluginUtils.traceEnvCode());
-            String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)),10000);
+            String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)),15000);
             if (StringUtils.isEmpty(responseEntity)) {
                 return PagingList.empty();
             }

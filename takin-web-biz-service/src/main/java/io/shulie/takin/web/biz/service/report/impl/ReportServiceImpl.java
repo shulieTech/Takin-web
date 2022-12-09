@@ -62,6 +62,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -551,10 +552,7 @@ public class ReportServiceImpl implements ReportService {
         StringBuilder influxDbSql = new StringBuilder();
         influxDbSql.append("select");
         influxDbSql.append(
-                " sum(count) as tempRequestCount,  mean(avg_tps) as tps , sum(sum_rt)/sum"
-                        + "(count) as "
-                        + "avgRt, sum(sa_count) as saCount, count(avg_rt) as recordCount ,mean(active_threads) as "
-                        + "avgConcurrenceNum ");
+                " select time, avg_tps as tps , sum_rt as sumRt, count as totalRequest, active_threads as  avgConcurrenceNum");
         influxDbSql.append(" from ");
         influxDbSql.append(
                 InfluxUtil.getMeasurement(reportResult.getJobId(), reportResult.getSceneId(),
@@ -566,7 +564,7 @@ public class ReportServiceImpl implements ReportService {
         if (StringUtils.isNotEmpty(transaction)) {
             list = influxWriter.query(influxDbSql.toString(), StatReportDTO.class);
         }
-        if (CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return null;
         }
         String ptConfig = reportResult.getPtConfig();
@@ -589,23 +587,26 @@ public class ReportServiceImpl implements ReportService {
         for (Integer i = 1; i <= steps; i++) {
             long startTime = reportResult.getStartTime().getTime();
             int finalI = i;
-            List<BigDecimal> avgRtList = list.stream().filter(o -> o.getAvgRt() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= startTime * finalI
-                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < startTime * (finalI + 1)).map(StatReportDTO::getAvgRt)
+            List<BigDecimal> sumRtList = list.stream().filter(o -> o.getSumRt() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= startTime * finalI
+                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < startTime * (finalI + 1)).map(StatReportDTO::getSumRt)
                     .collect(Collectors.toList());
+            long sumCount = list.stream().filter(o -> o.getTotalRequest() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= startTime * finalI
+                            && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < startTime * (finalI + 1)).mapToLong(StatReportDTO::getTotalRequest)
+                    .sum();
             List<BigDecimal> tpsList = list.stream().filter(o -> o.getTps() != null && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) >= startTime * finalI
                             && TimeUtil.fromInfluxDBTimeFormat(o.getTime()) < startTime * (finalI + 1)).map(StatReportDTO::getTps)
                     .collect(Collectors.toList());
-            rt.add(getAvg(avgRtList));
-            tps.add(getAvg(tpsList));
+            rt.add(getAvg(sumRtList, sumCount));
+            tps.add(getAvg(tpsList, null));
             concurrent.add(new BigDecimal(threadNum * i).divide(new BigDecimal(steps), 0, BigDecimal.ROUND_HALF_UP).toString());
         }
-        if (CollectionUtils.isEmpty(concurrent)){
+        if (CollectionUtils.isEmpty(concurrent)) {
             return null;
         }
         reportTrend.setConcurrent(concurrent);
         reportTrend.setRt(rt);
         reportTrend.setTps(tps);
-        if (CollectionUtils.isNotEmpty(reportTrend.getConcurrent()) && CollectionUtils.isNotEmpty(reportTrend.getRt()) && !"0".equals(reportTrend.getRt().get(0))){
+        if (CollectionUtils.isNotEmpty(reportTrend.getConcurrent()) && CollectionUtils.isNotEmpty(reportTrend.getRt()) && !"0".equals(reportTrend.getRt().get(0))) {
             redisClientUtil.setString(key, JSON.toJSONString(reportTrend));
             redisClientUtil.expire(key, 1000 * 60 * 120);
         }
@@ -613,15 +614,18 @@ public class ReportServiceImpl implements ReportService {
 
     }
 
-    private String getAvg(List<BigDecimal> list){
+    private String getAvg(List<BigDecimal> list, Long count) {
         BigDecimal sum = new BigDecimal(0);
-        if (CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return "0";
         }
-        for (BigDecimal b : list){
+        for (BigDecimal b : list) {
             sum = sum.add(b);
         }
-        return sum.divide(new BigDecimal(list.size()),0, BigDecimal.ROUND_HALF_UP).toString();
+        if (count != null && count != 0) {
+            return sum.divide(new BigDecimal(count), 0, RoundingMode.HALF_UP).toString();
+        }
+        return sum.divide(new BigDecimal(list.size()), 0, RoundingMode.HALF_UP).toString();
     }
 
     private String getTestPlanXpathMd5(String scriptNodeTree) {

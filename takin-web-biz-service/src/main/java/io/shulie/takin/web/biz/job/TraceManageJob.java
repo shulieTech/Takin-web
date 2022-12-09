@@ -59,7 +59,7 @@ public class TraceManageJob implements SimpleJob {
             return;
         }
         Map<Tenant, List<TraceManageDeployResult>> map = deployResults.stream().collect(
-            Collectors.groupingBy(deploy -> new Tenant(deploy.getUserId(), deploy.getEnvCode())));
+            Collectors.groupingBy(deploy -> new Tenant(deploy.getTenantId(), deploy.getEnvCode())));
         for (Entry<Tenant, List<TraceManageDeployResult>> entry : map.entrySet()) {
             // 分布式锁
             Tenant key = entry.getKey();

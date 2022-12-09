@@ -752,7 +752,7 @@ public class ScriptDebugServiceImpl extends AbstractIndicators implements Script
             response.setRequestAt(LocalDateTimeUtil.of(dto.getStartTime()));
             response.setRequestBody(dto.getRequest());
             response.setResponseBody(dto.getResponse());
-            response.setCost(dto.getCost());
+            response.setTotalRt(dto.getCost());
             // resultCode 判断, 赋值
             ScriptDebugRequestListResponse requestListStatusResponse = ScriptDebugUtil.getRequestListStatusResponse(dto.getResultCode(), dto.getAssertResult());
 

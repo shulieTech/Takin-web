@@ -84,14 +84,14 @@ public class AgentConfigClientImpl implements AgentConfigClient {
             //设置租户表示和环境编码
             queryDTO.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             queryDTO.setEnvCode(WebPluginUtils.traceEnvCode());
-            String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)));
+            String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)),10000);
             if (StringUtils.isEmpty(responseEntity)) {
                 return PagingList.empty();
             }
             AmdbResult<List<AgentConfigDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
                 new cn.hutool.core.lang.TypeReference<AmdbResult<List<AgentConfigDTO>>>() {}, true);
             if (amdbResponse == null || !amdbResponse.getSuccess()) {
-                log.error("前往amdb查询配置生效列表返回异常,响应信息：{}", JSONUtil.toJsonStr(amdbResponse));
+//                log.error("前往amdb查询配置生效列表返回异常,响应信息：{}", JSONUtil.toJsonStr(amdbResponse));
                 return PagingList.empty();
             }
             List<AgentConfigDTO> data = amdbResponse.getData();

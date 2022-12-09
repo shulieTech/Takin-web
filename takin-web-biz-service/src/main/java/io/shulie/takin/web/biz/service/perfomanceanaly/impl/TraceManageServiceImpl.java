@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -50,6 +53,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
@@ -64,11 +68,6 @@ public class TraceManageServiceImpl implements TraceManageService {
     private TraceManageDAO traceManageDAO;
     @Autowired
     private TraceManageSyncService traceManageSyncService;
-    @Autowired
-    private ReportService reportService;
-    @Autowired
-    private AgentCommandFactory agentCommandFactory;
-
     @Override
     public TraceManageCreateResponse createTraceManage(TraceManageCreateRequest traceManageCreateRequest) throws Exception {
         TraceManageCreateResponse traceManageCreateResponse = new TraceManageCreateResponse();
@@ -94,7 +93,7 @@ public class TraceManageServiceImpl implements TraceManageService {
         //不管数据库有没有这个数据，当前新增一条追踪数据
         if (traceManageCreateRequest.getTraceManageDeployId() != null) {
             TraceManageDeployResult traceManageDeployResult = traceManageDAO.queryTraceManageDeployById(
-                traceManageCreateRequest.getTraceManageDeployId());
+                    traceManageCreateRequest.getTraceManageDeployId());
             if (traceManageDeployResult == null) {
                 throw new TakinWebException(ExceptionCode.TRACE_MANAGE_VALID_ERROR, "找不到对应的追踪方法实例！");
             }
@@ -109,7 +108,7 @@ public class TraceManageServiceImpl implements TraceManageService {
                 updateParam.setStatus(TraceManageStatusEnum.TRACE_RUNNING.getCode());
                 traceManageDAO.updateTraceManageDeploy(updateParam);
                 createZkTraceManage(agentId, traceManageDeployResult.getSampleId(),
-                    traceManageDeployResult.getTraceDeployObject());
+                        traceManageDeployResult.getTraceDeployObject());
                 traceManageCreateResponse.setSampleId(sampleId);
             }
 
@@ -127,20 +126,29 @@ public class TraceManageServiceImpl implements TraceManageService {
         }
         return traceManageCreateResponse;
     }
+    @Autowired
+    private ReportService reportService;
+
+    @Autowired
+    private AgentCommandFactory agentCommandFactory;
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     /**
      * 构建zk数据请求
      */
     private void createZkTraceManage(String agentId, String sampleId, String traceDeployObject) throws Exception {
-        // agent交互通道
-        Map<String, Object> param = Maps.newHashMap();
-        param.put("sampleId", sampleId);
-        String[] split = StringUtils.split(traceDeployObject, "#");
-        param.put("class", split[0]);
-        param.put("method", split[1]);
-        param.put("limits", 100);
-        param.put("wait", 1000 * 2 * 60L);
-        agentCommandFactory.send(AgentCommandEnum.PULL_AGENT_INFO_TRACE_COMMAND, agentId, param);
+        executorService.submit(() -> {
+            // agent交互通道
+            Map<String, Object> param = Maps.newHashMap();
+            param.put("sampleId", sampleId);
+            String[] split = StringUtils.split(traceDeployObject, "#");
+            param.put("class", split[0]);
+            param.put("method", split[1]);
+            param.put("limits", 100);
+            param.put("wait", 1000 * 2 * 60L);
+            agentCommandFactory.send(AgentCommandEnum.PULL_AGENT_INFO_TRACE_COMMAND, agentId, param);
+        });
     }
 
     private String createSampleId(String param) {

@@ -584,8 +584,8 @@ public class ReportServiceImpl implements ReportService {
         for (String num : concurrent){
             ScriptNodeSummaryBean scriptNodeSummaryBean = this.queryNode(reportTrendQuery.getReportId(), threadGroupChildMap.get(reportTrendQuery.getXpathMd5()), Double.parseDouble(num));
             ScriptNodeSummaryBean currentValue = getCurrentValue(scriptNodeSummaryBean, reportTrendQuery.getXpathMd5());
-            rt.add(currentValue.getAvgRt() != null ? currentValue.getAvgRt().getResult().toString() : "0");
-            tps.add(currentValue.getTps() != null ? currentValue.getTps().getResult().toString() : "0");
+            rt.add(currentValue.getAvgRt() != null && currentValue.getAvgRt().getResult() != null ? currentValue.getAvgRt().getResult().toString() : "0");
+            tps.add(currentValue.getTps() != null && currentValue.getTps().getResult() != null ? currentValue.getTps().getResult().toString() : "0");
         }
         reportTrend.setRt(rt);
         reportTrend.setTps(tps);

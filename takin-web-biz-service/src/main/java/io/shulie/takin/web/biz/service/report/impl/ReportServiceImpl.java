@@ -582,9 +582,10 @@ public class ReportServiceImpl implements ReportService {
         }
         reportTrend.setConcurrent(concurrent);
         for (String num : concurrent){
-            ScriptNodeSummaryBean scriptNodeSummaryBean = this.queryNode(reportTrendQuery.getReportId(), reportTrendQuery.getXpathMd5(), Double.parseDouble(num));
-            rt.add(scriptNodeSummaryBean.getAvgRt() != null ? scriptNodeSummaryBean.getAvgRt().getResult().toString() : "0");
-            tps.add(scriptNodeSummaryBean.getTps() != null ? scriptNodeSummaryBean.getTps().getResult().toString() : "0");
+            ScriptNodeSummaryBean scriptNodeSummaryBean = this.queryNode(reportTrendQuery.getReportId(), threadGroupChildMap.get(reportTrendQuery.getXpathMd5()), Double.parseDouble(num));
+            ScriptNodeSummaryBean currentValue = getCurrentValue(scriptNodeSummaryBean, reportTrendQuery.getXpathMd5());
+            rt.add(currentValue.getAvgRt() != null ? currentValue.getAvgRt().getResult().toString() : "0");
+            tps.add(currentValue.getTps() != null ? currentValue.getTps().getResult().toString() : "0");
         }
         reportTrend.setRt(rt);
         reportTrend.setTps(tps);
@@ -596,29 +597,15 @@ public class ReportServiceImpl implements ReportService {
 
     }
 
-    private String getAvg(List<BigDecimal> list, Long count) {
-        BigDecimal sum = new BigDecimal(0);
-        if (CollectionUtils.isEmpty(list)) {
-            return "0";
+    private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5){
+        if (scriptNodeSummaryBean.getXpathMd5().equals(xpathMd5)){
+            return scriptNodeSummaryBean;
         }
-        for (BigDecimal b : list) {
-            sum = sum.add(b);
+        if (CollectionUtils.isNotEmpty(scriptNodeSummaryBean.getChildren())){
+            for (ScriptNodeSummaryBean child : scriptNodeSummaryBean.getChildren()){
+                return getCurrentValue(child, xpathMd5);
+            }
         }
-        if (count != null && count != 0) {
-            return sum.divide(new BigDecimal(count), 0, RoundingMode.HALF_UP).toString();
-        }
-        return sum.divide(new BigDecimal(list.size()), 0, RoundingMode.HALF_UP).toString();
-    }
-
-    private String getTestPlanXpathMd5(String scriptNodeTree) {
-        if (StringUtils.isBlank(scriptNodeTree)) {
-            return null;
-        }
-        List<ScriptNode> currentNodeByType = JsonPathUtil.getCurrentNodeByType(scriptNodeTree,
-                NodeTypeEnum.TEST_PLAN.name());
-        if (CollectionUtils.isNotEmpty(currentNodeByType) && currentNodeByType.size() == 1) {
-            return currentNodeByType.get(0).getXpathMd5();
-        }
-        return null;
+        return new ScriptNodeSummaryBean();
     }
 }

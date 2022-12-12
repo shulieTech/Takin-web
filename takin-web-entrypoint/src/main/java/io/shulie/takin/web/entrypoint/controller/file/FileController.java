@@ -1,20 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.file;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
@@ -31,14 +16,16 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -56,7 +43,7 @@ public class FileController {
     @Value("${takin.data.path}")
     private String uploadPath;
 
-    @Value("${takin.data.allow.file.type:''}")
+    @Value("${takin.data.allow.file.type:}")
     private String fileType;
 
     @Resource
@@ -105,6 +92,7 @@ public class FileController {
         return response;
     }
 
+
     @PostMapping("/upload")
     @ApiOperation(value = "文件上传")
     public List<UploadResponse> upload(List<MultipartFile> file) {
@@ -116,7 +104,7 @@ public class FileController {
                 throw new RuntimeException("上传文件不能为空");
             }
             // 类型检测
-            if (StringUtils.isNotBlank(fileType)) {
+            if (StringUtils.isNotEmpty(fileType)) {
                 // 用逗号隔开
                 List<String> fileTypes = Arrays.asList(fileType.split(","));
                 Boolean flag = false;

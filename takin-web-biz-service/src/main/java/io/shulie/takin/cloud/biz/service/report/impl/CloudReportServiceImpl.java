@@ -25,7 +25,6 @@ import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import com.pamirs.takin.cloud.entity.domain.entity.report.Report;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.WarnDetail;
-import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.common.DistributeBean;
@@ -95,7 +94,6 @@ import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
-import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
@@ -1233,7 +1231,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     reportBusinessActivityDetail.getBindRef());
             if (data == null) {
                 //如果有一个业务活动没有找到对应的数据，则认为压测不通过
-                totalPassFlag = false;
+                //totalPassFlag = false;
                 log.warn("没有找到匹配的压测数据：场景ID[{}],报告ID:[{}],业务活动:[{}]", sceneId, reportId,
                         reportBusinessActivityDetail.getBindRef());
                 continue;

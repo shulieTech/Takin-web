@@ -303,6 +303,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
          */
         List<ScriptNode> childNodes = JmxUtil.getChildNodesByFilterFunc(node,
                 n -> sourceMap.containsKey(n.getXpathMd5()));
+        // 解决统计事务控制器 计算次数问题
         final List<PressureOutput> subPressures = Lists.newArrayList();
         if (NodeTypeEnum.TEST_PLAN == node.getType() || CollUtil.isEmpty(childNodes)) {
             subPressures.addAll(childPressures);

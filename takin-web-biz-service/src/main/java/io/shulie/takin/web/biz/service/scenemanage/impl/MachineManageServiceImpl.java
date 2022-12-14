@@ -491,9 +491,21 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 log.info("启动容器日志：" + dockerRunExec);
 
                 //替换配置文件
-                String dockerReplaceAndRun = dockerReplaceAndRunCmd + " && sed -i 's/LOCAL_PASSWORD/" + des.decryptStr(manageDAOById.getPassword()) + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/TAKIN_LITE_IP/" + benchmarkServerIp + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/TAKIN_LITE_PORT/" + benchmarkServerPort + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/LOCALHOST_IP/" + manageDAOById.getMachineIp() + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/USER_APPKEY/" + benchmarkUserAppKey + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/SUITE_NAME/" + manageDAOById.getBenchmarkSuiteName() + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/TENANT_ID/" + WebPluginUtils.traceTenantId() + "/' ./pressure-engine/config/application-engine.yml && " + "sed -i 's/ENV_CODE/" + WebPluginUtils.traceEnvCode() + "/' ./pressure-engine/config/application-engine.yml ";
+                String dockerReplaceAndRun = dockerReplaceAndRunCmd + " && sed -i 's/LOCAL_PASSWORD/"
+                        + des.decryptStr(manageDAOById.getPassword()) + "/' ./pressure-engine/config/application-engine.yml && "
+                        + "sed -i 's/TAKIN_LITE_IP/" + benchmarkServerIp + "/' ./pressure-engine/config/application-engine.yml && "
+                        + "sed -i 's/TAKIN_LITE_PORT/" + benchmarkServerPort + "/' ./pressure-engine/config/application-engine.yml && "
+                        + "sed -i 's/LOCALHOST_IP/" + manageDAOById.getMachineIp() + "/' ./pressure-engine/config/application-engine.yml && "
+                        + "sed -i 's/USER_APPKEY/" + benchmarkUserAppKey + "/' ./pressure-engine/config/application-engine.yml && "
+                        + "sed -i 's/SUITE_NAME/" + manageDAOById.getBenchmarkSuiteName() + "/' ./pressure-engine/config/application-engine.yml && "
+                        + "sed -i 's/TENANT_ID/" + WebPluginUtils.traceTenantId() + "/' ./pressure-engine/config/application-engine.yml && "
+                        + "sed -i 's/ENV_CODE/" + WebPluginUtils.traceEnvCode() + "/' ./pressure-engine/config/application-engine.yml ";
                 //替换并启动
-                dockerReplaceAndRun = dockerReplaceAndRun + " && rm -f pressure-engine.zip && zip -r pressure-engine.zip ./pressure-engine && " + "docker cp pressure-engine.zip " + manageDAOById.getBenchmarkSuiteName() + ":/data/pressure-engine.zip && rm -f pressure-engine.zip && rm -rf ./pressure-engine " + "&& docker exec " + manageDAOById.getBenchmarkSuiteName() + " /bin/bash -c 'cd /data && mv pressure-engine pressure-engine_bak " + "&& unzip pressure-engine.zip && cd pressure-engine && sh start.sh'";
+                dockerReplaceAndRun = dockerReplaceAndRun + " && rm -f pressure-engine.zip && zip -r pressure-engine.zip ./pressure-engine && "
+                        + "docker cp pressure-engine.zip " + manageDAOById.getBenchmarkSuiteName()
+                        + ":/data/pressure-engine.zip && rm -f pressure-engine.zip && rm -rf ./pressure-engine "
+                        + "&& docker exec " + manageDAOById.getBenchmarkSuiteName() + " /bin/bash -c 'cd /data && mv pressure-engine pressure-engine_bak "
+                        + "&& unzip pressure-engine.zip && cd pressure-engine && sh start.sh'";
                 deployStatusMap.put(request.getId(), "启动服务");
                 String replaceAndRunExec = sshInitUtil.execute(dockerReplaceAndRun);
                 log.info("替换配置并启动服务日志：" + replaceAndRunExec);
@@ -508,7 +520,8 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         Thread.sleep(3000);
                         List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(headerMap);
                         if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
-                            long count = pressureMachineDTOS.stream().filter(o -> manageDAOById.getMachineIp().equals(o.getConfigIp()) && manageDAOById.getBenchmarkSuiteName().trim().equals(o.getTypeMachine().trim())).count();
+                            long count = pressureMachineDTOS.stream()
+                                    .filter(o -> manageDAOById.getMachineIp().equals(o.getConfigIp()) && manageDAOById.getBenchmarkSuiteName().trim().equals(o.getTypeMachine().trim())).count();
                             if (count > 0) {
                                 deployStatusMap.put(request.getId(), "启动成功");
                                 log.info("启动成功，结束监听");

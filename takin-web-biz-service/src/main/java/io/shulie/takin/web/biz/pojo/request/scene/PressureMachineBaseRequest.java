@@ -12,4 +12,6 @@ public class PressureMachineBaseRequest implements Serializable {
     private Long id;
 
     private String benchmarkSuiteName;
+
+    private String tag;
 }

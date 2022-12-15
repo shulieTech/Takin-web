@@ -1,59 +1,44 @@
 package io.shulie.takin.web.entrypoint.controller.agent;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import cn.hutool.core.collection.ListUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-
-import com.pamirs.takin.common.ResponseOk;
 import com.pamirs.takin.common.ResponseError;
-import com.pamirs.takin.entity.domain.vo.JarVersionVo;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import com.pamirs.takin.entity.domain.vo.TUploadNeedVo;
-import com.pamirs.takin.entity.domain.vo.TUploadInterfaceVo;
+import com.pamirs.takin.common.ResponseOk;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.vo.JarVersionVo;
+import com.pamirs.takin.entity.domain.vo.TUploadInterfaceVo;
+import com.pamirs.takin.entity.domain.vo.TUploadNeedVo;
 import io.shulie.takin.channel.bean.CommandPacket;
-import io.shulie.takin.cloud.model.request.job.pressure.MetricsInfo;
-import io.shulie.takin.sdk.kafka.MessageReceiveCallBack;
-import io.shulie.takin.sdk.kafka.MessageReceiveService;
-import io.shulie.takin.sdk.kafka.entity.MessageEntity;
-import io.shulie.takin.sdk.kafka.impl.KafkaSendServiceFactory;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.biz.service.ConfCenterService;
+import io.shulie.takin.web.biz.service.UploadInterfaceService;
+import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
+import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
+import io.shulie.takin.web.biz.service.perfomanceanaly.TraceManageService;
+import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.biz.utils.XmlUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.AgentUrls;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.biz.service.ConfCenterService;
-import io.shulie.takin.web.common.exception.ExceptionCode;
-import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.biz.service.UploadInterfaceService;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
-import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
+import io.shulie.takin.web.common.exception.ExceptionCode;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
-import io.shulie.takin.web.biz.service.perfomanceanaly.TraceManageService;
-import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
-import lombok.extern.slf4j.Slf4j;
 import io.swagger.annotations.Api;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.http.MediaType;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author TODO

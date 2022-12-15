@@ -1229,27 +1229,27 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             //统计某个业务活动的数据
             StatReportDTO data = statReport(jobId, sceneId, reportId, tenantId,
                     reportBusinessActivityDetail.getBindRef());
-            if (data == null) {
-                //如果有一个业务活动没有找到对应的数据，则认为压测不通过
-                //totalPassFlag = false;
-                log.warn("没有找到匹配的压测数据：场景ID[{}],报告ID:[{}],业务活动:[{}]", sceneId, reportId,
-                        reportBusinessActivityDetail.getBindRef());
-                continue;
-            }
+
             //统计RT分布
             // TODO：调用Cloud接口
             Map<String, String> rtMap = reportEventService.queryAndCalcRtDistribute(tableName,
                     reportBusinessActivityDetail.getBindRef());
             //匹配报告业务的活动
-            reportBusinessActivityDetail.setAvgConcurrenceNum(data.getAvgConcurrenceNum());
-            reportBusinessActivityDetail.setMaxRt(data.getMaxRt());
-            reportBusinessActivityDetail.setMaxTps(data.getMaxTps());
-            reportBusinessActivityDetail.setMinRt(data.getMinRt());
-            reportBusinessActivityDetail.setTps(data.getTps());
-            reportBusinessActivityDetail.setRt(data.getAvgRt());
-            reportBusinessActivityDetail.setSa(data.getSa());
-            reportBusinessActivityDetail.setRequest(data.getTotalRequest());
-            reportBusinessActivityDetail.setSuccessRate(data.getSuccessRate());
+            if (data != null) {
+                //如果有一个业务活动没有找到对应的数据，则认为压测不通过
+                //totalPassFlag = false;
+                log.warn("没有找到匹配的压测数据：场景ID[{}],报告ID:[{}],业务活动:[{}]", sceneId, reportId,
+                        reportBusinessActivityDetail.getBindRef());
+                reportBusinessActivityDetail.setAvgConcurrenceNum(data.getAvgConcurrenceNum());
+                reportBusinessActivityDetail.setMaxRt(data.getMaxRt());
+                reportBusinessActivityDetail.setMaxTps(data.getMaxTps());
+                reportBusinessActivityDetail.setMinRt(data.getMinRt());
+                reportBusinessActivityDetail.setTps(data.getTps());
+                reportBusinessActivityDetail.setRt(data.getAvgRt());
+                reportBusinessActivityDetail.setSa(data.getSa());
+                reportBusinessActivityDetail.setRequest(data.getTotalRequest());
+                reportBusinessActivityDetail.setSuccessRate(data.getSuccessRate());
+            }
             if (MapUtils.isNotEmpty(rtMap)) {
                 reportBusinessActivityDetail.setRtDistribute(JSON.toJSONString(rtMap));
             }

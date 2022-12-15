@@ -214,7 +214,7 @@ public class ConfCenterService extends CommonService {
         addApplicationToLinkDetection(tApplicationMnt);
         //应用自动上报需要设置插件管理的redis影子key默认值
         addPluginsConfig(tApplicationMnt);
-
+        applicationContext.publishEvent(new ShadowConfigRefreshEvent(tApplicationMnt.getApplicationName()));
     }
 
     /**

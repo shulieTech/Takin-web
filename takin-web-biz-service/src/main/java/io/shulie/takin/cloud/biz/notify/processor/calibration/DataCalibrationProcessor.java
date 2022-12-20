@@ -149,7 +149,12 @@ public class DataCalibrationProcessor extends AbstractIndicators
         summaryService.calcReportSummay(reportId);
         StatReportDTO statReport = cloudReportService.statReport(jobId, sceneId, reportId, tenantId, transaction);
         ReportUpdateParam updateParam = new ReportUpdateParam();
-        if (Objects.nonNull(statReport)) {
+        try {
+            Thread.sleep(2000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (Objects.nonNull(statReport)){
             log.info("cloud订正压测报告数据成功:jobId=[{}], requestCount=[{}]", jobId, statReport.getTotalRequest());
             updateParam.setTotalRequest(statReport.getTotalRequest());
             updateParam.setAvgRt(statReport.getAvgRt());

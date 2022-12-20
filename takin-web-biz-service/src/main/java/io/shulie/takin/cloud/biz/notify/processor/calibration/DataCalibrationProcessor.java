@@ -147,9 +147,24 @@ public class DataCalibrationProcessor extends AbstractIndicators
             getReportFeatures(report, "");
         }
         summaryService.calcReportSummay(reportId);
+        StatReportDTO statReportMetrics = cloudReportService.statReportMetrics(jobId, sceneId, reportId, tenantId, transaction);
         StatReportDTO statReport = cloudReportService.statReport(jobId, sceneId, reportId, tenantId, transaction);
         ReportUpdateParam updateParam = new ReportUpdateParam();
-        if (Objects.nonNull(statReport)) {
+        int count = 0;
+        while (Objects.isNull(statReport) || !Objects.equals(statReportMetrics.getTotalRequest(), statReport.getTotalRequest())) {
+            statReport = cloudReportService.statReport(jobId, sceneId, reportId, tenantId, transaction);
+            count ++;
+            //存在可能pressure表清理之后，第二次写入还没写完的情况
+            if (count > 2 || (Objects.nonNull(statReport) && Objects.equals(statReportMetrics.getTotalRequest(), statReport.getTotalRequest()))){
+                break;
+            }
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if (Objects.nonNull(statReport)){
             log.info("cloud订正压测报告数据成功:jobId=[{}], requestCount=[{}]", jobId, statReport.getTotalRequest());
             updateParam.setTotalRequest(statReport.getTotalRequest());
             updateParam.setAvgRt(statReport.getAvgRt());

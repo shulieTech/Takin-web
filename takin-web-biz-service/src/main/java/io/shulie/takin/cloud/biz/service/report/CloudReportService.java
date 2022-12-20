@@ -265,4 +265,6 @@ public interface CloudReportService {
     List<ReportActivityResp> getActivities(List<Long> sceneIds);
 
 	ReportDetailOutput getByResourceId(String resourceId);
+
+    StatReportDTO statReportMetrics(Long jobId, Long sceneId, Long reportId, Long tenantId, String transaction);
 }

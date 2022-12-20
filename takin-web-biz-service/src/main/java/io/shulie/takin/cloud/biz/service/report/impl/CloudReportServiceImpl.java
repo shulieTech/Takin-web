@@ -1647,7 +1647,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 + "sum(count)                   as tempRequestCount,"
                 + "sum(fail_count)              as failRequest,"
                 + "min(min_rt)                  as minRt,"
-                + "max(max_rt)                  as maxRt,"
+                + "max(max_rt)                  as maxRt"
                 + " from "
                 + InfluxUtil.getMetricsMeasurement(jobId, sceneId, reportId, tenantId)
                 + " where transaction = '" + transaction + "'";

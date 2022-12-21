@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -116,6 +117,7 @@ public class CloudReportApiImpl implements CloudReportApi {
             } else {
                 data = cloudReportService.queryReportTrend(req);
                 redisClientUtil.setString(key, JSON.toJSONString(data));
+                redisClientUtil.expire(key, 2, TimeUnit.MINUTES);
             }
             return data;
         } catch (Exception e) {

@@ -135,15 +135,15 @@
 
     <distributionManagement>
         <repository>
-            <id>${releases.id}</id>
-            <name>${releases.name}</name>
-            <url>${releases.url}</url>
+            <id>releases</id>
+            <name>releases</name>
+            <url>http://ccp.tianti.tg.unicom.local/artifactory/tyhxyf-maven-releases-local</url>
         </repository>
         <snapshotRepository>
-            <id>${snapshots.id}</id>
-            <name>${snapshots.name}</name>
-            <url>${snapshots.url}</url>
+            <id>snapshots</id>
+            <name>snapshots</name>
+            <url>http://ccp.tianti.tg.unicom.local/artifactory/tyhxyf-maven-snapshots-local</url>
         </snapshotRepository>
     </distributionManagement>
-
+    
 </project>

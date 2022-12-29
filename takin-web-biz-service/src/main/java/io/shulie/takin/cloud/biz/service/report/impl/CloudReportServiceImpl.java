@@ -1236,8 +1236,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     reportBusinessActivityDetail.getBindRef());
             //匹配报告业务的活动
             if (data != null) {
-                //如果有一个业务活动没有找到对应的数据，则认为压测不通过
-                //totalPassFlag = false;
+                // 有数据则赋值
                 log.warn("没有找到匹配的压测数据：场景ID[{}],报告ID:[{}],业务活动:[{}]", sceneId, reportId,
                         reportBusinessActivityDetail.getBindRef());
                 reportBusinessActivityDetail.setAvgConcurrenceNum(data.getAvgConcurrenceNum());

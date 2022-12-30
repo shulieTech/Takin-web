@@ -1,7 +1,12 @@
 FROM 10.172.49.246/skyeye-platform/stresstest/base:1.0.0
 WORKDIR /data/apps/takin-web
 COPY takin-web-app/target/takin-web-5.10.2.2.jar /data/apps/takin-web/takin-web.jar
-COPY plugins/ /data/apps/takin-web/plugins/
+COPY /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/ee-pull/takin-web-ee-plugin/takin-web-ee-plugin-tenant-module/target/takin-web-ee-plugin-*.jar /data/apps/takin-web/plugins/
+COPY /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/ee-pull/takin-web-ee-plugin/takin-web-ee-plugin-user-module/target/takin-web-ee-plugin-*.jar /data/apps/takin-web/plugins/
+COPY /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/ee-pull/takin-web-ee-plugin/takin-web-ee-plugin-operation-log-module/target/takin-web-ee-plugin-*.jar /data/apps/takin-web/plugins/
+COPY /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/ee-pull/takin-web-ee-plugin/takin-web-ee-plugin-app-module/target/takin-web-ee-plugin-*.jar /data/apps/takin-web/plugins/
+COPY /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/ee-pull/takin-web-ee-plugin/takin-web-ee-plugin-report-module/target/takin-web-ee-plugin-*.jar /data/apps/takin-web/plugins/
+COPY /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/ee-pull/takin-web-ee-plugin/takin-web-ee-plugin-asset-module/target/takin-web-ee-plugin-*.jar /data/apps/takin-web/plugins/
 COPY doc/test/msyh.ttf /data/apps/takin-web/config/fonts/msyh.ttf
 COPY doc/test/dept_example.csv /data/apps/takin-web/config/file/example/
 COPY doc/test/example.csv /data/apps/takin-web/config/file/example/

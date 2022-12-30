@@ -6,4 +6,3 @@ COPY doc/test/msyh.ttf /data/apps/takin-web/config/fonts/msyh.ttf
 COPY doc/test/dept_example.csv /data/apps/takin-web/config/file/example/
 COPY doc/test/example.csv /data/apps/takin-web/config/file/example/
 COPY doc/test/application.properties /data/apps/takin-web/config/application.properties
-

@@ -43,7 +43,7 @@
         <!-- biz version -->
         <takin.web.version>takin-web-5.10.2.2</takin.web.version>
         <takin.common.version>common-2.0.2-SNAPSHOT</takin.common.version>
-        <command.channel>common-2.0.0-SNAPSHOT</command.channel>
+        <command.channel>common-2.0.2-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.6.2</pardar.log.protocol.version>
         <instrument.core.version>1.0.0</instrument.core.version>
 

@@ -8,19 +8,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import cn.hutool.json.JSON;
-import com.jayway.jsonpath.JsonPath;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.*;
-import io.shulie.takin.web.data.model.mysql.SceneEntity;
-import io.shulie.takin.web.data.result.linkmange.SceneResult;
+
 import lombok.extern.slf4j.Slf4j;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import net.minidev.json.JSONArray;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.apache.commons.collections4.CollectionUtils;
 

@@ -425,6 +425,12 @@
             <version>2.1.2</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>io.shulie.takin.plugin.framework</groupId>
+            <artifactId>takin-plugin-framework-core</artifactId>
+            <version>1.0.3</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 

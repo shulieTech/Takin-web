@@ -77,7 +77,16 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_interface_type_config",
         "t_remote_call_config",
         "t_middleware_type",
-        "t_tro_version"
+        "t_tro_version",
+        "t_ecloud_default_region",
+        "t_ecloud_buy_failed_record",
+        "t_ecloud_enterprise",
+        "t_ecloud_machine_list",
+        "t_ecloud_order_record",
+        "t_ecloud_order_record_detail",
+        "t_ecloud_package",
+        "t_ecloud_user",
+        "t_ecloud_tenant_package"
     };
 
     private String[] tableArrWithoutEnvCode = new String[] {
@@ -112,7 +121,16 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_interface_type_config",
         "t_middleware_type",
         "t_tro_version",
-        "t_global_scene_manage"
+        "t_global_scene_manage",
+        "t_ecloud_default_region",
+        "t_ecloud_buy_failed_record",
+        "t_ecloud_enterprise",
+        "t_ecloud_machine_list",
+        "t_ecloud_order_record",
+        "t_ecloud_order_record_detail",
+        "t_ecloud_package",
+        "t_ecloud_user",
+        "t_ecloud_tenant_package"
     };
 
     private String[] tableArrWithoutUserId = new String[] {
@@ -146,7 +164,16 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_interface_type_config",
         "t_remote_call_config",
         "t_middleware_type",
-        "t_tro_version"
+        "t_tro_version",
+        "t_ecloud_default_region",
+        "t_ecloud_buy_failed_record",
+        "t_ecloud_enterprise",
+        "t_ecloud_machine_list",
+        "t_ecloud_order_record",
+        "t_ecloud_order_record_detail",
+        "t_ecloud_package",
+        "t_ecloud_user",
+        "t_ecloud_tenant_package"
     };
 
     /**

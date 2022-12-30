@@ -16,12 +16,14 @@ import io.shulie.takin.web.ext.api.agentupgradeonline.AgentHeartbeatExtApi;
 import io.shulie.takin.web.ext.api.auth.WebDataAuthExtApi;
 import io.shulie.takin.web.ext.api.auth.WebUserAuthExtApi;
 import io.shulie.takin.web.ext.api.e2e.InspectionExtApi;
+import io.shulie.takin.web.ext.api.ecloud.WebOpenEcloudExtApi;
 import io.shulie.takin.web.ext.api.tenant.WebTenantExtApi;
 import io.shulie.takin.web.ext.api.user.WebUserExtApi;
 import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.ecloud.TenantPackageInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
@@ -60,6 +62,7 @@ public class WebPluginUtils {
     private static AgentHeartbeatExtApi agentHeartbeatExtApi;
     public static InspectionExtApi inspectionExtApi;
     private static WebTenantExtApi tenantExtApi;
+    private static WebOpenEcloudExtApi openEcloudExtApi;
 
     static PluginManager pluginManager;
 
@@ -72,6 +75,7 @@ public class WebPluginUtils {
         agentHeartbeatExtApi = pluginManager.getExtension(AgentHeartbeatExtApi.class);
         inspectionExtApi = pluginManager.getExtension(InspectionExtApi.class);
         tenantExtApi = pluginManager.getExtension(WebTenantExtApi.class);
+        openEcloudExtApi = pluginManager.getExtension(WebOpenEcloudExtApi.class);
     }
 
     @AllArgsConstructor
@@ -753,4 +757,27 @@ public class WebPluginUtils {
         envs.add(env);
         return envs;
     }
+
+    //********************************移动云开放云市场模块**********************************//
+
+    /**
+     * 根据租户Id 查询用户套餐信息
+     * @param tenantId
+     * @return
+     */
+    private static TenantPackageInfoExt getTenantPackage(Long tenantId) {
+        if(openEcloudExtApi != null){
+            return openEcloudExtApi.getTenantPackageInfo(tenantId);
+        }
+        return null;
+    }
+
+    private static void reduceTimesOfCustomer(Long tenantPackageId) {
+        if(openEcloudExtApi != null){
+            openEcloudExtApi.reduceTimesOfCustomer(tenantPackageId);
+        }
+    }
+
+    //********************************移动云开放云市场模块**********************************//
+
 }

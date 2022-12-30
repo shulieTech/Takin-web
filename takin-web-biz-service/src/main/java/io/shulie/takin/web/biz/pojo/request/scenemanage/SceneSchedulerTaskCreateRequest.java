@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.validation.constraints.NotNull;
 
 import io.shulie.takin.web.ext.entity.UserCommonExt;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -22,6 +23,9 @@ public class SceneSchedulerTaskCreateRequest extends UserCommonExt {
     @NotNull(message = "执行时间不能为空")
     private Date executeTime;
 
+    @ApiModelProperty(value = "定时执行表达式")
+    private String executeCron;
+    
     private Integer isExecuted;
 
 }

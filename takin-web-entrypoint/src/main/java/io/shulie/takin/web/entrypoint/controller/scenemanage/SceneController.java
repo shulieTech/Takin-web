@@ -13,6 +13,7 @@ import com.alibaba.fastjson.TypeReference;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.base.Joiner;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.adapter.api.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
@@ -56,6 +57,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.support.CronSequenceGenerator;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -111,12 +113,34 @@ public class SceneController {
 
         WebPluginUtils.fillCloudUserData(sceneRequest);
         Long sceneId = multipleSceneApi.create(sceneRequest);
-        if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler())) {
-            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
-                setSceneId(sceneId);
-                setExecuteTime(request.getBasicInfo().getExecuteTime());
-            }});
+        List<Date> executeTimeList = new ArrayList<>();
+        switch (request.getBasicInfo().getIsScheduler()){
+            case 0:
+                break;
+            case 1:
+                executeTimeList.add(request.getBasicInfo().getExecuteTime());
+                break;
+            case 2:
+                //计算执行时间集合
+                executeTimeList = getTaskPlan(request.getBasicInfo().getExecuteCron());
+                break;
         }
+        executeTimeList.forEach(s->{
+            try {
+                sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+                    setSceneId(sceneId);
+                    setExecuteTime(s);
+                }});
+            }catch (TakinWebException e){
+                e.printStackTrace();
+            }
+        });
+//        if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler())) {
+//            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+//                setSceneId(sceneId);
+//                setExecuteTime(request.getBasicInfo().getExecuteTime());
+//            }});
+//        }
 
         // 忽略检测的应用
         sceneManageService.createSceneExcludedApplication(sceneId, request.getDataValidation().getExcludedApplicationIds());
@@ -129,6 +153,29 @@ public class SceneController {
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
         }
         return ResponseResult.success(sceneId);
+    }
+
+    /**
+     * 根据cron表达式生成执行计划；
+     * 固定返回50次计划：根据使用场景，最小周级别频率，一年即50次即可满足
+     * @param cron
+     * @return
+     */
+    public List<Date> getTaskPlan(String cron) {
+        String[] fields = org.springframework.util.StringUtils.tokenizeToStringArray(cron, " ");
+        if (fields.length == 5) {
+            cron = Joiner.on(" ").join("0", cron);  //前端控件秒字段无法设置,补0即可
+        }
+        CronSequenceGenerator cronSequenceGenerator = new CronSequenceGenerator(cron);
+        List<Date> resultList = new ArrayList<>();
+        int i = 50;
+        Date time = new Date();
+        do{
+            time = cronSequenceGenerator.next(time);      //下次执行时间
+            resultList.add(time);
+            i--;
+        }while (i>0);
+        return resultList;
     }
 
     /**
@@ -148,12 +195,36 @@ public class SceneController {
         WebPluginUtils.fillCloudUserData(sceneRequest);
         Boolean updateResult = multipleSceneApi.update(sceneRequest);
         sceneSchedulerTaskService.deleteBySceneId(request.getBasicInfo().getSceneId());
-        if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler())) {
-            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
-                setSceneId(request.getBasicInfo().getSceneId());
-                setExecuteTime(request.getBasicInfo().getExecuteTime());
-            }});
+        List<Date> executeTimeList = new ArrayList<>();
+        switch (request.getBasicInfo().getIsScheduler()){
+            case 0:
+                break;
+            case 1:
+                executeTimeList.add(request.getBasicInfo().getExecuteTime());
+                break;
+            case 2:
+                //计算执行时间集合
+                executeTimeList = getTaskPlan(request.getBasicInfo().getExecuteCron());
+                break;
         }
+
+        executeTimeList.forEach(s->{
+            try {
+                sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+                    setSceneId(request.getBasicInfo().getSceneId());
+                    setExecuteTime(s);
+                    setExecuteCron(request.getBasicInfo().getExecuteCron());
+                }});
+            }catch (TakinWebException e) {
+                e.printStackTrace();
+            }
+        });
+//        if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler())) {
+//            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+//                setSceneId(request.getBasicInfo().getSceneId());
+//                setExecuteTime(request.getBasicInfo().getExecuteTime());
+//            }});
+//        }
 
         // 先删除
         sceneExcludedApplicationDAO.removeBySceneId(request.getBasicInfo().getSceneId());

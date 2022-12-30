@@ -71,15 +71,19 @@ public class NewSceneRequest {
         @ApiModelProperty(value = "压测场景名称")
         @NotBlank(message = "压测场景名称不能为空")
         private String name;
+        @ApiModelProperty(value = "告警通知邮件")
+        private String notifyEmails;
         @NotNull(message = "业务流程主键不能为空")
         @ApiModelProperty(value = "业务流程主键")
         private Long businessFlowId;
         @ApiModelProperty(value = "是否定时执行")
-        @NotNull(message = "是否定时执行配置不能为空")
-        private Boolean isScheduler;
+        @NotNull(message = "是否定时执行配置不能为空,0-手动 1-指定时间 2-周期执行")
+        private int isScheduler;
         @ApiModelProperty(name = "executeTime", value = "定时执行时间")
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
+        @JsonFormat(pattern = "yyyy-MM-dd hh:mm", timezone = "GMT+8")
         private Date executeTime;
+        @ApiModelProperty(value = "定时执行表达式")
+        private String executeCron;
     }
 
     @Data
@@ -134,7 +138,7 @@ public class NewSceneRequest {
         @ApiModelProperty(value = "pod数")
         private Integer podNum = 1;
         @ApiModelProperty(value = "压测时间")
-        private Long duration = 5l;
+        private Long duration = 5L;
         @ApiModelProperty(value = "递增时长,施压模式为线性递增或阶梯递增时的递增时长")
         private Integer rampUp;
         @ApiModelProperty(value = "递增时长时间单位，s秒，m分，h小时")

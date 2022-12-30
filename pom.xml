@@ -539,6 +539,7 @@
 <!--            </build>-->
 <!--        </profile>-->
     </profiles>
+
     <distributionManagement>
         <repository>
             <id>releases</id>
@@ -551,6 +552,7 @@
             <url>http://ccp.tianti.tg.unicom.local/artifactory/tyhxyf-maven-snapshots-local</url>
         </snapshotRepository>
     </distributionManagement>
+    
     <build>
         <plugins>
             <plugin>

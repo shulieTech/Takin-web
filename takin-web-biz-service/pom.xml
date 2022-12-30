@@ -46,6 +46,18 @@
                     <artifactId>curator-framework</artifactId>
                     <groupId>org.apache.curator</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>curator-client</artifactId>
+                    <groupId>com.netflix.curator</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>curator-framework</artifactId>
+                    <groupId>com.netflix.curator</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>curator-recipes</artifactId>
+                    <groupId>com.netflix.curator</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -246,10 +258,11 @@
         </dependency>
         <!-- rocket mq -->
 
-<!--        <dependency>-->
-<!--            <groupId>org.apache.curator</groupId>-->
-<!--            <artifactId>curator-framework</artifactId>-->
-<!--        </dependency>-->
+       <dependency>
+           <groupId>org.apache.curator</groupId>            
+           <artifactId>curator-framework</artifactId>
+       </dependency>
+
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-client</artifactId>

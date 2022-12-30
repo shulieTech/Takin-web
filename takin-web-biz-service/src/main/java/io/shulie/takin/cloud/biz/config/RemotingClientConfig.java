@@ -5,7 +5,7 @@ import javax.annotation.PostConstruct;
 import com.netflix.curator.RetryPolicy;
 import com.netflix.curator.framework.CuratorFramework;
 import com.netflix.curator.framework.CuratorFrameworkFactory;
-import com.netflix.curator.retry.ExponentialBackoffRetry;
+import org.apache.netflix.curator.retry.ExponentialBackoffRetry;
 import com.pamirs.pradar.remoting.RemotingClient;
 import com.pamirs.pradar.remoting.netty.NettyClientConfigurator;
 import com.pamirs.pradar.remoting.netty.NettyRemotingClient;

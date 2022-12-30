@@ -5,12 +5,12 @@
   <servers>
     <server>
       <username>tyhxyf</username>
-      <password>E1tyhxyfc3jw</password>
+      <password>{dQ6Lw4iiMEcHdG3SsmlLELp2mYdDEjbTNGFKUOMSfnU=}</password>
       <id>releases</id>
     </server>
     <server>
       <username>tyhxyf</username>
-      <password>E1tyhxyfc3jw</password>
+      <password>{dQ6Lw4iiMEcHdG3SsmlLELp2mYdDEjbTNGFKUOMSfnU=}</password>
       <id>snapshots</id>
     </server>
   </servers>

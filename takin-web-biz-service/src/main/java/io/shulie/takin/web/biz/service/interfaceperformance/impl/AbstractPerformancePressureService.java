@@ -531,10 +531,15 @@ public abstract class AbstractPerformancePressureService
         //计算场景的定时执行时间
         SceneSchedulerTaskResponse sceneSchedulerResponse = sceneSchedulerTaskService.selectBySceneId(sceneId);
         if (sceneSchedulerResponse == null) {
-            copyDetailResult.getBasicInfo().setIsScheduler(false);
+            copyDetailResult.getBasicInfo().setIsScheduler(0);
         } else {
-            copyDetailResult.getBasicInfo().setIsScheduler(true);
-            copyDetailResult.getBasicInfo().setExecuteTime(DateUtil.formatDateTime(sceneSchedulerResponse.getExecuteTime()));
+            if(StringUtils.isNotBlank(sceneSchedulerResponse.getExecuteCron())&&sceneSchedulerResponse.getExecuteCron().length()>=5){
+                copyDetailResult.getBasicInfo().setExecuteCron(sceneSchedulerResponse.getExecuteCron());
+                copyDetailResult.getBasicInfo().setIsScheduler(2);
+            }else{
+                copyDetailResult.getBasicInfo().setIsScheduler(1);
+                copyDetailResult.getBasicInfo().setExecuteTime(DateUtil.formatDateTime(sceneSchedulerResponse.getExecuteTime()));
+            }
         }
 
         // 添加排除的应用

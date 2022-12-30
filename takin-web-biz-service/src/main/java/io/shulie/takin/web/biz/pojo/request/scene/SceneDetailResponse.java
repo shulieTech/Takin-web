@@ -31,10 +31,12 @@ public class SceneDetailResponse extends io.shulie.takin.adapter.api.model.respo
     @Data
     @EqualsAndHashCode(callSuper = true)
     public static class BasicInfo extends io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.BasicInfo {
-        @ApiModelProperty(value = "是否定时执行")
-        private Boolean isScheduler;
+        @ApiModelProperty(value = "是否定时执行,0-手动 1-指定时间 2-周期执行")
+        private int isScheduler;
         @ApiModelProperty(name = "executeTime", value = "定时执行时间")
         private String executeTime;
+        @ApiModelProperty(name = "executeCron", value = "定时执行表达式")
+        private String executeCron;
     }
 
     @Getter

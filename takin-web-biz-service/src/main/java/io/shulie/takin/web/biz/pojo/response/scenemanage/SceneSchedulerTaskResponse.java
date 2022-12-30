@@ -28,6 +28,8 @@ public class SceneSchedulerTaskResponse {
 
     private Date executeTime ;
 
+    private String executeCron ;
+
     private Boolean isDeleted ;
 
     private Date gmtCreate ;

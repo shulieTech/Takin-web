@@ -5,6 +5,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
+import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
@@ -16,14 +17,20 @@ import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.request.report.*;
 import io.shulie.takin.adapter.api.model.response.report.*;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.adapter.api.model.request.report.*;
+import io.shulie.takin.adapter.api.model.response.report.*;
+import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.cloud.common.constants.ReportConstants;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
+import io.shulie.takin.cloud.common.utils.JsonPathUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.mapper.mysql.SceneManageMapper;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
+import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -41,6 +48,7 @@ import io.shulie.takin.web.biz.utils.PDFUtil;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
@@ -48,10 +56,18 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.influxdb.impl.TimeUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -92,6 +108,9 @@ public class ReportServiceImpl implements ReportService {
     @Autowired
     private DistributedLock distributedLock;
 
+    @Resource
+    private RedisClientUtil redisClientUtil;
+
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
         // 前端查询条件 传用户
@@ -127,8 +146,6 @@ public class ReportServiceImpl implements ReportService {
             ReportDTO result = BeanUtil.copyProperties(t, ReportDTO.class);
             result.setUserName(userName);
             result.setUserId(userId);
-            result.setCurrentPage(param.getCurrentPage());
-            result.setPageSize(param.getPageSize());
             return result;
         }).collect(Collectors.toList());
         return ResponseResult.success(dtoList, reportResponseList.getTotalNum());
@@ -521,4 +538,83 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
+    @Override
+    public ThreadReportTrendResp queryReportTrendByThread(ReportTrendQueryReq reportTrendQuery) {
+
+        String key = "reportTrendByThread:" + JSON.toJSONString(reportTrendQuery);
+        if (redisClientUtil.hasKey(key)) {
+            return JSON.parseObject(redisClientUtil.getString(key), ThreadReportTrendResp.class);
+        }
+
+        ThreadReportTrendResp reportTrend = new ThreadReportTrendResp();
+        ReportResult reportResult = reportDao.selectById(reportTrendQuery.getReportId());
+        if (reportResult == null) {
+            return reportTrend;
+        }
+
+        String ptConfig = reportResult.getPtConfig();
+        PtConfigExt ext = JSON.parseObject(ptConfig, PtConfigExt.class);
+        Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
+        if (configMap == null || configMap.isEmpty()) {
+            return null;
+        }
+
+        //根据xpathMd5找到上级对应线程组的md5
+        Map<String, String> threadGroupChildMap = new HashMap<>();
+        List<ScriptNode> allThreadGroup = JsonPathUtil.getNodeListByType(reportResult.getScriptNodeTree(), NodeTypeEnum.THREAD_GROUP);
+        allThreadGroup.forEach(scriptNode -> {
+            threadGroupChildMap.put(scriptNode.getXpathMd5(), scriptNode.getXpathMd5());
+            List<ScriptNode> childControllers = JsonPathUtil.getChildControllers(reportResult.getScriptNodeTree(), scriptNode.getXpathMd5());
+            List<ScriptNode> childSamplers = JsonPathUtil.getChildSamplers(reportResult.getScriptNodeTree(), scriptNode.getXpathMd5());
+            childControllers.forEach(o -> threadGroupChildMap.put(o.getXpathMd5(), scriptNode.getXpathMd5()));
+            childSamplers.forEach(o -> threadGroupChildMap.put(o.getXpathMd5(), scriptNode.getXpathMd5()));
+        });
+        if (!threadGroupChildMap.containsKey(reportTrendQuery.getXpathMd5())){
+            return null;
+        }
+        ThreadGroupConfigExt value = configMap.get(threadGroupChildMap.get(reportTrendQuery.getXpathMd5()));
+        if (value == null || value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3 || value.getSteps() == null) {
+            return null;
+        }
+        // 阶梯递增模式
+        Integer steps = value.getSteps();
+        Integer threadNum = value.getThreadNum();
+
+        List<String> rt = new ArrayList<>();
+        List<String> tps = new ArrayList<>();
+        List<String> concurrent = new ArrayList<>(steps);
+        for (Integer i = 1; i <= steps; i++) {
+            concurrent.add(new BigDecimal(threadNum * i).divide(new BigDecimal(steps), 0, BigDecimal.ROUND_HALF_UP).toString());
+        }
+        if (CollectionUtils.isEmpty(concurrent)) {
+            return null;
+        }
+        reportTrend.setConcurrent(concurrent);
+        for (String num : concurrent){
+            ScriptNodeSummaryBean scriptNodeSummaryBean = this.queryNode(reportTrendQuery.getReportId(), threadGroupChildMap.get(reportTrendQuery.getXpathMd5()), Double.parseDouble(num));
+            ScriptNodeSummaryBean currentValue = getCurrentValue(scriptNodeSummaryBean, reportTrendQuery.getXpathMd5());
+            rt.add(currentValue.getAvgRt() != null && currentValue.getAvgRt().getResult() != null ? currentValue.getAvgRt().getResult().toString() : "0");
+            tps.add(currentValue.getTps() != null && currentValue.getTps().getResult() != null ? currentValue.getTps().getResult().toString() : "0");
+        }
+        reportTrend.setRt(rt);
+        reportTrend.setTps(tps);
+        if (CollectionUtils.isNotEmpty(reportTrend.getConcurrent()) && CollectionUtils.isNotEmpty(reportTrend.getRt()) && !"0".equals(reportTrend.getRt().get(0))) {
+            redisClientUtil.setString(key, JSON.toJSONString(reportTrend));
+            redisClientUtil.expire(key, 1000 * 60 * 120);
+        }
+        return reportTrend;
+
+    }
+
+    private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5){
+        if (scriptNodeSummaryBean.getXpathMd5().equals(xpathMd5)){
+            return scriptNodeSummaryBean;
+        }
+        if (CollectionUtils.isNotEmpty(scriptNodeSummaryBean.getChildren())){
+            for (ScriptNodeSummaryBean child : scriptNodeSummaryBean.getChildren()){
+                return getCurrentValue(child, xpathMd5);
+            }
+        }
+        return new ScriptNodeSummaryBean();
+    }
 }

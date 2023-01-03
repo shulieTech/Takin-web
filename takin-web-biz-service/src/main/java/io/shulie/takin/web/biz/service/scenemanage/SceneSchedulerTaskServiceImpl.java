@@ -68,8 +68,8 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
             throw new TakinWebException(ExceptionCode.SCENE_SCHEDULER_TASK_SCENE_ID_VALID_ERROR, "定时压测-场景主键不能为空");
         }
         verificationScheduleTime(request.getExecuteTime());
-        SceneSchedulerTaskResult result = sceneSchedulerTaskDao.selectBySceneId(request.getSceneId());
-        if (result != null) {return result.getId();}
+//        SceneSchedulerTaskResult result = sceneSchedulerTaskDao.selectBySceneId(request.getSceneId());
+//        if (result != null) {return result.getId();}
         SceneSchedulerTaskInsertParam insertParam = new SceneSchedulerTaskInsertParam();
         BeanUtils.copyProperties(request, insertParam);
         return sceneSchedulerTaskDao.create(insertParam);

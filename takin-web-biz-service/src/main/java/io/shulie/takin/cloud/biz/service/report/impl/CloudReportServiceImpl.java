@@ -800,6 +800,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             if (Objects.nonNull(totalRequestDto) && Objects.nonNull(totalRequestDto.getTotalRequest())) {
                 statReportDTO.setTotalRequest(totalRequestDto.getTotalRequest());
             } else {
+                log.info("未找到数据");
                 statReportDTO.setTotalRequest(0L);
             }
         }
@@ -1051,7 +1052,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             log.info("本次压测{}-{}-{}的报告生成时间-{}", taskResult.getSceneId(), taskResult.getTaskId(),
                     taskResult.getTenantId(), System.currentTimeMillis() - start);
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：生成报告异常 --> 【通知报告模块】处理finished事件异常: {}",
+            log.error("异常代码【{}】,异常内容：生成报告异常 --> 【通知报告模块】处理finished事件异常:",
                     TakinCloudExceptionEnum.TASK_STOP_DEAL_REPORT_ERROR, e);
         }
     }

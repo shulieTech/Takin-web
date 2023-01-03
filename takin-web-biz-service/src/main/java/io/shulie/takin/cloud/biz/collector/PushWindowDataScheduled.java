@@ -305,9 +305,8 @@ public class PushWindowDataScheduled extends AbstractIndicators {
                 n -> sourceMap.containsKey(n.getXpathMd5()));
         // 解决统计事务控制器 计算次数问题
         final List<PressureOutput> subPressures = Lists.newArrayList();
-        if (NodeTypeEnum.TEST_PLAN == node.getType() || CollUtil.isEmpty(childNodes)) {
-            subPressures.addAll(childPressures);
-        }else {
+        subPressures.addAll(childPressures);
+        if(CollUtil.isNotEmpty(childNodes)) {
             childNodes.stream().filter(Objects::nonNull)
                     .filter(t -> NodeTypeEnum.CONTROLLER != node.getType())
                     .map(ScriptNode::getXpathMd5)
@@ -317,6 +316,11 @@ public class PushWindowDataScheduled extends AbstractIndicators {
                     .filter(d -> !childPressures.contains(d))
                     .forEach(subPressures::add);
         }
+//        if (NodeTypeEnum.TEST_PLAN == node.getType() || NodeTypeEnum.THREAD_GROUP == node.getType() || CollUtil.isEmpty(childNodes)) {
+//
+//        }else {
+//
+//        }
 
         int count = NumberUtil.sum(subPressures, PressureOutput::getCount);
         int failCount = NumberUtil.sum(subPressures, PressureOutput::getFailCount);

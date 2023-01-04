@@ -120,6 +120,7 @@ public class PressureDataCalibration {
             data.setResourceId(Long.parseLong(result.getResourceId()));
             param.setSource(ofType(cloud));
             data.setContent("校准超时失败");
+            param.setData(data);
             dataCalibrationProcessor.process(param);
         };
         // 校准超时失败

@@ -12,7 +12,7 @@ import org.apache.ibatis.annotations.Select;
  */
 public interface SceneSchedulerTaskMapper  extends BaseMapper<SceneSchedulerTaskEntity> {
 
-    @Select("select * from t_scene_scheduler_task where scene_id =#{sceneId} and is_deleted =0 ")
+    @Select("select * from t_scene_scheduler_task where scene_id =#{sceneId} and is_deleted =0 limit 1 ")
     SceneSchedulerTaskEntity selectBySceneId(@Param("sceneId")Long sceneId) ;
 
     @Delete(" delete from t_scene_scheduler_task where scene_id =#{sceneId} ")

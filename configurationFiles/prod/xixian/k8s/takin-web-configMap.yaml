@@ -1,0 +1,187 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: takin-web
+  namespace: shulie-takin
+data:
+  kafka.properties: |
+    kafka.sdk.switch=true
+    kafka.sdk.bootstrap=10.172.54.128:29092,10.172.54.129:29092,10.172.54.131:29092,10.172.54.132:29092,10.172.54.133:29092,10.172.54.134:29092,10.172.54.135:29092,10.172.54.136:29092
+    kafka.auth.flag=true
+    security.protocol=SASL_PLAINTEXT
+    sasl.mechanism=SCRAM-SHA-256
+    sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="kafka-tianyan-dyl" password="GZ3Ae5p07";
+  application.properties: |
+    #web配置
+    #tro-web 服务器本地文件保存路径
+    data.path=/data/nfs_dir
+
+    #脚本路径专栏
+    file.upload.script.path=${data.path}
+    file.upload.tmp.path=${data.path}/scriptfile/temp
+    script.path=${data.path}/scriptfile
+    script.temp.path=${file.upload.tmp.path}
+    pradar.upload.client.dir=${user.dir}/pradar-upload-client
+
+    #tro-web url  域名优先
+    takin.web.url=http://takin-web-svc:10008/takin-web
+    #文件地址，无需更改
+    file.upload.script.path=${data.path}
+    file.ops_script.path=${data.path}/ops_nfs_dir/
+    fast.debug.upload.log.path=${data.path}/debug/log/
+    fast.debug.call.stack.path=${data.path}/debug/callstack/
+    #agent上报tro-web地址
+    file.upload.user.data.dir=${data.path}/tmp_upload
+    #白名单
+    spring.config.whiteListPath=${data.path}/tro/conf/tro-web/api/confcenter/wbmnt/query/
+    #登录次数限制
+    takin.login.num=3
+    #登录超次数后，延迟时间, 单位分钟
+    takin.login.time=1
+    #job分片配置
+    job.sharding.total.Count=1
+
+
+    #web的cloud配置
+    #tro-cloud url  域名优先
+    takin.cloud.url=http://takin-cloud-svc:10010/takin-cloud
+
+    #数据源IP端口配置
+    resource.mysql.host=10.172.54.140:8658
+    resource.influxdb.host=influxdb-svc
+    amdb.url.amdb=http://takin-amdb-svc:10032
+    takin.config.zk.addr=zookeeper:2181
+
+
+    ##########e2e###########
+    #聚合巡检数据的方式，0：通过大数据聚合巡检数据（默认） 1：通过压测引擎聚合巡检数据
+    patrol.engine.type=0
+    e2e.engine.type=0
+    #通过压测引擎聚合巡检数据的频率（单位：秒，不配置的话默认300秒）
+    e2e.error.alert.interval=120
+    #通过大数据聚合巡检数据的频率（单位：秒，不配置的话默认300秒）
+    e2e.count.data.interval=120
+    #异常详情���接地址 域名优先
+    patrol.bottleneck.detail=http://takin-web-ui-svc/tro/#/bottleneckTable/bottleneckDetails?exceptionId=
+    e2e.bottleneck.detail=http://takin-web-ui-svc/tro/#/pro/bottleneckTable/bottleneckDetails?exceptionId=
+    #允许条件技术节点的中间件名称
+    patrol.tech_node.middleware_name=http,dubbo,rocketmq,rabbitmq,kafka,elasticjob,grpc,apache-kafka,mysql,tomcat,redis,httpclient4,google-guava,ons,sto-event,apache-dubbo
+    ##########e2e###########
+
+    #前端系统页面
+    takin.front.url.system=#/configCenter/systemInfo
+    #前端首页
+    takin.front.url.default=#/dashboard
+    #服务配置
+    takin-web.server.config={"loginType": 1, "domain": "takin-web-ui-svc"}
+
+    #######################以下配置项，一般情况无需更改####################
+    #系统框架配置
+    #最大支持文件大小
+    spring.servlet.multipart.max-file-size=200MB
+    ##最大支持请求大小
+    spring.servlet.multipart.max-request-size=200MB
+    #tomcat���置
+    server.tomcat.basedir=${data.path}
+    server.tomcat.max-threads=1000
+    server.tomcat.max-connections=500
+    #mysql配置
+    spring.datasource.url=jdbc:mysql://10.172.54.140:8658/trodb?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowMultiQueries=true
+    spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
+    spring.datasource.driverClassName=com.mysql.jdbc.Driver
+    spring.datasource.username=stresstest
+    spring.datasource.password=bVmwt77qzT@$qn
+    spring.datasource.initialSize=1
+    spring.datasource.minIdle=3
+    spring.datasource.maxActive=20
+    spring.datasource.maxWait=60000
+    spring.datasource.timeBetweenEvictionRunsMillis=60000
+    spring.datasource.minEvictableIdleTimeMillis=30000
+    spring.datasource.validationQuery=select 'x'
+    spring.datasource.testWhileIdle=true
+    spring.datasource.testOnBorrow=false
+    spring.datasource.poolPreparedStatements=true
+    spring.datasource.maxPoolPreparedStatementPerConnectionSize=20
+    spring.datasource.filters=stat,wall,slf4j
+    spring.datasource.connectionProperties=druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+    #redis配置
+    spring.redis.cluster.nodes=10.172.135.14:32501,10.172.135.13:32501,10.172.135.15:32503,10.172.135.20:32505,10.172.135.22:32513,10.172.135.21:32506
+    spring.redis.password=ca$hc0Wa
+    # spring.redis.host=redis-svc
+    # spring.redis.port=6379
+    spring.redis.timeout=10000
+    spring.redis.jedis.pool.max-idle=8
+    spring.redis.jedis.pool.min-idle=10
+    spring.redis.jedis.pool.max-active=100
+    spring.redis.jedis.pool.max-wait=-1
+    #influxdb
+    spring.influxdb.url=http://${resource.influxdb.host}:8086
+    spring.influxdb.user=pradar
+    spring.influxdb.password=pradar
+    spring.influxdb.database=base
+    spring.performance.influxdb.user=pradar
+    spring.performance.influxdb.password=pradar
+    spring.performance.influxdb.database=performance
+
+    #设置sessionId失效时间24小时
+    login.expire.time=86400
+    #2022年4月28日添加
+    # 调用amdb的单次边数量
+    call.amdb.eagle_size=300
+    ###############################################################
+
+    #0617新增配置
+    # cloud原始配置
+    takin.config.zk.timeOut=15000
+    report.aggregation.interval=5s
+
+    #cloud influxdb
+    cloud.influxdb.url=http://influxdb-svc:8086
+    cloud.influxdb.user=pradar
+    cloud.influxdb.password=pradar
+    cloud.influxdb.database=jmeter
+
+    #nfs检测
+    nfs.warning.percent=75
+
+    # pressure.image.name=harbor.dcos.xixian.unicom.local/skyeye-platform/stresstest/pressure-engine:2.0.0
+    pressure.callback.ignore.type=100,200,303
+    pressure.node.heartbeat.expireTime=60
+
+
+    pdf.path=/data/nfs_dir/takin/web/report/pdf
+
+    #4月20日新增配置
+    ## 网关地址
+    apisix.web.keyUrl=
+    ### #网关token
+    apisix.web.token=
+    ### # 数据源版本比较
+    agent.ds.compareVersion=5.3.1.0
+    ### # oracle
+    ds.database.url=jdbc:oracle:thin
+    ### # 需要过滤的菜单,通过code过滤
+    tenant.menu.filter=securityCenter_trafficConfig,securityCenter_keysConfig
+
+    #0802增回配置
+    #flyway配置
+    #flyway：数据库版本升级控���
+    spring.flyway.enabled=false
+    #flyway：验证错误时删除数据, 关闭
+    spring.flyway.clean-on-validation-error=false
+    #flyway：允许清除数据操作, 不允许
+    spring.flyway.clean-disabled=true
+    spring.flyway.url=${spring.datasource.url}
+    spring.flyway.user=${spring.datasource.username}
+    spring.flyway.password=${spring.datasource.password}
+    spring.flyway.table="t_migration_history"
+    spring.flyway.baseline-on-migrate=true
+    spring.flyway.baseline-version=1
+    #flyway：迁移的时候, 是否校验
+    spring.flyway.validate-on-migrate=false
+    takin.config.nacos.enbale=nacos
+    takin.config.nacos.addr=10.172.54.137:28848,10.172.54.138:28848,10.172.54.139:28848
+
+    liantong.menu: true
+    liantong.skyEye.path=https://tianyan.tg.unicom.local
+  

@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: takin-web
+  namespace: shulie-takin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: takin-web
+  template:
+    metadata:
+      labels:
+        app: takin-web
+    spec:
+      nodeName: 192.168.16.8
+      containers:
+      - name: takin-web
+        # image: harbor.dcos.xixian.unicom.local/skyeye-platform/stresstest/takin-web:2.0.0
+        image: harbor.dcos.xixian.unicom.local/skyeye-platform-xx-pbc/stresstest/takin-web:2.0.0
+        imagePullPolicy: Always
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "mkdir -p /data/nfs_dir && mount -o rw,intr,soft,timeo=30,retry=3,nolock -t nfs 10.238.52.214:/data/share /data/nfs_dir"]
+        ports:
+        - containerPort: 10008
+        securityContext:
+          capabilities:
+            add: ["SYS_ADMIN"]
+        resources:
+          requests:
+            memory: 1G
+          limits:
+            memory: 4G
+        command: ["java","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005","-Duser.timezone=Asia/Shanghai","-Dkafka.sdk.properties.path=/data/apps/takin-web/config/kafka.properties","-jar","/data/apps/takin-web/takin-web.jar" ]
+      #挂载Volume
+        volumeMounts:
+        - name: config-volum
+          mountPath: /data/apps/takin-web/config/kafka.properties
+          subPath: kafka.properties
+        - name: config-volum
+          mountPath: /data/apps/takin-web/config/application.properties
+          subPath: application.properties
+      #声明Volume
+      volumes:
+      - name: config-volum
+        configMap:
+          name: takin-web

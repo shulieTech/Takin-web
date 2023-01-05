@@ -18,4 +18,6 @@ public class PressureMachineCreateRequest {
 
     @ApiModelProperty("备注")
     private String remark;
+    @ApiModelProperty("tag")
+    private String tag;
 }

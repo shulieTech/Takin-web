@@ -18,6 +18,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/pressureMachine")
@@ -118,12 +119,12 @@ public class PressureTestMachineController {
     @PostMapping("/createMachinebByExecl")
     @ApiOperation("根据excel批量新增机器")
     @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public void createMachinebByExecl(@RequestParam(value = "file") MultipartFile file, @RequestParam(value = "tag") String tag) {
+    public void createMachinebByExecl(@RequestParam(value = "file") MultipartFile file) {
         //校验文件
         MultipartFile[] files = {file};
         try {
             new ExcelUtil().verify(files);
-            this.machineManageService.readExcelBachtCreate(file, tag);
+            this.machineManageService.readExcelBachtCreate(file);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -143,8 +144,8 @@ public class PressureTestMachineController {
     @PostMapping("/getAllTag")
     @ApiOperation("benchmark-获取所有机器tag")
     @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<String> getAllTag(){
-        return null;
+    public ResponseResult<List<String>> getAllTag() {
+        return ResponseResult.success(this.machineManageService.getAllTag());
     }
     @PostMapping("/listMachinesByTag")
     @ApiOperation("benchmark-批量获取压力机根据tag")

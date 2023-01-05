@@ -32,13 +32,3 @@ spec:
           limits:
             memory: 4G
         command: ["java","-Duser.timezone=Asia/Shanghai","-Dkafka.sdk.switch=true ","-Dkafka.sdk.bootstrap=kafka-svc:9092","-jar","/data/apps/takin-web/takin-web.jar" ]
-      #挂载Volume
-        volumeMounts:
-        - name: config-volum
-          mountPath: /data/apps/takin-web/config/application.properties
-          subPath: application.properties
-      #声明Volume
-      volumes:
-      - name: config-volum
-        configMap:
-          name: takin-web

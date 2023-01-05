@@ -6,3 +6,4 @@ COPY configurationFiles/test/xixian/properties/msyh.ttf /data/apps/takin-web/con
 COPY configurationFiles/test/xixian/properties/dept_example.csv /data/apps/takin-web/config/file/example/
 COPY configurationFiles/test/xixian/properties/example.csv /data/apps/takin-web/config/file/example/
 COPY configurationFiles/test/xixian/properties/application.properties /data/apps/takin-web/config/application.properties
+

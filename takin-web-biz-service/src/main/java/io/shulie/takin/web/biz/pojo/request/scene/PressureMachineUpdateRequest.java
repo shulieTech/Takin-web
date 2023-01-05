@@ -20,4 +20,6 @@ public class PressureMachineUpdateRequest implements Serializable {
 
     @ApiModelProperty("备注")
     private String remark;
+    @ApiModelProperty("标签")
+    private String tag;
 }

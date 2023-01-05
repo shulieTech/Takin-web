@@ -244,6 +244,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         if (StringUtil.isNotEmpty(request.getRemark())) {
             manageDAOById.setRemark(request.getRemark());
         }
+        if (StringUtils.isNotBlank(request.getTag())){
+            manageDAOById.setTag(request.getTag());
+        }
         manageDAOById.setUpdateTime(new Date());
         machineManageDAO.updateById(manageDAOById);
     }

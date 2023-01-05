@@ -1,9 +1,0 @@
-mkdir -p /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/web/repositories
-cp takin-web-ee-plugin/takin-web-ee-plugin-user-module/target/*.jar /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/web/repositories/
-cp takin-web-ee-plugin/takin-web-ee-plugin-operation-log-module/target/*.jar /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/web/repositories/
-cp takin-web-ee-plugin/takin-web-ee-plugin-app-module/target/*.jar /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/web/repositories/
-cp takin-web-ee-plugin/takin-web-ee-plugin-report-module/target/*.jar /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/web/repositories/
-cp takin-web-ee-plugin/takin-web-ee-plugin-tenant-module/target/*.jar /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/web/repositories/
-cp takin-web-ee-plugin/takin-web-ee-plugin-asset-module/target/*.jar /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/web/repositories/
-cp takin-web-ee-plugin/takin-web-ee-plugin-yunda-user-module/target/*.jar /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/web/repositories/
-rm -f /home/jenkins/workspace/liml7011/liml7011_全链路压测-web/web/repositories/original*

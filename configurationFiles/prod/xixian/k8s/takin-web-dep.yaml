@@ -16,7 +16,6 @@ spec:
       nodeName: 192.168.16.8
       containers:
       - name: takin-web
-        # image: harbor.dcos.xixian.unicom.local/skyeye-platform/stresstest/takin-web:2.0.0
         image: harbor.dcos.xixian.unicom.local/skyeye-platform-xx-pbc/stresstest/takin-web:2.0.0
         imagePullPolicy: Always
         lifecycle:

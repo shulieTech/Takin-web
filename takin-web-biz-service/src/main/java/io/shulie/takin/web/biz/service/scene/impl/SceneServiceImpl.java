@@ -881,8 +881,12 @@ public class SceneServiceImpl implements SceneService {
                         scriptJmxNode.setBindBusinessId(activityListResult.getBindBusinessId());
                         scriptJmxNode.setTechLinkId(activityListResult.getTechLinkId());
                         scriptJmxNode.setEntrace(activityListResult.getEntrace());
-                        scriptJmxNode.setEntracePath(StringUtils.isNotBlank(entranceJoinEntity.getMethodName()) ?
-                                entranceJoinEntity.getMethodName() + "|" + entranceJoinEntity.getServiceName() : entranceJoinEntity.getServiceName());
+                        if(scriptJmxNode.getName().equals("JavaSampler")){
+                            scriptJmxNode.setEntracePath(scriptJmxNode.getTestName());
+                        }else {
+                            scriptJmxNode.setEntracePath(StringUtils.isNotBlank(entranceJoinEntity.getMethodName()) ?
+                                    entranceJoinEntity.getMethodName() + "|" + entranceJoinEntity.getServiceName() : entranceJoinEntity.getServiceName());
+                        }
                         scriptJmxNode.setStatus(1);
                     }
 

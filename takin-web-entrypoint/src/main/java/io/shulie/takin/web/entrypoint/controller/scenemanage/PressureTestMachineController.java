@@ -158,8 +158,32 @@ public class PressureTestMachineController {
         return ResponseResult.success(this.machineManageService.listMachinesByTag(httpRequest, request));
     }
 
-    @PostMapping("/multipartFile")
-    public void upload(@RequestParam("multipartFile") MultipartFile multipartFile) {
+    @PostMapping("/upload")
+    public void upload(@RequestBody MultipartFile multipartFile) {
+        //校验文件
+        MultipartFile[] files = {multipartFile};
+        try {
+            new ExcelUtil().verify(files);
+            this.machineManageService.readExcelBachtCreate(multipartFile);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PostMapping("/upload2")
+    public void upload2(@RequestParam("multipartFile") MultipartFile multipartFile) {
+        //校验文件
+        MultipartFile[] files = {multipartFile};
+        try {
+            new ExcelUtil().verify(files);
+            this.machineManageService.readExcelBachtCreate(multipartFile);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PostMapping("/upload3")
+    public void upload3(@RequestParam MultipartFile multipartFile) {
         //校验文件
         MultipartFile[] files = {multipartFile};
         try {

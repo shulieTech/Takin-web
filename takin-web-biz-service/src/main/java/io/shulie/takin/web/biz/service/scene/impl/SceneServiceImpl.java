@@ -822,8 +822,10 @@ public class SceneServiceImpl implements SceneService {
     }
 
     private void dealScriptJmxNodes(List<SceneLinkRelateResult> sceneLinkRelateResults, List<ScriptJmxNode> scriptJmxNodes) {
+        Map<String, String> xpathMd5Map;
+        Map<String, ActivityListResult> collect;
         if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
-            Map<String, String> xpathMd5Map = sceneLinkRelateResults.stream().filter(Objects::nonNull)
+            xpathMd5Map = sceneLinkRelateResults.stream().filter(Objects::nonNull)
                     .filter(o -> StringUtils.isNotBlank(o.getScriptXpathMd5()))
                     .collect(Collectors.toMap(SceneLinkRelateResult::getScriptXpathMd5, SceneLinkRelateResult::getBusinessLinkId));
             List<Long> businessLinkIds = sceneLinkRelateResults.stream().filter(Objects::nonNull)
@@ -834,10 +836,15 @@ public class SceneServiceImpl implements SceneService {
             activityQueryParam.setActivityIds(businessLinkIds);
             List<ActivityListResult> activityList = activityDao.getActivityList(activityQueryParam);
             if (CollectionUtils.isNotEmpty(activityList)) {
-                Map<String, ActivityListResult> collect = activityList.stream().collect(Collectors.toMap(o -> o.getActivityId().toString(), t -> t));
-                dealScriptJmxNodes(scriptJmxNodes, xpathMd5Map, collect);
+                collect = activityList.stream().collect(Collectors.toMap(o -> o.getActivityId().toString(), t -> t));
+            }else {
+                collect = Collections.emptyMap();
             }
+        }else {
+            xpathMd5Map = Collections.emptyMap();
+            collect = Collections.emptyMap();
         }
+        dealScriptJmxNodes(scriptJmxNodes, xpathMd5Map, collect);
     }
 
     /**

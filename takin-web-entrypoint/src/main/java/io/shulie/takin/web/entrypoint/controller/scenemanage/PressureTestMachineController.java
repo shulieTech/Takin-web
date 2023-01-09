@@ -10,6 +10,8 @@ import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
 import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
 import io.shulie.takin.web.biz.utils.ExcelUtil;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -118,8 +120,9 @@ public class PressureTestMachineController {
 
     @PostMapping("/createMachinebByExecl")
     @ApiOperation("根据excel批量新增机器")
-    @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public void createMachinebByExecl(@RequestParam(value = "file") MultipartFile file) {
+//    @ApiImplicitParams({@ApiImplicitParam(name = "file", value = "导入的 excel", paramType = "form", dataType = "file")})
+//    @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
+    public void createMachinebByExecl(@RequestParam MultipartFile file) {
         //校验文件
         MultipartFile[] files = {file};
         try {
@@ -132,8 +135,8 @@ public class PressureTestMachineController {
 
     @PostMapping("/benchmarkEnableByTag")
     @ApiOperation("benchmark-批量部署压力机根据tag")
-    @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<String> benchmarkEnableByTag(@RequestParam(value = "tag") String tag, HttpServletRequest httpRequest) {
+//    @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
+    public ResponseResult<String> benchmarkEnableByTag(@RequestBody String tag, HttpServletRequest httpRequest) {
         String failContent = machineManageService.benchmarkEnableByTag(httpRequest, tag);
         if (failContent != null) {
             return ResponseResult.fail("部署失败" + failContent, null);
@@ -150,7 +153,7 @@ public class PressureTestMachineController {
     @PostMapping("/listMachinesByTag")
     @ApiOperation("benchmark-批量获取压力机根据tag")
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<PagingList<PressureMachineResponse>> listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request) {
+    public ResponseResult<PagingList<PressureMachineResponse>> listMachinesByTag(PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest) {
         return ResponseResult.success(this.machineManageService.listMachinesByTag(httpRequest, request));
     }
 }

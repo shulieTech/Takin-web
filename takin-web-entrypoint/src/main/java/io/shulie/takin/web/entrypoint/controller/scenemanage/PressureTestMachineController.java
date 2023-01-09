@@ -171,7 +171,7 @@ public class PressureTestMachineController {
     }
 
     @PostMapping("/upload2")
-    public void upload2(@RequestParam("multipartFile") MultipartFile multipartFile) {
+    public void upload2(@RequestParam(value = "multipartFile", required = false) MultipartFile multipartFile) {
         //校验文件
         MultipartFile[] files = {multipartFile};
         try {

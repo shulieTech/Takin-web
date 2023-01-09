@@ -822,10 +822,8 @@ public class SceneServiceImpl implements SceneService {
     }
 
     private void dealScriptJmxNodes(List<SceneLinkRelateResult> sceneLinkRelateResults, List<ScriptJmxNode> scriptJmxNodes) {
-        Map<String, String> xpathMd5Map;
-        Map<String, ActivityListResult> collect;
         if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
-            xpathMd5Map = sceneLinkRelateResults.stream().filter(Objects::nonNull)
+            Map<String, String> xpathMd5Map = sceneLinkRelateResults.stream().filter(Objects::nonNull)
                     .filter(o -> StringUtils.isNotBlank(o.getScriptXpathMd5()))
                     .collect(Collectors.toMap(SceneLinkRelateResult::getScriptXpathMd5, SceneLinkRelateResult::getBusinessLinkId));
             List<Long> businessLinkIds = sceneLinkRelateResults.stream().filter(Objects::nonNull)
@@ -836,15 +834,10 @@ public class SceneServiceImpl implements SceneService {
             activityQueryParam.setActivityIds(businessLinkIds);
             List<ActivityListResult> activityList = activityDao.getActivityList(activityQueryParam);
             if (CollectionUtils.isNotEmpty(activityList)) {
-                collect = activityList.stream().collect(Collectors.toMap(o -> o.getActivityId().toString(), t -> t));
-            }else {
-                collect = Collections.emptyMap();
+                Map<String, ActivityListResult> collect = activityList.stream().collect(Collectors.toMap(o -> o.getActivityId().toString(), t -> t));
+                dealScriptJmxNodes(scriptJmxNodes, xpathMd5Map, collect);
             }
-        }else {
-            xpathMd5Map = Collections.emptyMap();
-            collect = Collections.emptyMap();
         }
-        dealScriptJmxNodes(scriptJmxNodes, xpathMd5Map, collect);
     }
 
     /**
@@ -864,6 +857,11 @@ public class SceneServiceImpl implements SceneService {
                     scriptJmxNode.setEntrace("|beanshell");
                     scriptJmxNode.setRequestPath("|beanshell");
                     scriptJmxNode.setIdentification("takin|beanshell");
+                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+                }else if(scriptJmxNode.getName().equals("JavaSampler")){
+                    scriptJmxNode.setEntrace("|java");
+                    scriptJmxNode.setRequestPath("|java");
+                    scriptJmxNode.setIdentification("takin|java");
                     scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
                 }
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {
@@ -888,15 +886,10 @@ public class SceneServiceImpl implements SceneService {
                         scriptJmxNode.setBindBusinessId(activityListResult.getBindBusinessId());
                         scriptJmxNode.setTechLinkId(activityListResult.getTechLinkId());
                         scriptJmxNode.setEntrace(activityListResult.getEntrace());
-                        if(scriptJmxNode.getName().equals("JavaSampler")){
-                            scriptJmxNode.setEntracePath(scriptJmxNode.getTestName());
-                        }else {
-                            scriptJmxNode.setEntracePath(StringUtils.isNotBlank(entranceJoinEntity.getMethodName()) ?
-                                    entranceJoinEntity.getMethodName() + "|" + entranceJoinEntity.getServiceName() : entranceJoinEntity.getServiceName());
-                        }
+                        scriptJmxNode.setEntracePath(StringUtils.isNotBlank(entranceJoinEntity.getMethodName()) ?
+                                entranceJoinEntity.getMethodName() + "|" + entranceJoinEntity.getServiceName() : entranceJoinEntity.getServiceName());
                         scriptJmxNode.setStatus(1);
                     }
-
                 }
                 if (CollectionUtils.isNotEmpty(scriptJmxNode.getChildren())) {
                     dealScriptJmxNodes(scriptJmxNode.getChildren(), xpathMd5Map, activityMap);

@@ -112,8 +112,8 @@
     </root>
 
     <!-- mybatis日志打印-->
-    <logger name="org.apache.ibatis" level="WARN"/>
-    <logger name="java.sql" level="WARN"/>
+    <logger name="org.apache.ibatis" level="INFO"/>
+    <logger name="java.sql" level="INFO"/>
     <!-- job -->
     <property name="JOB_LOG_NAME" value="service_job"/>
     <property name="JOB_LOG_HOME" value="./logs/job/"/>

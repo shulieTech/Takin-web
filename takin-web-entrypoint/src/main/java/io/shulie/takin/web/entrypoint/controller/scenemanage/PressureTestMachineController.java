@@ -62,7 +62,7 @@ public class PressureTestMachineController {
     @ApiOperation("删除压力机")
     @AuthVerification(needAuth = ActionTypeEnum.DELETE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<String> delete(@RequestBody @Valid PressureMachineBaseRequest request, HttpServletRequest httpRequest) {
-        String failContent = machineManageService.delete(request,httpRequest);
+        String failContent = machineManageService.delete(request, httpRequest);
         if (failContent != null) {
             return ResponseResult.fail("删除失败:" + failContent, null);
         }
@@ -103,7 +103,7 @@ public class PressureTestMachineController {
     @ApiOperation("卸载压力机")
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<String> disable(@RequestBody @Valid PressureMachineBaseRequest request, HttpServletRequest httpRequest) {
-        String failContent = machineManageService.disable(request,httpRequest);
+        String failContent = machineManageService.disable(request, httpRequest);
         if (failContent != null) {
             return ResponseResult.fail("卸载失败" + failContent, null);
         }
@@ -150,10 +150,23 @@ public class PressureTestMachineController {
     public ResponseResult<List<String>> getAllTag() {
         return ResponseResult.success(this.machineManageService.getAllTag());
     }
+
     @PostMapping("/listMachinesByTag")
     @ApiOperation("benchmark-批量获取压力机根据tag")
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<PagingList<PressureMachineResponse>> listMachinesByTag(PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest) {
         return ResponseResult.success(this.machineManageService.listMachinesByTag(httpRequest, request));
+    }
+
+    @PostMapping("/multipartFile")
+    public void upload(@RequestParam("multipartFile") MultipartFile multipartFile) {
+        //校验文件
+        MultipartFile[] files = {multipartFile};
+        try {
+            new ExcelUtil().verify(files);
+            this.machineManageService.readExcelBachtCreate(multipartFile);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

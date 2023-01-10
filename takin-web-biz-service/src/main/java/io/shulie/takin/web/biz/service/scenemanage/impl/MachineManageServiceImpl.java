@@ -6,6 +6,7 @@ import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -646,9 +647,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     private List<MachineManageEntity> getAllMachineByTag(String tag) {
-        QueryWrapper<MachineManageEntity> ipQueryWrapper = new QueryWrapper<>();
-        ipQueryWrapper.lambda().eq(MachineManageEntity::getTag, tag);
-        List<MachineManageEntity> list = machineManageDAO.list(ipQueryWrapper);
+        LambdaQueryWrapper<MachineManageEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(MachineManageEntity::getTag, Arrays.asList(tag));
+        List<MachineManageEntity> list = machineManageDAO.list(queryWrapper);
         return list;
     }
 

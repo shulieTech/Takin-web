@@ -13,6 +13,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -118,11 +119,9 @@ public class PressureTestMachineController {
         return ResponseResult.success("同步成功");
     }
 
-    @PostMapping("/createMachinebByExecl")
+    @PostMapping(value = "/createMachinebByExecl",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiOperation("根据excel批量新增机器")
-//    @ApiImplicitParams({@ApiImplicitParam(name = "file", value = "导入的 excel", paramType = "form", dataType = "file")})
-//    @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public void createMachinebByExecl(@RequestParam MultipartFile file) {
+    public void createMachinebByExecl(@RequestPart("file") MultipartFile file) {
         //校验文件
         MultipartFile[] files = {file};
         try {
@@ -135,7 +134,6 @@ public class PressureTestMachineController {
 
     @PostMapping("/benchmarkEnableByTag")
     @ApiOperation("benchmark-批量部署压力机根据tag")
-//    @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<String> benchmarkEnableByTag(@RequestBody String tag, HttpServletRequest httpRequest) {
         String failContent = machineManageService.benchmarkEnableByTag(httpRequest, tag);
         if (failContent != null) {
@@ -144,53 +142,16 @@ public class PressureTestMachineController {
         return ResponseResult.success("部署成功");
     }
 
-    @PostMapping("/getAllTag")
+    @GetMapping("/getAllTag")
     @ApiOperation("benchmark-获取所有机器tag")
-    @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<List<String>> getAllTag() {
         return ResponseResult.success(this.machineManageService.getAllTag());
     }
 
     @PostMapping("/listMachinesByTag")
     @ApiOperation("benchmark-批量获取压力机根据tag")
-    @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<PagingList<PressureMachineResponse>> listMachinesByTag(PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest) {
         return ResponseResult.success(this.machineManageService.listMachinesByTag(httpRequest, request));
     }
 
-    @PostMapping("/upload")
-    public void upload(@RequestBody MultipartFile multipartFile) {
-        //校验文件
-        MultipartFile[] files = {multipartFile};
-        try {
-            new ExcelUtil().verify(files);
-            this.machineManageService.readExcelBachtCreate(multipartFile);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @PostMapping("/upload2")
-    public void upload2(@RequestParam(value = "multipartFile", required = false) MultipartFile multipartFile) {
-        //校验文件
-        MultipartFile[] files = {multipartFile};
-        try {
-            new ExcelUtil().verify(files);
-            this.machineManageService.readExcelBachtCreate(multipartFile);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @PostMapping("/upload3")
-    public void upload3(@RequestParam MultipartFile multipartFile) {
-        //校验文件
-        MultipartFile[] files = {multipartFile};
-        try {
-            new ExcelUtil().verify(files);
-            this.machineManageService.readExcelBachtCreate(multipartFile);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

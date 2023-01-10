@@ -49,7 +49,10 @@ public class RequestReplaceFilter implements Filter {
      */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (!(request instanceof MyServletRequestWrapper) && !((HttpServletRequest) request).getRequestURI().endsWith("/file/upload")) {
+        boolean myServletRequestFlag = !(request instanceof MyServletRequestWrapper);
+        boolean fileFlag = !((HttpServletRequest) request).getRequestURI().endsWith("/file/upload");
+        boolean uploadFlag = !((HttpServletRequest) request).getRequestURI().endsWith("/pressureMachine/createMachineByExecl");
+        if (myServletRequestFlag && fileFlag && uploadFlag) {
             request = new MyServletRequestWrapper((HttpServletRequest) request);
         }
         chain.doFilter(request, response);

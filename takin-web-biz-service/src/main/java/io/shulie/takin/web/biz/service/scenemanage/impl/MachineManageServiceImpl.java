@@ -594,8 +594,11 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             ExcelReader reader = ExcelUtil.getReader(stream);
             List<List<Object>> readList = reader.read();
             List<MachineManageEntity> machineManageEntities = new ArrayList<>();
-            readList.forEach(read -> {
-                List<Object> sheets = read;
+            for (int i = 0; i < readList.size(); i++) {
+                if (i == 0) {
+                    continue;
+                }
+                List<Object> sheets = readList.get(i);
                 MachineManageEntity machineManageEntity = new MachineManageEntity();
                 machineManageEntity.setMachineName(Objects.nonNull(sheets.get(0)) ? sheets.get(0).toString() : null);
                 machineManageEntity.setMachineIp(Objects.nonNull(sheets.get(1)) ? sheets.get(0).toString() : null);
@@ -604,8 +607,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 machineManageEntity.setTag(Objects.nonNull(sheets.get(4)) ? sheets.get(0).toString() : null);
                 machineManageEntity.setStatus(0);
                 machineManageEntities.add(machineManageEntity);
-            });
-
+            }
             String machineNameStr = getMachineName(machineManageEntities);
             if (StringUtils.isNotBlank(machineNameStr)) {
                 return machineNameStr;

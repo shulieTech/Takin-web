@@ -10,17 +10,19 @@ import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
 import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
 import io.shulie.takin.web.biz.utils.ExcelUtil;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.Arrays;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -119,7 +121,7 @@ public class PressureTestMachineController {
         return ResponseResult.success("同步成功");
     }
 
-    @PostMapping(value = "/createMachinebByExecl",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/createMachinebByExecl", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiOperation("根据excel批量新增机器")
     public void createMachinebByExecl(@RequestPart("file") MultipartFile file) {
         //校验文件
@@ -131,6 +133,20 @@ public class PressureTestMachineController {
             throw new RuntimeException(e);
         }
     }
+    @ApiOperation("根据excel批量新增机器2")
+    @PostMapping("createMachineByExeclPath")
+    public void createMachineByExeclPath(@RequestPart("path") String path) {
+        try {
+            InputStream inputStream = new FileInputStream(path);
+            MultipartFile file = new MockMultipartFile("tmp_" + new Date().getTime(), inputStream);
+            MultipartFile[] files = {file};
+            new ExcelUtil().verify(files);
+            this.machineManageService.readExcelBachtCreate(file);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @PostMapping("/benchmarkEnableByTag")
     @ApiOperation("benchmark-批量部署压力机根据tag")

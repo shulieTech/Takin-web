@@ -1,4 +1,4 @@
-FROM 10.172.49.246/skyeye-platform-xx-pbc/stresstest/takin-web:2.0.0
+FROM harbor.dcos.xixian.unicom.local/skyeye-platform-xx-pbc/stresstest/base:1.0.0
 WORKDIR /data/apps/takin-web
 COPY takin-web-app/target/takin-web-5.10.2.2.jar /data/apps/takin-web/takin-web.jar
 COPY repositories/ /data/apps/takin-web/plugins/

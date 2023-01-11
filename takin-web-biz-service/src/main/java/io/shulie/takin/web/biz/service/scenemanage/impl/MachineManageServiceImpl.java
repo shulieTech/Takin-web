@@ -645,12 +645,12 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             FutureTask<String> task = new FutureTask<>(() -> benchmarkEnable(request, httpRequest));
             executorService.submit(task);
         }
-        return "部署成功";
+        return null;
     }
 
     private List<MachineManageEntity> getAllMachineByTag(String tag) {
         LambdaQueryWrapper<MachineManageEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(MachineManageEntity::getTag, Arrays.asList(tag));
+        queryWrapper.in(MachineManageEntity::getTag, Arrays.asList(tag));
         List<MachineManageEntity> list = machineManageDAO.list(queryWrapper);
         return list;
     }
@@ -679,18 +679,12 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
      * @return
      */
     @Override
-    public PagingList<PressureMachineResponse> listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request) {
-        Page<MachineManageEntity> page = new Page<>(request.getCurrent() + 1, request.getPageSize());
-        QueryWrapper<MachineManageEntity> ipQueryWrapper = new QueryWrapper<>();
-        ipQueryWrapper.lambda().in(MachineManageEntity::getTag, request.getTags());
-        Page<MachineManageEntity> machineManageEntityPage = machineManageDAO.page(page, ipQueryWrapper);
-        List<PressureMachineResponse> pressureMachineResponses = BeanCopyUtils.copyList(machineManageEntityPage.getRecords(), PressureMachineResponse.class);
-        if (CollectionUtils.isEmpty(pressureMachineResponses)) {
-            return PagingList.of(pressureMachineResponses, machineManageEntityPage.getTotal());
-        }
-
-        fillPressureMachineData(httpRequest, pressureMachineResponses);
-        return PagingList.of(pressureMachineResponses, machineManageEntityPage.getTotal());
+    public List<PressureMachineResponse>  listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request) {
+        LambdaQueryWrapper<MachineManageEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(MachineManageEntity::getTag, request.getTags());
+        List<MachineManageEntity> machineManageEntityPage = machineManageDAO.list(lambdaQueryWrapper);
+        List<PressureMachineResponse> pressureMachineResponses = BeanCopyUtils.copyList(machineManageEntityPage, PressureMachineResponse.class);
+        return pressureMachineResponses;
     }
 
     /**

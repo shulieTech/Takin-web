@@ -53,6 +53,6 @@ public interface MachineManageService {
      * @param request
      * @return
      */
-    PagingList<PressureMachineResponse> listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request);
+    List<PressureMachineResponse>  listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request);
 
 }

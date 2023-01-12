@@ -245,7 +245,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         if (StringUtil.isNotEmpty(request.getRemark())) {
             manageDAOById.setRemark(request.getRemark());
         }
-        if (StringUtils.isNotBlank(request.getTag())){
+        if (StringUtils.isNotBlank(request.getTag())) {
             manageDAOById.setTag(request.getTag());
         }
         manageDAOById.setUpdateTime(new Date());
@@ -601,10 +601,10 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 List<Object> sheets = readList.get(i);
                 MachineManageEntity machineManageEntity = new MachineManageEntity();
                 machineManageEntity.setMachineName(Objects.nonNull(sheets.get(0)) ? sheets.get(0).toString() : null);
-                machineManageEntity.setMachineIp(Objects.nonNull(sheets.get(1)) ? sheets.get(0).toString() : null);
-                machineManageEntity.setUserName(Objects.nonNull(sheets.get(2)) ? sheets.get(0).toString() : null);
-                machineManageEntity.setPassword(Objects.nonNull(sheets.get(3)) ? sheets.get(0).toString() : null);
-                machineManageEntity.setTag(Objects.nonNull(sheets.get(4)) ? sheets.get(0).toString() : null);
+                machineManageEntity.setMachineIp(Objects.nonNull(sheets.get(0)) ? sheets.get(0).toString() : null);
+                machineManageEntity.setUserName(Objects.nonNull(sheets.get(2)) ? sheets.get(2).toString() : null);
+                machineManageEntity.setPassword(Objects.nonNull(sheets.get(3)) ? sheets.get(3).toString() : null);
+                machineManageEntity.setTag(Objects.nonNull(sheets.get(4)) ? sheets.get(4).toString() : null);
                 machineManageEntity.setStatus(0);
                 machineManageEntities.add(machineManageEntity);
             }
@@ -617,7 +617,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 return machineIpStr;
             }
             getNodeMsg(machineManageEntities);
-            machineManageDAO.saveBatch(machineManageEntities);
+            if (CollectionUtils.isNotEmpty(machineManageEntities)){
+                machineManageDAO.saveBatch(machineManageEntities);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -679,7 +681,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
      * @return
      */
     @Override
-    public List<PressureMachineResponse>  listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request) {
+    public List<PressureMachineResponse> listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request) {
         LambdaQueryWrapper<MachineManageEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.in(MachineManageEntity::getTag, request.getTags());
         List<MachineManageEntity> machineManageEntityPage = machineManageDAO.list(lambdaQueryWrapper);
@@ -693,17 +695,18 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
      * @param machineManageEntities
      */
     private void getNodeMsg(List<MachineManageEntity> machineManageEntities) {
-        //
+        List<MachineManageEntity> manageEntityArrayList = new ArrayList<>();
         ContextExt req = new ContextExt();
         WebPluginUtils.fillCloudUserData(req);
         ResponseResult<List<NodeMetricsResp>> list = cloudMachineApi.list(req);
         if (list != null && CollectionUtils.isNotEmpty(list.getData())) {
             List<String> nodeIpList = list.getData().stream().map(NodeMetricsResp::getNodeIp).collect(Collectors.toList());
-            machineManageEntities.stream().filter(a -> nodeIpList.contains(a.getMachineIp())).map(b -> {
-                b.setStatus(2);
-                b.setMachineName("");
-                return b;
-            }).collect(Collectors.toList());
+            machineManageEntities.forEach(a -> {
+                if (nodeIpList.contains(a.getMachineIp())) {
+                    a.setStatus(2);
+                    a.setMachineName("");
+                }
+            });
         }
     }
 

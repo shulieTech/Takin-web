@@ -146,7 +146,7 @@ public class PressureTestMachineController {
     @PostMapping("/benchmarkEnableByTag")
     @ApiOperation("benchmark-批量部署压力机根据tag")
     public ResponseResult<String> benchmarkEnableByTag(@RequestBody BenchmarkMachineDeployRequest request, HttpServletRequest httpRequest) {
-        String failContent = machineManageService.benchmarkEnableByTag(httpRequest, request.getTag());
+        String failContent = machineManageService.benchmarkEnableByTag(httpRequest, request);
         if (failContent != null) {
             return ResponseResult.fail("部署失败" + failContent, null);
         }

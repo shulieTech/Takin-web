@@ -633,18 +633,18 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
      * @return
      */
     @Override
-    public String benchmarkEnableByTag(HttpServletRequest httpRequest, String tag) {
+    public String benchmarkEnableByTag(HttpServletRequest httpRequest, BenchmarkMachineDeployRequest request) {
         ExecutorService executorService = Executors.newFixedThreadPool(8);
-        List<MachineManageEntity> list = getAllMachineByTag(tag);
+        List<MachineManageEntity> list = getAllMachineByTag(request.getTag());
         if (CollectionUtils.isEmpty(list)) {
             return "部署失败";
         }
 
         for (MachineManageEntity machineManageEntity : list) {
-            PressureMachineBaseRequest request = new PressureMachineBaseRequest();
-            request.setId(machineManageEntity.getId());
-            request.setBenchmarkSuiteName(machineManageEntity.getBenchmarkSuiteName());
-            FutureTask<String> task = new FutureTask<>(() -> benchmarkEnable(request, httpRequest));
+            PressureMachineBaseRequest pressureMachineBaseRequest = new PressureMachineBaseRequest();
+            pressureMachineBaseRequest.setId(machineManageEntity.getId());
+            pressureMachineBaseRequest.setBenchmarkSuiteName(request.getBenchmarkSuiteName());
+            FutureTask<String> task = new FutureTask<>(() -> benchmarkEnable(pressureMachineBaseRequest, httpRequest));
             executorService.submit(task);
         }
         return null;

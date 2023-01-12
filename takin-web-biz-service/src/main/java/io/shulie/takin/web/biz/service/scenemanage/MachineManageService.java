@@ -38,7 +38,7 @@ public interface MachineManageService {
      * @param tag
      * @return
      */
-    String benchmarkEnableByTag(HttpServletRequest httpRequest, String tag);
+    String benchmarkEnableByTag(HttpServletRequest httpRequest, BenchmarkMachineDeployRequest request);
 
     /**
      * 获取所有tag

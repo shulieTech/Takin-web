@@ -629,7 +629,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     /**
      * 根据tag批量部署机器
      *
-     * @param tag
+     * @param request
      * @return
      */
     @Override

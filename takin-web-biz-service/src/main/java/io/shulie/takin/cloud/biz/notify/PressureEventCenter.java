@@ -1,16 +1,7 @@
 package io.shulie.takin.cloud.biz.notify;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.shulie.takin.adapter.api.entrypoint.watchman.CloudWatchmanApi;
 import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
@@ -48,6 +39,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 负责处理压测产生的事件
@@ -215,24 +213,30 @@ public class PressureEventCenter extends AbstractIndicators {
 
     private void dealStartFail(ResourceContext context, String message) {
         String stopFlag = PressureStartCache.getStopFlag(context.getResourceId());
-        if (redisClientUtil.lockStopFlagExpire(stopFlag, message)) {
-            Long taskId = context.getTaskId();
-            Long reportId = context.getReportId();
-            setTryRunTaskFailInfo(context.getSceneId(), reportId, context.getTenantId(), message);
-            pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, message);
-            pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.STOPPING, null);
-            unLockFlow(reportId, context.getTenantId());
-            try {
-                stopJob(context.getResourceId(), context.getJobId());
-            } catch (Exception ignore) {
+        Long taskId = context.getTaskId();
+        Long reportId = context.getReportId();
+        try {
+            if (redisClientUtil.lockStopFlagExpire(stopFlag, message)) {
+                setTryRunTaskFailInfo(context.getSceneId(), reportId, context.getTenantId(), message);
+                pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, message);
+                pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.STOPPING, null);
+                unLockFlow(reportId, context.getTenantId());
+                try {
+                    stopJob(context.getResourceId(), context.getJobId());
+                } catch (Exception ignore) {
+                    log.error("关闭job失败：{}-{}",context.getResourceId(), context.getJobId(),ignore);
+                }
             }
-            updateSceneFailed(context, SceneManageStatusEnum.STOP);
-            if (!redisClientUtil.hasKey(PressureStartCache.getReportCachedKey(reportId))) {
-                sceneTaskService.cacheReportKey(reportId, -1L);
-            }
-            notifyFinish(context);
-            endDefaultPressureIfNecessary(context);
+        } catch (Exception e) {
+            redisClientUtil.unlock(stopFlag, message);
         }
+        updateSceneFailed(context, SceneManageStatusEnum.STOP);
+        if (!redisClientUtil.hasKey(PressureStartCache.getReportCachedKey(reportId))) {
+            sceneTaskService.cacheReportKey(reportId, -1L);
+        }
+        notifyFinish(context);
+        endDefaultPressureIfNecessary(context);
+
     }
 
     private void dealCheckFail(ResourceContext context) {

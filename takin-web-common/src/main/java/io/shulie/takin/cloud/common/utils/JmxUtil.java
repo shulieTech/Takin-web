@@ -1,23 +1,9 @@
 package io.shulie.takin.cloud.common.utils;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import io.shulie.takin.cloud.common.enums.ThreadGroupTypeEnum;
 import io.shulie.takin.cloud.common.pojo.Pair;
 import io.shulie.takin.cloud.common.pojo.jmeter.ThreadGroupProperty;
@@ -29,6 +15,13 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author liyuanba
@@ -922,11 +915,9 @@ public class JmxUtil {
         List<ScriptNode> result = CollUtil.newArrayList();
         for (ScriptNode childNode : node.getChildren()) {
             result.add(childNode);
-            if (filterFunc.apply(childNode)) {
-                List<ScriptNode> subNodes = getChildNodesByFilterFunc(childNode, filterFunc);
-                if (CollUtil.isNotEmpty(subNodes)) {
-                    result.addAll(subNodes);
-                }
+            List<ScriptNode> subNodes = getChildNodesByFilterFunc(childNode, filterFunc);
+            if (CollUtil.isNotEmpty(subNodes)) {
+                result.addAll(subNodes);
             }
         }
         return result;

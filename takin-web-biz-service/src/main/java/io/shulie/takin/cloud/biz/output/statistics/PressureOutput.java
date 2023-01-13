@@ -15,6 +15,7 @@
 
 package io.shulie.takin.cloud.biz.output.statistics;
 
+import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -82,4 +83,9 @@ public class PressureOutput extends AbstractEntry {
      */
     @Column(name = "status")
     private Integer status;
+
+    /**
+     * 类型
+     */
+    private NodeTypeEnum type;
 }

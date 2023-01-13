@@ -3,6 +3,7 @@ package io.shulie.takin.cloud.biz.collector;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.text.CharSequenceUtil;
+import com.google.common.collect.Lists;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
 import io.shulie.takin.cloud.biz.output.statistics.PressureOutput;
@@ -32,7 +33,6 @@ import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
 import org.springframework.beans.factory.annotation.Value;
@@ -247,6 +247,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         //sourceMap中的key都是jmeter上报的
         PressureOutput result = sourceMap.get(node.getXpathMd5());
         if (null != result) {
+            result.setType(node.getType());
             return result;
         }
         if (CollUtil.isEmpty(node.getChildren())) {
@@ -303,12 +304,12 @@ public class PushWindowDataScheduled extends AbstractIndicators {
          */
         List<ScriptNode> childNodes = JmxUtil.getChildNodesByFilterFunc(node,
                 n -> sourceMap.containsKey(n.getXpathMd5()));
-        // 解决统计事务控制器 计算次数问题
-        final List<PressureOutput> subPressures = Lists.newArrayList();
-        subPressures.addAll(childPressures);
-        if(CollUtil.isNotEmpty(childNodes)) {
+        List<PressureOutput> subPressures = new ArrayList<>(childPressures);
+        List<String> samples = Lists.newArrayList();
+        if (CollUtil.isNotEmpty(childNodes)) {
+            samples = childNodes.stream().filter(t -> NodeTypeEnum.SAMPLER == t.getType())
+                    .map(ScriptNode::getXpathMd5).collect(Collectors.toList());
             childNodes.stream().filter(Objects::nonNull)
-                    .filter(t -> NodeTypeEnum.CONTROLLER != node.getType())
                     .map(ScriptNode::getXpathMd5)
                     .filter(StringUtils::isNotBlank)
                     .map(sourceMap::get)
@@ -316,12 +317,9 @@ public class PushWindowDataScheduled extends AbstractIndicators {
                     .filter(d -> !childPressures.contains(d))
                     .forEach(subPressures::add);
         }
-//        if (NodeTypeEnum.TEST_PLAN == node.getType() || NodeTypeEnum.THREAD_GROUP == node.getType() || CollUtil.isEmpty(childNodes)) {
-//
-//        }else {
-//
-//        }
-
+        final List<String> finalSample  = samples;
+        subPressures =  subPressures.stream().filter(t -> (t.getType() != null && NodeTypeEnum.CONTROLLER != t.getType())
+        || finalSample.contains(t.getTransaction())).collect(Collectors.toList());
         int count = NumberUtil.sum(subPressures, PressureOutput::getCount);
         int failCount = NumberUtil.sum(subPressures, PressureOutput::getFailCount);
         int saCount = NumberUtil.sum(subPressures, PressureOutput::getSaCount);

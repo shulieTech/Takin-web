@@ -25,7 +25,6 @@ import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import com.pamirs.takin.cloud.entity.domain.entity.report.Report;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.WarnDetail;
-import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.common.DistributeBean;
@@ -95,7 +94,6 @@ import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
-import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
@@ -802,6 +800,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             if (Objects.nonNull(totalRequestDto) && Objects.nonNull(totalRequestDto.getTotalRequest())) {
                 statReportDTO.setTotalRequest(totalRequestDto.getTotalRequest());
             } else {
+                log.info("未找到数据");
                 statReportDTO.setTotalRequest(0L);
             }
         }
@@ -1053,7 +1052,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             log.info("本次压测{}-{}-{}的报告生成时间-{}", taskResult.getSceneId(), taskResult.getTaskId(),
                     taskResult.getTenantId(), System.currentTimeMillis() - start);
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：生成报告异常 --> 【通知报告模块】处理finished事件异常: {}",
+            log.error("异常代码【{}】,异常内容：生成报告异常 --> 【通知报告模块】处理finished事件异常:",
                     TakinCloudExceptionEnum.TASK_STOP_DEAL_REPORT_ERROR, e);
         }
     }
@@ -1231,27 +1230,26 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             //统计某个业务活动的数据
             StatReportDTO data = statReport(jobId, sceneId, reportId, tenantId,
                     reportBusinessActivityDetail.getBindRef());
-            if (data == null) {
-                //如果有一个业务活动没有找到对应的数据，则认为压测不通过
-                totalPassFlag = false;
-                log.warn("没有找到匹配的压测数据：场景ID[{}],报告ID:[{}],业务活动:[{}]", sceneId, reportId,
-                        reportBusinessActivityDetail.getBindRef());
-                continue;
-            }
+
             //统计RT分布
             // TODO：调用Cloud接口
             Map<String, String> rtMap = reportEventService.queryAndCalcRtDistribute(tableName,
                     reportBusinessActivityDetail.getBindRef());
             //匹配报告业务的活动
-            reportBusinessActivityDetail.setAvgConcurrenceNum(data.getAvgConcurrenceNum());
-            reportBusinessActivityDetail.setMaxRt(data.getMaxRt());
-            reportBusinessActivityDetail.setMaxTps(data.getMaxTps());
-            reportBusinessActivityDetail.setMinRt(data.getMinRt());
-            reportBusinessActivityDetail.setTps(data.getTps());
-            reportBusinessActivityDetail.setRt(data.getAvgRt());
-            reportBusinessActivityDetail.setSa(data.getSa());
-            reportBusinessActivityDetail.setRequest(data.getTotalRequest());
-            reportBusinessActivityDetail.setSuccessRate(data.getSuccessRate());
+            if (data != null) {
+                // 有数据则赋值
+                log.warn("没有找到匹配的压测数据：场景ID[{}],报告ID:[{}],业务活动:[{}]", sceneId, reportId,
+                        reportBusinessActivityDetail.getBindRef());
+                reportBusinessActivityDetail.setAvgConcurrenceNum(data.getAvgConcurrenceNum());
+                reportBusinessActivityDetail.setMaxRt(data.getMaxRt());
+                reportBusinessActivityDetail.setMaxTps(data.getMaxTps());
+                reportBusinessActivityDetail.setMinRt(data.getMinRt());
+                reportBusinessActivityDetail.setTps(data.getTps());
+                reportBusinessActivityDetail.setRt(data.getAvgRt());
+                reportBusinessActivityDetail.setSa(data.getSa());
+                reportBusinessActivityDetail.setRequest(data.getTotalRequest());
+                reportBusinessActivityDetail.setSuccessRate(data.getSuccessRate());
+            }
             if (MapUtils.isNotEmpty(rtMap)) {
                 reportBusinessActivityDetail.setRtDistribute(JSON.toJSONString(rtMap));
             }

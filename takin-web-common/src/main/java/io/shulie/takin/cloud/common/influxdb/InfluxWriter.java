@@ -1,14 +1,7 @@
 package io.shulie.takin.cloud.common.influxdb;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -21,6 +14,11 @@ import org.influxdb.dto.QueryResult;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="tangyuhan@shulie.io">yuhan.tang</a>
@@ -157,7 +155,8 @@ public class InfluxWriter {
     @Async
     public void truncateMeasurement(String measurement) {
         if (StringUtils.isNotBlank(measurement)) {
-            influx.query(new Query(String.format("delete from %s where time > 0", measurement), database));
+            //influx.query(new Query(String.format("truncate %s", measurement), database));
+            //influx.query(new Query(String.format("delete from %s where time > 0", measurement), database));
         }
     }
 }

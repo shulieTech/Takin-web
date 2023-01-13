@@ -82,7 +82,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String dockerReplaceAndRunCmd;
 
 
-    @Value("${harbor.machine.ip: 192.168.10.11}")
+    @Value("${harbor.machine.ip:192.168.10.11}")
     private String harborMachineIp;
     @Value("${harbor.machine.username: root}")
     private String harborMachineUserName;

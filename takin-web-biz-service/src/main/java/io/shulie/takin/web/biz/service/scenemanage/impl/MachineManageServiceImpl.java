@@ -496,6 +496,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 log.info("启动容器日志：" + dockerRunExec);
 
                 //替换配置文件
+                //todo USER_APPKEY需要换成f524efbb720797aedc4d3339cbf9dda0
                 StringBuffer dockerReplaceAndRunBuffer = new StringBuffer()
                         .append(dockerReplaceAndRunCmd)
                         .append(" && rm -f pressure-engine.zip")

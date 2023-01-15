@@ -530,7 +530,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         .append("&& rm -f pressure-engine.zip ")
                         .append("&& rm -rf pressure-engine ")
                         .append("&& docker exec ").append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ")
-                        .append("'cd /data && mv pressure-engine pressure-engine_bak ").append("&& unzip pressure-engine.zip && cd /data/pressure-engine && sh start.sh -e test -t 1'");
+                        .append("'cd /data && mv pressure-engine pressure-engine_bak ").append("&& unzip pressure-engine.zip && cd /data/pressure-engine && sh start.sh -e test -t 1 -d 1'");
                 deployStatusMap.put(request.getId(), "启动服务");
                 String dockerAppRunExec = sshInitUtil.execute(dockerAppRunBuffer.toString());
                 log.info("启动服务日志：" + dockerAppRunExec);

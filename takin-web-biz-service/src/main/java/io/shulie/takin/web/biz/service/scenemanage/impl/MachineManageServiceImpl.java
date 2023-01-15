@@ -496,24 +496,44 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 log.info("启动容器日志：" + dockerRunExec);
 
                 //替换配置文件
-                String dockerReplaceAndRun = dockerReplaceAndRunCmd + " && sed -i 's/LOCAL_PASSWORD/"
-                        + des.decryptStr(manageDAOById.getPassword()) + "/' ./pressure-engine/config/application-engine.yml && "
-                        + "sed -i 's/TAKIN_LITE_IP/" + benchmarkServerIp + "/' ./pressure-engine/config/application-engine.yml && "
-                        + "sed -i 's/TAKIN_LITE_PORT/" + benchmarkServerPort + "/' ./pressure-engine/config/application-engine.yml && "
-                        + "sed -i 's/LOCALHOST_IP/" + manageDAOById.getMachineIp() + "/' ./pressure-engine/config/application-engine.yml && "
-                        + "sed -i 's/USER_APPKEY/" + benchmarkUserAppKey + "/' ./pressure-engine/config/application-engine.yml && "
-                        + "sed -i 's/SUITE_NAME/" + manageDAOById.getBenchmarkSuiteName() + "/' ./pressure-engine/config/application-engine.yml && "
-                        + "sed -i 's/TENANT_ID/" + WebPluginUtils.traceTenantId() + "/' ./pressure-engine/config/application-engine.yml && "
-                        + "sed -i 's/ENV_CODE/" + WebPluginUtils.traceEnvCode() + "/' ./pressure-engine/config/application-engine.yml ";
-                //替换并启动
-                dockerReplaceAndRun = dockerReplaceAndRun + " && rm -f pressure-engine.zip && zip -r pressure-engine.zip ./pressure-engine && "
-                        + "docker cp pressure-engine.zip " + manageDAOById.getBenchmarkSuiteName()
-                        + ":/data/pressure-engine.zip && rm -f pressure-engine.zip && rm -rf ./pressure-engine "
-                        + "&& docker exec " + manageDAOById.getBenchmarkSuiteName() + " /bin/bash -c 'cd /data && mv pressure-engine pressure-engine_bak "
-                        + "&& unzip pressure-engine.zip && cd pressure-engine && sh start.sh'";
+                StringBuffer dockerReplaceAndRunBuffer = new StringBuffer()
+                        .append(dockerReplaceAndRunCmd)
+                        .append(" && rm -f pressure-engine.zip")
+                        .append(" && sed -i 's/LOCAL_PASSWORD/").append(des.decryptStr(manageDAOById.getPassword())).append("/' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/TAKIN_LITE_IP/").append(benchmarkServerIp).append("/' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/TAKIN_LITE_PORT/").append(benchmarkServerPort).append("/' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/LOCALHOST_IP/").append(manageDAOById.getMachineIp()).append("/' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/USER_APPKEY/").append(benchmarkUserAppKey).append("/' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/SUITE_NAME/").append(manageDAOById.getBenchmarkSuiteName()).append("/' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/' ./pressure-engine/config/application-engine.yml");
+
+                deployStatusMap.put(request.getId(),"替换配置文件");
+                String replaceAndRunExec = sshInitUtil.execute(dockerReplaceAndRunBuffer.toString());
+                log.info("替换配置文件日志：" + replaceAndRunExec);
+
+                //todo pressure.task.event.host为宿主机地址
+                //初始化配置文件pressure.engine.env.conf
+                StringBuffer dockerPressureEnvConfBuffer = new StringBuffer()
+                        .append("docker exec ").append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ")
+                        .append("'cd /data")
+                        .append(" && sed -i \"s/192.168.1.195/").append(benchmarkServerIp).append("/g\" ./pressure.engine.env.conf")
+                        .append(" && sed -i \"s/192.168.1.195/").append(benchmarkServerIp).append("/g\" ./pressure.engine.env.conf")
+                        .append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" ./pressure.engine.env.conf'");
+                String dockerPressureEnvConfExec = sshInitUtil.execute(dockerPressureEnvConfBuffer.toString());
+                log.info("启动服务日志：" + dockerPressureEnvConfExec);
+
+                //启动进程
+                StringBuffer dockerAppRunBuffer = new StringBuffer()
+                        .append("cd /data && zip -r pressure-engine.zip pressure-engine/ ")
+                        .append("&& docker cp pressure-engine.zip ").append(manageDAOById.getBenchmarkSuiteName()).append(":/data/pressure-engine.zip ")
+                        .append("&& rm -f pressure-engine.zip ")
+                        .append("&& rm -rf pressure-engine ")
+                        .append("&& docker exec ").append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ")
+                        .append("'cd /data && mv pressure-engine pressure-engine_bak ").append("&& unzip pressure-engine.zip && cd /data/pressure-engine && sh start.sh -e test -t 1'");
                 deployStatusMap.put(request.getId(), "启动服务");
-                String replaceAndRunExec = sshInitUtil.execute(dockerReplaceAndRun);
-                log.info("替换配置并启动服务日志：" + replaceAndRunExec);
+                String dockerAppRunExec = sshInitUtil.execute(dockerAppRunBuffer.toString());
+                log.info("启动服务日志：" + dockerAppRunExec);
                 //监听启动成功
                 long startTimeMillis = System.currentTimeMillis();
                 while (true) {
@@ -645,7 +665,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             pressureMachineBaseRequest.setId(machineManageEntity.getId());
             pressureMachineBaseRequest.setBenchmarkSuiteName(request.getBenchmarkSuiteName());
             FutureTask<String> task = new FutureTask<>(() -> benchmarkEnable(pressureMachineBaseRequest, httpRequest));
-            executorService.submit(task);
+            executorService.execute(task);
         }
         return null;
     }

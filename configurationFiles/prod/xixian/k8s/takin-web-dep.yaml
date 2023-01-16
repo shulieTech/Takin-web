@@ -17,7 +17,7 @@ spec:
       containers:
       - name: takin-web
         image: harbor.dcos.xixian.unicom.local/skyeye-platform-xx-pbc/stresstest/takin-web:2.0.0
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
             exec:

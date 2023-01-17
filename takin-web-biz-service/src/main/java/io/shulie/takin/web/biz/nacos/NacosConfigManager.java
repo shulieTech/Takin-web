@@ -173,11 +173,38 @@ public class NacosConfigManager {
         threadPool.submit(new SwitchConfigRefreshTask());
     }
 
-    public void pushNacosConfigs(String dataId, String group, ConfigService configService, String configs) {
+    /**
+     * 把配置推送给指定数据中心的nacos集群
+     * @param dataId
+     * @param group
+     * @param configService
+     * @param configString
+     */
+    public void pushNacosConfigs(String dataId, String group, ConfigService configService, String configString) {
         try {
-            configService.publishConfig(dataId, group, configs);
+            configService.publishConfig(dataId, group, configString);
         } catch (NacosException e) {
-            log.error("推送配置到nacos发生异常,dataId:{}, group:{}, content:{}", dataId, group, configs);
+            log.error("推送配置到nacos发生异常,dataId:{}, group:{}, content:{}", dataId, group, configString);
+        }
+    }
+
+    /**
+     * 把配置推送给所有数据中心的nacos集群
+     * @param dataId
+     * @param group
+     * @param configString
+     */
+    public void pushNacosConfigs(String dataId, String group, String configString) {
+        for (Map.Entry<String, ConfigService> entry: configServices.entrySet()) {
+            String clusterName = entry.getKey();
+            ConfigService configService = entry.getValue();
+
+            try {
+                configService.publishConfig(dataId, group, configString);
+
+            } catch (NacosException e) {
+                log.error("推送配置到nacos发生异常, cluster:{}, dataId:{}, group:{}, content:{}", clusterName, dataId, group, configString);
+            }
         }
     }
 
@@ -294,7 +321,8 @@ public class NacosConfigManager {
             List<AgentConfigListResponse> configListResponses = agentConfigService.list(queryRequest);
             Map<String, String> configMap = configListResponses.stream().collect(Collectors.toMap(AgentConfigListResponse::getEnKey, AgentConfigListResponse::getDefaultValue));
             // 全局配置每个nacos都推送
-            configServices.entrySet().forEach(entry -> pushNacosConfigs("globalConfig", "GLOBAL_CONFIG", entry.getValue(), JSON.toJSONString(configMap)));
+            pushNacosConfigs("globalConfig", "GLOBAL_CONFIG", JSON.toJSONString(configMap));
+            //configServices.entrySet().forEach(entry -> pushNacosConfigs("globalConfig", "GLOBAL_CONFIG", entry.getValue(), JSON.toJSONString(configMap)));
         }
     }
 
@@ -310,10 +338,11 @@ public class NacosConfigManager {
             switchDTO.setConfigCode(ConfigConstants.WHITE_LIST_SWITCH);
             switchDTO.setSwitchFlagFix(agentConfigCacheManager.getAllowListSwitch());
             values.put("whiteListSwitch", switchDTO);
-
             values.put("globalSwithc", agentConfigCacheManager.getPressureSwitch());
-            configServices.entrySet().forEach(entry -> pushNacosConfigs("clusterConfig", "CLUSTER_CONFIG", entry.getValue(), JSON.toJSONString(values)));
 
+            // 全局配置每个nacos都推送
+            pushNacosConfigs("clusterConfig", "CLUSTER_CONFIG", JSON.toJSONString(values));
+            //configServices.entrySet().forEach(entry -> pushNacosConfigs("clusterConfig", "CLUSTER_CONFIG", entry.getValue(), JSON.toJSONString(values)));
         }
     }
 

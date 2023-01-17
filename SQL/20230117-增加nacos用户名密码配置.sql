@@ -1,0 +1,2 @@
+alter table trodb.t_cluster_nacos_configuration add column `nacos_username` varchar(64) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL COMMENT 'nacos用户名' after `nacos_namespace`;
+alter table trodb.t_cluster_nacos_configuration add column `nacos_password` varchar(64) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL COMMENT 'nacos密码' after `nacos_username`;

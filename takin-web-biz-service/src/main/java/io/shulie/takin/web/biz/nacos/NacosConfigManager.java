@@ -86,9 +86,19 @@ public class NacosConfigManager {
             for (ClusterNacosConfiguration entity : nacosEntities) {
                 Properties properties = new Properties();
                 properties.put(PropertyKeyConst.SERVER_ADDR, entity.getNacosServerAddr());
+
                 if (entity.getNacosNamespace() != null) {
                     properties.put(PropertyKeyConst.NAMESPACE, entity.getNacosNamespace());
                 }
+
+                if (entity.getNacosUsername() != null) {
+                    properties.put(PropertyKeyConst.USERNAME, entity.getNacosUsername());
+                }
+
+                if (entity.getNacosPassword() != null) {
+                    properties.put(PropertyKeyConst.PASSWORD, entity.getNacosPassword());
+                }
+
                 ConfigService service = ConfigFactory.createConfigService(properties);
                 configServices.put(entity.getClusterName(), service);
             }

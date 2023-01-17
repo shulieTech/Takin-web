@@ -1,21 +1,25 @@
 package io.shulie.takin.web.biz.utils;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
+import io.shulie.takin.web.biz.nacos.NacosConfigManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
+import org.ehcache.impl.internal.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -33,31 +37,36 @@ public class PradarConfigPusher {
     @Value("${takin.config.zk.timeout: 3000}")
     private Integer timeout;
 
-    @Value("${takin.config.nacos.enbale: false}")
-    private String nacosEnbaled;
-
-    @Value("${takin.config.nacos.addr}")
-    private String nacosAddr;
+//    @Value("${takin.config.nacos.enbale: false}")
+//    private String nacosEnbaled;
+//
+//    @Value("${takin.config.nacos.addr}")
+//    private String nacosAddr;
 
     private CuratorFramework client;
 
-    private ConfigService configService;
+//    private ConfigService configService;
+
+    @Resource
+    private NacosConfigManager nacosConfigManager;
+
+    private ConcurrentHashMap<String, String> currentConfig = new ConcurrentHashMap<>();
 
     private static final String DATA_ID = "pradarConfig";
     private static final String GROUP = "PRADAR_CONFIG";
 
     @PostConstruct
     public void init() {
-        if("nacos".equals(nacosEnbaled)){
-            try {
-                Properties properties = new Properties();
-                properties.put(PropertyKeyConst.SERVER_ADDR, nacosAddr);
-                configService = ConfigFactory.createConfigService(properties);
-            } catch (Exception e) {
-                configService = null;
-                log.info("初始化pradar config的nacos客户端失败, nacos地址:{}, 不实用nacos作为配置中心", nacosAddr, e);
-            }
-        }
+//        if("nacos".equals(nacosEnbaled)){
+//            try {
+//                Properties properties = new Properties();
+//                properties.put(PropertyKeyConst.SERVER_ADDR, nacosAddr);
+//                configService = ConfigFactory.createConfigService(properties);
+//            } catch (Exception e) {
+//                configService = null;
+//                log.info("初始化pradar config的nacos客户端失败, nacos地址:{}, 不实用nacos作为配置中心", nacosAddr, e);
+//            }
+//        }
 
         try {
             client = CuratorFrameworkFactory
@@ -70,8 +79,6 @@ public class PradarConfigPusher {
         } catch (Exception e) {
             log.error("初始化pradar config的zk客户端失败, zk地址:{},不使用zk作为配置中心", zkAddr, e);
         }
-
-
     }
 
     /**
@@ -80,7 +87,7 @@ public class PradarConfigPusher {
      * @return
      */
     public boolean useNaocsForConfigCenter() {
-        return configService != null;
+        return nacosConfigManager.useNacosForConfigCenter();
     }
 
     /**
@@ -185,19 +192,7 @@ public class PradarConfigPusher {
     }
 
     public void pushConfigToNacos(Map<String, String> config) {
-        try {
-            String serviceConfig = configService.getConfig(DATA_ID, GROUP, 3000);
-            Map serviceConfigMap;
-            if (serviceConfig != null){
-                serviceConfigMap = JSON.parseObject(serviceConfig, Map.class);
-                serviceConfigMap.putAll(config);
-            } else {
-                serviceConfigMap = config;
-            }
-            configService.publishConfig(DATA_ID, GROUP, JSON.toJSONString(serviceConfigMap));
-        } catch (NacosException e) {
-            log.error("推送配置到nacos发生异常,dataId:{}, group:{}, config:{}", DATA_ID, GROUP, config, e);
-        }
+        currentConfig.putAll(config);
+        nacosConfigManager.pushNacosConfigs(DATA_ID, GROUP, JSON.toJSONString(currentConfig));
     }
-
 }

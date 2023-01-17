@@ -40,6 +40,16 @@ public class ClusterNacosConfiguration implements Serializable {
     private String nacosNamespace;
 
     /**
+     * nacos用户名
+     */
+    private String nacosUsername;
+
+    /**
+     * nacos密码
+     */
+    private String nacosPassword;
+
+    /**
      * 创建时间
      */
     private Date gmtCreate;

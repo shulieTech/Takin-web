@@ -536,6 +536,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
         resp.setScriptNodeSummaryBeans(getScriptNodeSummaryBeans(reportResult.getScriptNodeTree(),
                 reportBusinessActivityDetailList));
+
         return resp;
     }
 

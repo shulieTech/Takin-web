@@ -35,7 +35,7 @@ public interface MachineManageService {
     /**
      * 根据tag批量部署机器
      *
-     * @param tag
+     * @param request
      * @return
      */
     String benchmarkEnableByTag(HttpServletRequest httpRequest, BenchmarkMachineDeployRequest request);

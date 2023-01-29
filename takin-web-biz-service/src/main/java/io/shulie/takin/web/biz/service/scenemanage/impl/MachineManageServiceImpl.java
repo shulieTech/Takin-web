@@ -38,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -419,6 +420,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
+    @Async
     public String benchmarkEnable(PressureMachineBaseRequest request, HttpServletRequest httpRequest) {
         if (request.getBenchmarkSuiteName() == null) {
             return "benchmark部署需要上传部署组件名称";
@@ -500,14 +502,14 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 StringBuffer dockerReplaceAndRunBuffer = new StringBuffer()
                         .append(dockerReplaceAndRunCmd)
                         .append(" && rm -f pressure-engine.zip")
-                        .append(" && sed -i 's/LOCAL_PASSWORD/").append(des.decryptStr(manageDAOById.getPassword())).append("/' ./pressure-engine/config/application-engine.yml")
-                        .append(" && sed -i 's/TAKIN_LITE_IP/").append(benchmarkServerIp).append("/' ./pressure-engine/config/application-engine.yml")
-                        .append(" && sed -i 's/TAKIN_LITE_PORT/").append(benchmarkServerPort).append("/' ./pressure-engine/config/application-engine.yml")
-                        .append(" && sed -i 's/LOCALHOST_IP/").append(manageDAOById.getMachineIp()).append("/' ./pressure-engine/config/application-engine.yml")
-                        .append(" && sed -i 's/USER_APPKEY/").append(benchmarkUserAppKey).append("/' ./pressure-engine/config/application-engine.yml")
-                        .append(" && sed -i 's/SUITE_NAME/").append(manageDAOById.getBenchmarkSuiteName()).append("/' ./pressure-engine/config/application-engine.yml")
-                        .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/' ./pressure-engine/config/application-engine.yml")
-                        .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/' ./pressure-engine/config/application-engine.yml");
+                        .append(" && sed -i 's/LOCAL_PASSWORD/").append(des.decryptStr(manageDAOById.getPassword())).append("/g' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/TAKIN_LITE_IP/").append(benchmarkServerIp).append("/g' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/TAKIN_LITE_PORT/").append(benchmarkServerPort).append("/g' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/LOCALHOST_IP/").append(manageDAOById.getMachineIp()).append("/g' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/USER_APPKEY/").append(benchmarkUserAppKey).append("/g' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/SUITE_NAME/").append(manageDAOById.getBenchmarkSuiteName()).append("/g' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/g' ./pressure-engine/config/application-engine.yml")
+                        .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' ./pressure-engine/config/application-engine.yml");
 
                 deployStatusMap.put(request.getId(),"替换配置文件");
                 String replaceAndRunExec = sshInitUtil.execute(dockerReplaceAndRunBuffer.toString());
@@ -518,8 +520,8 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 StringBuffer dockerPressureEnvConfBuffer = new StringBuffer()
                         .append("docker exec ").append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ")
                         .append("'cd /data")
-                        .append(" && sed -i \"s/192.168.1.195/").append(benchmarkServerIp).append("/g\" ./pressure.engine.env.conf")
-                        .append(" && sed -i \"s/192.168.1.195/").append(benchmarkServerIp).append("/g\" ./pressure.engine.env.conf")
+                        .append(" && sed -i \"s/192.168.1.205/").append(benchmarkServerIp).append("/g\" ./pressure.engine.env.conf")
+                        .append(" && sed -i \"s/192.168.1.195/").append(manageDAOById.getMachineIp()).append("/g\" ./pressure.engine.env.conf")
                         .append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" ./pressure.engine.env.conf'");
                 String dockerPressureEnvConfExec = sshInitUtil.execute(dockerPressureEnvConfBuffer.toString());
                 log.info("启动服务日志：" + dockerPressureEnvConfExec);
@@ -665,8 +667,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             PressureMachineBaseRequest pressureMachineBaseRequest = new PressureMachineBaseRequest();
             pressureMachineBaseRequest.setId(machineManageEntity.getId());
             pressureMachineBaseRequest.setBenchmarkSuiteName(request.getBenchmarkSuiteName());
-            FutureTask<String> task = new FutureTask<>(() -> benchmarkEnable(pressureMachineBaseRequest, httpRequest));
-            executorService.execute(task);
+            benchmarkEnable(pressureMachineBaseRequest, httpRequest);
+//            FutureTask<String> task = new FutureTask<>(() -> benchmarkEnable(pressureMachineBaseRequest, httpRequest));
+//            executorService.execute(task);
         }
         return null;
     }

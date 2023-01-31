@@ -505,12 +505,15 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         .append(" && sed -i 's/LOCAL_PASSWORD/").append(des.decryptStr(manageDAOById.getPassword())).append("/g' ./pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/TAKIN_LITE_IP/").append(benchmarkServerIp).append("/g' ./pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/TAKIN_LITE_PORT/").append(benchmarkServerPort).append("/g' ./pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/LOCALHOST_IP/").append(manageDAOById.getMachineIp()).append("/g' ./pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/LOCALHOST_HOST_IP/").append(manageDAOById.getMachineIp()).append("/g' ./pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/USER_APPKEY/").append(benchmarkUserAppKey).append("/g' ./pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/SUITE_NAME/").append(manageDAOById.getBenchmarkSuiteName()).append("/g' ./pressure-engine/config/application-test.yml")
+//                        .append(" && sed -i 's/SUITE_NAME/").append(manageDAOById.getBenchmarkSuiteName()).append("/g' ./pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/g' ./pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' ./pressure-engine/config/application-test.yml");
-
+                        .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' ./pressure-engine/config/application-test.yml")
+                        // todo 暂时写死
+                        .append(" && sed -i 's/PORT/").append("18801").append("/g' ./pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' ./pressure-engine/config/application-test.yml");
+                
                 deployStatusMap.put(request.getId(),"替换配置文件");
                 log.info("执行配置文件替换命令："+dockerReplaceAndRunBuffer.toString());
                 String replaceAndRunExec = sshInitUtil.execute(dockerReplaceAndRunBuffer.toString());

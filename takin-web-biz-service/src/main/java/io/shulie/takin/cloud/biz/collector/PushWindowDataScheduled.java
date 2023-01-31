@@ -1,5 +1,21 @@
 package io.shulie.takin.cloud.biz.collector;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.text.CharSequenceUtil;
@@ -20,7 +36,11 @@ import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
-import io.shulie.takin.cloud.common.utils.*;
+import io.shulie.takin.cloud.common.utils.CollectorUtil;
+import io.shulie.takin.cloud.common.utils.CommonUtil;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.cloud.common.utils.JsonUtil;
+import io.shulie.takin.cloud.common.utils.NumberUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.param.report.ReportQueryParam;
 import io.shulie.takin.cloud.data.param.report.ReportQueryParam.PressureTypeRelation;
@@ -42,13 +62,6 @@ import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * @author <a href="tangyuhan@shulie.io">yuhan.tang</a>
@@ -91,7 +104,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
                 long startTime = endTime - TimeUnit.NANOSECONDS.convert(CollectorConstants.SEND_TIME, TimeUnit.SECONDS);
                 sql.WHERE("time > " + startTime).WHERE("time <= " + endTime);
                 List<ResponseMetrics> query = influxWriter.query(sql.toString(), ResponseMetrics.class);
-                log.info("汇总查询日志：sceneId:{},sql:{},查询结果数量:{}", sceneId, sql, query == null ? "null" : query.size());
+                log.debug("汇总查询日志：sceneId:{},sql:{},查询结果数量:{}", sceneId, sql, query == null ? "null" : query.size());
                 return query == null ? new ArrayList<>(0) : query;
             } else {
                 timeWindow = getMetricsMinTimeWindow(jobId, sceneId, reportId, customerId);
@@ -153,7 +166,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         Long jobId = report.getJobId();
         String logPre = String.format("reduceMetrics %s-%s-%s:%s",
                 sceneId, reportId, customerId, showTime(timeWindow));
-        log.info(logPre + " start!");
+        log.debug(logPre + " start!");
         //如果时间窗口为空
         if (null == timeWindow) {
             //则通过当前压测统计表的未完成记录时间进行统计（数据统计有缺失的为未完成）
@@ -166,17 +179,17 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         }
         //如果当前处理的时间窗口已经大于当结束时间窗口，则退出
         if (null != timeWindow && timeWindow > endTime) {
-            log.info("{} return 1!timeWindow={}, endTime={}",
+            log.debug("{} return 1!timeWindow={}, endTime={}",
                     logPre, showTime(timeWindow), showTime(endTime));
             return timeWindow;
         }
         //timeWindow如果为空，则获取全部metrics数据，如果不为空则获取该时间窗口的数据
         List<ResponseMetrics> metricsList = queryMetrics(jobId, sceneId, reportId, customerId, timeWindow);
         if (CollUtil.isEmpty(metricsList)) {
-            log.info("{}, timeWindow={} ， metrics 是空集合!", logPre, showTime(timeWindow));
+            log.debug("{}, timeWindow={} ， metrics 是空集合!", logPre, showTime(timeWindow));
             return timeWindow;
         }
-        log.info("{} queryMetrics timeWindow={}, endTime={}, metricsList.size={}",
+        log.debug("{} queryMetrics timeWindow={}, endTime={}, metricsList.size={}",
                 logPre, showTime(timeWindow), showTime(endTime), metricsList.size());
         if (null == timeWindow) {
             timeWindow = metricsList.stream().filter(Objects::nonNull)
@@ -187,7 +200,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         }
         //如果当前处理的时间窗口已经大于结束时间窗口，则退出
         if (timeWindow > endTime) {
-            log.info("{} return 3!timeWindow={}, endTime={}",
+            log.debug("{} return 3!timeWindow={}, endTime={}",
                     logPre, showTime(timeWindow), showTime(endTime));
             return timeWindow;
         }
@@ -198,7 +211,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
                 .distinct()
                 .collect(Collectors.toList());
         if (CollUtil.isEmpty(transactions)) {
-            log.info("{} return 4!transactions is empty!", logPre);
+            log.debug("{} return 4!transactions is empty!", logPre);
             return timeWindow;
         }
 
@@ -212,7 +225,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         if (CollUtil.isEmpty(results)) {
-            log.info("results is empty!");
+            log.debug("results is empty!");
             return timeWindow;
         }
 
@@ -445,7 +458,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         String taskKey = getPressureTaskKey(sceneId, reportId, customerId);
         String last = String.valueOf(redisTemplate.opsForValue().get(last(taskKey)));
         long nowTimeWindow = CollectorUtil.getTimeWindowTime(System.currentTimeMillis());
-        log.info("finishPushData {}-{}-{} last={}, timeWindow={}, endTime={}, now={}", sceneId, reportId, customerId,
+        log.debug("finishPushData {}-{}-{} last={}, timeWindow={}, endTime={}, now={}", sceneId, reportId, customerId,
                 last, showTime(timeWindow), showTime(endTime), showTime(nowTimeWindow));
 
         if (null != report.getEndTime()) {
@@ -643,7 +656,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
                 List<ScriptNode> nodes = JsonUtil.parseArray(r.getScriptNodeTree(), ScriptNode.class);
                 SceneManageWrapperOutput scene = cloudSceneManageService.getSceneManage(sceneId, null);
                 if (null == scene) {
-                    log.info("no such scene manager!sceneId=" + sceneId);
+                    log.info("no such scene manager!sceneId={}", sceneId);
                     return;
                 }
                 //结束时间取开始压测时间-10s+总测试时间+3分钟， 3分钟富裕时间，给与pod启动和压测引擎启动延时时间

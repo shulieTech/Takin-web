@@ -75,24 +75,24 @@ public abstract class AbstractIndicators {
      * 2、key存在，比较值大小
      */
     private static final String MAX_SCRIPT =
-        "if (redis.call('exists', KEYS[1]) == 0 or redis.call('get', KEYS[1]) < ARGV[1]) then\n" +
-            "    redis.call('set', KEYS[1], ARGV[1]);\n" +
-            //            "    return 1;\n" +
-            "else\n" +
-            //            "    return 0;\n" +
-            "end";
+            "if (redis.call('exists', KEYS[1]) == 0 or redis.call('get', KEYS[1]) < ARGV[1]) then\n" +
+                    "    redis.call('set', KEYS[1], ARGV[1]);\n" +
+                    //            "    return 1;\n" +
+                    "else\n" +
+                    //            "    return 0;\n" +
+                    "end";
     private static final String MIN_SCRIPT =
-        "if (redis.call('exists', KEYS[1]) == 0 or redis.call('get', KEYS[1]) > ARGV[1]) then\n" +
-            "    redis.call('set', KEYS[1], ARGV[1]);\n" +
-            //            "    return 1;\n" +
-            "else\n" +
-            //            "    return 0;\n" +
-            "end";
+            "if (redis.call('exists', KEYS[1]) == 0 or redis.call('get', KEYS[1]) > ARGV[1]) then\n" +
+                    "    redis.call('set', KEYS[1], ARGV[1]);\n" +
+                    //            "    return 1;\n" +
+                    "else\n" +
+                    //            "    return 0;\n" +
+                    "end";
     private static final String UNLOCK_SCRIPT = "if redis.call('exists',KEYS[1]) == 1 then\n" +
-        "   redis.call('del',KEYS[1])\n" +
-        "else\n" +
-        //                    "   return 0\n" +
-        "end";
+            "   redis.call('del',KEYS[1])\n" +
+            "else\n" +
+            //                    "   return 0\n" +
+            "end";
     @Autowired
     protected CloudSceneManageService cloudSceneManageService;
     @Autowired
@@ -144,9 +144,9 @@ public abstract class AbstractIndicators {
     }
 
     public Boolean lock(String key, String value) {
-        return redisTemplate.execute((RedisCallback<Boolean>)connection -> {
+        return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
             Boolean bl = connection.set(getLockPrefix(key).getBytes(), value.getBytes(), expiration,
-                RedisStringCommands.SetOption.SET_IF_ABSENT);
+                    RedisStringCommands.SetOption.SET_IF_ABSENT);
             return null != bl && bl;
         });
     }
@@ -224,7 +224,7 @@ public abstract class AbstractIndicators {
     protected Long getEventTimeStrap(String key) {
         Object object = redisTemplate.opsForValue().get(key);
         if (null != object) {
-            return (long)object;
+            return (long) object;
         }
         return null;
     }
@@ -324,11 +324,11 @@ public abstract class AbstractIndicators {
 
     protected void removeSuccessKey(String resourceId, String podId, String jmeterId, Date time) {
         Long podCount = redisClientUtil.remSetValueAndReturnCount(
-            PressureStartCache.getResourcePodSuccessKey(resourceId), podId);
+                PressureStartCache.getResourcePodSuccessKey(resourceId), podId);
         Long jmeterCount = -1L;
         if (StringUtils.isNotBlank(jmeterId)) {
             jmeterCount = redisClientUtil.remSetValueAndReturnCount(
-                PressureStartCache.getResourceJmeterSuccessKey(resourceId), jmeterId);
+                    PressureStartCache.getResourceJmeterSuccessKey(resourceId), jmeterId);
         }
         if (podCount == 0 || jmeterCount == 0) {
             detectEnd(resourceId, time);
@@ -343,8 +343,8 @@ public abstract class AbstractIndicators {
         String engineName = ScheduleConstants.getEngineName(sceneId, reportId, tenantId);
         setMax(engineName + ScheduleConstants.LAST_SIGN, time.getTime());
         if (Objects.equals(context.getCheckStatus(), String.valueOf(CheckStatus.SUCCESS.ordinal()))
-            && redisClientUtil.lockExpire(PressureStartCache.getFinishStopKey(resourceId),
-            String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)) {
+                && redisClientUtil.lockExpire(PressureStartCache.getFinishStopKey(resourceId),
+                String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)) {
             setLast(last(getPressureTaskKey(sceneId, reportId, tenantId)), ScheduleConstants.LAST_SIGN);
             // 压测停止
             notifyEnd(context, time);
@@ -354,32 +354,36 @@ public abstract class AbstractIndicators {
     protected void notifyFinish(ResourceContext context) {
         String resourceId = context.getResourceId();
         // 清除 SLA配置  生成报告拦截 状态拦截
-        if (!Objects.equals(context.getPressureType(), PressureSceneEnum.INSPECTION_MODE.getCode())
-            && redisClientUtil.lockExpire(PressureStartCache.getResourceFinishEventKey(resourceId),
-            String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)) {
-            Event event = new Event();
-            event.setEventName("finished");
-            TaskResult result = new TaskResult(context.getSceneId(), context.getReportId(), context.getTenantId());
-            result.setResourceId(context.getResourceId());
-            event.setExt(result);
-            eventCenterTemplate.doEvents(event);
+        try {
+            // && redisClientUtil.lockExpire(PressureStartCache.getResourceFinishEventKey(resourceId),
+            //                String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)
+            if (!Objects.equals(context.getPressureType(), PressureSceneEnum.INSPECTION_MODE.getCode())) {
+                Event event = new Event();
+                event.setEventName("finished");
+                TaskResult result = new TaskResult(context.getSceneId(), context.getReportId(), context.getTenantId());
+                result.setResourceId(context.getResourceId());
+                event.setExt(result);
+                eventCenterTemplate.doEvents(event);
+            }
+        } catch (Exception e) {
+            log.error("失败清除：{}", context, e);
         }
     }
 
     protected void notifyEnd(ResourceContext context, Date time) {
         String now = String.valueOf(System.currentTimeMillis());
         if (redisClientUtil.lockExpire(
-            PressureStartCache.getStopSuccessFlag(context.getResourceId()), now, 10, TimeUnit.MINUTES)) {
+                PressureStartCache.getStopSuccessFlag(context.getResourceId()), now, 10, TimeUnit.MINUTES)) {
             Long sceneId = context.getSceneId();
             Long reportId = context.getReportId();
             Long tenantId = context.getTenantId();
             log.info("场景[{}-{}]压测任务已完成,更新结束时间{}", sceneId, reportId, System.currentTimeMillis());
             // 更新压测场景状态  压测引擎运行中,压测引擎停止压测 ---->压测引擎停止压测
             cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(sceneId, reportId, tenantId)
-                .checkEnum(SceneManageStatusEnum.STARTING,
-                    SceneManageStatusEnum.JOB_CREATING, SceneManageStatusEnum.PRESSURE_NODE_RUNNING,
-                    SceneManageStatusEnum.ENGINE_RUNNING, SceneManageStatusEnum.STOP)
-                .updateEnum(SceneManageStatusEnum.STOP).build());
+                    .checkEnum(SceneManageStatusEnum.STARTING,
+                            SceneManageStatusEnum.JOB_CREATING, SceneManageStatusEnum.PRESSURE_NODE_RUNNING,
+                            SceneManageStatusEnum.ENGINE_RUNNING, SceneManageStatusEnum.STOP)
+                    .updateEnum(SceneManageStatusEnum.STOP).build());
             updateReportEndTime(context, time);
             pressureTaskDAO.updateStatus(context.getTaskId(), PressureTaskStateEnum.INACTIVE, null);
         }
@@ -413,7 +417,7 @@ public abstract class AbstractIndicators {
 
     protected void generateReport(Long taskId) {
         if (redisClientUtil.lockExpire(PressureStartCache.getReportGenerateKey(taskId),
-            String.valueOf(System.currentTimeMillis()), 5, TimeUnit.MINUTES)) {
+                String.valueOf(System.currentTimeMillis()), 5, TimeUnit.MINUTES)) {
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_GENERATING, null);
         }
     }
@@ -421,7 +425,7 @@ public abstract class AbstractIndicators {
     protected void doneReport(ReportResult report) {
         Long taskId = report.getTaskId();
         if (redisClientUtil.lockExpire(PressureStartCache.getReportDoneKey(taskId),
-            String.valueOf(System.currentTimeMillis()), 5, TimeUnit.MINUTES)) {
+                String.valueOf(System.currentTimeMillis()), 5, TimeUnit.MINUTES)) {
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_DONE, null);
             dataCalibration(report);
         }
@@ -431,8 +435,8 @@ public abstract class AbstractIndicators {
         Long jobId = report.getJobId();
         String resourceId = report.getResourceId();
         if (redisClientUtil.hasKey(PressureStartCache.getJmeterStartFirstKey(resourceId))
-            && redisClientUtil.lockExpire(PressureStartCache.getDataCalibrationLockKey(jobId),
-            String.valueOf(report.getId()), 5, TimeUnit.MINUTES)) {
+                && redisClientUtil.lockExpire(PressureStartCache.getDataCalibrationLockKey(jobId),
+                String.valueOf(report.getId()), 5, TimeUnit.MINUTES)) {
             TaskResult result = new TaskResult();
             result.setSceneId(report.getSceneId());
             result.setTaskId(jobId);
@@ -507,16 +511,16 @@ public abstract class AbstractIndicators {
         param.put(PressureStartCache.FEATURES_MACHINE_TYPE, machineType);
         String machineFeatures = param.toJSONString();
         sceneManageDAO.getBaseMapper().update(null,
-            Wrappers.lambdaUpdate(SceneManageEntity.class)
-                .set(SceneManageEntity::getFeatures, machineFeatures)
-                .eq(SceneManageEntity::getId, sceneId));
+                Wrappers.lambdaUpdate(SceneManageEntity.class)
+                        .set(SceneManageEntity::getFeatures, machineFeatures)
+                        .eq(SceneManageEntity::getId, sceneId));
 
         // 关联更新单接口压测
         interfacePerformanceConfigSceneRelateShipMapper.update(null,
-            Wrappers.lambdaUpdate(InterfacePerformanceConfigSceneRelateShipEntity.class)
-            .set(InterfacePerformanceConfigSceneRelateShipEntity::getFeatures, machineFeatures)
-            .eq(InterfacePerformanceConfigSceneRelateShipEntity::getSceneId, sceneId)
-            .eq(InterfacePerformanceConfigSceneRelateShipEntity::getIsDeleted, 0));
+                Wrappers.lambdaUpdate(InterfacePerformanceConfigSceneRelateShipEntity.class)
+                        .set(InterfacePerformanceConfigSceneRelateShipEntity::getFeatures, machineFeatures)
+                        .eq(InterfacePerformanceConfigSceneRelateShipEntity::getSceneId, sceneId)
+                        .eq(InterfacePerformanceConfigSceneRelateShipEntity::getIsDeleted, 0));
     }
 
     protected void updateReportPtlLocation(ResourceContext ext) {
@@ -527,8 +531,9 @@ public abstract class AbstractIndicators {
             request.setWatchmanId(machineId);
             List<WatchmanNode> resource = cloudWatchmanApi.resource(request);
             resource.stream().filter(node -> !StringUtils.isAllBlank(node.getNfsServer(), node.getNfsDir()))
-                .findAny().ifPresent(node -> updatePtlPath(ext.getReportId(), node, relativePath));
-        } catch (Exception ignore) {}
+                    .findAny().ifPresent(node -> updatePtlPath(ext.getReportId(), node, relativePath));
+        } catch (Exception ignore) {
+        }
     }
 
     private void updatePtlPath(Long reportId, WatchmanNode node, String relativePath) {
@@ -545,8 +550,8 @@ public abstract class AbstractIndicators {
         if (Objects.equals(map.get(PressureStartCache.FEATURES_MACHINE_TYPE), String.valueOf(EngineType.PRIVATE.getType()))) {
             List<String> paths = new ArrayList<>(3);
             paths.add("nfsServer：" + nfsServer);
-            paths.add("ptl：" +  DataUtils.mergePath(DataUtils.mergePath(nfsDir, "ptl", "/"), relativePath, "/"));
-            paths.add("logs：" +  DataUtils.mergePath(DataUtils.mergePath(nfsDir, "logs", "/"), relativePath, "/"));
+            paths.add("ptl：" + DataUtils.mergePath(DataUtils.mergePath(nfsDir, "ptl", "/"), relativePath, "/"));
+            paths.add("logs：" + DataUtils.mergePath(DataUtils.mergePath(nfsDir, "logs", "/"), relativePath, "/"));
             map.put(PressureStartCache.FEATURES_MACHINE_PTL_PATH, StringUtils.join(paths, ","));
         }
         ReportUpdateParam param = new ReportUpdateParam();

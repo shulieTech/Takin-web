@@ -525,7 +525,8 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         .append("docker exec ").append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ")
                         .append("'cd /data")
                         .append(" && sed -i \"s/192.168.1.205/").append(benchmarkServerIp).append("/g\" /data/pressure.engine.env.conf")
-                        .append(" && sed -i \"s/192.168.1.195/").append(manageDAOById.getMachineIp()).append("/g\" /data/pressure.engine.env.conf")
+                        // todo 建议不要用写死的值
+                        .append(" && sed -i \"s/192.168.1.222/").append(manageDAOById.getMachineIp()).append("/g\" /data/pressure.engine.env.conf")
                         .append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" /data/pressure.engine.env.conf'");
                 log.info("执行启动命:"+dockerPressureEnvConfBuffer.toString());
                 String dockerPressureEnvConfExec = sshInitUtil.execute(dockerPressureEnvConfBuffer.toString());

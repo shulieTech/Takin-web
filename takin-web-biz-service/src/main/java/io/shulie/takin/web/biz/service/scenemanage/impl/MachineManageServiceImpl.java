@@ -79,7 +79,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String dockerPullCmd;
     @Value("${docker.cmd.run: docker run -itd --net=host --name BENCHMARK_SUITE_NAME 192.168.10.11/library/BENCHMARK_SUITE_NAME:latest}")
     private String dockerRunCmd;
-    @Value("${docker.cmd.replaceAndRun: cd /data && rm -rf pressure-engine.zip pressure-engine  && wget https://shulie-daily.oss-cn-hangzhou.aliyuncs.com/yidongyun/pressure-engine.zip && unzip pressure-engine.zip}")
+    @Value("${docker.cmd.replaceAndRun: cd /data && rm -rf pressure-engine.zip && rm -rf pressure-engine && wget https://shulie-daily.oss-cn-hangzhou.aliyuncs.com/yidongyun/pressure-engine.zip && unzip pressure-engine.zip}")
     private String dockerReplaceAndRunCmd;
 
 

@@ -523,6 +523,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         .append(" && sed -i \"s/192.168.1.205/").append(benchmarkServerIp).append("/g\" ./pressure.engine.env.conf")
                         .append(" && sed -i \"s/192.168.1.195/").append(manageDAOById.getMachineIp()).append("/g\" ./pressure.engine.env.conf")
                         .append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" ./pressure.engine.env.conf'");
+                log.info("执行启动命:"+dockerPressureEnvConfBuffer.toString());
                 String dockerPressureEnvConfExec = sshInitUtil.execute(dockerPressureEnvConfBuffer.toString());
                 log.info("启动服务日志：" + dockerPressureEnvConfExec);
 

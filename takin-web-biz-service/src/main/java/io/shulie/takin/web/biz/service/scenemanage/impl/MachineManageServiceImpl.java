@@ -79,7 +79,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String dockerPullCmd;
     @Value("${docker.cmd.run: docker run -itd --net=host --name BENCHMARK_SUITE_NAME 192.168.10.11/library/BENCHMARK_SUITE_NAME:latest}")
     private String dockerRunCmd;
-    @Value("${docker.cmd.replaceAndRun: cd /data && wget https://shulie-daily.oss-cn-hangzhou.aliyuncs.com/yidongyun/pressure-engine.zip && unzip pressure-engine.zip}")
+    @Value("${docker.cmd.replaceAndRun: cd /data && rm -rf pressure-engine.zip pressure-engine  && wget https://shulie-daily.oss-cn-hangzhou.aliyuncs.com/yidongyun/pressure-engine.zip && unzip pressure-engine.zip}")
     private String dockerReplaceAndRunCmd;
 
 
@@ -512,6 +512,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' ./pressure-engine/config/application-engine.yml");
 
                 deployStatusMap.put(request.getId(),"替换配置文件");
+                log.info("执行配置文件替换命令："+dockerReplaceAndRunBuffer.toString());
                 String replaceAndRunExec = sshInitUtil.execute(dockerReplaceAndRunBuffer.toString());
                 log.info("替换配置文件日志：" + replaceAndRunExec);
 

@@ -11,7 +11,9 @@ public enum FormulaTarget {
     RT(0, "接口响应时间"),
     TPS(1, "每秒吞吐量"),
     SUCCESS_RATE(2, "成功率"),
-    SA(3, "符合RT标准的比例");
+    SA(3, "符合RT标准的比例"),
+    CPU_USAGE(4,"cpu利用率"),
+    MEMORY_USAGE(5,"内存使用率");
 
     @JsonValue
     private final Integer code;

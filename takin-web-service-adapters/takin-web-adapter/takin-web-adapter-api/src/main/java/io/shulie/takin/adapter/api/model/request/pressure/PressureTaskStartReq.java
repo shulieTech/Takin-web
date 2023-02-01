@@ -94,6 +94,9 @@ public class PressureTaskStartReq extends ContextExt {
         private FormulaTarget formulaTarget;
         private FormulaSymbol formulaSymbol;
         private Double formulaNumber;
+        private Integer times;
+        private String event;
+        private String appNames;
     }
 }
 

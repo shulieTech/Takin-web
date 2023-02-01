@@ -15,5 +15,5 @@ public interface AsyncService {
 
     void savePerformanceBaseData(PerformanceBaseDataParam param);
 
-    void monitorCpuMemory(Long sceneId, Long reportId, List<String> appNames, List<SceneSlaRefResp> stopSla, List<SceneSlaRefResp> warnSla);
+//    void monitorCpuMemory(Long sceneId, Long reportId, List<String> appNames, List<SceneSlaRefResp> stopSla, List<SceneSlaRefResp> warnSla);
 }

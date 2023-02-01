@@ -16,10 +16,13 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
+import com.google.common.collect.Lists;
 import com.pamirs.takin.cloud.entity.dao.schedule.TScheduleRecordMapper;
 import com.pamirs.takin.cloud.entity.domain.entity.schedule.ScheduleRecord;
 import com.pamirs.takin.cloud.entity.domain.vo.report.SceneTaskNotifyParam;
 import com.pamirs.takin.cloud.entity.domain.vo.scenemanage.SceneManageStartRecordVO;
+import com.pamirs.takin.entity.domain.dto.report.BusinessActivitySummaryDTO;
+import com.pamirs.takin.entity.domain.dto.report.ReportApplicationDTO;
 import io.shulie.takin.adapter.api.constant.FormulaSymbol;
 import io.shulie.takin.adapter.api.constant.FormulaTarget;
 import io.shulie.takin.adapter.api.constant.JobType;
@@ -68,8 +71,12 @@ import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
 import io.shulie.takin.cloud.model.request.job.pressure.StartRequest;
 import io.shulie.takin.cloud.model.request.job.pressure.StartRequest.FileInfo;
 import io.shulie.takin.cloud.model.request.job.pressure.StartRequest.FileInfo.SplitInfo;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -115,6 +122,10 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
     private CloudSceneTaskService cloudSceneTaskService;
     @Resource
     private SceneTaskStatusCache taskStatusCache;
+    @Resource
+    private ReportApplicationService reportApplicationService;
+    @Resource
+    private ApplicationDAO applicationDAO;
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
@@ -124,14 +135,14 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         ScheduleRecord schedule = tScheduleRecordMapper.getScheduleByTaskId(request.getTaskId());
         if (schedule != null) {
             log.error("异常代码【{}】,异常内容：启动调度失败 --> 调度任务[{}]已经启动",
-                TakinCloudExceptionEnum.SCHEDULE_START_ERROR, request.getTaskId());
+                    TakinCloudExceptionEnum.SCHEDULE_START_ERROR, request.getTaskId());
             return;
         }
         //获取策略
         StrategyConfigExt config = strategyConfigService.getCurrentStrategyConfig();
         if (config == null) {
             log.error("异常代码【{}】,异常内容：启动调度失败 --> 调度策略未配置",
-                TakinCloudExceptionEnum.SCHEDULE_START_ERROR);
+                    TakinCloudExceptionEnum.SCHEDULE_START_ERROR);
             return;
         }
 
@@ -152,7 +163,7 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
 
         //add by 李鹏 保存调度对应压测引擎插件记录信息
         scheduleRecordEnginePluginService.saveScheduleRecordEnginePlugins(
-            scheduleRecord.getId(), request.getEnginePluginsFilePath());
+                scheduleRecord.getId(), request.getEnginePluginsFilePath());
         //add end
 
         //发布事件
@@ -177,8 +188,8 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         // 需要将 本次调度 pod数量存入redis,报告中用到
         // 总计 报告生成用到 调度期间出现错误，这份数据只存24小时
         stringRedisTemplate.opsForValue().set(
-            ScheduleConstants.getPressureNodeTotalKey(request.getSceneId(), request.getTaskId(), request.getTenantId()),
-            String.valueOf(request.getTotalIp()), 1, TimeUnit.DAYS);
+                ScheduleConstants.getPressureNodeTotalKey(request.getSceneId(), request.getTaskId(), request.getTenantId()),
+                String.valueOf(request.getTotalIp()), 1, TimeUnit.DAYS);
         //调度初始化
         scheduleEvent.initSchedule(eventRequest);
     }
@@ -204,7 +215,7 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
             Long reportId = request.getTaskId();
             cloudReportService.updateReportFeatures(reportId, ReportConstants.FINISH_STATUS, null, null);
             cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(sceneId, reportId, request.getTenantId())
-                .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.WAIT).build());
+                    .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.WAIT).build());
             taskStatusCache.cacheStatus(sceneId, reportId, SceneRunTaskStatusEnum.ENDED);
             String reportKey = WebRedisKeyConstant.getReportKey(reportId);
             redisTemplate.opsForList().remove(WebRedisKeyConstant.getTaskList(), 0, reportKey);
@@ -224,10 +235,10 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
 
         // 场景生命周期更新 启动中(文件拆分完成) ---> 创建Job中
         cloudSceneManageService.updateSceneLifeCycle(
-            UpdateStatusBean.build(sceneId, taskId, customerId)
-                .checkEnum(SceneManageStatusEnum.STARTING, SceneManageStatusEnum.FILE_SPLIT_END)
-                .updateEnum(SceneManageStatusEnum.JOB_CREATING)
-                .build());
+                UpdateStatusBean.build(sceneId, taskId, customerId)
+                        .checkEnum(SceneManageStatusEnum.STARTING, SceneManageStatusEnum.FILE_SPLIT_END)
+                        .updateEnum(SceneManageStatusEnum.JOB_CREATING)
+                        .build());
 
         request.setCallbackUrl(appConfig.getCallbackUrl());
         ResourceContext context = getResourceContext(request.getRequest().getResourceId());
@@ -252,7 +263,7 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
             // 创建失败
             log.info("场景{},任务{},顾客{}开始启动压测，压测启动失败", sceneId, taskId, customerId);
             cloudSceneManageService.reportRecord(SceneManageStartRecordVO.build(sceneId, taskId, customerId).success(false)
-                .errorMsg("压测启动创建失败，失败原因：" + e.getMessage()).build());
+                    .errorMsg("压测启动创建失败，失败原因：" + e.getMessage()).build());
         } finally {
             redisClientUtil.del(PressureStartCache.getScriptMappingKey(startRequest.getAttachId()));
         }
@@ -272,8 +283,8 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         String key = ScheduleConstants.getFileSplitQueue(request.getSceneId(), request.getTaskId(), request.getTenantId());
         // 生成集合
         List<String> numList = IntStream.rangeClosed(1, request.getTotalIp())
-            .boxed().map(String::valueOf)
-            .collect(Collectors.toCollection(ArrayList::new));
+                .boxed().map(String::valueOf)
+                .collect(Collectors.toCollection(ArrayList::new));
         // 集合放入Redis
         stringRedisTemplate.opsForList().leftPushAll(key, numList);
     }
@@ -289,7 +300,9 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         req.setSampling(runRequest.getTraceSampling());
         req.setBindByXpathMd5(request.getBindByXpathMd5());
         req.setThreadConfig(buildThreadGroup(request));
-        completedSla(req, request);
+
+        ReportApplicationDTO reportApplication = reportApplicationService.getReportApplication(context.getReportId());
+        completedSla(req, request, reportApplication);
         completedMetrics(req, request);
         completedFile(req, request);
         completedExt(req, request);
@@ -312,7 +325,7 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
             Integer rampUp = ext.getRampUp();
             if (Objects.nonNull(rampUp)) {
                 info.setGrowthTime(Long.valueOf(new TimeBean(rampUp.longValue(),
-                    ext.getRampUpUnit()).getSecondTime()).intValue());
+                        ext.getRampUpUnit()).getSecondTime()).intValue());
             }
             info.setGrowthStep(ext.getSteps());
             info.setTps(intTps);
@@ -320,7 +333,7 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         }).collect(Collectors.toList());
     }
 
-    private static void completedSla(PressureTaskStartReq req, ScheduleStartRequestExt request) {
+    private void completedSla(PressureTaskStartReq req, ScheduleStartRequestExt request, ReportApplicationDTO reportApplication) {
         List<SlaConfig> conditionList = new ArrayList<>();
         List<SlaConfig> stopCondition = request.getStopCondition();
         if (!CollectionUtils.isEmpty(stopCondition)) {
@@ -330,14 +343,11 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         if (!CollectionUtils.isEmpty(waringCondition)) {
             conditionList.addAll(waringCondition);
         }
-        List<SlaConfig> finalCondition = conditionList.stream().filter(
-            condition -> Objects.nonNull(FormulaTarget.of(condition.getIndexInfo()))).collect(
-            Collectors.toList());
         List<SlaInfo> slaConfigs = new ArrayList<>(conditionList.size());
         req.setSlaConfig(slaConfigs);
-        if (!CollectionUtils.isEmpty(finalCondition)) {
+        if (!CollectionUtils.isEmpty(conditionList)) {
             slaConfigs.addAll(
-                finalCondition.stream().map(ScheduleServiceImpl::convertSlaConfig).collect(Collectors.toList()));
+                    conditionList.stream().map(o -> convertSlaConfig(o, reportApplication)).collect(Collectors.toList()));
         }
     }
 
@@ -365,12 +375,12 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
                 List<DataFile> dataFiles = fileTypeMap.get(FileSplitConstants.FILE_TYPE_DATA_FILE);
                 if (!CollectionUtils.isEmpty(dataFiles)) {
                     req.getDataFile().addAll(dataFiles.stream()
-                        .map(ScheduleServiceImpl::convertFile).collect(Collectors.toList()));
+                            .map(ScheduleServiceImpl::convertFile).collect(Collectors.toList()));
                 }
                 List<DataFile> attachmentFiles = fileTypeMap.get(FileSplitConstants.FILE_TYPE_EXTRA_FILE);
                 if (!CollectionUtils.isEmpty(attachmentFiles)) {
                     List<FileInfo> dependencies = attachmentFiles.stream()
-                        .map(ScheduleServiceImpl::convertFile).collect(Collectors.toList());
+                            .map(ScheduleServiceImpl::convertFile).collect(Collectors.toList());
                     req.getDependencyFile().addAll(dependencies);
                 }
             }
@@ -413,14 +423,54 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         }
     }
 
-    private static SlaInfo convertSlaConfig(SlaConfig config) {
+    private SlaInfo convertSlaConfig(SlaConfig config, ReportApplicationDTO reportApplication) {
         SlaInfo info = new SlaInfo();
         info.setRef(config.getActivity());
         info.setAttach(String.valueOf(config.getId()));
         info.setFormulaTarget(FormulaTarget.of(config.getIndexInfo()));
         info.setFormulaSymbol(FormulaSymbol.ofValue(config.getCondition()));
         info.setFormulaNumber(config.getDuring().doubleValue());
+        info.setTimes(config.getTimes());
+        info.setEvent(config.getEvent());
+
+        if (!CollectionUtils.isEmpty(reportApplication.getApplicationNames()) && (FormulaTarget.CPU_USAGE.getCode().equals(config.getIndexInfo())
+                || FormulaTarget.MEMORY_USAGE.getCode().equals(config.getIndexInfo()))) {
+            //业务活动为空，说明校验全部
+            if (StringUtils.isBlank(config.getActivity())) {
+                info.setAppNames(JsonHelper.bean2Json(reportApplication.getApplicationNames()));
+            } else {
+                //匹配请求和对应的应用
+                List<BusinessActivitySummaryDTO> businessActivity = reportApplication.getReportDetail().getBusinessActivity();
+                if (!CollectionUtils.isEmpty(businessActivity)){
+                    List<BusinessActivitySummaryDTO> activitySummaryDTOS = businessActivity.stream().filter(o -> o.getBindRef().equals(config.getActivity())).collect(Collectors.toList());
+                    if (!CollectionUtils.isEmpty(activitySummaryDTOS)){
+                        String applicationIds = activitySummaryDTOS.get(0).getApplicationIds();
+                        List<Long> splitApplicationIds = splitApplicationIds(applicationIds);
+                        if (!CollectionUtils.isEmpty(splitApplicationIds)){
+                            List<ApplicationDetailResult> appsList = applicationDAO.getApplicationByIds(splitApplicationIds);
+                            if (!CollectionUtils.isEmpty(appsList)){
+                                List<String> stringList = appsList.stream().map(ApplicationDetailResult::getApplicationName)
+                                        .filter(StringUtils::isNoneBlank).distinct().collect(Collectors.toList());
+                                info.setAppNames(JsonHelper.bean2Json(stringList));
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return info;
+    }
+
+    private static List<Long> splitApplicationIds(String applicationIds) {
+        if (StringUtils.isBlank(applicationIds)) {
+            return Collections.EMPTY_LIST;
+        }
+        String[] args = applicationIds.split(",");
+        List<Long> dataList = Lists.newArrayList();
+        for (String arg : args) {
+            dataList.add(Long.parseLong(arg));
+        }
+        return dataList;
     }
 
     private void updateReportAssociation(ScheduleStartRequestExt startRequest, Long jobId) {
@@ -432,7 +482,7 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         pressureTaskDAO.updateResourceAssociation(resourceId, jobId);
         redisClientUtil.hmset(PressureStartCache.getResourceKey(resourceId), PressureStartCache.JOB_ID, jobId);
         redisClientUtil.hmset(PressureStartCache.getSceneResourceKey(startRequest.getSceneId()),
-            PressureStartCache.JOB_ID, jobId);
+                PressureStartCache.JOB_ID, jobId);
     }
 
     private void notifyTaskResult(ScheduleRunRequest request) {
@@ -448,9 +498,9 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
     private void fileMappingIfNecessary(ScheduleStartRequestExt requestExt, List<FileInfo> dataFile, FileTypeEnum data) {
         if (requestExt.isFileMapping() && !CollectionUtils.isEmpty(dataFile)) {
             String mappingKey = PressureStartCache.getScriptMappingKey(requestExt.getAttachId());
-            List<String> filePath = (List<String>)redisClientUtil.hmget(mappingKey, String.valueOf(data.getCode()));
+            List<String> filePath = (List<String>) redisClientUtil.hmget(mappingKey, String.valueOf(data.getCode()));
             Map<String, String> fileMap = filePath.stream().collect(
-                Collectors.toMap(path -> path.substring(path.lastIndexOf(SceneManageConstant.FILE_SPLIT)), Function.identity()));
+                    Collectors.toMap(path -> path.substring(path.lastIndexOf(SceneManageConstant.FILE_SPLIT)), Function.identity()));
             dataFile.forEach(file -> {
                 String uri = file.getUri();
                 // 文件名称
@@ -458,7 +508,9 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
                 // 映射的路径
                 String mapPath = fileMap.get(fileName);
                 // 如果没有映射就不做变更
-                if (StringUtils.isNotBlank(mapPath)) {file.setUri(mapPath);}
+                if (StringUtils.isNotBlank(mapPath)) {
+                    file.setUri(mapPath);
+                }
             });
         }
     }

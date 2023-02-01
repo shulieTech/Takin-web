@@ -2,19 +2,15 @@ package io.shulie.takin.web.data.dao.baseserver;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.domain.entity.linkmanage.figure.RpcType;
+import io.shulie.takin.web.amdb.bean.common.AmdbResult;
+import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.data.common.InfluxDatabaseManager;
-import io.shulie.takin.web.data.param.baseserver.BaseServerParam;
-import io.shulie.takin.web.data.param.baseserver.InfluxAvgParam;
-import io.shulie.takin.web.data.param.baseserver.ProcessBaseRiskParam;
-import io.shulie.takin.web.data.param.baseserver.ProcessOverRiskParam;
-import io.shulie.takin.web.data.param.baseserver.TimeMetricsDetailParam;
-import io.shulie.takin.web.data.param.baseserver.TimeMetricsParam;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.param.baseserver.*;
 import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
 import io.shulie.takin.web.data.result.baseserver.InfluxAvgResult;
 import io.shulie.takin.web.data.result.baseserver.LinkDetailResult;
@@ -28,6 +24,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 /**
@@ -41,130 +39,42 @@ public class BaseServerDaoImpl implements BaseServerDao {
     private static final Logger logger = LoggerFactory.getLogger(BaseServerDaoImpl.class);
 
     @Autowired
-    private InfluxDatabaseManager influxDatabaseManager;
-    private static final String REAL_TIME_DATABASE = "pradar";
+    private AmdbClientProperties properties;
 
-    @Override
-    public Collection<BaseServerResult> queryList(BaseServerParam param) {
-        String sql = "select app_ip, app_name, cpu_rate, mem_rate from app_base_data where time>" + param.getStartTime()
-                + " and time <= " + param.getEndTime() + " and tag_app_name='" + param.getApplicationName() + "'" +
-            // 增加租户
-            " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-            " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
-        return influxDatabaseManager.query(BaseServerResult.class, sql);
-    }
+    private static final String AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH = "/amdb/db/api/appBaseData/queryListMap";
 
     @Override
     public Collection<BaseServerResult> queryBaseServer(BaseServerParam param) {
         long startTime = System.currentTimeMillis();
-        String baseSql = "select max(memory) as memory,max(disk) as disk,max(cpu_cores) as cpu_cores ," +
-                "mean(net_bandwidth) as net_bandwidth from app_base_data where tag_app_name = '" + param.getApplicationName()
-                + "' and time > " + param.getStartTime() + " and time <= " + param.getEndTime() +
-                // 增加租户
-                " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
-                + " group by tag_agent_id, tag_app_ip";
-        Collection<BaseServerResult> baseServerResults = influxDatabaseManager.query(BaseServerResult.class, baseSql);
-        log.debug("queryBaseServer influxdb sql :{},cost time :{}", baseSql, System.currentTimeMillis() - startTime);
+        AppBaseDataQuery query = new AppBaseDataQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("max(memory)", "memory");
+        fieldAndAlias.put("max(disk)", "disk");
+        fieldAndAlias.put("max(cpu_cores)", "cpu_cores");
+        fieldAndAlias.put("mean(net_bandwidth)", "net_bandwidth");
+        query.setFieldAndAlias(fieldAndAlias);
+        query.setStartTime(param.getStartTime());
+        query.setEndTime(param.getEndTime());
+        query.setAppName(param.getApplicationName());
+        List<String> fields = new ArrayList<>();
+        fields.add("agentId");
+        fields.add("appId");
+        query.setGroupByFields(fields);
+        List<BaseServerResult> baseServerResults = this.listBaseServerResult(query);
+        log.debug("queryBaseServer ,cost time :{}", System.currentTimeMillis() - startTime);
         return baseServerResults;
     }
 
     @Override
     public Collection<InfluxAvgResult> queryTraceId(InfluxAvgParam param) {
-        String command = "select traceId,rt from tro_pradar where time >= " + param.getSTime() + " and time < " + param.getETime()
-                + " and appName = '" + param.getAppName() + "'  and event = '" + param.getEvent() + "' and ptFlag='true' and traceId <>'' " +
-                // 增加租户
-                " and tenant_app_key = '" + WebPluginUtils.traceTenantCode() + "'" +
-                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
-                + " order by time desc limit 1000";
-
-        return influxDatabaseManager.query(InfluxAvgResult.class, command, REAL_TIME_DATABASE);
+        //接口已经换掉，不使用当前逻辑了
+        return null;
     }
 
     @Override
     public LinkDetailResult queryTimeMetricsDetail(TimeMetricsDetailParam param) {
         LinkDetailResult linkDetailResult = new LinkDetailResult();
-        long sTime = param.getSTime();
-        long eTime = param.getETime();
-        String event = param.getEvent();
-        String rpcType = param.getRpcType();
-        String appName = param.getAppName();
-        String invokeApp = param.getInvokeApp();
-        try {
-            if (StringUtils.isBlank(param.getEvent())) {
-                return linkDetailResult;
-            }
-
-            //需要增加作为入口
-            String command = "select max(rt) as maxRt,min(rt) as minRt ,sum(totalRt) as rt,MEAN(totalQps) as tps," +
-                    "SUM(totalCount) as count,SUM(errorCount) as errorCount " +
-                    "from  tro_pradar where ptFlag='true' and time >= " + sTime + " and time < " + eTime +
-                     // 增加租户
-                    " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                    " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
-
-            //TODO
-            if (RpcType.TRACE.getText().equals(rpcType)) {
-                command = command + " and appName = '" + appName + "'  and event = '" + event + "'";
-            } else if (RpcType.DB.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and callEvent = '" + event
-                        + "' and callType = 'call-db'";
-                linkDetailResult.setAppName(invokeApp);
-            } else if (RpcType.CACHE.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and callEvent = '" + event
-                        + "' and (callType = 'call-cache-read' or callType = 'call-cache-write' or callType='call-cache')";
-                linkDetailResult.setAppName(invokeApp);
-            } else if (RpcType.ROCKETMQ.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and callEvent = '" + event
-                        + "' and callType = 'call-rocketmq'";
-                linkDetailResult.setAppName(invokeApp);
-            } else if (RpcType.ROCKETMQ_RCV.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and event = '" + event + "'";
-                linkDetailResult.setAppName(invokeApp);
-            } else if (RpcType.RABBITMQ_CLIENT.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and callEvent = '" + event
-                        + "' and callType = 'call-rabbitmq'";
-                linkDetailResult.setAppName(invokeApp);
-            } else if (RpcType.RABBITMQ_RCV.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and event = '" + event + "'";
-                linkDetailResult.setAppName(invokeApp);
-            } else if (RpcType.KAFKA_CLIENT.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and callType = 'call-kafka'";
-                linkDetailResult.setAppName(invokeApp);
-            } else if (RpcType.KAFKA_RCV.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and event = '" + event + "'";
-                linkDetailResult.setAppName(invokeApp);
-            } else if (RpcType.DUBBO.getText().equals(rpcType) || RpcType.DUBBO_SERVER.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and callType = 'call-dubbo' and callEvent =~ /"
-                        + event + "/";
-                linkDetailResult.setAppName(appName);
-            } else if (RpcType.HTTP_SERVER.getText().equals(rpcType) || RpcType.HTTP
-                    .getText().equals(rpcType)) {
-                command = command + " and appName = '" + appName + "' and event = '" + event
-                        + "' and entryFlag = 'true'";
-            } else {
-                logger.error("Unsupport metrics query RpcType " + rpcType);
-                return linkDetailResult;
-            }
-            Collection<InfluxAvgResult> influxAvgVoList = influxDatabaseManager.query(InfluxAvgResult.class, command, REAL_TIME_DATABASE);
-            if (CollectionUtils.isEmpty(influxAvgVoList)) {
-                return linkDetailResult;
-            }
-            if (CollectionUtils.isNotEmpty(influxAvgVoList)) {
-                InfluxAvgResult influxAvgVO = influxAvgVoList.stream().findFirst().get();
-                if (influxAvgVO.getCount() == 0.0) {
-                    linkDetailResult.setAvgRt(0.0);
-                } else {
-                    linkDetailResult.setAvgRt(formatDouble(influxAvgVO.getRt() / influxAvgVO.getCount()).doubleValue());
-                }
-                linkDetailResult.setTotalCount(formatDouble(influxAvgVO.getCount()).intValue());
-                linkDetailResult.setTps(formatDouble(influxAvgVO.getTps()).doubleValue());
-                linkDetailResult.setMaxRt(formatDouble(influxAvgVO.getMaxRt()).doubleValue());
-                linkDetailResult.setMinRt(formatDouble(influxAvgVO.getMinRt()).doubleValue());
-            }
-        } catch (Exception e) {
-            logger.error("QueryTimeMetrics Error:{}", event);
-        }
+        //接口已经换掉，不使用当前逻辑了
         return linkDetailResult;
     }
 
@@ -177,62 +87,8 @@ public class BaseServerDaoImpl implements BaseServerDao {
         String appName = param.getAppName();
         String invokeApp = param.getInvokeApp();
         LinkDataResult linkDataResult = new LinkDataResult();
-        try {
-            if (StringUtils.isBlank(event)) {
-                return linkDataResult;
-            }
-            String command =
-                    "select sum(totalRt) as rt,MEAN(totalQps) as tps,SUM(totalCount) as count,SUM(errorCount) as "
-                            + "errorCount "
-                            +
-                            "from tro_pradar where ptFlag='true' and time >= " + sTime + " and time < " + eTime +
-                        // 增加租户
-                        " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                        " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
-            if (RpcType.TRACE.getText().equals(rpcType)) {
-                command = command + " and appName = '" + appName + "'  and event = '" + event + "'";
-            }
-            if (RpcType.DB.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and callType = 'call-db'";
-                linkDataResult.setAppName(invokeApp);
-            }
-            if (RpcType.CACHE.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp
-                        + "' and (callType = 'call-cache-read' or callType = 'call-cache-write' or callType='call-cache')";
-                linkDataResult.setAppName(invokeApp);
-            }
-            if (RpcType.ROCKETMQ.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and callType = 'call-rocketmq'";
-                linkDataResult.setAppName(invokeApp);
-            }
-            if (RpcType.DUBBO.getText().equals(rpcType) || RpcType.DUBBO_SERVER.getText().equals(rpcType)) {
-                command = command + " and appName = '" + invokeApp + "' and callType = 'call-dubbo' and callEvent =~ /"
-                        + event + "/";
-                linkDataResult.setAppName(appName);
-            }
-            if (RpcType.HTTP_SERVER.getText().equals(rpcType) || RpcType.HTTP
-                    .getText().equals(rpcType)) {
-                command = command + " and appName = '" + appName + "' and event = '" + event
-                        + "' and entryFlag = 'true'";
-            }
-            Collection<InfluxAvgResult> influxAvgVoList = influxDatabaseManager.query(InfluxAvgResult.class, command,
-                    REAL_TIME_DATABASE);
-            if (CollectionUtils.isEmpty(influxAvgVoList)) {
-                return linkDataResult;
-            }
-            if (CollectionUtils.isNotEmpty(influxAvgVoList)) {
-                InfluxAvgResult influxAvgVO = influxAvgVoList.stream().findFirst().get();
-                if (influxAvgVO.getCount() == 0.0) {
-                    linkDataResult.setRt(0.0);
-                } else {
-                    linkDataResult.setRt(formatDouble(influxAvgVO.getRt() / influxAvgVO.getCount()).doubleValue());
-                }
-                linkDataResult.setErrorCount(influxAvgVO.getErrorCount().intValue());
-                linkDataResult.setTps(formatDouble(influxAvgVO.getTps()).doubleValue());
-            }
-        } catch (Exception e) {
-            logger.error("QueryTimeMetrics Error:{}", event);
-        }
+        //Todo 这里不应该在查询tro_pradar表了，后续再进行修复
+
         return linkDataResult;
     }
 
@@ -248,17 +104,19 @@ public class BaseServerDaoImpl implements BaseServerDao {
             return results;
         }
         appNames.forEach(appName -> {
-            String tmpSql =
-                    "select max(cpu_rate) as cpu_rate,max(cpu_load) as cpu_load,max(mem_rate)as mem_rate,max(iowait) as "
-                            + "iowait ,max(net_bandwidth_rate)as net_bandwidth_rate "
-                            +
-                            " from app_base_data where app_name = '" + appName + "' and time >= " + startTime
-                            + " and time <= " + endTime +
-                            // 增加租户
-                            " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                            " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
-                            + " group by tag_app_ip";
-            Collection<BaseServerResult> voList = influxDatabaseManager.query(BaseServerResult.class, tmpSql);
+            AppBaseDataQuery query = new AppBaseDataQuery();
+            Map<String, String> fieldAndAlias = new HashMap<>();
+            fieldAndAlias.put("max(cpu_rate)", "cpu_rate");
+            fieldAndAlias.put("max(cpu_load)", "cpu_load");
+            fieldAndAlias.put("max(mem_rate)", "mem_rate");
+            fieldAndAlias.put("max(iowait)", "iowait");
+            fieldAndAlias.put("max(net_bandwidth_rate)", "net_bandwidth_rate");
+            query.setFieldAndAlias(fieldAndAlias);
+            query.setStartTime(startTime);
+            query.setEndTime(endTime);
+            query.setAppName("appName");
+            query.setGroupByFields(Collections.singletonList("tag_app_ip"));
+            List<BaseServerResult> voList = this.listBaseServerResult(query);
             if (CollectionUtils.isEmpty(voList)) {
                 return;
             }
@@ -320,21 +178,41 @@ public class BaseServerDaoImpl implements BaseServerDao {
     @Override
     public Collection<BaseServerResult> queryBaseData(BaseServerParam param) {
         long start = System.currentTimeMillis();
-        StringBuilder sb = new StringBuilder("select mean(cpu_rate) as cpu_rate from app_base_data where");
-        sb.append(" time >= ").append(param.getStartTime());
-        sb.append(" and time <= ").append(param.getEndTime());
-        sb.append(" and tag_app_name = '").append(param.getApplicationName()).append("'");
-        sb.append(" and tag_app_ip = '").append(param.getAppIp()).append("'");
-        if (param.getAgentId() != null) {
-            sb.append(" and tag_agent_id = '").append(param.getAgentId()).append("'");
+//        sb.append(" group by time(5s) order by time");
+        AppBaseDataQuery query = new AppBaseDataQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("mean(cpu_rate)", "cpu_rate");
+        query.setFieldAndAlias(fieldAndAlias);
+        query.setStartTime(param.getStartTime());
+        query.setEndTime(param.getEndTime());
+        query.setAppName(param.getApplicationName());
+        query.setAppId(param.getAppIp());
+        if (param.getAgentId() != null){
+            query.setAgentId(param.getAgentId());
         }
-        // 增加租户
-        sb.append(" and tenant_app_key = '").append(WebPluginUtils.traceTenantAppKey()).append("'");
-        sb.append(" and env_code = '").append(WebPluginUtils.traceEnvCode()).append("'");
-        sb.append(" group by time(5s) order by time");
-        Collection<BaseServerResult> collection = influxDatabaseManager.query(BaseServerResult.class, sb.toString());
-        log.info("queryBaseData.query<app_base_data>:{},数据量:{}", System.currentTimeMillis() - start, collection.size());
-        return collection;
+        query.setGroupByFields(Collections.singletonList("time"));
+
+        List<BaseServerResult> baseServerResults = this.listBaseServerResult(query);
+        log.info("queryBaseData.query<app_base_data>:{},数据量:{}", System.currentTimeMillis() - start, baseServerResults.size());
+        return baseServerResults;
+    }
+
+    public List<BaseServerResult> listBaseServerResult(AppBaseDataQuery query) {
+        try {
+            query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
+            query.setEnvCode(WebPluginUtils.traceEnvCode());
+
+            HttpMethod httpMethod = HttpMethod.POST;
+            AmdbResult<List<BaseServerResult>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
+                    .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
+                    .param(query)
+                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                    .eventName("查询enginePressure数据失败")
+                    .list(BaseServerResult.class);
+            return amdbResponse.getData();
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
+        }
     }
 
     private BigDecimal formatDouble(Double data) {
@@ -344,5 +222,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
         BigDecimal b = BigDecimal.valueOf(data);
         return b.setScale(2, RoundingMode.HALF_UP);
     }
+
+
 
 }

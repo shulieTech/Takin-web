@@ -58,9 +58,11 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapper
 import io.shulie.takin.adapter.api.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
 import io.shulie.takin.adapter.api.model.response.watchman.WatchmanNode;
-import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.ext.content.script.ScriptVerityExt.FileVerifyItem;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.amdb.bean.common.AmdbResult;
+import io.shulie.takin.web.amdb.util.AmdbHelper;
+import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneListForSelectOutput;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
@@ -99,7 +101,6 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 import io.shulie.takin.web.common.util.DataTransformUtil;
-import io.shulie.takin.web.data.common.InfluxDatabaseWriter;
 import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
@@ -118,6 +119,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 /**
@@ -152,13 +155,14 @@ public class SceneManageServiceImpl implements SceneManageService {
     private SceneExcludedApplicationDAO sceneExcludedApplicationDAO;
 
     @Autowired
-    private InfluxDatabaseWriter influxDatabaseManager;
-
-    @Autowired
     private SceneExcludedApplicationDAO excludedApplicationDAO;
 
     @Resource
     private EngineClusterService engineClusterService;
+    @Autowired
+    private AmdbClientProperties properties;
+
+    private static final String AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH = "/amdb/db/api/enginePressure/queryListMap";
 
     @Override
     public SceneDetailResponse getById(Long sceneId) {
@@ -971,13 +975,17 @@ public class SceneManageServiceImpl implements SceneManageService {
 
         return queryTpsParamList.stream().map(queryTpsParam -> {
                     // 通过条件, 查询influxdb, 获取到tps, sql语句
-                    String influxDbSql = String.format("SELECT time as datetime, ((count - fail_count) / 5) AS tps "
-                                    + "FROM %s WHERE time <= NOW() AND time >= (NOW() - %dm) AND transaction = '%s' ORDER BY time",
-                            this.getTableName(queryTpsParam), request.getInterval(),
-                            queryTpsParam.getBusinessActivityList().get(0).getBindRef());
+                    EnginePressureQuery query = new EnginePressureQuery();
+                    Map<String, String> fieldAndAlias = new HashMap<>();
+                    fieldAndAlias.put("time", "datetime");
+                    fieldAndAlias.put("((count - fail_count) / 5)", "tps");
+                    query.setFieldAndAlias(fieldAndAlias);
+                    query.setTransaction(queryTpsParam.getBusinessActivityList().get(0).getBindRef());
+                    query.setJobId(queryTpsParam.getJobId());
+                    query.setStartTime(System.currentTimeMillis() - request.getInterval() * 60 * 1000);
+                    query.setEndTime(System.currentTimeMillis());
 
-                    List<SceneReportListOutput> reportList = influxDatabaseManager.query(influxDbSql, SceneReportListOutput.class, "jmeter");
-
+                    List<SceneReportListOutput> reportList = this.listEnginePressure(query);
                     if (CollectionUtil.isEmpty(reportList)) {
                         return null;
                     }
@@ -1056,20 +1064,6 @@ public class SceneManageServiceImpl implements SceneManageService {
     }
 
     /**
-     * 压测报告的influxdb tableName
-     *
-     * @param queryTpsParam 参数
-     * @return 表名
-     */
-    private String getTableName(ReportActivityResp queryTpsParam) {
-        if (queryTpsParam.getJobId() != null) {
-            return InfluxUtil.getMeasurement("pressure", queryTpsParam.getJobId());
-        }
-        return String.format("pressure_%d_%d_%d", queryTpsParam.getSceneId(), queryTpsParam.getReportId(),
-                WebPluginUtils.getCustomerId());
-    }
-
-    /**
      * influxdb查询报告tps
      *
      * @param queryTpsParam 请求参数
@@ -1077,15 +1071,36 @@ public class SceneManageServiceImpl implements SceneManageService {
      */
     private List<SceneReportListOutput> listReportFromInfluxDb(ReportActivityResp queryTpsParam) {
         // 通过条件, 查询influxdb, 获取到tps, sql语句
-        String influxDbSql = String.format("SELECT time AS datetime, max(tps) AS tps FROM "
-                        + "(SELECT ((count - fail_count) / 5) AS tps FROM %s WHERE transaction = '%s' ORDER BY time)",
-                this.getTableName(queryTpsParam), queryTpsParam.getBusinessActivityList().get(0).getBindRef());
-        List<SceneReportListOutput> reportList = influxDatabaseManager.query(influxDbSql, SceneReportListOutput.class, "jmeter");
+        EnginePressureQuery query = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("time", "datetime");
+        fieldAndAlias.put("max(avg_tps)", "tps");
+        query.setFieldAndAlias(fieldAndAlias);
+        query.setTransaction(queryTpsParam.getBusinessActivityList().get(0).getBindRef());
+        query.setJobId(queryTpsParam.getJobId());
+        List<SceneReportListOutput> reportList = this.listEnginePressure(query);
         if (CollectionUtil.isEmpty(reportList)) {
             return Collections.emptyList();
         }
-
         return reportList;
+    }
+
+    private List<SceneReportListOutput> listEnginePressure(EnginePressureQuery query) {
+        try {
+            query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
+            query.setEnvCode(WebPluginUtils.traceEnvCode());
+
+            HttpMethod httpMethod = HttpMethod.POST;
+            AmdbResult<List<SceneReportListOutput>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
+                    .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
+                    .param(query)
+                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                    .eventName("查询enginePressure数据失败")
+                    .list(SceneReportListOutput.class);
+            return amdbResponse.getData();
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
+        }
     }
 
     private ScriptCheckAndUpdateReq buildVerifyRequest(ScriptAndActivityVerifyRequest verifyParam) {

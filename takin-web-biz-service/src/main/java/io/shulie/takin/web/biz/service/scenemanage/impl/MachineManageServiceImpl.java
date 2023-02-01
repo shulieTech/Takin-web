@@ -1,11 +1,36 @@
 package io.shulie.takin.web.biz.service.scenemanage.impl;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -22,7 +47,14 @@ import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
 import io.shulie.takin.web.biz.constant.MachineManageConstants;
 import io.shulie.takin.web.biz.pojo.dto.machinemanage.PressureMachineDTO;
-import io.shulie.takin.web.biz.pojo.request.scene.*;
+import io.shulie.takin.web.biz.pojo.request.scene.BenchmarkMachineDeployRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.BenchmarkSuitePageRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineBaseRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineQueryByTagRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineResponse;
+import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
 import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
 import io.shulie.takin.web.biz.utils.SshInitUtil;
@@ -35,23 +67,11 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -134,13 +154,13 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         if (CollectionUtils.isNotEmpty(nameList)) {
             return "机器名称已存在";
         }
-
-        QueryWrapper<MachineManageEntity> ipQueryWrapper = new QueryWrapper<>();
-        ipQueryWrapper.lambda().eq(MachineManageEntity::getMachineIp, request.getMachineIp());
-        List<MachineManageEntity> ipList = machineManageDAO.list(ipQueryWrapper);
-        if (CollectionUtils.isNotEmpty(ipList)) {
-            return "机器ip已存在";
-        }
+        // 机器ip 可运行多个 by 2023.02.01
+        // QueryWrapper<MachineManageEntity> ipQueryWrapper = new QueryWrapper<>();
+        // ipQueryWrapper.lambda().eq(MachineManageEntity::getMachineIp, request.getMachineIp());
+        // List<MachineManageEntity> ipList = machineManageDAO.list(ipQueryWrapper);
+        // if (CollectionUtils.isNotEmpty(ipList)) {
+        //     return "机器ip已存在";
+        // }
 
         MachineManageEntity machineManageEntity = new MachineManageEntity();
         machineManageEntity.setMachineName(request.getMachineName());
@@ -511,7 +531,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/g' ./pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' ./pressure-engine/config/application-test.yml")
                         // todo 暂时写死
-                        .append(" && sed -i 's/PORT/").append("18801").append("/g' ./pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/PORT/").append(10000 + request.getId() + "").append("/g' ./pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' ./pressure-engine/config/application-test.yml");
                 
                 deployStatusMap.put(request.getId(),"替换配置文件");

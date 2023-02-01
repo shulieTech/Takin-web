@@ -1,12 +1,34 @@
 package io.shulie.takin.cloud.biz.service.report.impl;
 
+import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -68,7 +90,13 @@ import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
-import io.shulie.takin.cloud.common.utils.*;
+import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
+import io.shulie.takin.cloud.common.utils.CommonUtil;
+import io.shulie.takin.cloud.common.utils.GsonUtil;
+import io.shulie.takin.cloud.common.utils.JsonPathUtil;
+import io.shulie.takin.cloud.common.utils.JsonUtil;
+import io.shulie.takin.cloud.common.utils.NumberUtil;
+import io.shulie.takin.cloud.common.utils.TestTimeUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
 import io.shulie.takin.cloud.data.mapper.mysql.SceneManageMapper;
@@ -104,17 +132,6 @@ import org.influxdb.impl.TimeUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
-import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @author 莫问
@@ -558,7 +575,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 .map(detail -> {
                     ScriptNodeSummaryBean bean = new ScriptNodeSummaryBean();
                     bean.setXpathMd5(detail.getBindRef());
-                    if(threadNumStages.containsKey(detail.getBindRef())){
+                    if (threadNumStages.containsKey(detail.getBindRef())) {
                         bean.setConcurrentStageThreadNum(threadNumStages.get(detail.getBindRef()));
                     }
                     bean.setTestName(detail.getBusinessActivityName());
@@ -589,7 +606,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         ReportOutput reportOutput = cloudReportService.selectById(reportId);
         Long sceneId = reportOutput.getSceneId();
         SceneManageEntity manageEntity = sceneManageMapper.selectById(sceneId);
-        if(manageEntity == null || manageEntity.getPtConfig() == null){
+        if (manageEntity == null || manageEntity.getPtConfig() == null) {
             return Collections.emptyMap();
         }
         PtConfigExt ext = JSON.parseObject(manageEntity.getPtConfig(), PtConfigExt.class);
@@ -1312,8 +1329,11 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      * @return -
      */
     private boolean isPass(ReportBusinessActivityDetail detail) {
-        if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(
-                detail.getSuccessRate()) > 0) {
+        if (detail.getSuccessRate() == null || detail.getSa() == null || detail.getRt() == null || detail.getTps() == null) {
+            log.error("无数据：{}", detail);
+            return false;
+        }
+        if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(detail.getSuccessRate()) > 0) {
             return false;
         } else if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
             return false;
@@ -1464,7 +1484,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 resultMap.put("applicationIds", detail.getApplicationIds());
             }
             String xpathMd5 = detail.getBindRef();
-            if(threadNumStages.containsKey(xpathMd5)){
+            if (threadNumStages.containsKey(xpathMd5)) {
                 resultMap.put("concurrentStageThreadNum", threadNumStages.get(xpathMd5));
             }
             return resultMap;

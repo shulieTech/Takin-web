@@ -1,9 +1,9 @@
 package com.pamirs.takin.cloud.entity.domain.entity.report;
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.util.Date;
-
-import lombok.Data;
 
 /**
  * @author -

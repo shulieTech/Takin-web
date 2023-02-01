@@ -1,7 +1,16 @@
 package io.shulie.takin.cloud.biz.notify;
 
-import cn.hutool.core.bean.BeanUtil;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSONObject;
+
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.shulie.takin.adapter.api.entrypoint.watchman.CloudWatchmanApi;
 import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
@@ -39,13 +48,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 负责处理压测产生的事件
@@ -202,7 +204,7 @@ public class PressureEventCenter extends AbstractIndicators {
         taskStatusCache.cacheStatus(sceneId, reportId, SceneRunTaskStatusEnum.ENDED);
         redisClientUtil.del(RedisClientUtil.getLockKey(PressureStartCache.getLockFlowKey(reportId)),
                 RedisClientUtil.getLockKey(PressureStartCache.getReleaseFlowKey(reportId)));
-        removeReportKey(reportId);
+        //removeReportKey(reportId);
     }
 
     @IntrestFor(event = PressureStartCache.UNLOCK_FLOW)
@@ -230,7 +232,8 @@ public class PressureEventCenter extends AbstractIndicators {
         } catch (Exception e) {
             redisClientUtil.unlock(stopFlag, message);
         }
-        updateSceneFailed(context, SceneManageStatusEnum.STOP);
+        // 更新压测已失败
+        updateSceneFailed(context, SceneManageStatusEnum.FAILED);
         if (!redisClientUtil.hasKey(PressureStartCache.getReportCachedKey(reportId))) {
             sceneTaskService.cacheReportKey(reportId, -1L);
         }
@@ -473,7 +476,7 @@ public class PressureEventCenter extends AbstractIndicators {
 
     private void removeReportKey(Long reportId) {
         final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
-        redisTemplate.opsForList().remove(WebRedisKeyConstant.getTaskList(), 0, reportKey);
+         redisTemplate.opsForList().remove(WebRedisKeyConstant.getTaskList(), 0, reportKey);
         redisTemplate.opsForValue().getOperations().delete(reportKey);
     }
 

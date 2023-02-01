@@ -5,7 +5,7 @@
     <parent>
         <artifactId>takin-web-config-sync-zk</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.10.0.ReShversion</version>
+        <version>takin-web-5.10.0.RenShouVersion_fix</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>

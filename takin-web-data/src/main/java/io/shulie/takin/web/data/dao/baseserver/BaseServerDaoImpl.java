@@ -51,7 +51,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
         fieldAndAlias.put("max(memory)", "memory");
         fieldAndAlias.put("max(disk)", "disk");
         fieldAndAlias.put("max(cpu_cores)", "cpu_cores");
-        fieldAndAlias.put("mean(net_bandwidth)", "net_bandwidth");
+        fieldAndAlias.put("avg(net_bandwidth)", "net_bandwidth");
         query.setFieldAndAlias(fieldAndAlias);
         query.setStartTime(param.getStartTime());
         query.setEndTime(param.getEndTime());
@@ -181,7 +181,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
 //        sb.append(" group by time(5s) order by time");
         AppBaseDataQuery query = new AppBaseDataQuery();
         Map<String, String> fieldAndAlias = new HashMap<>();
-        fieldAndAlias.put("mean(cpu_rate)", "cpu_rate");
+        fieldAndAlias.put("avg(cpu_rate)", "cpu_rate");
         query.setFieldAndAlias(fieldAndAlias);
         query.setStartTime(param.getStartTime());
         query.setEndTime(param.getEndTime());

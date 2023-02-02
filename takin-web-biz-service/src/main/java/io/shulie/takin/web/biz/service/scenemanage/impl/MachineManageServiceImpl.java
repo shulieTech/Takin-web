@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -533,9 +534,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         // todo 暂时写死
                         .append(" && sed -i 's/PORT/").append(10000 + request.getId() + "").append("/g' ./pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' ./pressure-engine/config/application-test.yml");
-                
-                deployStatusMap.put(request.getId(),"替换配置文件");
-                log.info("执行配置文件替换命令："+dockerReplaceAndRunBuffer.toString());
+
+                deployStatusMap.put(request.getId(), "替换配置文件");
+                log.info("执行配置文件替换命令：" + dockerReplaceAndRunBuffer.toString());
                 String replaceAndRunExec = sshInitUtil.execute(dockerReplaceAndRunBuffer.toString());
                 log.info("替换配置文件日志：" + replaceAndRunExec);
 
@@ -548,7 +549,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         // todo 建议不要用写死的值
                         .append(" && sed -i \"s/192.168.1.222/").append(manageDAOById.getMachineIp()).append("/g\" /data/pressure.engine.env.conf")
                         .append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" /data/pressure.engine.env.conf'");
-                log.info("执行启动命:"+dockerPressureEnvConfBuffer.toString());
+                log.info("执行启动命:" + dockerPressureEnvConfBuffer.toString());
                 String dockerPressureEnvConfExec = sshInitUtil.execute(dockerPressureEnvConfBuffer.toString());
                 log.info("启动服务日志：" + dockerPressureEnvConfExec);
 
@@ -634,9 +635,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    public String readExcelBachtCreate(MultipartFile file) {
+    public ResponseResult<String> readExcelBachtCreate(MultipartFile file) {
         if (file == null) {
-            return null;
+            return ResponseResult.fail("上传文件为空", "请重新上传文件");
         }
         try {
             InputStream stream = new BufferedInputStream(file.getInputStream());
@@ -659,20 +660,31 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             }
             String machineNameStr = getMachineName(machineManageEntities);
             if (StringUtils.isNotBlank(machineNameStr)) {
-                return machineNameStr;
+                return ResponseResult.fail(machineNameStr, machineNameStr);
             }
             String machineIpStr = getMachineIp(machineManageEntities);
             if (StringUtils.isNotBlank(machineIpStr)) {
-                return machineIpStr;
+                return ResponseResult.fail(machineIpStr, machineIpStr);
             }
             getNodeMsg(machineManageEntities);
-            if (CollectionUtils.isNotEmpty(machineManageEntities)){
-                machineManageDAO.saveBatch(machineManageEntities);
+            List<MachineManageEntity> errorMachineList = machineManageEntities.stream().filter(a -> {
+                if (StringUtils.isBlank(a.getPassword()) || StringUtils.isBlank(a.getUserName()) || StringUtils.isBlank(a.getMachineIp())) {
+                    return true;
+                }
+                return false;
+            }).collect(Collectors.toList());
+
+            if (CollectionUtils.isEmpty(machineManageEntities)) {
+                return ResponseResult.fail("上传文件内容为空", "请重新上传文件");
             }
+            if (CollectionUtils.isNotEmpty(errorMachineList)) {
+                return ResponseResult.fail(JSON.toJSONString(errorMachineList), "机器信息缺失,请重新上传");
+            }
+            machineManageDAO.saveBatch(machineManageEntities);
+            return ResponseResult.success();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return null;
     }
 
     /**

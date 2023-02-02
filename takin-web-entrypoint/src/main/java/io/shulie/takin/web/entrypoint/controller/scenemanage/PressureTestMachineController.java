@@ -118,30 +118,16 @@ public class PressureTestMachineController {
 
     @PostMapping(value = "/createMachineByExecl", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiOperation("根据excel批量新增机器")
-    public void createMachineByExecl(@RequestPart("file") MultipartFile file) {
+    public ResponseResult<String> createMachineByExecl(@RequestPart("file") MultipartFile file) {
         //校验文件
         MultipartFile[] files = {file};
         try {
             new ExcelUtil().verify(files);
-            this.machineManageService.readExcelBachtCreate(file);
+            return this.machineManageService.readExcelBachtCreate(file);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-//    @ApiOperation("根据excel批量新增机器2")
-//    @PostMapping("createMachineByExeclPath")
-//    public void createMachineByExeclPath(@RequestPart("path") String path) {
-//        try {
-//            InputStream inputStream = new FileInputStream(path);
-//            MultipartFile file = new MockMultipartFile("tmp_" + new Date().getTime(), inputStream);
-//            MultipartFile[] files = {file};
-//            new ExcelUtil().verify(files);
-//            this.machineManageService.readExcelBachtCreate(file);
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
 
     @PostMapping("/benchmarkEnableByTag")
     @ApiOperation("benchmark-批量部署压力机根据tag")

@@ -30,7 +30,7 @@ public interface MachineManageService {
 
     PagingList<BenchmarkSuiteResponse> benchmarkSuiteList(BenchmarkSuitePageRequest request, HttpServletRequest httpRequest);
 
-    String readExcelBachtCreate(MultipartFile file);
+    ResponseResult<String> readExcelBachtCreate(MultipartFile file);
 
     /**
      * 根据tag批量部署机器

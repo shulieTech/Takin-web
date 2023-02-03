@@ -79,7 +79,7 @@ public class ReportEventServiceImpl implements ReportEventService {
                     .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
                     .param(query)
                     .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                    .eventName("查询enginePressure数据失败")
+                    .eventName("查询enginePressure数据")
                     .list(tClass);
             return amdbResponse.getData();
         } catch (Exception e) {

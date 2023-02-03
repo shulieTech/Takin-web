@@ -150,12 +150,12 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             List<ReportMachineUpdateParam> insertList = Lists.newArrayList();
             appMap.values().forEach(value -> {
 
-                if(CollectionUtils.isEmpty(value)) {
+                if (CollectionUtils.isEmpty(value)) {
                     return;
                 }
                 BaseAppVo baseAppVo = value.stream().filter(base -> {
                     // agentId 是否在线 只有不等于空
-                    if(CollectionUtils.isNotEmpty(onlineAgentIds) && !onlineAgentIds.contains(base.getAgentIp())) {
+                    if (CollectionUtils.isNotEmpty(onlineAgentIds) && !onlineAgentIds.contains(base.getAgentIp())) {
                         return false;
                     }
                     return true;
@@ -180,7 +180,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     baseAppVo.setAgentIp(null);
                     tmp.setMachineBaseConfig(JSON.toJSONString(baseAppVo));
                     // 增加租户
-                    WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(),tmp);
+                    WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(), tmp);
                     insertList.add(tmp);
                 }
             });
@@ -209,7 +209,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             reportMachine.setMachineIp(vo.getAppIp());
             reportMachine.setRiskFlag(1);
             //reportMachine.setRiskValue();
-            if(StringUtils.isNotBlank(vo.getContent())) {
+            if (StringUtils.isNotBlank(vo.getContent())) {
                 reportMachine.setRiskContent(vo.getContent());
             }
             reportMachineDAO.updateRiskContent(reportMachine);
@@ -248,8 +248,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             return results;
         }
 
-        final long sTime = formatTimestamp(startTime);
-        final long eTime = formatTimestamp(endTime);
+        long finalStartTime = startTime;
+        long finalEndTime = endTime;
         dto.getBusinessActivity().forEach(ba -> {
             Long businessActivityId = ba.getBusinessActivityId();
             BigDecimal maxTps = ba.getMaxTps() != null ? ba.getMaxTps() : new BigDecimal("0");
@@ -267,7 +267,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             if (maxTps.compareTo(destTps) > 0) {
                 tmpList = processOverRisk(appNameList, dto.getSceneId(), reportId, destTps);
             } else {
-                tmpList = processBaseRisk(appNameList, sTime, eTime, reportId);
+                tmpList = processBaseRisk(appNameList, finalStartTime, finalEndTime, reportId);
             }
             if (CollectionUtils.isNotEmpty(tmpList)) {
                 results.addAll(tmpList);
@@ -356,7 +356,6 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
      * 根据业务活动ID、时间获取压测链路明细信息
      *
      * @param startTime 毫秒数
-     *
      * @return
      */
     @Override
@@ -510,7 +509,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
      * @return
      */
     private List<LinkDataResult> processLinkDataById(Long businessActivityId, long sTime, long eTime) {
-        if (businessActivityId == null || businessActivityId <= 0){
+        if (businessActivityId == null || businessActivityId <= 0) {
             return null;
         }
         List<LinkDataResult> linkDataResultList = Lists.newArrayList();
@@ -649,8 +648,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         Metrices firstMetrices = sortMetrics.get(0);
         Metrices lastMetrices = sortMetrics.get(sortMetrics.size() - 1);
         // 取60秒前后的数据
-        long firstTime = formatTimestamp(firstMetrices.getTime() - 60 * 1000);
-        long lastTime = formatTimestamp(lastMetrices.getTime() + 60 * 1000);
+        long firstTime = firstMetrices.getTime() - 60 * 1000;
+        long lastTime = lastMetrices.getTime() + 60 * 1000;
 
         final List<Metrices> metricesList = metrices;
 
@@ -672,11 +671,12 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 //                                    + " group by time(5s) order by time";
                     AppBaseDataQuery voListQuery = new AppBaseDataQuery();
                     Map<String, String> fieldAndAlias = new HashMap<>();
-                    fieldAndAlias.put("avg(cpu_rate)","cpu_rate");
-                    fieldAndAlias.put("avg(cpu_load)","cpu_load");
-                    fieldAndAlias.put("avg(mem_rate)","mem_rate");
-                    fieldAndAlias.put("avg(iowait)","iowait");
-                    fieldAndAlias.put("avg(net_bandwidth_rate)","net_bandwidth_rate");
+                    fieldAndAlias.put("time", null);
+                    fieldAndAlias.put("avg(cpu_rate)", "cpu_rate");
+                    fieldAndAlias.put("avg(cpu_load)", "cpu_load");
+                    fieldAndAlias.put("avg(mem_rate)", "mem_rate");
+                    fieldAndAlias.put("avg(iowait)", "iowait");
+                    fieldAndAlias.put("avg(net_bandwidth_rate)", "net_bandwidth_rate");
                     voListQuery.setFieldAndAlias(fieldAndAlias);
 
                     voListQuery.setStartTime(firstTime);
@@ -704,7 +704,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                             if (CollectionUtils.isNotEmpty(tmpBaseVoList)) {
                                 tmpVo = tmpBaseVoList.stream().findFirst().get();
                                 tmpVo.setTps(metricesTmp.getAvgTps());
-                                tmpVo.setTime(Instant.ofEpochMilli(metricesTmp.getTime()));
+                                tmpVo.setTime(metricesTmp.getTime());
                                 tmpVo.setAppIp(ip.getAppIp());
                                 tmpVo.setAppName(appName);
 
@@ -758,11 +758,11 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 
         // 最大 cpu 使用率
         double scale = Double.parseDouble(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_SCALE));
+                ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_SCALE));
 
         // 最大 cpu load
         int maxLoad = Integer.parseInt(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_MAX_LOAD));
+                ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_MAX_LOAD));
 
         if (CollectionUtils.isNotEmpty(lessList)) {
             BaseRiskResult risk = new BaseRiskResult();

@@ -17,7 +17,7 @@ public class BaseServerResult {
      * 时间
      */
     @JsonProperty("time")
-    private Instant time;
+    private Long time;
 
     /**
      * 应用ip
@@ -98,10 +98,13 @@ public class BaseServerResult {
 
     /**
      * 获取毫秒的时间
-     *
+     * 取到秒的整数
      * @return
      */
     public long getExtTime() {
-        return this.getTime().getEpochSecond() * 1000;
+        if (this.getTime() != null){
+            return this.getTime() / 1000 * 1000;
+        }
+        return 0L;
     }
 }

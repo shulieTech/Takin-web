@@ -48,6 +48,8 @@ public class BaseServerDaoImpl implements BaseServerDao {
         long startTime = System.currentTimeMillis();
         AppBaseDataQuery query = new AppBaseDataQuery();
         Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("agent_id", null);
+        fieldAndAlias.put("app_ip", null);
         fieldAndAlias.put("max(memory)", "memory");
         fieldAndAlias.put("max(disk)", "disk");
         fieldAndAlias.put("max(cpu_cores)", "cpu_cores");
@@ -57,8 +59,8 @@ public class BaseServerDaoImpl implements BaseServerDao {
         query.setEndTime(param.getEndTime());
         query.setAppName(param.getApplicationName());
         List<String> fields = new ArrayList<>();
-        fields.add("agentId");
-        fields.add("appId");
+        fields.add("agent_id");
+        fields.add("app_ip");
         query.setGroupByFields(fields);
         List<BaseServerResult> baseServerResults = this.listBaseServerResult(query);
         log.debug("queryBaseServer ,cost time :{}", System.currentTimeMillis() - startTime);
@@ -106,6 +108,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
         appNames.forEach(appName -> {
             AppBaseDataQuery query = new AppBaseDataQuery();
             Map<String, String> fieldAndAlias = new HashMap<>();
+            fieldAndAlias.put("app_ip", null);
             fieldAndAlias.put("max(cpu_rate)", "cpu_rate");
             fieldAndAlias.put("max(cpu_load)", "cpu_load");
             fieldAndAlias.put("max(mem_rate)", "mem_rate");
@@ -114,8 +117,8 @@ public class BaseServerDaoImpl implements BaseServerDao {
             query.setFieldAndAlias(fieldAndAlias);
             query.setStartTime(startTime);
             query.setEndTime(endTime);
-            query.setAppName("appName");
-            query.setGroupByFields(Collections.singletonList("tag_app_ip"));
+            query.setAppName(appName);
+            query.setGroupByFields(Collections.singletonList("app_ip"));
             List<BaseServerResult> voList = this.listBaseServerResult(query);
             if (CollectionUtils.isEmpty(voList)) {
                 return;
@@ -131,7 +134,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
 
             voList.forEach(vo -> {
                 BaseRiskResult risk = new BaseRiskResult();
-                risk.setAppIp(vo.getTagAppIp());
+                risk.setAppIp(vo.getAppIp());
                 risk.setAppName(appName);
                 risk.setReportId(reportId);
 
@@ -181,6 +184,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
 //        sb.append(" group by time(5s) order by time");
         AppBaseDataQuery query = new AppBaseDataQuery();
         Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("time", null);
         fieldAndAlias.put("avg(cpu_rate)", "cpu_rate");
         query.setFieldAndAlias(fieldAndAlias);
         query.setStartTime(param.getStartTime());
@@ -207,7 +211,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
                     .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
                     .param(query)
                     .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                    .eventName("查询enginePressure数据失败")
+                    .eventName("查询enginePressure数据")
                     .list(BaseServerResult.class);
             return amdbResponse.getData();
         } catch (Exception e) {

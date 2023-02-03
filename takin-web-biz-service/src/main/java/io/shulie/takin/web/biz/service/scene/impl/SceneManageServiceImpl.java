@@ -1095,7 +1095,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                     .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
                     .param(query)
                     .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                    .eventName("查询enginePressure数据失败")
+                    .eventName("查询enginePressure数据")
                     .list(SceneReportListOutput.class);
             return amdbResponse.getData();
         } catch (Exception e) {

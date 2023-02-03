@@ -161,8 +161,9 @@ public class AmdbHelper {
             }
             this.eventName = "AMDB" + this.eventName;
             if (StringUtils.isBlank(responseEntity)) {
-                log.error("{}返回为空,请求地址：{}，请求参数：{}", this.eventName, this.url, JSON.toJSONString(this.param));
-                throw new TakinWebException(this.exception, this.eventName + "返回为空！");
+                log.info("{}返回为空,请求地址：{}，请求参数：{}", this.eventName, this.url, JSON.toJSONString(this.param));
+//                throw new TakinWebException(this.exception, this.eventName + "返回为空！");
+                return new AmdbResult<>();
             }
             AmdbResult<List<T>> amdbResponse = JSONUtil.toBean(responseEntity,
                 new TypeReference<AmdbResult<List<T>>>() {

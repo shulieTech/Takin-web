@@ -222,7 +222,7 @@ public class SummaryService {
             // 展示原数据
             metrics = vos.stream().map(result -> {
                 Metrices metrices = new Metrices();
-                metrices.setTime(result.getTime().toEpochMilli());
+                metrices.setTime(result.getTime());
                 metrices.setAvgTps(0D);
                 return metrices;
             }).collect(Collectors.toList());

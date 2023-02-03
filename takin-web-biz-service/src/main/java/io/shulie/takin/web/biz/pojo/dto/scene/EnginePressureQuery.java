@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.pojo.dto.scene;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -33,4 +34,9 @@ public class EnginePressureQuery {
 
     @ApiModelProperty("排序策略,0:升序;1:降序")
     private Integer orderByStrategy;
+
+    /**
+     * groupBy字段
+     */
+    private List<String> groupByFields;
 }

@@ -520,20 +520,11 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
                 //替换配置文件
                 //todo USER_APPKEY需要换成f524efbb720797aedc4d3339cbf9dda0
-                StringBuffer dockerReplaceAndRunBuffer = new StringBuffer()
-                        .append(dockerReplaceAndRunCmd)
-                        .append(" && rm -f pressure-engine.zip")
-                        .append(" && sed -i 's/LOCAL_PASSWORD/").append(des.decryptStr(manageDAOById.getPassword())).append("/g' ./pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/TAKIN_LITE_IP/").append(benchmarkServerIp).append("/g' ./pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/TAKIN_LITE_PORT/").append(benchmarkServerPort).append("/g' ./pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/LOCAL_HOST_IP/").append(manageDAOById.getMachineIp()).append("/g' ./pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/USER_APPKEY/").append(benchmarkUserAppKey).append("/g' ./pressure-engine/config/application-test.yml")
+                StringBuffer dockerReplaceAndRunBuffer = new StringBuffer().append(dockerReplaceAndRunCmd).append(" && rm -f pressure-engine.zip").append(" && sed -i 's/LOCAL_PASSWORD/").append(des.decryptStr(manageDAOById.getPassword())).append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/TAKIN_LITE_IP/").append(benchmarkServerIp).append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/TAKIN_LITE_PORT/").append(benchmarkServerPort).append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/LOCAL_HOST_IP/").append(manageDAOById.getMachineIp()).append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/USER_APPKEY/").append(benchmarkUserAppKey).append("/g' ./pressure-engine/config/application-test.yml")
 //                        .append(" && sed -i 's/SUITE_NAME/").append(manageDAOById.getBenchmarkSuiteName()).append("/g' ./pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/g' ./pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' ./pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' ./pressure-engine/config/application-test.yml")
                         // todo 暂时写死
-                        .append(" && sed -i 's/PORT/").append(10000 + request.getId() + "").append("/g' ./pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' ./pressure-engine/config/application-test.yml");
+                        .append(" && sed -i 's/PORT/").append(10000 + request.getId() + "").append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' ./pressure-engine/config/application-test.yml");
 
                 deployStatusMap.put(request.getId(), "替换配置文件");
                 log.info("执行配置文件替换命令：" + dockerReplaceAndRunBuffer.toString());
@@ -542,25 +533,15 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
                 //todo pressure.task.event.host为宿主机地址
                 //初始化配置文件pressure.engine.env.conf
-                StringBuffer dockerPressureEnvConfBuffer = new StringBuffer()
-                        .append("docker exec ").append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ")
-                        .append("'cd /data")
-                        .append(" && sed -i \"s/192.168.1.205/").append(benchmarkServerIp).append("/g\" /data/pressure.engine.env.conf")
+                StringBuffer dockerPressureEnvConfBuffer = new StringBuffer().append("docker exec ").append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ").append("'cd /data").append(" && sed -i \"s/192.168.1.205/").append(benchmarkServerIp).append("/g\" /data/pressure.engine.env.conf")
                         // todo 建议不要用写死的值
-                        .append(" && sed -i \"s/192.168.1.222/").append(manageDAOById.getMachineIp()).append("/g\" /data/pressure.engine.env.conf")
-                        .append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" /data/pressure.engine.env.conf'");
+                        .append(" && sed -i \"s/192.168.1.222/").append(manageDAOById.getMachineIp()).append("/g\" /data/pressure.engine.env.conf").append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" /data/pressure.engine.env.conf'");
                 log.info("执行启动命:" + dockerPressureEnvConfBuffer.toString());
                 String dockerPressureEnvConfExec = sshInitUtil.execute(dockerPressureEnvConfBuffer.toString());
                 log.info("启动服务日志：" + dockerPressureEnvConfExec);
 
                 //启动进程
-                StringBuffer dockerAppRunBuffer = new StringBuffer()
-                        .append("cd /data && zip -r pressure-engine.zip pressure-engine/ ")
-                        .append("&& docker cp pressure-engine.zip ").append(manageDAOById.getBenchmarkSuiteName()).append(":/data/pressure-engine.zip ")
-                        .append("&& rm -f pressure-engine.zip ")
-                        .append("&& rm -rf pressure-engine ")
-                        .append("&& docker exec ").append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ")
-                        .append("'cd /data && mv pressure-engine pressure-engine_bak ").append("&& unzip pressure-engine.zip && cd /data/pressure-engine && sh start.sh -e test -t 1 -d 1'");
+                StringBuffer dockerAppRunBuffer = new StringBuffer().append("cd /data && zip -r pressure-engine.zip pressure-engine/ ").append("&& docker cp pressure-engine.zip ").append(manageDAOById.getBenchmarkSuiteName()).append(":/data/pressure-engine.zip ").append("&& rm -f pressure-engine.zip ").append("&& rm -rf pressure-engine ").append("&& docker exec ").append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ").append("'cd /data && mv pressure-engine pressure-engine_bak ").append("&& unzip pressure-engine.zip && cd /data/pressure-engine && sh start.sh -e test -t 1 -d 1'");
                 deployStatusMap.put(request.getId(), "启动服务");
                 String dockerAppRunExec = sshInitUtil.execute(dockerAppRunBuffer.toString());
                 log.info("启动服务日志：" + dockerAppRunExec);
@@ -575,8 +556,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         Thread.sleep(3000);
                         List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(headerMap);
                         if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
-                            long count = pressureMachineDTOS.stream()
-                                    .filter(o -> manageDAOById.getMachineIp().equals(o.getConfigIp()) && manageDAOById.getBenchmarkSuiteName().trim().equals(o.getTypeMachine().trim())).count();
+                            long count = pressureMachineDTOS.stream().filter(o -> manageDAOById.getMachineIp().equals(o.getConfigIp()) && manageDAOById.getBenchmarkSuiteName().trim().equals(o.getTypeMachine().trim())).count();
                             if (count > 0) {
                                 deployStatusMap.put(request.getId(), "启动成功");
                                 log.info("启动成功，结束监听");
@@ -637,7 +617,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     @Override
     public ResponseResult<String> readExcelBachtCreate(MultipartFile file) {
         if (file == null) {
-            return ResponseResult.fail("上传文件为空", "请重新上传文件");
+            return ResponseResult.fail("上传文件为空,请重新上传文件", "请重新上传文件");
         }
         try {
             InputStream stream = new BufferedInputStream(file.getInputStream());
@@ -651,7 +631,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 List<Object> sheets = readList.get(i);
                 MachineManageEntity machineManageEntity = new MachineManageEntity();
                 machineManageEntity.setMachineName(Objects.nonNull(sheets.get(0)) ? sheets.get(0).toString() : null);
-                machineManageEntity.setMachineIp(Objects.nonNull(sheets.get(0)) ? sheets.get(0).toString() : null);
+                machineManageEntity.setMachineIp(Objects.nonNull(sheets.get(1)) ? sheets.get(0).toString() : null);
                 machineManageEntity.setUserName(Objects.nonNull(sheets.get(2)) ? sheets.get(2).toString() : null);
                 machineManageEntity.setPassword(Objects.nonNull(sheets.get(3)) ? sheets.get(3).toString() : null);
                 machineManageEntity.setTag(Objects.nonNull(sheets.get(4)) ? sheets.get(4).toString() : null);
@@ -675,10 +655,18 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             }).collect(Collectors.toList());
 
             if (CollectionUtils.isEmpty(machineManageEntities)) {
-                return ResponseResult.fail("上传文件内容为空", "请重新上传文件");
+                return ResponseResult.fail("上传文件内容为空,请重新上传文件", "请重新上传文件");
             }
             if (CollectionUtils.isNotEmpty(errorMachineList)) {
-                return ResponseResult.fail(JSON.toJSONString(errorMachineList), "机器信息缺失,请重新上传");
+                String errorMsg = errorMachineList.stream().map(a -> {
+                    if (StringUtils.isNotBlank(a.getMachineIp())) {
+                        return a.getMachineIp();
+                    } else if (StringUtils.isNotBlank(a.getUserName())) {
+                        return a.getUserName();
+                    }
+                    return "本条记录为空";
+                }).collect(Collectors.joining(","));
+                return ResponseResult.fail(JSON.toJSONString(errorMsg) + ",机器信息缺失,请重新上传", "机器信息缺失,请重新上传");
             }
             machineManageDAO.saveBatch(machineManageEntities);
             return ResponseResult.success();
@@ -694,22 +682,29 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
      * @return
      */
     @Override
-    public String benchmarkEnableByTag(HttpServletRequest httpRequest, BenchmarkMachineDeployRequest request) {
-        ExecutorService executorService = Executors.newFixedThreadPool(8);
+    public ResponseResult<String> benchmarkEnableByTag(HttpServletRequest httpRequest, BenchmarkMachineDeployRequest request) {
         List<MachineManageEntity> list = getAllMachineByTag(request.getTag());
         if (CollectionUtils.isEmpty(list)) {
-            return "部署失败";
+            return ResponseResult.fail("机器tag：" + request.getTag() + "下没有机器列表,请重试", "请重试");
         }
 
+        List<MachineManageEntity> deployEdMachineList = new ArrayList<>();
+
         for (MachineManageEntity machineManageEntity : list) {
+            if (machineManageEntity.getStatus() == 1 || machineManageEntity.getStatus() == 2) {
+                deployEdMachineList.add(machineManageEntity);
+                continue;
+            }
             PressureMachineBaseRequest pressureMachineBaseRequest = new PressureMachineBaseRequest();
             pressureMachineBaseRequest.setId(machineManageEntity.getId());
             pressureMachineBaseRequest.setBenchmarkSuiteName(request.getBenchmarkSuiteName());
             benchmarkEnable(pressureMachineBaseRequest, httpRequest);
-//            FutureTask<String> task = new FutureTask<>(() -> benchmarkEnable(pressureMachineBaseRequest, httpRequest));
-//            executorService.execute(task);
         }
-        return null;
+        if (CollectionUtils.isNotEmpty(deployEdMachineList)) {
+            String errorMsg = deployEdMachineList.stream().map(MachineManageEntity::getMachineIp).collect(Collectors.joining(","));
+            return ResponseResult.fail("机器" + errorMsg + "已部署或部署中", "请重新部署");
+        }
+        return ResponseResult.success("部署成功");
     }
 
     private List<MachineManageEntity> getAllMachineByTag(String tag) {
@@ -774,10 +769,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
     private String getMachineIp(List<MachineManageEntity> machineManageEntities) {
         StringBuffer errorString = new StringBuffer();
-        List<String> machineIpList = machineManageEntities.stream()
-                .map(MachineManageEntity::getMachineIp)
-                .filter(a -> StringUtils.isNotBlank(a))
-                .collect(Collectors.toList());
+        List<String> machineIpList = machineManageEntities.stream().map(MachineManageEntity::getMachineIp).filter(a -> StringUtils.isNotBlank(a)).collect(Collectors.toList());
         QueryWrapper<MachineManageEntity> ipQueryWrapper = new QueryWrapper<>();
         ipQueryWrapper.lambda().in(MachineManageEntity::getMachineIp, machineIpList);
         List<MachineManageEntity> ipList = machineManageDAO.list(ipQueryWrapper);
@@ -791,10 +783,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
     private String getMachineName(List<MachineManageEntity> machineManageEntities) {
         StringBuffer errorString = new StringBuffer();
-        List<String> machineNameList = machineManageEntities.stream()
-                .map(MachineManageEntity::getMachineName)
-                .filter(a -> StringUtils.isNotBlank(a))
-                .collect(Collectors.toList());
+        List<String> machineNameList = machineManageEntities.stream().map(MachineManageEntity::getMachineName).filter(a -> StringUtils.isNotBlank(a)).collect(Collectors.toList());
         QueryWrapper<MachineManageEntity> nameQueryWrapper = new QueryWrapper<>();
         nameQueryWrapper.lambda().in(MachineManageEntity::getMachineName, machineNameList);
         List<MachineManageEntity> nameList = machineManageDAO.list(nameQueryWrapper);

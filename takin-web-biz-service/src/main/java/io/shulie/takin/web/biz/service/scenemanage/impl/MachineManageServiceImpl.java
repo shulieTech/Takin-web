@@ -13,12 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -441,7 +436,6 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     @Override
-    @Async
     public String benchmarkEnable(PressureMachineBaseRequest request, HttpServletRequest httpRequest) {
         if (request.getBenchmarkSuiteName() == null) {
             return "benchmark部署需要上传部署组件名称";
@@ -683,6 +677,8 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
      */
     @Override
     public ResponseResult<String> benchmarkEnableByTag(HttpServletRequest httpRequest, BenchmarkMachineDeployRequest request) {
+        List<String> msgList = new ArrayList<>();
+        ExecutorService cachePool = Executors.newFixedThreadPool(15);
         List<MachineManageEntity> list = getAllMachineByTag(request.getTag());
         if (CollectionUtils.isEmpty(list)) {
             return ResponseResult.fail("机器tag：" + request.getTag() + "下没有机器列表,请重试", "请重试");
@@ -691,18 +687,29 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         List<MachineManageEntity> deployEdMachineList = new ArrayList<>();
 
         for (MachineManageEntity machineManageEntity : list) {
-            if (machineManageEntity.getStatus() == 1 || machineManageEntity.getStatus() == 2) {
-                deployEdMachineList.add(machineManageEntity);
-                continue;
+            try {
+                //判断机器状态，如果状态是1或者2就跳过不部署
+                if (machineManageEntity.getStatus() == 1 || machineManageEntity.getStatus() == 2) {
+                    deployEdMachineList.add(machineManageEntity);
+                    continue;
+                }
+                PressureMachineBaseRequest pressureMachineBaseRequest = new PressureMachineBaseRequest();
+                pressureMachineBaseRequest.setId(machineManageEntity.getId());
+                pressureMachineBaseRequest.setBenchmarkSuiteName(request.getBenchmarkSuiteName());
+                FutureTask<String> future = new FutureTask<>(()-> benchmarkEnable(pressureMachineBaseRequest, httpRequest));
+                cachePool.execute(future);
+                msgList.add(future.get());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-            PressureMachineBaseRequest pressureMachineBaseRequest = new PressureMachineBaseRequest();
-            pressureMachineBaseRequest.setId(machineManageEntity.getId());
-            pressureMachineBaseRequest.setBenchmarkSuiteName(request.getBenchmarkSuiteName());
-            benchmarkEnable(pressureMachineBaseRequest, httpRequest);
         }
         if (CollectionUtils.isNotEmpty(deployEdMachineList)) {
             String errorMsg = deployEdMachineList.stream().map(MachineManageEntity::getMachineIp).collect(Collectors.joining(","));
             return ResponseResult.fail("机器" + errorMsg + "已部署或部署中", "请重新部署");
+        }
+        if (CollectionUtils.isNotEmpty(msgList)){
+           String msg =  msgList.stream().collect(Collectors.joining(","));
+           return ResponseResult.success(msg);
         }
         return ResponseResult.success("部署成功");
     }

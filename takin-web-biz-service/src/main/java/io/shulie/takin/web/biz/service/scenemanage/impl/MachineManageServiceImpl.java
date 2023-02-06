@@ -95,8 +95,8 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String dockerPullCmd;
     @Value("${docker.cmd.run: docker run -itd --net=host --name BENCHMARK_SUITE_NAME 192.168.10.11/library/BENCHMARK_SUITE_NAME:latest}")
     private String dockerRunCmd;
-    @Value("${docker.cmd.replaceAndRun: cd /data && rm -rf pressure-engine.zip && rm -rf pressure-engine && wget https://shulie-daily.oss-cn-hangzhou.aliyuncs.com/yidongyun/pressure-engine.zip && unzip pressure-engine.zip}")
-    private String dockerReplaceAndRunCmd;
+    @Value("${docker.pressure.url: https://shulie-daily.oss-cn-hangzhou.aliyuncs.com/yidongyun/pressure-engine.zip}")
+    private String dockerPressureUrl;
 
 
     @Value("${harbor.machine.ip:192.168.10.11}")
@@ -513,9 +513,19 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 String dockerRunExec = sshInitUtil.execute(dockerRun);
                 log.info("启动容器日志：" + dockerRunExec);
 
-                //替换配置文件
-                //todo USER_APPKEY需要换成f524efbb720797aedc4d3339cbf9dda0
-                StringBuffer dockerReplaceAndRunBuffer = new StringBuffer().append(dockerReplaceAndRunCmd).append(" && rm -f pressure-engine.zip")
+//              //替换配置文件
+                StringBuffer dockerPressureEnvConfBuffer = new StringBuffer().append("docker exec ")
+                        .append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ").append("'cd /data")
+                        .append(" && rm -rf /data/*.swp")
+                        .append(" && sed -i \"s/192.168.1.205/").append(benchmarkServerIp).append("/g\" /data/pressure.engine.env.conf")
+                        .append(" && sed -i \"s/192.168.1.222/").append(manageDAOById.getMachineIp()).append("/g\" /data/pressure.engine.env.conf")
+                        .append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" /data/pressure.engine.env.conf")
+                        .append(" && rm -rf pressure-engine")
+                        .append(" && rm -rf pressure-engine.zip*")
+                        .append(" && wget ").append(dockerPressureUrl)
+                        .append(" && unzip -o pressure-engine.zip")
+                        .append(" && rm -rf pressure-engine.zip*")
+                        .append(" && rm -rf /data/pressure-engine/config/*.swp")
                         .append(" && sed -i 's/LOCAL_PASSWORD/").append(des.decryptStr(manageDAOById.getPassword())).append("/g' /data/pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/TAKIN_LITE_IP/").append(benchmarkServerIp).append("/g' /data/pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/TAKIN_LITE_PORT/").append(benchmarkServerPort).append("/g' /data/pressure-engine/config/application-test.yml")
@@ -524,28 +534,14 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/g' /data/pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' /data/pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/PORT/").append(10000 + request.getId() + "").append("/g' /data/pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' /data/pressure-engine/config/application-test.yml");
-
-                deployStatusMap.put(request.getId(), "替换配置文件");
-                log.info("执行配置文件替换命令：" + dockerReplaceAndRunBuffer.toString());
-                String replaceAndRunExec = sshInitUtil.execute(dockerReplaceAndRunBuffer.toString());
-                log.info("替换配置文件日志：" + replaceAndRunExec);
-
-                //todo pressure.task.event.host为宿主机地址
-                //初始化配置文件pressure.engine.env.conf
-                StringBuffer dockerPressureEnvConfBuffer = new StringBuffer().append("docker exec ")
-                        .append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ").append("'cd /data")
-                        .append(" && sed -i \"s/192.168.1.205/").append(benchmarkServerIp).append("/g\" /data/pressure.engine.env.conf")
-                        .append(" && sed -i \"s/192.168.1.222/").append(manageDAOById.getMachineIp()).append("/g\" /data/pressure.engine.env.conf")
-                        .append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" /data/pressure.engine.env.conf'");
-                log.info("执行启动命:" + dockerPressureEnvConfBuffer.toString());
-                String dockerPressureEnvConfExec = sshInitUtil.execute(dockerPressureEnvConfBuffer.toString());
-                log.info("启动服务日志：" + dockerPressureEnvConfExec);
+                        .append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && cd /data/pressure-engine")
+                        .append(" && sh start.sh -e test -t 1'");
 
                 //启动进程
-                StringBuffer dockerAppRunBuffer = new StringBuffer().append("cd /data && zip -r pressure-engine.zip pressure-engine/ ").append("&& docker cp pressure-engine.zip ").append(manageDAOById.getBenchmarkSuiteName()).append(":/data/pressure-engine.zip ").append("&& rm -f pressure-engine.zip ").append("&& rm -rf pressure-engine ").append("&& docker exec ").append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ").append("'cd /data && mv pressure-engine pressure-engine_bak ").append("&& unzip pressure-engine.zip && cd /data/pressure-engine && sh start.sh -e test -t 1 -d 1'");
                 deployStatusMap.put(request.getId(), "启动服务");
-                String dockerAppRunExec = sshInitUtil.execute(dockerAppRunBuffer.toString());
+                log.info("开始执行docker命令，运行命令为:{}", dockerPressureEnvConfBuffer);
+                String dockerAppRunExec = sshInitUtil.execute(dockerPressureEnvConfBuffer.toString());
                 log.info("启动服务日志：" + dockerAppRunExec);
                 //监听启动成功
                 long startTimeMillis = System.currentTimeMillis();

@@ -515,11 +515,16 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
                 //替换配置文件
                 //todo USER_APPKEY需要换成f524efbb720797aedc4d3339cbf9dda0
-                StringBuffer dockerReplaceAndRunBuffer = new StringBuffer().append(dockerReplaceAndRunCmd).append(" && rm -f pressure-engine.zip").append(" && sed -i 's/LOCAL_PASSWORD/").append(des.decryptStr(manageDAOById.getPassword())).append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/TAKIN_LITE_IP/").append(benchmarkServerIp).append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/TAKIN_LITE_PORT/").append(benchmarkServerPort).append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/LOCAL_HOST_IP/").append(manageDAOById.getMachineIp()).append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/USER_APPKEY/").append(benchmarkUserAppKey).append("/g' ./pressure-engine/config/application-test.yml")
-//                        .append(" && sed -i 's/SUITE_NAME/").append(manageDAOById.getBenchmarkSuiteName()).append("/g' ./pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' ./pressure-engine/config/application-test.yml")
-                        // todo 暂时写死
-                        .append(" && sed -i 's/PORT/").append(10000 + request.getId() + "").append("/g' ./pressure-engine/config/application-test.yml").append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' ./pressure-engine/config/application-test.yml");
+                StringBuffer dockerReplaceAndRunBuffer = new StringBuffer().append(dockerReplaceAndRunCmd).append(" && rm -f pressure-engine.zip")
+                        .append(" && sed -i 's/LOCAL_PASSWORD/").append(des.decryptStr(manageDAOById.getPassword())).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/TAKIN_LITE_IP/").append(benchmarkServerIp).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/TAKIN_LITE_PORT/").append(benchmarkServerPort).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/LOCAL_HOST_IP/").append(manageDAOById.getMachineIp()).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/USER_APPKEY/").append(benchmarkUserAppKey).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/PORT/").append(10000 + request.getId() + "").append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' /data/pressure-engine/config/application-test.yml");
 
                 deployStatusMap.put(request.getId(), "替换配置文件");
                 log.info("执行配置文件替换命令：" + dockerReplaceAndRunBuffer.toString());
@@ -528,9 +533,11 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
                 //todo pressure.task.event.host为宿主机地址
                 //初始化配置文件pressure.engine.env.conf
-                StringBuffer dockerPressureEnvConfBuffer = new StringBuffer().append("docker exec ").append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ").append("'cd /data").append(" && sed -i \"s/192.168.1.205/").append(benchmarkServerIp).append("/g\" /data/pressure.engine.env.conf")
-                        // todo 建议不要用写死的值
-                        .append(" && sed -i \"s/192.168.1.222/").append(manageDAOById.getMachineIp()).append("/g\" /data/pressure.engine.env.conf").append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" /data/pressure.engine.env.conf'");
+                StringBuffer dockerPressureEnvConfBuffer = new StringBuffer().append("docker exec ")
+                        .append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ").append("'cd /data")
+                        .append(" && sed -i \"s/192.168.1.205/").append(benchmarkServerIp).append("/g\" /data/pressure.engine.env.conf")
+                        .append(" && sed -i \"s/192.168.1.222/").append(manageDAOById.getMachineIp()).append("/g\" /data/pressure.engine.env.conf")
+                        .append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" /data/pressure.engine.env.conf'");
                 log.info("执行启动命:" + dockerPressureEnvConfBuffer.toString());
                 String dockerPressureEnvConfExec = sshInitUtil.execute(dockerPressureEnvConfBuffer.toString());
                 log.info("启动服务日志：" + dockerPressureEnvConfExec);

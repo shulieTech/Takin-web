@@ -232,6 +232,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                     }
                 });
             }
+
         }
         //如果机器为已部署，然后没有上报信息，状态为不可用
         pressureMachineResponses.forEach(pressureMachineResponse -> {

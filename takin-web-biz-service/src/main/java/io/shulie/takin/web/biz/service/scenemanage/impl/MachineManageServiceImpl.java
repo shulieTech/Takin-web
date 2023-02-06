@@ -626,7 +626,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 List<Object> sheets = readList.get(i);
                 MachineManageEntity machineManageEntity = new MachineManageEntity();
                 machineManageEntity.setMachineName(Objects.nonNull(sheets.get(0)) ? sheets.get(0).toString() : null);
-                machineManageEntity.setMachineIp(Objects.nonNull(sheets.get(1)) ? sheets.get(0).toString() : null);
+                machineManageEntity.setMachineIp(Objects.nonNull(sheets.get(1)) ? sheets.get(1).toString() : null);
                 machineManageEntity.setUserName(Objects.nonNull(sheets.get(2)) ? sheets.get(2).toString() : null);
                 machineManageEntity.setPassword(Objects.nonNull(sheets.get(3)) ? sheets.get(3).toString() : null);
                 machineManageEntity.setTag(Objects.nonNull(sheets.get(4)) ? sheets.get(4).toString() : null);

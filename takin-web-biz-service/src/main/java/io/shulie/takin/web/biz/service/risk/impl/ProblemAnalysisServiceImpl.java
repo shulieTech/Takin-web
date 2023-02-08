@@ -104,9 +104,6 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             startTime = endTime - riskTime;
         }
 
-        final long sTime = formatTimestamp(startTime);
-        final long eTime = formatTimestamp(endTime);
-
         List<BaseAppVo> baseAppVoList = Lists.newArrayList();
 
         /**
@@ -118,27 +115,28 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         ApplicationNodeQueryParam param = new ApplicationNodeQueryParam();
         param.setApplicationNames(appNameList);
         List<String> onlineAgentIds = applicationNodeDAO.getOnlineAgentIds(param);
+        long finalStartTime = startTime;
         appNameList.forEach(appName -> {
-            Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(sTime, eTime, appName));
+            Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(finalStartTime, endTime, appName));
             if (CollectionUtils.isNotEmpty(baseList)) {
-                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, sTime, eTime, baseList.size());
+                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, finalStartTime, endTime, baseList.size());
                 List<BaseAppVo> tmpList = baseList.stream().map(base -> {
                     BaseAppVo vo = new BaseAppVo();
                     vo.setCore(formatDouble(base.getCpuCores()).intValue());
                     vo.setDisk(formatDouble(base.getDisk()));
                     vo.setMbps(formatDouble(base.getNetBandwidth()));
                     vo.setMemory(formatDouble(base.getMemory()));
-                    vo.setAppIp(base.getTagAppIp());
+                    vo.setAppIp(base.getAppIp());
                     vo.setAppName(appName);
                     vo.setReportId(reportId);
-                    vo.setAgentIp(base.getTagAgentId());
+                    vo.setAgentIp(base.getAgentId());
                     return vo;
                 }).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(tmpList)) {
                     baseAppVoList.addAll(tmpList);
                 }
             } else {
-                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, sTime, eTime);
+                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, finalStartTime, endTime);
             }
         });
 

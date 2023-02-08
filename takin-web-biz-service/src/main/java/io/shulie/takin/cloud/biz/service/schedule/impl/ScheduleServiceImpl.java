@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 
 import com.google.common.collect.Lists;
@@ -74,11 +75,13 @@ import io.shulie.takin.cloud.model.request.job.pressure.StartRequest.FileInfo.Sp
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
+import io.shulie.takin.web.common.util.BeanCopyUtils;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -346,8 +349,9 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         List<SlaInfo> slaConfigs = new ArrayList<>(conditionList.size());
         req.setSlaConfig(slaConfigs);
         if (!CollectionUtils.isEmpty(conditionList)) {
-            slaConfigs.addAll(
-                    conditionList.stream().map(o -> convertSlaConfig(o, reportApplication)).collect(Collectors.toList()));
+            conditionList.forEach(condition -> {
+                slaConfigs.addAll(convertSlaConfig(condition, reportApplication));
+            });
         }
     }
 
@@ -423,7 +427,13 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         }
     }
 
-    private SlaInfo convertSlaConfig(SlaConfig config, ReportApplicationDTO reportApplication) {
+    private List<SlaInfo> convertSlaConfig(SlaConfig config, ReportApplicationDTO reportApplication) {
+        List<SlaInfo> all = new ArrayList<>();
+        List<BusinessActivitySummaryDTO> businessActivitySummaryDTOS = reportApplication.getReportDetail().getBusinessActivity();
+        //如果报告没有关联的业务活动，不会有sla
+        if (CollectionUtil.isEmpty(businessActivitySummaryDTOS)){
+            return all;
+        }
         SlaInfo info = new SlaInfo();
         info.setRef(config.getActivity());
         info.setAttach(String.valueOf(config.getId()));
@@ -433,32 +443,41 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         info.setTimes(config.getTimes());
         info.setEvent(config.getEvent());
 
-        if (!CollectionUtils.isEmpty(reportApplication.getApplicationNames()) && (FormulaTarget.CPU_USAGE.getCode().equals(config.getIndexInfo())
-                || FormulaTarget.MEMORY_USAGE.getCode().equals(config.getIndexInfo()))) {
-            //业务活动为空，说明校验全部
-            if (StringUtils.isBlank(config.getActivity())) {
-                info.setAppNames(JsonHelper.bean2Json(reportApplication.getApplicationNames()));
-            } else {
+        if (StringUtils.isBlank(config.getActivity())) {
+            businessActivitySummaryDTOS.forEach(businessActivitySummaryDTO -> {
+                SlaInfo businessSla = new SlaInfo();
+                BeanUtils.copyProperties(info, businessSla);
+                businessSla.setRef(businessActivitySummaryDTO.getBindRef());
+                all.add(businessSla);
+            });
+        } else {
+            all.add(info);
+        }
+
+        all.forEach(sla -> {
+            if (!CollectionUtils.isEmpty(reportApplication.getApplicationNames()) && (FormulaTarget.CPU_USAGE.getCode().equals(config.getIndexInfo())
+                    || FormulaTarget.MEMORY_USAGE.getCode().equals(config.getIndexInfo()))) {
                 //匹配请求和对应的应用
-                List<BusinessActivitySummaryDTO> businessActivity = reportApplication.getReportDetail().getBusinessActivity();
-                if (!CollectionUtils.isEmpty(businessActivity)){
-                    List<BusinessActivitySummaryDTO> activitySummaryDTOS = businessActivity.stream().filter(o -> o.getBindRef().equals(config.getActivity())).collect(Collectors.toList());
-                    if (!CollectionUtils.isEmpty(activitySummaryDTOS)){
+                if (!CollectionUtils.isEmpty(businessActivitySummaryDTOS)) {
+                    List<BusinessActivitySummaryDTO> activitySummaryDTOS = businessActivitySummaryDTOS.stream().filter(o ->
+                            o.getBindRef().equals(config.getActivity())).collect(Collectors.toList());
+                    if (!CollectionUtils.isEmpty(activitySummaryDTOS)) {
                         String applicationIds = activitySummaryDTOS.get(0).getApplicationIds();
                         List<Long> splitApplicationIds = splitApplicationIds(applicationIds);
-                        if (!CollectionUtils.isEmpty(splitApplicationIds)){
+                        if (!CollectionUtils.isEmpty(splitApplicationIds)) {
                             List<ApplicationDetailResult> appsList = applicationDAO.getApplicationByIds(splitApplicationIds);
-                            if (!CollectionUtils.isEmpty(appsList)){
+                            if (!CollectionUtils.isEmpty(appsList)) {
                                 List<String> stringList = appsList.stream().map(ApplicationDetailResult::getApplicationName)
                                         .filter(StringUtils::isNoneBlank).distinct().collect(Collectors.toList());
-                                info.setAppNames(JsonHelper.bean2Json(stringList));
+                                sla.setAppNames(JsonHelper.bean2Json(stringList));
                             }
                         }
                     }
                 }
             }
-        }
-        return info;
+        });
+
+        return all;
     }
 
     private static List<Long> splitApplicationIds(String applicationIds) {

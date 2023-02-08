@@ -103,7 +103,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.influxdb.impl.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
@@ -853,6 +852,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         List<String> concurrent = Lists.newLinkedList();
 
         if (CollectionUtils.isNotEmpty(list)){
+            list = list.stream().sorted(Comparator.comparing(StatReportDTO::getTime)).collect(Collectors.toList());
             list.stream()
                     .filter(Objects::nonNull)
                     .filter(data -> data.getTps() != null)
@@ -1672,21 +1672,6 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             return null;
         }
         return ReportConverter.INSTANCE.ofReportDetail(report);
-    }
-
-    @Override
-    public StatReportDTO statReportMetrics(Long jobId, Long sceneId, Long reportId, Long tenantId, String transaction) {
-        String influxDbSql = "select "
-                + "sum(count)                   as totalRequest,"
-                + "sum(count)                   as tempRequestCount,"
-                + "sum(fail_count)              as failRequest,"
-                + "min(min_rt)                  as minRt,"
-                + "max(max_rt)                  as maxRt"
-                + " from "
-                + InfluxUtil.getMetricsMeasurement(jobId, sceneId, reportId, tenantId)
-                + " where transaction = '" + transaction + "'";
-
-        return influxWriter.querySingle(influxDbSql, StatReportDTO.class);
     }
 
     // 此处判断状态已cloud的，amdb的压测流量明细不关心

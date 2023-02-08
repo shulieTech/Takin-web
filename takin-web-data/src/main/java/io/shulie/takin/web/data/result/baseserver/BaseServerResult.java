@@ -77,22 +77,10 @@ public class BaseServerResult {
     private Double memory;
 
     /**
-     * 应用ip
-     */
-    @JsonProperty("tag_app_ip")
-    private String tagAppIp;
-
-    /**
-     * 应用名
-     */
-    @JsonProperty("tag_app_name")
-    private String tagAppName;
-
-    /**
      * tag_agent_id
      */
-    @JsonProperty("tag_agent_id")
-    private String tagAgentId;
+    @JsonProperty("agent_id")
+    private String agentId;
 
     private Double tps;
 

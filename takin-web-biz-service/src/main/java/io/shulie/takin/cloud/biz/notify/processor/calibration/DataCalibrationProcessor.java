@@ -1,25 +1,14 @@
 package io.shulie.takin.cloud.biz.notify.processor.calibration;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.annotation.Resource;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
-import io.shulie.takin.cloud.biz.collector.PushWindowDataScheduled;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.notify.CloudNotifyProcessor;
 import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.common.constants.ReportConstants;
-import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
-import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
 import io.shulie.takin.cloud.common.utils.GsonUtil;
 import io.shulie.takin.cloud.common.utils.JsonPathUtil;
 import io.shulie.takin.cloud.constant.enums.CallbackType;
@@ -38,6 +27,12 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 @Slf4j
 @Component
 public class DataCalibrationProcessor extends AbstractIndicators
@@ -49,10 +44,6 @@ public class DataCalibrationProcessor extends AbstractIndicators
     private RedisClientUtil redisClientUtil;
     @Resource
     private ReportDao reportDao;
-    @Resource
-    private InfluxWriter influxWriter;
-    @Resource
-    private PushWindowDataScheduled pushWindowDataScheduled;
     @Resource
     private PressureDataCalibration pressureDataCalibration;
     @Resource
@@ -110,16 +101,11 @@ public class DataCalibrationProcessor extends AbstractIndicators
         boolean success = Boolean.TRUE.equals(param.getCompleted());
         long jobId = param.getPressureId();
         if (success) {
-            // 删除表
-            influxWriter.truncateMeasurement(InfluxUtil.getMeasurement(jobId, null, null, null));
-            Runnable action = () -> {
-                updateReport(jobId);
-                pressureDataCalibration.processCalibrationStatus(jobId, true, "", true);
-                if (Objects.nonNull(finalAction)) {
-                    finalAction.run();
-                }
-            };
-            pushWindowDataScheduled.combineMetricsData(reportDao.selectByJobId(jobId), true, action);
+            updateReport(jobId);
+            pressureDataCalibration.processCalibrationStatus(jobId, true, "", true);
+            if (Objects.nonNull(finalAction)) {
+                finalAction.run();
+            }
         } else {
             // 失败了直接更新
             pressureDataCalibration.processCalibrationStatus(jobId, false, param.getContent(), true);
@@ -147,14 +133,9 @@ public class DataCalibrationProcessor extends AbstractIndicators
             getReportFeatures(report, "");
         }
         summaryService.calcReportSummay(reportId);
-        try {
-            Thread.sleep(2000L);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         StatReportDTO statReport = cloudReportService.statReport(jobId, sceneId, reportId, tenantId, transaction);
         ReportUpdateParam updateParam = new ReportUpdateParam();
-        if (Objects.nonNull(statReport)){
+        if (Objects.nonNull(statReport)) {
             log.info("cloud订正压测报告数据成功:jobId=[{}], requestCount=[{}]", jobId, statReport.getTotalRequest());
             updateParam.setTotalRequest(statReport.getTotalRequest());
             updateParam.setAvgRt(statReport.getAvgRt());

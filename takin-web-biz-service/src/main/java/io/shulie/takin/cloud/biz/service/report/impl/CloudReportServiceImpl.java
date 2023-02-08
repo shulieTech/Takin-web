@@ -1,33 +1,12 @@
 package io.shulie.takin.cloud.biz.service.report.impl;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -87,15 +66,7 @@ import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneStopReasonEnum;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
-import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
-import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
-import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
-import io.shulie.takin.cloud.common.utils.CommonUtil;
-import io.shulie.takin.cloud.common.utils.GsonUtil;
-import io.shulie.takin.cloud.common.utils.JsonPathUtil;
-import io.shulie.takin.cloud.common.utils.JsonUtil;
-import io.shulie.takin.cloud.common.utils.NumberUtil;
-import io.shulie.takin.cloud.common.utils.TestTimeUtil;
+import io.shulie.takin.cloud.common.utils.*;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
@@ -120,16 +91,35 @@ import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
+import io.shulie.takin.web.amdb.bean.common.AmdbResult;
+import io.shulie.takin.web.amdb.util.AmdbHelper;
+import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.influxdb.impl.TimeUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author 莫问
@@ -140,8 +130,6 @@ import org.springframework.stereotype.Service;
 public class CloudReportServiceImpl extends AbstractIndicators implements CloudReportService {
     @Resource
     ReportDao reportDao;
-    @Resource
-    InfluxWriter influxWriter;
     @Resource
     TReportMapper tReportMapper;
     @Resource
@@ -162,9 +150,11 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     TReportBusinessActivityDetailMapper tReportBusinessActivityDetailMapper;
     @Resource
     private RedisClientUtil redisClientUtil;
+    @Autowired
+    private AmdbClientProperties properties;
 
-    @Value("${report.aggregation.interval}")
-    private String reportAggregationInterval;
+    private static final String AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH = "/amdb/db/api/enginePressure/queryListMap";
+
     /**
      * 压测场景强行关闭预留时间
      */
@@ -259,7 +249,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             JSONObject jsonObject = JSON.parseObject(report.getFeatures());
             if (jsonObject.containsKey(ReportConstants.SLA_ERROR_MSG)) {
                 detail.setSlaMsg(
-                    JsonHelper.json2Bean(jsonObject.getString(ReportConstants.SLA_ERROR_MSG), SlaBean.class));
+                        JsonHelper.json2Bean(jsonObject.getString(ReportConstants.SLA_ERROR_MSG), SlaBean.class));
             }
             String ptlPath = jsonObject.getString(PressureStartCache.FEATURES_MACHINE_PTL_PATH);
             if (StringUtils.isNotBlank(ptlPath)) {
@@ -271,7 +261,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     }
 
     private void buildFailActivitiesByNodeDetails(List<ScriptNodeSummaryBean> reportNodeDetail,
-        List<BusinessActivitySummaryBean> result) {
+                                                  List<BusinessActivitySummaryBean> result) {
         if (CollectionUtils.isEmpty(reportNodeDetail)) {
             return;
         }
@@ -301,7 +291,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     private List<ScriptNodeSummaryBean> getReportNodeDetail(String scriptNodeTree, Long reportId) {
         List<ReportBusinessActivityDetail> activities = tReportBusinessActivityDetailMapper
-            .queryReportBusinessActivityDetailByReportId(reportId);
+                .queryReportBusinessActivityDetailByReportId(reportId);
         return getScriptNodeSummaryBeans(scriptNodeTree, activities);
     }
 
@@ -377,7 +367,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     });
             String resultTree = JsonPathUtil.putNodesToJson(nodeTree, resultMap);
             reportDetail.setNodeDetail(JsonUtil.parseArray(resultTree,
-                ScriptNodeSummaryBean.class));
+                    ScriptNodeSummaryBean.class));
         } else {
             List<ScriptNodeSummaryBean> nodeDetails = reportBusinessActivityDetails.stream()
                     .filter(Objects::nonNull)
@@ -536,6 +526,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
         resp.setScriptNodeSummaryBeans(getScriptNodeSummaryBeans(reportResult.getScriptNodeTree(),
                 reportBusinessActivityDetailList));
+
         return resp;
     }
 
@@ -674,9 +665,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (!reportResult.getPressureType().equals(PressureSceneEnum.DEFAULT.getCode())) {
             reportDao.finishReport(reportId);
             cloudSceneManageService.updateSceneLifeCycle(
-                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                    .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING,
-                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                            .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING,
+                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
             doneReport(reportResult);
             pressureEnd(reportResult);
             return true;
@@ -710,14 +701,14 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         SceneManageEntity sceneManage = sceneManageDao.getSceneById(reportResult.getSceneId());
         //如果是强制停止 不需要更新
         log.info("finish scene {}, state :{}", reportResult.getSceneId(), Optional.ofNullable(sceneManage)
-            .map(SceneManageEntity::getStatus)
-            .map(SceneManageStatusEnum::getSceneManageStatusEnum)
-            .map(SceneManageStatusEnum::getDesc).orElse("未找到场景"));
+                .map(SceneManageEntity::getStatus)
+                .map(SceneManageStatusEnum::getSceneManageStatusEnum)
+                .map(SceneManageStatusEnum::getDesc).orElse("未找到场景"));
         if (sceneManage != null && !sceneManage.getType().equals(SceneManageStatusEnum.FORCE_STOP.getValue())) {
             cloudSceneManageService.updateSceneLifeCycle(
-                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                    .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING, SceneManageStatusEnum.WAIT,
-                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                            .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING, SceneManageStatusEnum.WAIT,
+                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
         }
         //报告结束应该放在场景之后
         reportDao.finishReport(reportId);
@@ -740,8 +731,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
 
         cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(),
-                reportResult.getTenantId())
-            .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.FORCE_STOP).build());
+                        reportResult.getTenantId())
+                .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.FORCE_STOP).build());
         pressureEnd(reportResult);
     }
 
@@ -751,28 +742,35 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      * @return -
      */
     private StatReportDTO statTempReport(Long jobId, Long sceneId, Long reportId, Long tenantId, String transaction) {
-        String measurement = InfluxUtil.getMeasurement(jobId, sceneId, reportId, tenantId);
-        String influxDbSql = "select"
-                + " count as tempRequestCount, fail_count as failRequest, avg_tps as tps , avg_rt as avgRt, sa_count as saCount, active_threads as avgConcurrenceNum"
-                + " from "
-                + measurement
-                + " where transaction = '" + transaction + "'"
-                + " order by time desc limit 1";
-        StatReportDTO statReportDTO = influxWriter.querySingle(influxDbSql, StatReportDTO.class);
-        if (Objects.nonNull(statReportDTO)) {
-            String totalRequestSql = "select sum(count) as totalRequest from "
-                    + measurement
-                    + " where  transaction = '" + transaction + "'"
-                    + " order by time desc limit 1";
-            StatReportDTO totalRequestDto = influxWriter.querySingle(totalRequestSql, StatReportDTO.class);
-            if (Objects.nonNull(totalRequestDto) && Objects.nonNull(totalRequestDto.getTotalRequest())) {
-                statReportDTO.setTotalRequest(totalRequestDto.getTotalRequest());
+        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+        enginePressureQuery.setTransaction(transaction);
+        enginePressureQuery.setJobId(jobId);
+        enginePressureQuery.setLimit(1);
+        enginePressureQuery.setOrderByStrategy(1);
+        fieldAndAlias.put("count", "tempRequestCount");
+        fieldAndAlias.put("fail_count", "failRequest");
+        fieldAndAlias.put("avg_tps", "tps");
+        fieldAndAlias.put("avg_rt", "avgRt");
+        fieldAndAlias.put("sa_count", "saCount");
+        fieldAndAlias.put("active_threads", "avgConcurrenceNum");
+        List<StatReportDTO> statReportDTOS = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
+        if (CollectionUtils.isNotEmpty(statReportDTOS)) {
+            StatReportDTO statReportDTO = statReportDTOS.get(0);
+            Map<String, String> totalRequestQuery = new HashMap<>();
+            totalRequestQuery.put("sum(count)", "totalRequest");
+            enginePressureQuery.setOrderByStrategy(null);
+            enginePressureQuery.setLimit(null);
+            enginePressureQuery.setFieldAndAlias(totalRequestQuery);
+            List<StatReportDTO> totalRequestResult = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
+            if (CollectionUtils.isNotEmpty(totalRequestResult) && Objects.nonNull(totalRequestResult.get(0)) && Objects.nonNull(totalRequestResult.get(0).getTotalRequest())) {
+                statReportDTO.setTotalRequest(totalRequestResult.get(0).getTotalRequest());
             } else {
                 statReportDTO.setTotalRequest(0L);
             }
         }
-
-        return statReportDTO;
+        return CollectionUtils.isNotEmpty(statReportDTOS) ? statReportDTOS.get(0) : null;
     }
 
     /**
@@ -785,13 +783,16 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      * @return -
      */
     private Integer getMaxConcurrence(Long jobId, Long sceneId, Long reportId, Long customerId, String transaction) {
-        String influxDbSql = "select max(active_threads) as maxConcurrenceNum from "
-                + InfluxUtil.getMeasurement(jobId, sceneId, reportId, customerId)
-                + " where transaction = '" + transaction + "'"
-                + " order by time desc limit 1";
-        StatReportDTO statReportDTO = influxWriter.querySingle(influxDbSql, StatReportDTO.class);
-        if (Objects.nonNull(statReportDTO)) {
-            return statReportDTO.getMaxConcurrenceNum();
+        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("max(active_threads)", "maxConcurrenceNum");
+        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+        enginePressureQuery.setTransaction(transaction);
+        enginePressureQuery.setJobId(jobId);
+        enginePressureQuery.setLimit(1);
+        List<StatReportDTO> statReportDTOList = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
+        if (CollectionUtils.isNotEmpty(statReportDTOList) && Objects.nonNull(statReportDTOList.get(0))) {
+            return statReportDTOList.get(0).getMaxConcurrenceNum();
         }
         return 0;
     }
@@ -821,29 +822,26 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (StringUtils.isNotBlank(reportTrendQuery.getXpathMd5())) {
             transaction = reportTrendQuery.getXpathMd5();
         }
-        StringBuilder influxDbSql = new StringBuilder();
-        influxDbSql.append("select");
-        influxDbSql.append(
-                " sum(count) as tempRequestCount, sum(fail_count) as failRequest, mean(avg_tps) as tps , sum(sum_rt)/sum"
-                        + "(count) as "
-                        + "avgRt, sum(sa_count) as saCount, count(avg_rt) as recordCount ,mean(active_threads) as "
-                        + "avgConcurrenceNum ");
-        influxDbSql.append(" from ");
-        influxDbSql.append(
-                InfluxUtil.getMeasurement(reportResult.getJobId(), reportResult.getSceneId(),
-                        reportResult.getId(), reportResult.getTenantId()));
-        influxDbSql.append(" where ");
-        influxDbSql.append(" transaction = ").append("'").append(transaction).append("'");
-
         //按配置中的时间间隔分组
-        influxDbSql.append(" group by time(").append(reportAggregationInterval).append(")");
-
+        EnginePressureQuery query = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("time", null);
+        fieldAndAlias.put("sum(count)", "tempRequestCount");
+        fieldAndAlias.put("sum(fail_count)", "failRequest");
+        fieldAndAlias.put("avg(avg_tps)", "tps");
+        fieldAndAlias.put("sum(sum_rt)/sum(count)", "avgRt");
+        fieldAndAlias.put("sum(sa_count)", "saCount");
+        fieldAndAlias.put("count(avg_rt)", "recordCount");
+        fieldAndAlias.put("avg(active_threads)", "avgConcurrenceNum");
+        query.setFieldAndAlias(fieldAndAlias);
+        query.setTransaction(transaction);
+        query.setJobId(reportResult.getJobId());
+        query.setGroupByFields(Collections.singletonList("time"));
         List<StatReportDTO> list = Lists.newArrayList();
 
         if (StringUtils.isNotEmpty(transaction)) {
-            list = influxWriter.query(influxDbSql.toString(), StatReportDTO.class);
+            list = this.listEnginePressure(query, StatReportDTO.class);
         }
-
         //influxdb 空数据也会返回,需要过滤空数据
         //前端要求的格式
         List<String> time = Lists.newLinkedList();
@@ -853,18 +851,22 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         List<String> successRate = Lists.newLinkedList();
         List<String> concurrent = Lists.newLinkedList();
 
-        list.stream()
-                .filter(Objects::nonNull)
-                .filter(data -> data.getTps() != null)
-                .filter(data -> StringUtils.isNotBlank(data.getTime()))
-                .forEach(data -> {
-                    time.add(getTime(data.getTime()));
-                    sa.add(NumberUtil.decimalToString(data.getSa()));
-                    avgRt.add(NumberUtil.decimalToString(data.getAvgRt()));
-                    tps.add(NumberUtil.decimalToString(data.getTps()));
-                    successRate.add(NumberUtil.decimalToString(data.getSuccessRate()));
-                    concurrent.add(NumberUtil.decimalToString(data.getAvgConcurrenceNum()));
-                });
+        if (CollectionUtils.isNotEmpty(list)){
+            list = list.stream().sorted(Comparator.comparing(StatReportDTO::getTime)).collect(Collectors.toList());
+            list.stream()
+                    .filter(Objects::nonNull)
+                    .filter(data -> data.getTps() != null)
+                    .filter(data -> StringUtils.isNotBlank(data.getTime()))
+                    .forEach(data -> {
+                        time.add(getTime(data.getTime()));
+                        sa.add(NumberUtil.decimalToString(data.getSa()));
+                        avgRt.add(NumberUtil.decimalToString(data.getAvgRt()));
+                        tps.add(NumberUtil.decimalToString(data.getTps()));
+                        successRate.add(NumberUtil.decimalToString(data.getSuccessRate()));
+                        concurrent.add(NumberUtil.decimalToString(data.getAvgConcurrenceNum()));
+                    });
+        }
+
         //链路趋势
         reportTrend.setTps(tps);
         reportTrend.setSa(sa);
@@ -877,15 +879,32 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         return reportTrend;
     }
 
+    private <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
+        try {
+            query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
+            query.setEnvCode(WebPluginUtils.traceEnvCode());
+
+            HttpMethod httpMethod = HttpMethod.POST;
+            AmdbResult<List<T>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
+                    .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
+                    .param(query)
+                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                    .eventName("查询enginePressure数据")
+                    .list(tClass);
+            return amdbResponse.getData();
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
+        }
+    }
+
     /**
      * 日期格式化ck
      *
      * @return -
      */
     private String getTime(String time) {
-        long date = TimeUtil.fromInfluxDBTimeFormat(time);
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date(date));
+        calendar.setTime(new Date(Long.parseLong(time)));
         calendar.set(Calendar.HOUR, calendar.get(Calendar.HOUR));
         return DateUtil.formatTime(calendar.getTime());
     }
@@ -928,17 +947,20 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      */
     @Override
     public List<Metrices> metric(TrendRequest req) {
-        Long reportId = req.getReportId();
-        Long sceneId = req.getSceneId();
         Long jobId = req.getJobId();
         List<Metrices> metricList = Lists.newArrayList();
-        if (StringUtils.isBlank(String.valueOf(reportId))) {
+        if (req.getReportId() == null) {
             return metricList;
         }
         try {
-            String measurement = InfluxUtil.getMeasurement(jobId, sceneId, reportId, CloudPluginUtils.getContext().getTenantId());
-            metricList = influxWriter.query(
-                    "select time,avg_tps as avgTps from " + measurement + " where transaction='all'", Metrices.class);
+            EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+            Map<String, String> fieldAndAlias = new HashMap<>();
+            enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+            enginePressureQuery.setTransaction("all");
+            enginePressureQuery.setJobId(jobId);
+            fieldAndAlias.put("time", null);
+            fieldAndAlias.put("avg_tps", "avgTps");
+            metricList = this.listEnginePressure(enginePressureQuery, Metrices.class);
         } catch (Throwable e) {
             log.error("异常代码【{}】,异常内容：获取压测中jmeter上报的数据异常 --> influxdb数据查询异常: {}",
                     TakinCloudExceptionEnum.REPORT_GET_ERROR, e);
@@ -1012,22 +1034,24 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             // 等待时间 influxDB完成
             Thread.sleep(2000);
             long start = System.currentTimeMillis();
-            TaskResult taskResult = (TaskResult)event.getExt();
+            TaskResult taskResult = (TaskResult) event.getExt();
             log.info("通知报告模块，开始生成本次压测{}-{}-{}的报告", taskResult.getSceneId(), taskResult.getTaskId(),
-                taskResult.getTenantId());
+                    taskResult.getTenantId());
             modifyReport(taskResult);
             log.info("本次压测{}-{}-{}的报告生成时间-{}", taskResult.getSceneId(), taskResult.getTaskId(),
-                taskResult.getTenantId(), System.currentTimeMillis() - start);
+                    taskResult.getTenantId(), System.currentTimeMillis() - start);
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：生成报告异常 --> 【通知报告模块】处理finished事件异常: {}",
-                TakinCloudExceptionEnum.TASK_STOP_DEAL_REPORT_ERROR, e);
+                    TakinCloudExceptionEnum.TASK_STOP_DEAL_REPORT_ERROR, e);
         }
     }
 
     @Override
     public ReportOutput selectById(Long id) {
         ReportResult reportResult = reportDao.selectById(id);
-        if (reportResult == null) {return null;}
+        if (reportResult == null) {
+            return null;
+        }
         return BeanUtil.copyProperties(reportResult, ReportOutput.class);
     }
 
@@ -1117,21 +1141,24 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             doneReport(reportResult);
             //更新场景 压测引擎停止压测---> 待启动  版本不一样，关闭不一样
             cloudSceneManageService.updateSceneLifeCycle(
-                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                    .checkEnum(
-                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                            .checkEnum(
+                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
         }
 
     }
 
     private Date getFinalDateTime(Long jobId, Long sceneId, Long reportId, Long customerId) {
-        String influxDbSql = "select max(create_time) as time from "
-                + InfluxUtil.getMeasurement(jobId, sceneId, reportId, customerId);
-        StatReportDTO statReportDTO = influxWriter.querySingle(influxDbSql, StatReportDTO.class);
+        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("max(create_time)", "time");
+        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+        enginePressureQuery.setJobId(jobId);
+        List<StatReportDTO> list = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
         Date date;
-        if (Objects.nonNull(statReportDTO) && StringUtils.isNotBlank(statReportDTO.getTime())) {
+        if (CollectionUtils.isNotEmpty(list) && Objects.nonNull(list.get(0)) && StringUtils.isNotBlank(list.get(0).getTime())) {
             try {
-                date = new Date(NumberUtil.parseLong(statReportDTO.getTime()));
+                date = new Date(NumberUtil.parseLong(list.get(0).getTime()));
             } catch (Exception e) {
                 log.error("时间转换异常");
                 date = new Date(System.currentTimeMillis());
@@ -1153,24 +1180,29 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      */
     @Override
     public StatReportDTO statReport(Long jobId, Long sceneId, Long reportId, Long customerId, String transaction) {
-        String influxDbSql = "select "
-                + "sum(count)                   as totalRequest,"
-                + "sum(count)                   as tempRequestCount,"
-                + "sum(fail_count)              as failRequest,"
-                + "mean(avg_tps)                as tps ,"
-                + "sum(sum_rt)/sum(count)       as avgRt,"
-                + "sum(sa_count)                as saCount,"
-                + "max(avg_tps)                 as maxTps,"
-                + "min(min_rt)                  as minRt,"
-                + "max(max_rt)                  as maxRt,"
-                + "count(avg_rt)                as recordCount,"
-                + "max(active_threads)          as maxConcurrenceNum,"
-                + "round(mean(active_threads))  as avgConcurrenceNum"
-                + " from "
-                + InfluxUtil.getMeasurement(jobId, sceneId, reportId, customerId)
-                + " where transaction = '" + transaction + "'";
-
-        return influxWriter.querySingle(influxDbSql, StatReportDTO.class);
+        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("sum(count)","totalRequest");
+        fieldAndAlias.put("sum(fail_count)","failRequest");
+        fieldAndAlias.put("avg(avg_tps)","tps");
+        fieldAndAlias.put("sum(sum_rt)/sum(count)","avgRt");
+        fieldAndAlias.put("sum(sa_count)","saCount");
+        fieldAndAlias.put("max(avg_tps)","maxTps");
+        fieldAndAlias.put("min(min_rt)","minRt");
+        fieldAndAlias.put("max(max_rt)","maxRt");
+        fieldAndAlias.put("count(avg_rt)","recordCount");
+        fieldAndAlias.put("max(active_threads)","maxConcurrenceNum");
+        fieldAndAlias.put("avg(active_threads)","avgConcurrenceNum");
+        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+        enginePressureQuery.setTransaction(transaction);
+        enginePressureQuery.setJobId(jobId);
+        List<StatReportDTO> statReportDTOList = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
+        if (CollectionUtils.isNotEmpty(statReportDTOList)){
+            statReportDTOList.forEach(statReportDTO -> {
+                statReportDTO.setTempRequestCount(statReportDTO.getTotalRequest());
+            });
+        }
+        return CollectionUtils.isNotEmpty(statReportDTOList) ? statReportDTOList.get(0) : null;
     }
 
     /**
@@ -1187,7 +1219,6 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         //业务活动是否匹配
         boolean totalPassFlag = true;
         boolean passFlag;
-        String tableName = InfluxUtil.getMeasurement(jobId, sceneId, reportId, tenantId);
         for (ReportBusinessActivityDetail reportBusinessActivityDetail : reportBusinessActivityDetails) {
             if (StringUtils.isBlank(reportBusinessActivityDetail.getBindRef())) {
                 continue;
@@ -1204,7 +1235,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             }
             //统计RT分布
             // TODO：调用Cloud接口
-            Map<String, String> rtMap = reportEventService.queryAndCalcRtDistribute(tableName,
+            Map<String, String> rtMap = reportEventService.queryAndCalcRtDistribute(jobId,
                     reportBusinessActivityDetail.getBindRef());
             //匹配报告业务的活动
             reportBusinessActivityDetail.setAvgConcurrenceNum(data.getAvgConcurrenceNum());
@@ -1240,7 +1271,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             List<ReportBusinessActivityDetailEntity> activities = reportDao.getActivityByReportIds(reportIds);
             if (CollectionUtils.isNotEmpty(activities)) {
                 Map<Long, List<ReportBusinessActivityDetailEntity>> activityMap = activities.stream().filter(
-                        Objects::nonNull)
+                                Objects::nonNull)
                         .collect(Collectors.groupingBy(ReportBusinessActivityDetailEntity::getReportId));
                 return reportEntities.stream().filter(Objects::nonNull)
                         .map(entity -> {
@@ -1279,7 +1310,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      */
     private boolean isPass(ReportBusinessActivityDetail detail) {
         if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(
-            detail.getSuccessRate()) > 0) {
+                detail.getSuccessRate()) > 0) {
             return false;
         } else if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
             return false;
@@ -1439,7 +1470,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         List<DistributeBean> result;
         if (StringUtils.isNoneBlank(distributes)) {
             Map<String, String> distributeMap = JsonHelper.string2Obj(distributes,
-                new TypeReference<Map<String, String>>() {});
+                    new TypeReference<Map<String, String>>() {
+                    });
             List<DistributeBean> distributeBeans = Lists.newArrayList();
             distributeMap.forEach((key, value) -> {
                 DistributeBean distribute = new DistributeBean();
@@ -1575,7 +1607,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
         String features = reportResult.getFeatures();
         if (StringUtils.isNotBlank(features)
-            && JSONObject.parseObject(features).containsKey(PressureStartCache.FEATURES_MACHINE_PTL_PATH)) {
+                && JSONObject.parseObject(features).containsKey(PressureStartCache.FEATURES_MACHINE_PTL_PATH)) {
             return "";
         }
         String realJtlPath = pressureEngineJtlPath;
@@ -1613,7 +1645,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 return jtlPath + "/" + "Jmeter.zip";
             }
             throw new TakinCloudException(TakinCloudExceptionEnum.FILE_ZIP_ERROR, "查看" + jtlPath);
-        } else {return "";}
+        } else {
+            return "";
+        }
     }
 
     @Override
@@ -1638,21 +1672,6 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             return null;
         }
         return ReportConverter.INSTANCE.ofReportDetail(report);
-    }
-
-    @Override
-    public StatReportDTO statReportMetrics(Long jobId, Long sceneId, Long reportId, Long tenantId, String transaction) {
-        String influxDbSql = "select "
-                + "sum(count)                   as totalRequest,"
-                + "sum(count)                   as tempRequestCount,"
-                + "sum(fail_count)              as failRequest,"
-                + "min(min_rt)                  as minRt,"
-                + "max(max_rt)                  as maxRt"
-                + " from "
-                + InfluxUtil.getMetricsMeasurement(jobId, sceneId, reportId, tenantId)
-                + " where transaction = '" + transaction + "'";
-
-        return influxWriter.querySingle(influxDbSql, StatReportDTO.class);
     }
 
     // 此处判断状态已cloud的，amdb的压测流量明细不关心

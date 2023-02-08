@@ -10,10 +10,10 @@ public interface ReportEventService {
     /**
      * 查询和计算RT分布
      *
-     * @param tableName 表名
+     * @param jobId 任务ID
      * @param bindRef   绑定关联
      * @return 计算结果
      */
-    Map<String, String> queryAndCalcRtDistribute(String tableName, String bindRef);
+    Map<String, String> queryAndCalcRtDistribute(Long jobId, String bindRef);
 
 }

@@ -222,7 +222,7 @@ public class HttpClientUtil {
                     log.error(e1.getMessage());
                 }
             } else {
-                log.error("error++,{}", conn.getResponseMessage());
+                log.error("error++,url:{},responseCode:{},responseMessage:{}", inputUrl, conn.getResponseCode(), conn.getResponseMessage());
             }
         } catch (Exception e) {
             log.error(e.getMessage());

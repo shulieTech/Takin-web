@@ -74,7 +74,6 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopo
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
-import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
@@ -111,9 +110,6 @@ public class LinkTopologyService extends CommonService {
 
     @Autowired
     private ApplicationEntranceClient applicationEntranceClient;
-
-    @Autowired
-    private InfluxDatabaseManager influxDBManager;
 
     @Autowired
     private ActivityService activityService;

@@ -1,35 +1,42 @@
 package io.shulie.takin.web.data.dao.perfomanceanaly;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.math.BigDecimal;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.collection.ListUtil;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import lombok.extern.slf4j.Slf4j;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
-import io.shulie.takin.utils.json.JsonHelper;
+import com.google.common.collect.Maps;
 import com.pamirs.takin.common.util.DateUtils;
-import org.springframework.stereotype.Service;
+import com.pamirs.takin.common.util.http.DateUtil;
 import com.shulie.tesla.sequence.impl.DefaultSequence;
-import org.apache.commons.collections4.CollectionUtils;
-import io.shulie.takin.web.data.common.InfluxDatabaseWriter;
-import org.springframework.beans.factory.annotation.Autowired;
-import io.shulie.takin.web.data.model.mysql.PerformanceThreadDataEntity;
-import io.shulie.takin.web.data.mapper.mysql.PerformanceThreadDataMapper;
+import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.amdb.bean.common.AmdbResult;
+import io.shulie.takin.web.amdb.util.AmdbHelper;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.perfomanceanaly.PerformanceThreadDataVO;
+import io.shulie.takin.web.data.mapper.mysql.PerformanceThreadDataMapper;
 import io.shulie.takin.web.data.mapper.mysql.PerformanceThreadStackDataMapper;
+import io.shulie.takin.web.data.model.mysql.PerformanceThreadDataEntity;
 import io.shulie.takin.web.data.model.mysql.PerformanceThreadStackDataEntity;
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseDataParam;
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseQueryParam;
+import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceBaseDataAll;
+import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceBaseDataQuery;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceBaseDataResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -40,12 +47,11 @@ import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceBaseDataResult
 public class PerformanceBaseDataDAOImpl implements PerformanceBaseDataDAO {
 
     private final static String DEFAULT_THREAD_STATUS = "RUNNABLE";
-    @Resource
-    private InfluxDatabaseWriter influxDatabaseWriter;
-
+    private static final String AMDB_PERFORMANCE_QUERY_LIST_PATH = "/amdb/db/api/performance/queryList";
     @Resource
     private PerformanceThreadDataMapper performanceThreadDataMapper;
-
+    @Autowired
+    private AmdbClientProperties properties;
     @Resource
     private PerformanceThreadStackDataMapper performanceThreadStackDataMapper;
 
@@ -148,7 +154,8 @@ public class PerformanceBaseDataDAOImpl implements PerformanceBaseDataDAO {
         tags.put("tenant_app_key", WebPluginUtils.traceTenantAppKey() + "");
         tags.put("env_code", WebPluginUtils.traceEnvCode() + "");
         try {
-            influxDatabaseWriter.insert("t_performance_base_data", tags, fields, param.getTimestamp());
+            //功能已迁移到surge-receive中
+//            influxDatabaseWriter.insert("t_performance_base_data", tags, fields, param.getTimestamp());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -159,34 +166,68 @@ public class PerformanceBaseDataDAOImpl implements PerformanceBaseDataDAO {
     @Override
     public List<String> getProcessNameList(PerformanceBaseQueryParam param) {
         long start = System.currentTimeMillis();
-        String influxDatabaseSql = "select" + " agent_id ,app_ip,young_memory,old_memory" + " from t_performance_base_data" + " where " + " app_name = '" + param.getAppName() + "'" + " and time >= '" + param.getStartTime() + "'" + " and time <= '" + param.getEndTime() + "'" + " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" + " and env_code = '" + WebPluginUtils.traceEnvCode() + "'" + " TZ('Asia/Shanghai')";
+        Date startTime = DateUtil.getDate(param.getStartTime());
+        Date endTime = DateUtil.getDate(param.getEndTime());
+        PerformanceBaseDataQuery query = new PerformanceBaseDataQuery();
+        query.setAppName(param.getAppName());
+        if (startTime != null) {
+            query.setStartTime(startTime.getTime());
+        }
+        if (endTime != null) {
+            query.setEndTime(endTime.getTime());
+        }
+        query.setTenantId(WebPluginUtils.traceTenantId());
 
-        List<PerformanceBaseDataResult> dataList = influxDatabaseWriter.query(influxDatabaseSql, PerformanceBaseDataResult.class);
-
+        List<PerformanceBaseDataResult> dataList = this.listPerformanceBaseData(query);
         log.info("getProcessNameList.query运行时间：{},数据量:{}", System.currentTimeMillis() - start, dataList.size());
-
         if (CollectionUtils.isEmpty(dataList)) {
             return Lists.newArrayList();
         }
-
         return dataList.stream().map(data -> data.getAppIp() + "|" + data.getAgentId()).distinct().collect(Collectors.toList());
     }
 
     @Override
     public PerformanceBaseDataResult getOnePerformanceBaseData(PerformanceBaseQueryParam param) {
         long start = System.currentTimeMillis();
-        String influxDatabaseSql = "select *" + " from t_performance_base_data" + " where " + " time >= " + "'" + param.getStartTime() + "'" + " and time <= " + "'" + param.getEndTime() + "'" + " and app_name = " + "'" + param.getAppName() + "'" + " and app_ip = " + "'" + param.getAppIp() + "'" + " and agent_id = " + "'" + param.getAgentId() + "'" + " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" + " and env_code = '" + WebPluginUtils.traceEnvCode() + "'" + " limit 1" + " TZ('Asia/Shanghai')";
-        PerformanceBaseDataResult result = influxDatabaseWriter.querySingle(influxDatabaseSql, PerformanceBaseDataResult.class);
+        Date startTime = DateUtil.getDate(param.getStartTime());
+        Date endTime = DateUtil.getDate(param.getEndTime());
+        PerformanceBaseDataQuery query = new PerformanceBaseDataQuery();
+        query.setAppName(param.getAppName());
+        query.setAppIp(param.getAppIp());
+        if (startTime != null) {
+            query.setStartTime(startTime.getTime());
+        }
+        if (endTime != null) {
+            query.setEndTime(endTime.getTime());
+        }
+        query.setTenantId(WebPluginUtils.traceTenantId());
+        query.setLimit(1);
+        List<PerformanceBaseDataResult> dataList = this.listPerformanceBaseData(query);
+
         log.info("getOnePerformanceBaseData.querySingle运行时间:{}", System.currentTimeMillis() - start);
-        return Optional.ofNullable(result).orElse(new PerformanceBaseDataResult());
+        if (CollectionUtils.isNotEmpty(dataList)){
+            return dataList.get(0);
+        }
+        return new PerformanceBaseDataResult();
     }
 
     @Override
     public List<PerformanceBaseDataResult> getPerformanceBaseDataList(PerformanceBaseQueryParam param) {
         long start = System.currentTimeMillis();
-        String influxDatabaseSql = "select *" + " from t_performance_base_data" + " where " + " time >= " + "'" + param.getStartTime() + "'" + " and time <= " + "'" + param.getEndTime() + "'" + " and app_name = " + "'" + param.getAppName() + "'" + " and app_ip = " + "'" + param.getAppIp() + "'" + " and agent_id = " + "'" + param.getAgentId() + "'" + " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" + " and env_code = '" + WebPluginUtils.traceEnvCode() + "'" + "order by time TZ('Asia/Shanghai') ";
-
-        List<PerformanceBaseDataResult> dataList = influxDatabaseWriter.query(influxDatabaseSql, PerformanceBaseDataResult.class);
+        Date startTime = DateUtil.getDate(param.getStartTime());
+        Date endTime = DateUtil.getDate(param.getEndTime());
+        PerformanceBaseDataQuery query = new PerformanceBaseDataQuery();
+        query.setAppName(param.getAppName());
+        query.setAppIp(param.getAppIp());
+        query.setAgentId(param.getAgentId());
+        if (startTime != null) {
+            query.setStartTime(startTime.getTime());
+        }
+        if (endTime != null) {
+            query.setEndTime(endTime.getTime());
+        }
+        query.setTenantId(WebPluginUtils.traceTenantId());
+        List<PerformanceBaseDataResult> dataList = this.listPerformanceBaseData(query);
         log.info("getPerformanceBaseDataList.query运行时间:{},数据量:{}", System.currentTimeMillis() - start, dataList.size());
         if (CollectionUtils.isEmpty(dataList)) {
             return Lists.newArrayList();
@@ -194,5 +235,54 @@ public class PerformanceBaseDataDAOImpl implements PerformanceBaseDataDAO {
         return dataList;
     }
 
+
+    private List<PerformanceBaseDataResult> listPerformanceBaseData(PerformanceBaseDataQuery query) {
+        try {
+            query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
+            query.setEnvCode(WebPluginUtils.traceEnvCode());
+
+            HttpMethod httpMethod = HttpMethod.POST;
+            AmdbResult<List<PerformanceBaseDataAll>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
+                    .url(properties.getUrl().getAmdb() + AMDB_PERFORMANCE_QUERY_LIST_PATH)
+                    .param(query)
+                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                    .eventName("查询性能基础数据失败")
+                    .list(PerformanceBaseDataAll.class);
+            return this.convert(amdbResponse.getData());
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
+        }
+    }
+
+    private List<PerformanceBaseDataResult> convert(List<PerformanceBaseDataAll> performanceBaseDataAlls) {
+        List<PerformanceBaseDataResult> results = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(performanceBaseDataAlls)) {
+            performanceBaseDataAlls.forEach(performanceBaseDataAll -> {
+                PerformanceBaseDataResult performanceBaseDataResult = new PerformanceBaseDataResult();
+                performanceBaseDataResult.setAgentId(performanceBaseDataAll.getAgentId());
+                performanceBaseDataResult.setAppName(performanceBaseDataAll.getAppName());
+                performanceBaseDataResult.setAppIp(performanceBaseDataAll.getAppIp());
+                performanceBaseDataResult.setProcessId(StringUtils.isNotBlank(performanceBaseDataAll.getProcessId()) ? Long.parseLong(performanceBaseDataAll.getProcessId()) : null);
+                performanceBaseDataResult.setProcessName(performanceBaseDataAll.getProcessName());
+                performanceBaseDataResult.setTimestamp(performanceBaseDataAll.getTimestamp());
+                performanceBaseDataResult.setTime(DateUtil.formatTime(performanceBaseDataAll.getTime()));
+                performanceBaseDataResult.setTotalMemory(performanceBaseDataAll.getTotalMemory() != null ? performanceBaseDataAll.getTotalMemory() * 1.00D : 0.0D);
+                performanceBaseDataResult.setPermMemory(performanceBaseDataAll.getPermMemory() != null ? performanceBaseDataAll.getPermMemory() * 1.00D : 0.0D);
+                performanceBaseDataResult.setYoungMemory(performanceBaseDataAll.getYoungMemory() != null ? performanceBaseDataAll.getYoungMemory() * 1.00D : 0.0D);
+                performanceBaseDataResult.setOldMemory(performanceBaseDataAll.getOldMemory() != null ? performanceBaseDataAll.getOldMemory() * 1.00D : 0.0D);
+                performanceBaseDataResult.setYoungGcCount(performanceBaseDataAll.getYoungGcCount());
+                performanceBaseDataResult.setFullGcCount(performanceBaseDataAll.getFullGcCount());
+                performanceBaseDataResult.setYoungGcCost(performanceBaseDataAll.getYoungGcCost());
+                performanceBaseDataResult.setFullGcCost(performanceBaseDataAll.getFullGcCost());
+                performanceBaseDataResult.setBaseId(performanceBaseDataAll.getBaseId() + "");
+                performanceBaseDataResult.setCpuUseRate(performanceBaseDataAll.getCpuUseRate() != null ? performanceBaseDataAll.getCpuUseRate().doubleValue() : 0.00D);
+                performanceBaseDataResult.setThreadCount(performanceBaseDataAll.getThreadCount());
+                performanceBaseDataResult.setTotalNonHeapMemory(performanceBaseDataAll.getTotalNoHeapMemory() != null ? performanceBaseDataAll.getTotalNoHeapMemory() * 1.00D : 0.0D);
+                performanceBaseDataResult.setTotalBufferPoolMemory(performanceBaseDataAll.getTotalBufferPoolMemory() != null ? performanceBaseDataAll.getTotalBufferPoolMemory() * 1.00D : 0.0D);
+                results.add(performanceBaseDataResult);
+            });
+        }
+        return results;
+    }
 
 }

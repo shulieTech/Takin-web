@@ -260,6 +260,7 @@ public class NacosConfigManager {
             Map<String, List<String>> values = applicationApiManageAmdbCache.get(appName);
             configs.put("trace_rule", values == null ? new HashMap<>() : values);
             configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
+            configs.put("redis-expire", agentConfigCacheManager.getAppPluginConfig(appName));
             pushNacosConfigs(appName, "APP", configService, new Gson().toJson(configs));
         }
     }

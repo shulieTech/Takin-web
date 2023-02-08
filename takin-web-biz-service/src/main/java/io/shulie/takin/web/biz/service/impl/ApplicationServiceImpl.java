@@ -2677,6 +2677,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             vo.setOnlineNodeNum(applicationResult.getInstanceInfo().getInstanceOnlineAmount());
         }
         vo.setUserId(param.getUserId());
+        vo.setDeptId(param.getDeptId());
         WebPluginUtils.fillQueryResponse(vo);
         return vo;
     }

@@ -513,30 +513,19 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 String dockerRunExec = sshInitUtil.execute(dockerRun);
                 log.info("启动容器日志：" + dockerRunExec);
 
-//              //替换配置文件
-                StringBuffer dockerPressureEnvConfBuffer = new StringBuffer().append("docker exec ")
-                        .append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ").append("'cd /data")
-                        .append(" && rm -rf /data/*.swp")
-                        .append(" && sed -i \"s/192.168.1.205/").append(benchmarkServerIp).append("/g\" /data/pressure.engine.env.conf")
-                        .append(" && sed -i \"s/192.168.1.222/").append(manageDAOById.getMachineIp()).append("/g\" /data/pressure.engine.env.conf")
-                        .append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" /data/pressure.engine.env.conf")
-                        .append(" && rm -rf pressure-engine")
-                        .append(" && rm -rf pressure-engine.zip*")
-                        .append(" && wget ").append(dockerPressureUrl)
-                        .append(" && unzip -o pressure-engine.zip")
-                        .append(" && rm -rf pressure-engine.zip*")
-                        .append(" && rm -rf /data/pressure-engine/config/*.swp")
-                        .append(" && sed -i 's/LOCAL_PASSWORD/").append(des.decryptStr(manageDAOById.getPassword())).append("/g' /data/pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/TAKIN_LITE_IP/").append(benchmarkServerIp).append("/g' /data/pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/TAKIN_LITE_PORT/").append(benchmarkServerPort).append("/g' /data/pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/LOCAL_HOST_IP/").append(manageDAOById.getMachineIp()).append("/g' /data/pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/USER_APPKEY/").append(benchmarkUserAppKey).append("/g' /data/pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/g' /data/pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' /data/pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/PORT/").append(10000 + request.getId() + "").append("/g' /data/pressure-engine/config/application-test.yml")
-                        .append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' /data/pressure-engine/config/application-test.yml")
-                        .append(" && cd /data/pressure-engine")
-                        .append(" && sh start.sh -e test -t 1'");
+                StringBuffer dockerPressureEnvConfBuffer = new StringBuffer().append("docker exec /bin/bash -c '")
+                        .append("cd /data && wget https://shulie-daily.oss-cn-hangzhou.aliyuncs.com/yidongyun-hy/deployBenchmark.sh")
+                        .append("&& sh deployBenchmark.sh ")
+                        .append("-h ").append(manageDAOById.getMachineIp())
+                        .append("-n ").append(request.getBenchmarkSuiteName())
+                        .append("-i ").append(benchmarkServerPort)
+                        .append("-p ").append(benchmarkServerPort)
+                        .append("-m ").append(10000 + request.getId())
+                        .append("-w ").append(manageDAOById.getPassword())
+                        .append("-u ").append(dockerPressureUrl)
+                        .append("-k ").append(benchmarkUserAppKey)
+                        .append("-t ").append(WebPluginUtils.traceTenantId())
+                        .append("-e ").append(WebPluginUtils.traceEnvCode()).append("'");
 
                 //启动进程
                 deployStatusMap.put(request.getId(), "启动服务");

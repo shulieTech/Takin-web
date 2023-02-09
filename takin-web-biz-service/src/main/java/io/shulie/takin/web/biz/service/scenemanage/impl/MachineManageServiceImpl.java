@@ -628,22 +628,25 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 }
                 List<Object> sheets = readList.get(i);
                 MachineManageEntity machineManageEntity = new MachineManageEntity();
-                machineManageEntity.setMachineName(Objects.nonNull(sheets.get(0)) ? sheets.get(0).toString() : null);
-                machineManageEntity.setMachineIp(Objects.nonNull(sheets.get(1)) ? sheets.get(1).toString() : null);
-                machineManageEntity.setUserName(Objects.nonNull(sheets.get(2)) ? sheets.get(2).toString() : null);
-                machineManageEntity.setPassword(Objects.nonNull(sheets.get(3)) ? sheets.get(3).toString() : null);
-                machineManageEntity.setTag(Objects.nonNull(sheets.get(4)) ? sheets.get(4).toString() : null);
+                machineManageEntity.setMachineName(Objects.nonNull(sheets.get(0)) ? sheets.get(0).toString() : "");
+                machineManageEntity.setMachineIp(Objects.nonNull(sheets.get(1)) ? sheets.get(1).toString() : "");
+                machineManageEntity.setUserName(Objects.nonNull(sheets.get(2)) ? sheets.get(2).toString() : "");
+                machineManageEntity.setPassword(Objects.nonNull(sheets.get(3))?des.encryptHex(sheets.get(3).toString()):null);
+                machineManageEntity.setTag(Objects.nonNull(sheets.get(4)) ? sheets.get(4).toString() : "");
                 machineManageEntity.setStatus(0);
                 machineManageEntities.add(machineManageEntity);
             }
+
             String machineNameStr = getMachineName(machineManageEntities);
             if (StringUtils.isNotBlank(machineNameStr)) {
                 return ResponseResult.fail(machineNameStr, machineNameStr);
             }
-            String machineIpStr = getMachineIp(machineManageEntities);
-            if (StringUtils.isNotBlank(machineIpStr)) {
-                return ResponseResult.fail(machineIpStr, machineIpStr);
-            }
+
+//            String machineIpStr = getMachineIp(machineManageEntities);
+//            if (StringUtils.isNotBlank(machineIpStr)) {
+//                return ResponseResult.fail(machineIpStr, machineIpStr);
+//            }
+
             getNodeMsg(machineManageEntities);
             List<MachineManageEntity> errorMachineList = machineManageEntities.stream().filter(a -> {
                 if (StringUtils.isBlank(a.getPassword()) || StringUtils.isBlank(a.getUserName()) || StringUtils.isBlank(a.getMachineIp())) {

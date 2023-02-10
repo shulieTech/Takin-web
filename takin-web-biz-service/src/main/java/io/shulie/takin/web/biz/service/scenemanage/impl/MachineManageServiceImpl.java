@@ -89,7 +89,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private String benchmarkSuiteListUrl;
     private String benchmarkUnInstallUrl;
 
-    @Value("${docker.cmd.download: cd /data && wget https://install-pkg.oss-cn-hangzhou.aliyuncs.com/alone-pkg/docker-compose_install.zip && unzip docker-compose_install.zip -x __MACOSX/* && mv docker-compose_install/* ./ }")
+    @Value("${docker.cmd.download: cd / && mkdir data && cd /data && wget https://install-pkg.oss-cn-hangzhou.aliyuncs.com/alone-pkg/docker-compose_install.zip && unzip docker-compose_install.zip -x __MACOSX/* && mv docker-compose_install/* ./ }")
     private String dockerDownloadCmd;
     @Value("${docker.cmd.install: cd /data && sh docker-compose_install.sh}")
     private String dockerInstallCmd;

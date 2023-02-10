@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.scenemanage.impl;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -53,6 +54,7 @@ import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineResponse;
 import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
 import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
+import io.shulie.takin.web.biz.utils.FileUtils;
 import io.shulie.takin.web.biz.utils.SshInitUtil;
 import io.shulie.takin.web.common.util.BeanCopyUtils;
 import io.shulie.takin.web.data.dao.scenemanage.MachineManageDAO;
@@ -125,6 +127,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         benchmarkUnInstallUrl = "http://" + benchmarkServerIp + ":" + benchmarkServerPort + "/api/engine/unInstall";
 
         //初始化进度列表
+        deployProgressList.add("验证机器连通性");
         deployProgressList.add("检查docker环境");
         deployProgressList.add("拉docker环境安装包");
         deployProgressList.add("安装docker环境");
@@ -454,8 +457,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()), manageDAOById.getUserName());
         //机器联通测试
         String checkMachineExec = sshInitUtil.execute("echo machine_test");
+        deployStatusMap.put(request.getId(), "验证机器连通性");
         if (checkMachineExec == null || !checkMachineExec.contains("machine_test")) {
-            return "机器连通性验证未通过，请确认用户名和密码是否正确";
+            return "机器" + manageDAOById.getMachineIp() + "连通性验证未通过，请确认用户名和密码是否正确";
         }
 
         Map<String, String> headerMap = getHeaderMap(httpRequest);
@@ -495,8 +499,18 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 deployStatusMap.put(request.getId(), "设置harbor白名单");
                 log.info("开始设置harbor白名单");
                 SshInitUtil harborShellUtil = this.getHarborShellInfo();
-                String iptablesAccept = "iptables -I INPUT -s " + manageDAOById.getMachineIp() + " -p TCP --dport 80 -j ACCEPT";
-                String harborShellExec = harborShellUtil.execute(iptablesAccept);
+                StringBuffer whiteListBuffer = new StringBuffer()
+                        .append("iptables -I INPUT -s ").append(manageDAOById.getMachineIp()).append(" -p TCP --dport 80 -j ACCEPT");
+//                File file = new File("./cert/harbor.cert");
+//                if (file.exists()) {
+//                    String cert = FileUtils.readTextFileContent(file);
+//                    whiteListBuffer.append("mkdir -p /etc/docker/certs.d/").append(harborMachineIp)
+//                            .append(" && cd /etc/docker/certs.d/").append(harborMachineIp)
+//                            .append(" && touch ").append(harborMachineIp).append(".cert")
+//                            .append(" && echo").append(cert).append(" > ").append(harborMachineIp).append(".cert")
+//                            .append(" && systemctl daemon-reload && systemctl restart docker");
+//                }
+                String harborShellExec = harborShellUtil.execute(whiteListBuffer.toString());
                 log.info("设置harbor白名单日志：" + harborShellExec);
 
                 //拉取镜像
@@ -535,6 +549,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' /data/pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/PORT/").append(10000 + request.getId() + "").append("/g' /data/pressure-engine/config/application-test.yml")
                         .append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/BENCHMARK_MACHINE_ID/").append(manageDAOById.getId()).append("/g' /data/pressure-engine/config/application-test.yml")
                         .append(" && cd /data/pressure-engine")
                         .append(" && sh start.sh -e test -t 1'");
 
@@ -631,7 +646,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 machineManageEntity.setMachineName(Objects.nonNull(sheets.get(0)) ? sheets.get(0).toString() : "");
                 machineManageEntity.setMachineIp(Objects.nonNull(sheets.get(1)) ? sheets.get(1).toString() : "");
                 machineManageEntity.setUserName(Objects.nonNull(sheets.get(2)) ? sheets.get(2).toString() : "");
-                machineManageEntity.setPassword(Objects.nonNull(sheets.get(3))?des.encryptHex(sheets.get(3).toString()):null);
+                machineManageEntity.setPassword(Objects.nonNull(sheets.get(3)) ? des.encryptHex(sheets.get(3).toString()) : null);
                 machineManageEntity.setTag(Objects.nonNull(sheets.get(4)) ? sheets.get(4).toString() : "");
                 machineManageEntity.setStatus(0);
                 machineManageEntities.add(machineManageEntity);
@@ -703,7 +718,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                 PressureMachineBaseRequest pressureMachineBaseRequest = new PressureMachineBaseRequest();
                 pressureMachineBaseRequest.setId(machineManageEntity.getId());
                 pressureMachineBaseRequest.setBenchmarkSuiteName(request.getBenchmarkSuiteName());
-                FutureTask<String> future = new FutureTask<>(()-> benchmarkEnable(pressureMachineBaseRequest, httpRequest));
+                FutureTask<String> future = new FutureTask<>(() -> benchmarkEnable(pressureMachineBaseRequest, httpRequest));
                 cachePool.execute(future);
                 msgList.add(future.get());
             } catch (Exception e) {
@@ -714,9 +729,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
             String errorMsg = deployEdMachineList.stream().map(MachineManageEntity::getMachineIp).collect(Collectors.joining(","));
             return ResponseResult.fail("机器" + errorMsg + "已部署或部署中", "请重新部署");
         }
-        if (CollectionUtils.isNotEmpty(msgList)){
-           String msg =  msgList.stream().collect(Collectors.joining(","));
-           return ResponseResult.success(msg);
+        if (CollectionUtils.isNotEmpty(msgList)) {
+            String msg = msgList.stream().collect(Collectors.joining(","));
+            return ResponseResult.success(msg);
         }
         return ResponseResult.success("部署成功");
     }

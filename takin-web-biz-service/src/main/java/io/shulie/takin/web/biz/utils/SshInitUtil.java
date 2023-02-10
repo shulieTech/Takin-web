@@ -18,7 +18,7 @@ public class SshInitUtil {
     private String USR = "";// 远程服务器用户名
     private String PSWORD = ""; // 远程服务器密码
     private Integer port = 22;
-    private Integer timeout = 15 * 1000;
+    private Integer timeout = 40 * 1000;
 
     private String DEFAULTCHART = "UTF-8";
 

@@ -18,8 +18,6 @@ public class SshInitUtil {
     private String USR = "";// 远程服务器用户名
     private String PSWORD = ""; // 远程服务器密码
     private Integer port = 22;
-    private Integer timeout = 40 * 1000;
-
     private String DEFAULTCHART = "UTF-8";
 
 
@@ -29,7 +27,7 @@ public class SshInitUtil {
         this.USR = username;
     }
 
-    public String execute(String command) {
+    public String execute(String command,Integer timeout) {
         String out = "";
         try {
             JSch jsch = new JSch();
@@ -44,6 +42,7 @@ public class SshInitUtil {
             InputStream in = channelExec.getInputStream();
             channelExec.setCommand(command);
             channelExec.setErrStream(System.err);
+
             channelExec.connect();
             out = IOUtils.toString(in, "UTF-8");
             channelExec.disconnect();

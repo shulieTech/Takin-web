@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <configuration debug="false">
     <property name="LOG_NAME" value="service"/>
-    <property name="LOG_HOME" value="./logs/takin-web/"/>
+    <property name="LOG_HOME" value="./logs/takin-web"/>
 
     <!-- 按照每天生成日志文件 -->
     <appender name="FILE_ERROR"  class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -14,8 +14,8 @@
             <!--日志文件输出的文件名-->
             <FileNamePattern>${LOG_HOME}/error/error.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
             <!--日志文件保留天数-->
-            <MaxHistory>30</MaxHistory>
-            <maxFileSize>5MB</maxFileSize>
+            <MaxHistory>7</MaxHistory>
+            <maxFileSize>10MB</maxFileSize>
             <totalSizeCap>50MB</totalSizeCap>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
@@ -58,8 +58,8 @@
             <MaxIndex>4</MaxIndex>
         </rollingPolicy>
         <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <!--使用triggeringPolicy来截断日志, 例如: 我们一个文件只要50MB, 大于50MB则进入下一个序号的日志-->
-            <MaxFileSize>50MB</MaxFileSize>
+            <!--使用triggeringPolicy来截断日志, 例如: 我们一个文件只要20MB, 大于20MB则进入下一个序号的日志-->
+            <MaxFileSize>20MB</MaxFileSize>
         </triggeringPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%logger{36}] %L [%X{traceId}] - %msg%n</pattern>
@@ -84,8 +84,8 @@
             <MaxIndex>4</MaxIndex>
         </rollingPolicy>
         <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <!--使用triggeringPolicy来截断日志, 例如: 我们一个文件只要50MB, 大于50MB则进入下一个序号的日志-->
-            <MaxFileSize>50MB</MaxFileSize>
+            <!--使用triggeringPolicy来截断日志, 例如: 我们一个文件只要20MB, 大于20MB则进入下一个序号的日志-->
+            <MaxFileSize>20MB</MaxFileSize>
         </triggeringPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%logger{36}] %L [%X{traceId}] - %msg%n</pattern>
@@ -116,7 +116,7 @@
     <logger name="java.sql" level="WARN"/>
     <!-- job -->
     <property name="JOB_LOG_NAME" value="service_job"/>
-    <property name="JOB_LOG_HOME" value="./logs/job/"/>
+    <property name="JOB_LOG_HOME" value="./logs/job"/>
     <appender name="job" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${JOB_LOG_HOME}/${JOB_LOG_NAME}.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
@@ -128,8 +128,8 @@
             <MaxIndex>4</MaxIndex>
         </rollingPolicy>
         <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <!--使用triggeringPolicy来截断日志, 例如: 我们一个文件只要50MB, 大于50MB则进入下一个序号的日志-->
-            <MaxFileSize>50MB</MaxFileSize>
+            <!--使用triggeringPolicy来截断日志, 例如: 我们一个文件只要20MB, 大于20MB则进入下一个序号的日志-->
+            <MaxFileSize>20MB</MaxFileSize>
         </triggeringPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%logger{36}] %L [%X{traceId}] - %msg%n</pattern>

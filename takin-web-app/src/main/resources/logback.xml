@@ -14,7 +14,7 @@
             <!--日志文件输出的文件名-->
             <FileNamePattern>${LOG_HOME}/error/error.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
             <!--日志文件保留天数-->
-            <MaxHistory>7</MaxHistory>
+            <MaxHistory>3</MaxHistory>
             <maxFileSize>10MB</maxFileSize>
             <totalSizeCap>50MB</totalSizeCap>
         </rollingPolicy>

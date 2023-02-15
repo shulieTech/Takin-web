@@ -63,6 +63,16 @@ public class ShadowDetailResponse implements Serializable {
     @ApiModelProperty("是否手动")
     private Integer isManual;
 
+    //-------缓存字段拆分------------
+    private String cacheNodes;
+    private String cacheMaster;
+    private String cacheDatabase;
+    private String cacheShadowNodes;
+    private String cacheShadowMaster;
+    private String cacheShadowPassword;
+    private String cacheShadowDatabase;
+    //-------缓存字段拆分------------
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
@@ -88,12 +98,24 @@ public class ShadowDetailResponse implements Serializable {
         @Info(describe = "选中标识")
         private Boolean isCheck;
 
-        public TableInfo(String bizDatabase, String bizTableName) {
+        @Info(describe = "读写状态")
+        private String readWriteStatus;
+
+        public TableInfo(String bizDatabase, String bizTableName, Integer canRead, Integer canWrite) {
             this.bizDatabase = bizDatabase;
             this.bizTableName = bizTableName;
             this.shaDowTableName = "";
             this.isManual = false;
             this.isCheck = false;
+            if (canRead != null && canRead == 1) {
+                readWriteStatus = "只读";
+            }
+            if (canWrite != null && canWrite == 1) {
+                readWriteStatus = "只写";
+            }
+            if (canRead != null && canRead == 1 && canWrite != null && canWrite == 1){
+                readWriteStatus = "读写";
+            }
         }
 
         public TableInfo(String bizDatabase, String bizTableName, Integer manualTag, String shaDowTableName, Integer isCheck) {

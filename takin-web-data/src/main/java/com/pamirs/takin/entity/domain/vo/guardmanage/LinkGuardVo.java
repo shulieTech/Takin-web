@@ -44,4 +44,8 @@ public class LinkGuardVo extends AuthQueryResponseCommonExt implements Serializa
 
     @ApiModelProperty(name = "remark", value = "备注")
     private String remark ;
+
+    //拆分字段
+    private String mockClassName;
+    private String mockMethod;
 }

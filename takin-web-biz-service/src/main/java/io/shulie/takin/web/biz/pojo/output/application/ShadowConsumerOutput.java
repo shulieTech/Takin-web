@@ -1,12 +1,12 @@
 package io.shulie.takin.web.biz.pojo.output.application;
 
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import lombok.Data;
-import lombok.ToString;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+import java.util.Date;
 
 /**
  * @author by: hezhongqi
@@ -26,6 +26,14 @@ public class ShadowConsumerOutput extends AuthQueryResponseCommonExt {
     private String type;
 
     private String topicGroup;
+
+    private String topic;
+
+    private String group;
+
+    private String customizeTopic;
+
+    private String customizeGroup;
 
     private Boolean enabled;
 

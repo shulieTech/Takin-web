@@ -33,6 +33,12 @@ public class ShadowMqConsumerEntity extends UserBaseEntity {
     private String topicGroup;
 
     /**
+     * 自定义影子消费者topic和group
+     */
+    @TableField(value = "customize_topic_group")
+    private String customizeTopicGroup;
+
+    /**
      * MQ类型
      */
     @TableField(value = "type")

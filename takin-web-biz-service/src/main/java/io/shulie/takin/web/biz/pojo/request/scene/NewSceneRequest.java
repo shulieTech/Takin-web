@@ -53,8 +53,8 @@ public class NewSceneRequest {
     @ApiModelProperty(value = "SLA配置-警告")
     @NotNull(message = "【SLA配置-警告】不能为空")
     private List<MonitoringGoal> warnMonitoringGoal;
+
     @ApiModelProperty(value = "数据验证配置")
-    @NotNull(message = "数据验证配置不能为空")
     private DataValidation dataValidation;
 
     @Getter

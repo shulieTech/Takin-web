@@ -145,7 +145,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
         dsResult.setParseConfig(entity.getParseConfig());
         dsResult.setTenantId(entity.getTenantId());
         dsResult.setUserId(entity.getUserId());
-
+        dsResult.setConfigType(entity.getConfigType());
         return dsResult;
     }
 

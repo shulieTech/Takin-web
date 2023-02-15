@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.dao.application;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsDbManageEntity;
 import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
 import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationDsWarnResult;
 
 import java.util.List;
 
@@ -30,6 +31,7 @@ public interface ApplicationDsDbManageDAO {
 
     ApplicationDsDbManageDetailResult selectOne(String appName,String url,String userName,String connPoolName);
 
+    List<ApplicationDsWarnResult> selectListDsWarn(String appName, String url, String userName);
 
 }
 

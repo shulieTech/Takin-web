@@ -215,7 +215,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
         if (CollectionUtils.isNotEmpty(amdbTableDatas)) {
             list.addAll(amdbTableDatas
                     .stream()
-                    .map(x -> new ShadowDetailResponse.TableInfo(x.getBizDatabase(), x.getTableName()))
+                    .map(x -> new ShadowDetailResponse.TableInfo(x.getBizDatabase(), x.getTableName(), x.getCanRead(), x.getCanWrite()))
                     .collect(Collectors.toList()));
         }
 
@@ -233,8 +233,14 @@ public class DbTemplateParser extends AbstractTemplateParser {
         list.forEach(x -> {
             map.put(x.getBizDatabase() + "_" + x.getBizTableName(), x);
         });
+
         resultsConvert.forEach(x -> {
-            map.put(x.getBizDatabase() + "_" + x.getBizTableName(), x);
+            //将amdb的读写状态设置到返回值中
+            String key = x.getBizDatabase() + "_" + x.getBizTableName();
+            if (map.containsKey(key)){
+                x.setReadWriteStatus(map.get(key).getReadWriteStatus());
+            }
+            map.put(key, x);
         });
 
         return new ArrayList<>(map.values());

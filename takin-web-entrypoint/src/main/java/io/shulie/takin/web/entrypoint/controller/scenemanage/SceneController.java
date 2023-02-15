@@ -159,7 +159,9 @@ public class SceneController {
         sceneExcludedApplicationDAO.removeBySceneId(request.getBasicInfo().getSceneId());
 
         // 忽略检测的应用
-        sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(), request.getDataValidation().getExcludedApplicationIds());
+        if (request.getDataValidation() != null && CollectionUtils.isNotEmpty(request.getDataValidation().getExcludedApplicationIds())){
+            sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(), request.getDataValidation().getExcludedApplicationIds());
+        }
 
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
@@ -297,7 +299,12 @@ public class SceneController {
 
         // 添加排除的应用
         List<Long> excludedApplicationIds = excludedApplicationDAO.listApplicationIdsBySceneId(sceneId);
-        copyDetailResult.getDataValidation().setExcludedApplicationIds(DataTransformUtil.list2list(excludedApplicationIds, String.class));
+        if (CollectionUtils.isNotEmpty(excludedApplicationIds)){
+            copyDetailResult.getDataValidation().setExcludedApplicationIds(DataTransformUtil.list2list(excludedApplicationIds, String.class));
+        }
+        if (copyDetailResult.getDataValidation() != null && copyDetailResult.getDataValidation().getTimeInterval() != null){
+            copyDetailResult.setOpenDataValidation(true);
+        }
         return ResponseResult.success(copyDetailResult);
     }
 

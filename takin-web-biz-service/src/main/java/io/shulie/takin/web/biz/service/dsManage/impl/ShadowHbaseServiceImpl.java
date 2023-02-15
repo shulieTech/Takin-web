@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.dsManage.impl;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -9,12 +10,14 @@ import javax.annotation.Resource;
 import com.alibaba.fastjson.JSON;
 
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsEnableInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput;
+import io.shulie.takin.web.biz.pojo.output.application.ApplicationHbaseDetailOutput;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.dsManage.AbstractDsService;
 import io.shulie.takin.web.common.common.Response;
@@ -56,7 +59,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
     public Response dsAdd(ApplicationDsCreateInput createRequest) {
 
         ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationById(
-            createRequest.getApplicationId());
+                createRequest.getApplicationId());
 
         log.warn("应用不存在! id:{}", createRequest.getApplicationId());
         if (applicationDetailResult == null) {
@@ -65,9 +68,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
 
         ApplicationDsCreateParam createParam = new ApplicationDsCreateParam();
 
-        String config = createRequest.getConfig();
-
-        addParserConfig(createRequest, createParam, config);
+        addParserConfig(createRequest, createParam);
 
         createParam.setApplicationId(createRequest.getApplicationId());
         createParam.setApplicationName(applicationDetailResult.getApplicationName());
@@ -81,8 +82,8 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         return Response.success();
     }
 
-    private void addParserConfig(ApplicationDsCreateInput createRequest, ApplicationDsCreateParam createParam,
-        String config) {
+    private void addParserConfig(ApplicationDsCreateInput createRequest, ApplicationDsCreateParam createParam) {
+        String config = this.getCreateInputConfig(createRequest);
         Map<String, Object> map = parseConfig(config);
         String url = formatUrl(map);
         createParam.setUrl(url);
@@ -90,11 +91,32 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         createParam.setParseConfig(createRequest.getConfig());
     }
 
+    private String getCreateInputConfig(ApplicationDsCreateInput createRequest) {
+        if (createRequest.getConfigType() != null && createRequest.getConfigType() == 0) {
+            Map<String, Object> jsonConfig = new HashMap<>();
+            Map<String, String> dataSourceBusiness = new HashMap<>();
+            dataSourceBusiness.put("quorum", createRequest.getDataSourceBusinessQuorum());
+            dataSourceBusiness.put("port", createRequest.getDataSourceBusinessPort());
+            dataSourceBusiness.put("znode", createRequest.getDataSourceBusinessZNode());
+            dataSourceBusiness.put("params", createRequest.getDataSourceBusinessParams());
+            jsonConfig.put("dataSourceBusiness", dataSourceBusiness);
+
+            Map<String, String> dataSourcePerformanceTest = new HashMap<>();
+            dataSourcePerformanceTest.put("quorum", createRequest.getDataSourcePerformanceTestQuorum());
+            dataSourcePerformanceTest.put("port", createRequest.getDataSourcePerformanceTestPort());
+            dataSourcePerformanceTest.put("znode", createRequest.getDataSourcePerformanceTestZNode());
+            dataSourcePerformanceTest.put("params", createRequest.getDataSourcePerformanceTestParams());
+            jsonConfig.put("dataSourcePerformanceTest", dataSourcePerformanceTest);
+            return JsonHelper.bean2Json(jsonConfig);
+        }
+        return createRequest.getConfig();
+    }
+
     private void syncInfo(Long applicationId, String applicationName) {
         syncShadowHbase(applicationId, null);
         //修改应用状态
         applicationService.modifyAccessStatus(String.valueOf(applicationId),
-            AppAccessTypeEnum.UNUPLOAD.getValue(), null);
+                AppAccessTypeEnum.UNUPLOAD.getValue(), null);
         //todo agent改造
         agentConfigCacheManager.evictShadowHbase(applicationName);
     }
@@ -147,7 +169,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
     }
 
     private void updateParserConfig(ApplicationDsUpdateInput updateRequest, ApplicationDsUpdateParam updateParam) {
-        String config = updateRequest.getConfig();
+        String config = this.getCreateInputConfig(updateRequest);
         Map<String, Object> map = parseConfig(config);
         String url = formatUrl(map);
         updateParam.setUrl(url);
@@ -156,7 +178,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
     }
 
     private String formatUrl(Map<String, Object> map) {
-        Map<String, String> dataSourceBusinessObj = (Map<String, String>)map.get("dataSourceBusiness");
+        Map<String, String> dataSourceBusinessObj = (Map<String, String>) map.get("dataSourceBusiness");
         return dataSourceBusinessObj.get("quorum");
     }
 
@@ -167,21 +189,38 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         if (Objects.isNull(dsResult)) {
             return Response.fail("该影子配置不存在");
         }
-        ApplicationDsDetailOutput dsDetailResponse = new ApplicationDsDetailOutput();
-        dsDetailResponse.setId(dsResult.getId());
-        dsDetailResponse.setApplicationId(dsResult.getApplicationId());
-        dsDetailResponse.setApplicationName(dsResult.getApplicationName());
-        dsDetailResponse.setDbType(dsResult.getDbType());
-        dsDetailResponse.setDsType(dsResult.getDsType());
+        ApplicationHbaseDetailOutput dsDetailResponse = new ApplicationHbaseDetailOutput();
 
         queryParserConfig(dsResult, dsDetailResponse);
         return Response.success(dsDetailResponse);
     }
 
-    private void queryParserConfig(ApplicationDsResult dsResult, ApplicationDsDetailOutput dsDetailResponse) {
+    private void queryParserConfig(ApplicationDsResult dsResult, ApplicationHbaseDetailOutput dsDetailResponse) {
+        dsDetailResponse.setId(dsResult.getId());
+        dsDetailResponse.setApplicationId(dsResult.getApplicationId());
+        dsDetailResponse.setApplicationName(dsResult.getApplicationName());
+        dsDetailResponse.setDbType(dsResult.getDbType());
+        dsDetailResponse.setDsType(dsResult.getDsType());
+        dsDetailResponse.setConfigType(dsResult.getConfigType());
         dsDetailResponse.setUrl(dsResult.getUrl());
         String config = dsResult.getConfig();
         dsDetailResponse.setConfig(config);
+
+        if (dsResult.getConfigType() != null && dsResult.getConfigType() != 0) {
+            Map<String, Object> map = this.parseConfig(config);
+            Map<String, String> dataSourceBusinessObj = (Map<String, String>) map.get("dataSourceBusiness");
+            Map<String, String> dataSourcePerformanceTest = (Map<String, String>) map.get("dataSourcePerformanceTest");
+
+            dsDetailResponse.setDataSourceBusinessParams(dataSourceBusinessObj.get("params"));
+            dsDetailResponse.setDataSourceBusinessPort(dataSourceBusinessObj.get("port"));
+            dsDetailResponse.setDataSourceBusinessQuorum(dataSourceBusinessObj.get("quorum"));
+            dsDetailResponse.setDataSourceBusinessZNode(dataSourceBusinessObj.get("znode"));
+
+            dsDetailResponse.setDataSourcePerformanceTestParams(dataSourcePerformanceTest.get("params"));
+            dsDetailResponse.setDataSourcePerformanceTestPort(dataSourcePerformanceTest.get("port"));
+            dsDetailResponse.setDataSourcePerformanceTestQuorum(dataSourcePerformanceTest.get("quorum"));
+            dsDetailResponse.setDataSourcePerformanceTestZNode(dataSourcePerformanceTest.get("znode"));
+        }
     }
 
     @Override

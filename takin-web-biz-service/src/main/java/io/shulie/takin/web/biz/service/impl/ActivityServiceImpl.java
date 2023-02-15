@@ -200,14 +200,16 @@ public class ActivityServiceImpl implements ActivityService {
         if (applicationPage.getTotal() == 0) {
             return PagingList.empty();
         }
-
-        // 转换
-        return PagingList.of(applicationPage.getList().stream().map(application -> {
+        List<BusinessApplicationListResponse> listResponses = applicationPage.getList().stream().map(application -> {
             BusinessApplicationListResponse response = new BusinessApplicationListResponse();
             response.setApplicationId(application.getApplicationId().toString());
             response.setApplicationName(application.getApplicationName());
+            response.setAccessStatus(application.getAccessStatus());
             return response;
-        }).collect(Collectors.toList()), applicationPage.getTotal());
+        }).collect(Collectors.toList());
+
+        // 转换
+        return PagingList.of(listResponses, applicationPage.getTotal());
     }
 
     @Override

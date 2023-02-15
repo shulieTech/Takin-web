@@ -1,18 +1,21 @@
 package io.shulie.takin.web.biz.service.dsManage.impl;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 import com.alibaba.fastjson.JSON;
 
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsEnableInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput;
+import io.shulie.takin.web.biz.pojo.output.application.ApplicationEsDetailOutput;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.dsManage.AbstractDsService;
 import io.shulie.takin.web.common.common.Response;
@@ -58,10 +61,12 @@ public class ShadowEsServiceImpl extends AbstractDsService {
     public Response dsAdd(ApplicationDsCreateInput createRequest) {
 
         ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationById(
-            createRequest.getApplicationId());
+                createRequest.getApplicationId());
 
         Response fail = validator(createRequest, applicationDetailResult);
-        if (fail != null) {return fail;}
+        if (fail != null) {
+            return fail;
+        }
 
         ApplicationDsCreateParam createParam = new ApplicationDsCreateParam();
 
@@ -83,7 +88,7 @@ public class ShadowEsServiceImpl extends AbstractDsService {
     }
 
     private void addParserConfig(ApplicationDsCreateInput createRequest, ApplicationDsCreateParam createParam) {
-        String config = createRequest.getConfig();
+        String config = this.getCreateInputConfig(createRequest);
         Map<String, String> map = parseConfig(config);
 
         String businessNodes = map.get("businessNodes");
@@ -92,8 +97,18 @@ public class ShadowEsServiceImpl extends AbstractDsService {
         createParam.setParseConfig(createRequest.getConfig());
     }
 
+    private String getCreateInputConfig(ApplicationDsCreateInput createRequest) {
+        if (createRequest.getConfigType() != null && createRequest.getConfigType() == 0) {
+            Map<String, String> jsonConfig = new HashMap<>();
+            jsonConfig.put("businessNodes", createRequest.getBusinessNodes());
+            jsonConfig.put("performanceTestNodes", createRequest.getPerformanceTestNodes());
+            return JsonHelper.bean2Json(jsonConfig);
+        }
+        return createRequest.getConfig();
+    }
+
     private Response validator(ApplicationDsCreateInput createRequest,
-        ApplicationDetailResult applicationDetailResult) {
+                               ApplicationDetailResult applicationDetailResult) {
         logger.warn("应用不存在! id:{}", createRequest.getApplicationId());
         if (applicationDetailResult == null) {
             return Response.fail("应用不存在!");
@@ -110,7 +125,7 @@ public class ShadowEsServiceImpl extends AbstractDsService {
     private void syncInfo(Long applicationId, String applicationName) {
         //修改应用状态
         applicationService.modifyAccessStatus(String.valueOf(applicationId),
-            AppAccessTypeEnum.UNUPLOAD.getValue(), null);
+                AppAccessTypeEnum.UNUPLOAD.getValue(), null);
         syncShadowEsConfig(applicationId);
         clearCache(applicationName);
     }
@@ -140,7 +155,7 @@ public class ShadowEsServiceImpl extends AbstractDsService {
     }
 
     private void updateParserConfig(ApplicationDsUpdateInput updateRequest, ApplicationDsUpdateParam updateParam) {
-        String config = updateRequest.getConfig();
+        String config = this.getCreateInputConfig(updateRequest);
         Map<String, String> map = parseConfig(config);
         String businessNodes = map.get("businessNodes");
         updateParam.setUrl(businessNodes);
@@ -160,20 +175,26 @@ public class ShadowEsServiceImpl extends AbstractDsService {
             return Response.fail("该影子配置不存在");
         }
 
-        ApplicationDsDetailOutput dsDetailResponse = new ApplicationDsDetailOutput();
+        ApplicationEsDetailOutput dsDetailResponse = new ApplicationEsDetailOutput();
+        queryParserConfig(dsResult, dsDetailResponse);
+        return Response.success(dsDetailResponse);
+    }
+
+    private void queryParserConfig(ApplicationDsResult dsResult, ApplicationEsDetailOutput dsDetailResponse) {
         dsDetailResponse.setId(dsResult.getId());
         dsDetailResponse.setApplicationId(dsResult.getApplicationId());
         dsDetailResponse.setApplicationName(dsResult.getApplicationName());
         dsDetailResponse.setDbType(dsResult.getDbType());
         dsDetailResponse.setDsType(dsResult.getDsType());
-        queryParserConfig(dsResult, dsDetailResponse);
-        return Response.success(dsDetailResponse);
-    }
-
-    private void queryParserConfig(ApplicationDsResult dsResult, ApplicationDsDetailOutput dsDetailResponse) {
         dsDetailResponse.setUrl(dsResult.getUrl());
         String config = dsResult.getConfig();
         dsDetailResponse.setConfig(config);
+        dsDetailResponse.setConfigType(dsResult.getConfigType());
+        if (dsResult.getConfigType() != null && dsResult.getConfigType() != 0) {
+            Map<String, String> map = this.parseConfig(config);
+            dsDetailResponse.setBusinessNodes(map.get("businessNodes"));
+            dsDetailResponse.setPerformanceTestNodes(map.get("performanceTestNodes"));
+        }
     }
 
     @Override

@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.pamirs.attach.plugin.dynamic.one.Converter;
 import com.pamirs.attach.plugin.dynamic.one.Type;
 import com.pamirs.attach.plugin.dynamic.one.template.RedisTemplate;
+import com.pamirs.takin.common.enums.ds.ConfigTemplateEnum;
 import com.pamirs.takin.common.enums.ds.DbTypeEnum;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.common.enums.ds.MiddleWareTypeEnum;
@@ -36,12 +37,14 @@ import com.pamirs.takin.entity.domain.vo.dsmanage.DsAgentVO;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DsServerVO;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.AppShadowDatabaseDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeAgentDTO;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.convert.db.parser.*;
+import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
@@ -76,12 +79,7 @@ import io.shulie.takin.web.data.param.application.ApplicationDsDeleteParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsEnableParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsUpdateParam;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationDsResult;
-import io.shulie.takin.web.data.result.application.CacheConfigTemplateDetailResult;
-import io.shulie.takin.web.data.result.application.ConnectpoolConfigTemplateDetailResult;
+import io.shulie.takin.web.data.result.application.*;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -92,6 +90,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.pamirs.takin.common.enums.ds.ConfigTemplateEnum.DB_HBASE_CLIENT;
 
 /**
  * @author fanxx
@@ -445,11 +445,10 @@ public class DsServiceImpl implements DsService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<ApplicationDsV2Response> dsQueryV2(Long applicationId) {
+    public List<ApplicationDsV2Response> dsQueryV2(Long applicationId, boolean isCache) {
         ApplicationDetailResult detailResult = applicationDAO.getApplicationById(applicationId);
         if (Objects.isNull(detailResult)) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_NO_EXIST_ERROR, "该应用不存在");
-
         }
 
         List<AppShadowDatabaseDTO> shadowDataBaseInfos = applicationClient.getApplicationShadowDataBaseInfo(detailResult.getApplicationName());
@@ -458,17 +457,28 @@ public class DsServiceImpl implements DsService {
         queryParam.setApplicationId(applicationId);
         queryParam.setIsDeleted(0);
 //        WebPluginUtils.fillQueryParam(queryParam);
-        this.filterAndSave(shadowDataBaseInfos, applicationId, queryParam);
         //这里为了拿到id,先存后查
-        List<ApplicationDsCacheManageDetailResult> caches = dsCacheManageDAO.selectList(queryParam);
-        List<ApplicationDsDbManageDetailResult> dbs = dsDbManageDAO.selectList(queryParam);
+        this.filterAndSave(shadowDataBaseInfos, applicationId, queryParam);
+
 
         List<ApplicationDsV2Response> response = new ArrayList<>();
-        List<ApplicationDsResponse> oldResponseList = (List<ApplicationDsResponse>) this.dsQuery(applicationId).getData();
+        if (isCache) {
+            List<ApplicationDsCacheManageDetailResult> caches = dsCacheManageDAO.selectList(queryParam);
+            response.addAll(caches.stream().map(this::cacheBuild).collect(Collectors.toList()));
+        } else {
+            List<ApplicationDsDbManageDetailResult> dbs = dsDbManageDAO.selectList(queryParam);
+            List<ApplicationDsWarnResult> applicationDsWarnResults = dsDbManageDAO.selectListDsWarn(detailResult.getApplicationName(), null, null);
+            long currentTimeMillis = System.currentTimeMillis();
+            //校验时间在校验间隔2倍时间内的数据属于有效数据
+            Map<String, List<ApplicationDsWarnResult>> urlMap = applicationDsWarnResults.stream().filter(o ->
+                            currentTimeMillis - o.getCheckTime() < o.getCheckInterval() * 1000 * 2)
+                    .collect(Collectors.groupingBy(ApplicationDsWarnResult::getCheckUrl));
 
-        response.addAll(caches.stream().map(this::cacheBuild).collect(Collectors.toList()));
-        response.addAll(dbs.stream().map(this::dbBuild).collect(Collectors.toList()));
-        response.addAll(oldResponseList.stream().map(this::v1Build).collect(Collectors.toList()));
+            List<ApplicationDsResponse> oldResponseList = (List<ApplicationDsResponse>) this.dsQuery(applicationId).getData();
+            response.addAll(dbs.stream().map(o -> this.dbBuild(o, urlMap)).collect(Collectors.toList()));
+            response.addAll(oldResponseList.stream().map(this::v1Build).collect(Collectors.toList()));
+        }
+
         response.forEach(r -> {
             r.setDeptId(detailResult.getDeptId());
             WebPluginUtils.fillQueryResponse(r);
@@ -681,6 +691,29 @@ public class DsServiceImpl implements DsService {
         return Response.success(templateParser.convertShadowMsgWithTemplate(dsType, isNewData, cacheType, templateEnum, select));
     }
 
+    private List<? extends StyleTemplate> getConfigTemplate(String configTemplateCode) {
+        List list = new ArrayList();
+        switch (ConfigTemplateEnum.valueOf(configTemplateCode)) {
+            case DB_HBASE_CLIENT:
+                list.add(new StyleTemplate.InputStyle("dataSourceBusinessQuorum", "业务Quorum", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                list.add(new StyleTemplate.InputStyle("dataSourceBusinessPort", "业务Port", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                list.add(new StyleTemplate.InputStyle("dataSourceBusinessZNode", "业务ZNode", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                list.add(new StyleTemplate.InputStyle("dataSourceBusinessParams", "业务Params", StyleTemplate.StyleEnums.INPUT.getCode(), false));
+
+                list.add(new StyleTemplate.InputStyle("dataSourcePerformanceTestQuorum", "影子Quorum", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                list.add(new StyleTemplate.InputStyle("dataSourcePerformanceTestPort", "影子Port", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                list.add(new StyleTemplate.InputStyle("dataSourcePerformanceTestZNode", "影子ZNode", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                list.add(new StyleTemplate.InputStyle("dataSourcePerformanceTestParams", "影子Params", StyleTemplate.StyleEnums.INPUT.getCode(), false));
+                break;
+            case DB_ES_CLIENT:
+                list.add(new StyleTemplate.InputStyle("businessNodes", "业务Nodes", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                list.add(new StyleTemplate.InputStyle("performanceTestNodes", "影子Nodes", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                break;
+            default:
+        }
+        return list;
+    }
+
     /**
      * 删除
      *
@@ -715,6 +748,7 @@ public class DsServiceImpl implements DsService {
         if (Objects.isNull(detailResult)) {
             return Response.fail("0", "该应用不存在");
         }
+
         buildNewDataSource(createRequestV2);
         validateURL(createRequestV2.getExtInfo(), createRequestV2.getUrl(), createRequestV2.getDsType(), createRequestV2.getUsername());
         Integer code = MiddleWareTypeEnum.getEnumByValue(createRequestV2.getMiddlewareType()).getCode();
@@ -735,6 +769,33 @@ public class DsServiceImpl implements DsService {
      * @param createRequestV2
      */
     private void buildNewDataSource(ApplicationDsCreateInputV2 createRequestV2) {
+
+        if (StringUtils.isNotBlank(createRequestV2.getCacheNodes())) {
+            Map<String, String> bizCache = new HashMap<>();
+            bizCache.put("nodes", createRequestV2.getCacheNodes());
+            if (StringUtils.isNotBlank(createRequestV2.getCacheMaster())) {
+                bizCache.put("master", createRequestV2.getCacheMaster());
+            }
+            if (StringUtils.isNotBlank(createRequestV2.getCacheDatabase())) {
+                bizCache.put("database", createRequestV2.getCacheDatabase());
+            }
+            createRequestV2.setUrl(JsonHelper.bean2Json(bizCache));
+        }
+        if (StringUtils.isNotBlank(createRequestV2.getCacheShadowNodes())) {
+            Map<String, String> shadowCache = new HashMap<>();
+            shadowCache.put("nodes", createRequestV2.getCacheShadowNodes());
+            if (StringUtils.isNotBlank(createRequestV2.getCacheShadowMaster())) {
+                shadowCache.put("master", createRequestV2.getCacheShadowMaster());
+            }
+            if (StringUtils.isNotBlank(createRequestV2.getCacheShadowDatabase())) {
+                shadowCache.put("database", createRequestV2.getCacheShadowDatabase());
+            }
+            if (StringUtils.isNotBlank(createRequestV2.getCacheShadowPassword())) {
+                shadowCache.put("password", createRequestV2.getCacheShadowPassword());
+            }
+            createRequestV2.setExtInfo(JsonHelper.bean2Json(shadowCache));
+        }
+
         String extInfo = createRequestV2.getExtInfo();
         JSONObject extObj = Optional.ofNullable(JSONObject.parseObject(extInfo)).orElse(new JSONObject());
         String shadowUserNameStr = extObj.getString("shadowUserName");
@@ -889,7 +950,7 @@ public class DsServiceImpl implements DsService {
         return detailResult;
     }
 
-    private ApplicationDsV2Response dbBuild(ApplicationDsDbManageDetailResult dbDetail) {
+    private ApplicationDsV2Response dbBuild(ApplicationDsDbManageDetailResult dbDetail, Map<String, List<ApplicationDsWarnResult>> urlMap) {
         ApplicationDsV2Response v2Response = new ApplicationDsV2Response();
         v2Response.setId(dbDetail.getId());
         v2Response.setApplicationId(String.valueOf(dbDetail.getApplicationId()));
@@ -907,6 +968,18 @@ public class DsServiceImpl implements DsService {
         v2Response.setUserId(WebPluginUtils.traceUserId());
         WebPluginUtils.fillQueryResponse(v2Response);
         v2Response.setCanRemove(v2Response.getIsManual());
+
+        if (urlMap != null && urlMap.containsKey(v2Response.getUrl())) {
+            List<ApplicationDsWarnResult> applicationDsWarnResults = urlMap.get(v2Response.getUrl());
+            v2Response.setShadowStatus(1);
+            StringBuilder sb = new StringBuilder();
+            applicationDsWarnResults.forEach(applicationDsWarnResult -> {
+                sb.append(applicationDsWarnResult.getErrorMsg()).append("\n");
+            });
+            v2Response.setShadowWarnMessage(sb.toString());
+        } else {
+            v2Response.setShadowStatus(0);
+        }
         return v2Response;
     }
 
@@ -1107,6 +1180,11 @@ public class DsServiceImpl implements DsService {
         AbstractTemplateParser templateParser = templateParserMap.get(Type.MiddleWareType.ofKey(middlewareType));
         templateParser.enable(id, status);
         return Response.success();
+    }
+
+    @Override
+    public Response dsQueryConfigTemplateByCode(String configTemplateCode) {
+        return Response.success(this.getConfigTemplate(configTemplateCode));
     }
 
     /**

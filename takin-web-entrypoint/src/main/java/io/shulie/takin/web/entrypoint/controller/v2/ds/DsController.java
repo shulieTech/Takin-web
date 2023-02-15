@@ -57,8 +57,8 @@ public class DsController {
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
             needAuth = ActionTypeEnum.QUERY
     )
-    public List<ApplicationDsV2Response> dsQuery(@RequestParam(value = "applicationId", required = true) Long applicationId) {
-        return dsService.dsQueryV2(applicationId);
+    public List<ApplicationDsV2Response> dsQuery(@RequestParam(value = "applicationId", required = true) Long applicationId, boolean isCache) {
+        return dsService.dsQueryV2(applicationId, isCache);
     }
 
 
@@ -116,6 +116,15 @@ public class DsController {
                 inputV2.getConnectionPool(), inputV2.getApplicationName(), inputV2.getApplicationId());
     }
 
+    @ApiOperation(" 获取影子库表样式模版")
+    @GetMapping("link/ds/config/templateByCode")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response dsQueryConfigTemplateByCode(@RequestParam @Validated String configTemplateCode) {
+        return dsService.dsQueryConfigTemplateByCode(configTemplateCode);
+    }
 
     @ApiOperation("删除影子库表记录")
     @DeleteMapping("link/ds/config/delete")

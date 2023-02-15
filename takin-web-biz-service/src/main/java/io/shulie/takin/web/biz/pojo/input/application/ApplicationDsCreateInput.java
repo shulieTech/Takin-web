@@ -100,4 +100,39 @@ public class ApplicationDsCreateInput {
     @ApiModelProperty(hidden = true)
     private Integer status;
 
+    /**
+     * 配置方式，0字段方式，1json方式
+     */
+    private Integer configType;
+
+    //--------hbase拆分字段后内容--------------
+    /**
+     * hbase 业务节点内容
+     */
+    private String dataSourceBusinessQuorum;
+
+    private String dataSourceBusinessPort;
+
+    private String dataSourceBusinessZNode;
+
+    private String dataSourceBusinessParams;
+
+    /**
+     * hbase 影子节点内容
+     */
+
+    private String dataSourcePerformanceTestQuorum;
+
+    private String dataSourcePerformanceTestPort;
+
+    private String dataSourcePerformanceTestZNode;
+
+    private String dataSourcePerformanceTestParams;
+    //--------hbase拆分字段后内容--------------
+
+    //--------es拆分字段后内容--------------
+    private String businessNodes;
+
+    private String performanceTestNodes;
+    //--------es拆分字段后内容--------------
 }

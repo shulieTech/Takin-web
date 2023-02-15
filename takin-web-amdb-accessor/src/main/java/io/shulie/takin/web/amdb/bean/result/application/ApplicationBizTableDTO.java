@@ -1,5 +1,6 @@
 package io.shulie.takin.web.amdb.bean.result.application;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -22,5 +23,14 @@ public class ApplicationBizTableDTO implements Serializable {
 
     private String tableUser;
 
+    /**
+     * 有写入操作
+     */
+    private Integer canWrite;
+
+    /**
+     * 有读取操作
+     */
+    private Integer canRead;
 
 }

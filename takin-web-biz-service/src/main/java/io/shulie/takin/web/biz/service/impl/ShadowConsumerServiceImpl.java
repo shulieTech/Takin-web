@@ -197,6 +197,13 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                         MD5Util.getMD5(e.getApplicationName() + "#" + e.getTopicGroup() + "#" + e.getType()));
                     response.setType(e.getType());
                     response.setTopicGroup(e.getTopicGroup());
+                    if (e.getTopicGroup() != null && e.getTopicGroup().contains("#")) {
+                        String[] split = e.getTopicGroup().split("#");
+                        response.setTopic(split[0]);
+                        response.setGroup(split[1]);
+                        response.setCustomizeTopic("PT_" + split[0]);
+                        response.setCustomizeGroup("PT_" + split[1]);
+                    }
                     response.setEnabled(e.getStatus() == ShadowConsumerConstants.ENABLE);
                     response.setGmtCreate(e.getCreateTime());
                     response.setGmtUpdate(e.getUpdateTime());
@@ -219,6 +226,19 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                         MD5Util.getMD5(e.getApplicationName() + "#" + e.getTopicGroup() + "#" + e.getType()));
                     response.setType(e.getType());
                     response.setTopicGroup(e.getTopicGroup());
+                    if (e.getTopicGroup() != null && e.getTopicGroup().contains("#")) {
+                        String[] split = e.getTopicGroup().split("#");
+                        response.setTopic(split[0]);
+                        response.setGroup(split[1]);
+                    }
+                    if (e.getCustomizeTopicGroup() != null && e.getCustomizeTopicGroup().contains("#")){
+                        String[] split = e.getCustomizeTopicGroup().split("#");
+                        response.setCustomizeTopic(split[0]);
+                        response.setCustomizeGroup(split[1]);
+                    } else {
+                        response.setCustomizeTopic("PT_" + response.getTopic());
+                        response.setCustomizeGroup("PT_" + response.getGroup());
+                    }
                     response.setEnabled(e.getStatus() == ShadowConsumerConstants.ENABLE);
                     response.setGmtCreate(e.getCreateTime());
                     response.setGmtUpdate(e.getUpdateTime());
@@ -501,11 +521,24 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                         String[] topicGroup = shadowMqConsumerEntity.getTopicGroup().trim().split("#");
                         if (topicGroup.length == 2) {
                             // #后面没有消费组的，属于垃圾数据，过滤掉
-                            Set<String> groups = topicGroupMap.get(topicGroup[0]);
+                            String key = topicGroup[0];
+                            String value = topicGroup[1];
+                            if (StringUtils.isNotBlank(shadowMqConsumerEntity.getCustomizeTopicGroup())){
+                                String[] customizeTopicGroup = shadowMqConsumerEntity.getCustomizeTopicGroup().trim().split("#");
+                                if (customizeTopicGroup.length == 2){
+                                    if (!key.equals("PT_" + customizeTopicGroup[0])){
+                                        key = key + ">>" + customizeTopicGroup[0];
+                                    }
+                                    if (!value.equals("PT_" + customizeTopicGroup[1])){
+                                        value = value + ">>" + customizeTopicGroup[1];
+                                    }
+                                }
+                            }
+                            Set<String> groups = topicGroupMap.get(key);
                             if (groups == null) {
-                                topicGroupMap.put(topicGroup[0], Sets.newHashSet(topicGroup[1]));
+                                topicGroupMap.put(key, Sets.newHashSet(value));
                             } else {
-                                groups.add(topicGroup[1]);
+                                groups.add(value);
                             }
                         }
                     }
@@ -580,6 +613,12 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             if (split.length != 2) {
                 throw new RuntimeException("请求参数不正确，Group和Topic中间包含超过1个#  或者 #两边无数据");
             }
+            if (StringUtils.isBlank(request.getCustomizeTopic())){
+                request.setCustomizeTopic("PT_" + request.getTopic());
+            }
+            if (StringUtils.isBlank(request.getCustomizeGroup())){
+                request.setCustomizeGroup("PT_" + request.getCustomizeGroup());
+            }
             ApplicationDetailResult application = applicationDAO.getApplicationById(request.getApplicationId());
             if (application == null) {
                 throw new RuntimeException(String.format("应用id:%s对应的应用不存在", request.getApplicationId()));
@@ -598,6 +637,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             ShadowMqConsumerEntity updateEntity = new ShadowMqConsumerEntity();
             updateEntity.setId(request.getId());
             updateEntity.setTopicGroup(request.getTopicGroup());
+            updateEntity.setCustomizeTopicGroup(request.getCustomizeTopic() + "#" + request.getCustomizeGroup());
             updateEntity.setType(request.getType());
             updateEntity.setStatus(Integer.valueOf(request.getShadowconsumerEnable()));
             shadowMqConsumerMapper.updateById(updateEntity);
@@ -615,6 +655,12 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         String[] split = request.getTopicGroup().split("#");
         if (split.length != 2) {
             throw new RuntimeException("请求参数不正确，Group和Topic中间包含超过1个# 或者 #两边无数据");
+        }
+        if (StringUtils.isBlank(request.getCustomizeTopic())){
+            request.setCustomizeTopic("PT_" + request.getTopic());
+        }
+        if (StringUtils.isBlank(request.getCustomizeGroup())){
+            request.setCustomizeGroup("PT_" + request.getCustomizeGroup());
         }
         ApplicationDetailResult application = applicationDAO.getApplicationById(request.getApplicationId());
         if (application == null) {
@@ -634,6 +680,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         shadowMqConsumerEntity.setType(request.getType());
         shadowMqConsumerEntity.setApplicationId(application.getApplicationId());
         shadowMqConsumerEntity.setApplicationName(application.getApplicationName());
+        shadowMqConsumerEntity.setCustomizeTopicGroup(request.getCustomizeTopic() + "#" + request.getCustomizeGroup());
 
         Integer status = StringUtils.isBlank(request.getShadowconsumerEnable()) ? ShadowConsumerConstants.DISABLE : Integer.parseInt(request.getShadowconsumerEnable());
         shadowMqConsumerEntity.setStatus(status);

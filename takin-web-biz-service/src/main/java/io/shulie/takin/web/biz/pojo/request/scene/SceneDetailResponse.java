@@ -28,6 +28,11 @@ public class SceneDetailResponse extends io.shulie.takin.adapter.api.model.respo
      */
     private DataValidation dataValidation;
 
+    /**
+     * 是否开启数据验证
+     */
+    private boolean openDataValidation;
+
     @Data
     @EqualsAndHashCode(callSuper = true)
     public static class BasicInfo extends io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.BasicInfo {

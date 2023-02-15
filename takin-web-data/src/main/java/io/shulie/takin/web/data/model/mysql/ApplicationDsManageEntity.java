@@ -86,4 +86,10 @@ public class ApplicationDsManageEntity extends UserBaseEntity {
     @TableLogic
     @TableField(value = "IS_DELETED")
     private Integer isDeleted;
+
+    /**
+     * 配置方式，0字段方式，1代码方式
+     */
+    @TableField(value = "config_type")
+    private Integer configType;
 }

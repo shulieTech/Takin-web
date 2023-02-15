@@ -221,7 +221,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             return null;
         }
         ReportDetailOutput detail = ReportConverter.INSTANCE.ofReportDetail(report);
-
+        detail.setReportRemarks(report.getReportRemarks());
         //警告列表
         List<WarnBean> warnList = listWarn(reportId);
         detail.setTaskStatus(report.getStatus());

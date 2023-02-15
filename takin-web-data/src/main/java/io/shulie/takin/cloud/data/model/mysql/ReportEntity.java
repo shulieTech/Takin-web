@@ -223,5 +223,10 @@ public class ReportEntity {
     @TableField(value = "pt_config")
     private String ptConfig;
 
+    /**
+     * 报告备注
+      */    
+    @TableField("report_remarks")
+    private String reportRemarks;
 
 }

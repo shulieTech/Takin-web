@@ -1,4 +1,8 @@
 package io.shulie.takin.web.biz.service.report.impl;
+import com.alibaba.fastjson.JSON;
+import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
+import java.time.LocalDateTime;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -19,6 +23,7 @@ import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
+import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
 import io.shulie.takin.adapter.api.model.request.report.ReportDetailByIdReq;
@@ -41,9 +46,12 @@ import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDownLoadOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
+import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.report.ReportService;
@@ -74,6 +82,13 @@ public class ReportServiceImpl implements ReportService {
     private ReportApi reportApi;
     @Resource
     private ActivityDAO activityDAO;
+    
+    @Resource
+    private ActivityService activityService;
+    
+    @Resource
+    private ReportDao reportDao;
+    
     @Resource
     private CloudReportApi cloudReportApi;
     @Resource
@@ -322,4 +337,55 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
+    @Override
+    public void modifyRemarks(Long reportId,String remarks){
+        // 由于场景已经是合到web不在经由cloudApi-cloudService-dao兜一圈
+        reportDao.updateRemarks(reportId,remarks);
+    }
+
+    @Override
+    public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse>  getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq) {
+        // 首先通过xpathMdt获取到业务活动id
+        ReportBusinessActivityDetailEntity detail = reportDao.getReportBusinessActivityDetail(reportLinkDiagramReq.getSceneId(), reportLinkDiagramReq.getXpathMd5());
+        if(detail == null){
+            return ResponseResult.fail("400","场景下不存在业务活动","请检查后重试或联系管理员处理!");
+        }
+        io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse;
+        if(reportLinkDiagramReq.getReportId() == null){
+            // 实况查询
+            activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
+            
+        }else{
+            String features = detail.getFeatures();
+            if(StringUtils.isNotBlank(features.trim())){
+                activityResponse = JSON.parseObject(features,io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
+            }else {
+                activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
+                // 将链路拓扑信息更新到表中
+                reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getSceneId(),
+                        reportLinkDiagramReq.getReportId(),reportLinkDiagramReq.getXpathMd5(),JSON.toJSONString(activityResponse));
+            }
+            
+        }
+        return ResponseResult.success(activityResponse);
+    }
+
+
+    /**
+     * 
+     * @param activityId 业务活动Id
+     * @param reportLinkDiagramReq 查询条件
+     */
+    private io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse queryLinkDiagram(Long activityId,ReportLinkDiagramReq reportLinkDiagramReq){
+        // 直接调用查询业务活动的拓扑图方法即可
+        ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
+        request.setActivityId(activityId);
+        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
+        request.setStartTime(reportLinkDiagramReq.getStartTime());
+        request.setEndTime(reportLinkDiagramReq.getEndTime());
+        request.setTempActivity(false);
+        return activityService.getActivityWithMetricsById(request);
+    }
+    
+    
 }

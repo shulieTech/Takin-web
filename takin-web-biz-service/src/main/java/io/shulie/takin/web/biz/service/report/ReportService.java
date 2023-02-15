@@ -18,6 +18,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 
 /**
@@ -166,5 +167,18 @@ public interface ReportService {
     ReportDetailOutput getReportById(Long id);
 
     String downloadPDFPath(Long reportId);
+
+    /**
+     * 编辑压测报告备注
+     * @param reportId 报告id
+     * @param remarks 备注
+     */
+    void modifyRemarks(Long reportId,String remarks);
+
+    /**
+     * 获取实况，报告链路图
+     * @param reportLinkDiagramReq 请求参数
+     */
+    ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse>  getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
 
 }

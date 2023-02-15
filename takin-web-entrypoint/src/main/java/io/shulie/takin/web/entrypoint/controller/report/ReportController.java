@@ -20,6 +20,7 @@ import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.report.ReportJtlDownloadResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
@@ -29,6 +30,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -177,4 +179,16 @@ public class ReportController {
         return ResponseResult.success(reportService.downloadPDFPath(reportId));
     }
 
+    @GetMapping("/report/modifyRemarks")
+    public ResponseResult<String> modifyRemarks(@RequestParam Long reportId,@RequestParam String remarks){
+        reportService.modifyRemarks(reportId, remarks);
+        return ResponseResult.success();
+    } 
+    
+    @GetMapping("/report/getLinkDiagram")
+    public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse> getLinkDiagram(@Validated ReportLinkDiagramReq reportLinkDiagramReq){
+        return reportService.getLinkDiagram(reportLinkDiagramReq);
+    }
+    
 }
+

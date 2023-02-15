@@ -148,6 +148,10 @@ public class ReportResult extends ContextExt {
     private String calibrationMessage;
 
     private String ptConfig;
+    /**
+     * 压测报告备注
+     */
+    private String reportRemarks;
 
     public Date getStartTime() {
         if (startTime == null) {

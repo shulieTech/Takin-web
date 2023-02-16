@@ -356,9 +356,9 @@ public class ReportServiceImpl implements ReportService {
             activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
             
         }else{
-            String features = detail.getFeatures();
-            if(StringUtils.isNotBlank(features.trim())){
-                activityResponse = JSON.parseObject(features,io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
+            String reportJson = detail.getReportJson();
+            if(StringUtils.isNotBlank(reportJson.trim())){
+                activityResponse = JSON.parseObject(reportJson,io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
             }else {
                 activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
                 // 将链路拓扑信息更新到表中
@@ -380,7 +380,7 @@ public class ReportServiceImpl implements ReportService {
         // 直接调用查询业务活动的拓扑图方法即可
         ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
         request.setActivityId(activityId);
-        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
+        request.setFlowTypeEnum(FlowTypeEnum.BLEND);
         request.setStartTime(reportLinkDiagramReq.getStartTime());
         request.setEndTime(reportLinkDiagramReq.getEndTime());
         request.setTempActivity(false);

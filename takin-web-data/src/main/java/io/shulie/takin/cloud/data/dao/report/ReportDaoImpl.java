@@ -329,7 +329,7 @@ public class ReportDaoImpl implements ReportDao {
         updateWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, sceneId);
         updateWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
         updateWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5);
-        updateWrapper.set(ReportBusinessActivityDetailEntity::getFeatures, linkDiagram);
+        updateWrapper.set(ReportBusinessActivityDetailEntity::getReportJson, linkDiagram);
         detailMapper.update(null, updateWrapper);
     }
 }

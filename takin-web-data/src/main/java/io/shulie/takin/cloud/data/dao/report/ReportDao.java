@@ -143,4 +143,28 @@ public interface ReportDao {
     List<ReportEntity> queryReportBySceneIds(List<Long> sceneIds);
 
     List<ReportBusinessActivityDetailEntity> getActivityByReportIds(List<Long> reportIds) ;
+
+    /**
+     * 更新报告备注
+     * @param id 报告助教Id
+     * @param reportRemarks 备注
+     */
+    void updateRemarks(Long id,String reportRemarks);
+
+    /**
+     * 根据场景Id,xpathMd5获取报告业务活动详情
+     * @param sceneId 场景id
+     * @param xpathMd5 脚本md5路径
+     * @return ReportBusinessActivityDetailEntity
+     */
+    ReportBusinessActivityDetailEntity getReportBusinessActivityDetail(Long sceneId,String xpathMd5);
+
+    /**
+     * 更新链路拓扑图
+     * @param sceneId 场景Id
+     * @param reportId 报告id
+     * @param xpathMd5 业务活动xpathMd5值
+     * @param linkDiagram 链路拓扑图json数据
+     */
+    void modifyReportLinkDiagram(Long sceneId,Long reportId,String xpathMd5,String linkDiagram);
 }

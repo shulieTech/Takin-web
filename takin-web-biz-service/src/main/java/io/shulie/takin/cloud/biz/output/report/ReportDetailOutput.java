@@ -122,4 +122,7 @@ public class ReportDetailOutput extends ContextExt {
     private Integer calibrationStatus;
     private String calibrationMessage;
     private List<String> ptlPath;
+   
+    @ApiModelProperty("压测报告备注")
+    private String reportRemarks;
 }

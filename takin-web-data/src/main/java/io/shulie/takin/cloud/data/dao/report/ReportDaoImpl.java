@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Lists;
 import io.shulie.takin.cloud.common.constants.ReportConstants;
@@ -302,5 +303,33 @@ public class ReportDaoImpl implements ReportDao {
         LambdaQueryWrapper<ReportBusinessActivityDetailEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(ReportBusinessActivityDetailEntity::getReportId, reportIds);
         return detailMapper.selectList(wrapper);
+    }
+
+    @Override
+    public void updateRemarks(Long id, String reportRemarks) {
+        ReportEntity reportEntity = new ReportEntity();
+        reportEntity.setId(id);
+        reportEntity.setReportRemarks(reportRemarks);
+        reportMapper.updateById(reportEntity);
+    }
+
+    @Override
+    public ReportBusinessActivityDetailEntity getReportBusinessActivityDetail(Long sceneId, String xpathMd5) {
+        
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, sceneId);
+        queryWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5);
+        queryWrapper.last(" limit 1");
+        return detailMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    public void modifyReportLinkDiagram(Long sceneId,Long reportId,String xpathMd5,String linkDiagram) {
+        LambdaUpdateWrapper<ReportBusinessActivityDetailEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, sceneId);
+        updateWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
+        updateWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5);
+        updateWrapper.set(ReportBusinessActivityDetailEntity::getReportJson, linkDiagram);
+        detailMapper.update(null, updateWrapper);
     }
 }

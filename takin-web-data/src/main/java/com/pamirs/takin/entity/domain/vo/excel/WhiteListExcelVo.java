@@ -3,13 +3,13 @@ package com.pamirs.takin.entity.domain.vo.excel;
 import java.util.List;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.metadata.BaseRowModel;
+
 
 /**
  * @author  vernon
  * @date 2019/11/1 01:17
  */
-public class WhiteListExcelVo extends BaseRowModel {
+public class WhiteListExcelVo  {
     @ExcelProperty(value = "负责人工号", index = 0)
     private String principalNo;
     @ExcelProperty(value = "应用名称", index = 1)

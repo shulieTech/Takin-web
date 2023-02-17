@@ -2,13 +2,13 @@ package io.shulie.takin.web.biz.service.pressureresource.vo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
-import com.alibaba.excel.metadata.BaseRowModel;
+
 import lombok.Data;
 
 import java.io.Serializable;
 
 @Data
-public class ShadowDbExcelVO extends BaseRowModel implements Serializable {
+public class ShadowDbExcelVO  implements Serializable {
     @ColumnWidth(50)
     @ExcelProperty(value = {"Takin为您生成了影子库账号和密码（如不用系统生成的账号或密码，请替换新的账号密码到此表中", "业务数据源地址"}, index = 0)
     private String businessDatabase;

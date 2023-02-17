@@ -719,7 +719,7 @@ public class ApplicationDAOImpl
      */
     private LambdaQueryWrapper<ApplicationMntEntity> getWrapperByApplicationNamesAndUserId(Collection<String> applicationNames, Long userId) {
         return this.getLambdaQueryWrapper()
-            .select(ApplicationMntEntity::getApplicationId, ApplicationMntEntity::getApplicationName)
+            .select(ApplicationMntEntity::getApplicationId, ApplicationMntEntity::getApplicationName, ApplicationMntEntity::getAccessStatus)
             .in(ApplicationMntEntity::getApplicationName, applicationNames)
             .eq(userId != null, ApplicationMntEntity::getUserId, userId);
     }

@@ -28,10 +28,6 @@ public class SceneDetailResponse extends io.shulie.takin.adapter.api.model.respo
      */
     private DataValidation dataValidation;
 
-    /**
-     * 是否开启数据验证
-     */
-    private boolean openDataValidation;
 
     @Data
     @EqualsAndHashCode(callSuper = true)
@@ -47,6 +43,11 @@ public class SceneDetailResponse extends io.shulie.takin.adapter.api.model.respo
     public static class DataValidation extends SceneRequest.DataValidation {
         @ApiModelProperty("排除的应用id列表")
         private List<String> excludedApplicationIds;
+
+        /**
+         * 是否开启数据验证
+         */
+        private boolean openDataValidation;
     }
 
 }

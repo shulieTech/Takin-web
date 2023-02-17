@@ -303,7 +303,7 @@ public class SceneController {
             copyDetailResult.getDataValidation().setExcludedApplicationIds(DataTransformUtil.list2list(excludedApplicationIds, String.class));
         }
         if (copyDetailResult.getDataValidation() != null && copyDetailResult.getDataValidation().getTimeInterval() != null){
-            copyDetailResult.setOpenDataValidation(true);
+            copyDetailResult.getDataValidation().setOpenDataValidation(true);
         }
         return ResponseResult.success(copyDetailResult);
     }

@@ -1,17 +1,17 @@
 package io.shulie.takin.web.biz.utils.xlsx;
 
 import java.util.*;
-import java.net.URLEncoder;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.io.BufferedInputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
 
+import com.alibaba.excel.write.metadata.WriteSheet;
 import lombok.extern.slf4j.Slf4j;
 import cn.hutool.core.util.URLUtil;
 import org.apache.poi.ss.usermodel.CellType;
@@ -90,7 +90,7 @@ public class ExcelUtils {
                                         value = String.valueOf(cell.getDateCellValue());
                                     } else {
                                         value = String.valueOf(
-                                            new DecimalFormat("0").format(cell.getNumericCellValue()));
+                                                new DecimalFormat("0").format(cell.getNumericCellValue()));
                                     }
                                     break;
                                 case STRING:
@@ -152,29 +152,30 @@ public class ExcelUtils {
      * @throws Exception 异常
      */
     public static void exportExcelManySheet(HttpServletResponse response, String fileName, List<ExcelSheetVO<?>> sheetDTOList)
-        throws Exception {
+            throws Exception {
         ServletOutputStream out = null;
         if (CollectionUtils.isEmpty(sheetDTOList)) {
             return;
         }
         try {
             out = response.getOutputStream();
-            ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
+            ExcelWriter excelWriter = EasyExcel.write(out).excelType(ExcelTypeEnum.XLSX).writeExcelOnException(true).build();
+//            ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
             String excelFileName = new String((fileName + "-" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()))
-                .getBytes(), StandardCharsets.UTF_8);
+                    .getBytes(), StandardCharsets.UTF_8);
 
             for (int i = 0; i < sheetDTOList.size(); i++) {
                 ExcelSheetVO excelSheetDTO = sheetDTOList.get(i);
-                Sheet sheet = new Sheet(i + 1, 0, excelSheetDTO.getExcelModelClass());
-                sheet.setSheetName(excelSheetDTO.getSheetName());
-                writer.write(excelSheetDTO.getData(), sheet);
+//                Sheet sheet = new Sheet(i + 1, 0, excelSheetDTO.getExcelModelClass());
+                WriteSheet writeSheet = EasyExcel.writerSheet(i + 1, excelSheetDTO.getSheetName()).head(excelSheetDTO.getExcelModelClass()).build();
+                excelWriter.write(excelSheetDTO.getData(), writeSheet);
             }
             response.setContentType("application/octec-stream");
             response.setCharacterEncoding("utf-8");
             response.setHeader("Content-Disposition",
-                String.format("attachment;filename=\"%1$s\";filename*=utf-8''%1$s",
-                    URLUtil.encode(excelFileName + ".xlsx")));
-            writer.finish();
+                    String.format("attachment;filename=\"%1$s\";filename*=utf-8''%1$s",
+                            URLUtil.encode(excelFileName + ".xlsx")));
+            excelWriter.finish();
             out.flush();
 
         } catch (Exception e) {

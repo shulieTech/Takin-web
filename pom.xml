@@ -169,6 +169,11 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>easyexcel</artifactId>
+                <version>3.2.1</version>
+            </dependency>
             <!--redis-->
             <dependency>
                 <groupId>org.springframework.boot</groupId>

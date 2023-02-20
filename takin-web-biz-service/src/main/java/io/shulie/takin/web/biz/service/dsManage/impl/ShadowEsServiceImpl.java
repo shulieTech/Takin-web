@@ -28,6 +28,7 @@ import io.shulie.takin.web.data.param.application.ApplicationDsEnableParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsUpdateParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsResult;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +81,7 @@ public class ShadowEsServiceImpl extends AbstractDsService {
         WebPluginUtils.fillUserData(createParam);
         // 新增配置
         createParam.setStatus(createRequest.getStatus());
-
+        createParam.setConfigType(createRequest.getConfigType());
         syncInfo(createRequest.getApplicationId(), applicationDetailResult.getApplicationName());
 
         applicationDsDAO.insert(createParam);
@@ -98,7 +99,7 @@ public class ShadowEsServiceImpl extends AbstractDsService {
     }
 
     private String getCreateInputConfig(ApplicationDsCreateInput createRequest) {
-        if (createRequest.getConfigType() != null && createRequest.getConfigType() == 0) {
+        if (StringUtils.isBlank(createRequest.getConfig())) {
             Map<String, String> jsonConfig = new HashMap<>();
             jsonConfig.put("businessNodes", createRequest.getBusinessNodes());
             jsonConfig.put("performanceTestNodes", createRequest.getPerformanceTestNodes());
@@ -148,7 +149,7 @@ public class ShadowEsServiceImpl extends AbstractDsService {
 
         updateParam.setId(updateRequest.getId());
         updateParam.setStatus(updateRequest.getStatus());
-
+        updateParam.setConfigType(updateRequest.getConfigType());
         syncInfo(dsResult.getApplicationId(), dsResult.getApplicationName());
         applicationDsDAO.update(updateParam);
         return Response.success();
@@ -190,7 +191,7 @@ public class ShadowEsServiceImpl extends AbstractDsService {
         String config = dsResult.getConfig();
         dsDetailResponse.setConfig(config);
         dsDetailResponse.setConfigType(dsResult.getConfigType());
-        if (dsResult.getConfigType() != null && dsResult.getConfigType() != 0) {
+        if (dsResult.getConfigType() != null && dsResult.getConfigType() == 0) {
             Map<String, String> map = this.parseConfig(config);
             dsDetailResponse.setBusinessNodes(map.get("businessNodes"));
             dsDetailResponse.setPerformanceTestNodes(map.get("performanceTestNodes"));

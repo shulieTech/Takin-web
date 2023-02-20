@@ -33,6 +33,7 @@ import io.shulie.takin.web.data.param.application.ApplicationDsUpdateParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsResult;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -69,7 +70,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         ApplicationDsCreateParam createParam = new ApplicationDsCreateParam();
 
         addParserConfig(createRequest, createParam);
-
+        createParam.setConfigType(createRequest.getConfigType());
         createParam.setApplicationId(createRequest.getApplicationId());
         createParam.setApplicationName(applicationDetailResult.getApplicationName());
         createParam.setDbType(createRequest.getDbType());
@@ -92,7 +93,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
     }
 
     private String getCreateInputConfig(ApplicationDsCreateInput createRequest) {
-        if (createRequest.getConfigType() != null && createRequest.getConfigType() == 0) {
+        if (StringUtils.isBlank(createRequest.getConfig())) {
             Map<String, Object> jsonConfig = new HashMap<>();
             Map<String, String> dataSourceBusiness = new HashMap<>();
             dataSourceBusiness.put("quorum", createRequest.getDataSourceBusinessQuorum());
@@ -160,7 +161,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
 
         ApplicationDsUpdateParam updateParam = new ApplicationDsUpdateParam();
         updateParserConfig(updateRequest, updateParam);
-
+        updateParam.setConfigType(updateRequest.getConfigType());
         updateParam.setId(updateRequest.getId());
         updateParam.setStatus(updateRequest.getStatus());
         syncInfo(dsResult.getApplicationId(), dsResult.getApplicationName());
@@ -206,7 +207,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         String config = dsResult.getConfig();
         dsDetailResponse.setConfig(config);
 
-        if (dsResult.getConfigType() != null && dsResult.getConfigType() != 0) {
+        if (dsResult.getConfigType() != null && dsResult.getConfigType() == 0) {
             Map<String, Object> map = this.parseConfig(config);
             Map<String, String> dataSourceBusinessObj = (Map<String, String>) map.get("dataSourceBusiness");
             Map<String, String> dataSourcePerformanceTest = (Map<String, String>) map.get("dataSourcePerformanceTest");

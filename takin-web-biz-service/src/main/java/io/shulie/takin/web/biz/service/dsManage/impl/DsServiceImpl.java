@@ -91,7 +91,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.pamirs.takin.common.enums.ds.ConfigTemplateEnum.DB_HBASE_CLIENT;
 
 /**
  * @author fanxx
@@ -181,12 +180,14 @@ public class DsServiceImpl implements DsService {
 
     @PostConstruct
     public void init() {
-        map = new HashMap<>(6);
+        map = new HashMap<>(16);
         map.put(DsTypeEnum.SHADOW_DB, shadowDbService);
         map.put(DsTypeEnum.SHADOW_TABLE, shadowTableService);
         map.put(DsTypeEnum.SHADOW_REDIS_SERVER, shadowRedisServerService);
         map.put(DsTypeEnum.SHADOW_ES_SERVER, shadowEsService);
+        map.put(DsTypeEnum.SHADOW_ES_KEY, shadowEsService);
         map.put(DsTypeEnum.SHADOW_HBASE_SERVER, shadowHbaseService);
+        map.put(DsTypeEnum.SHADOW_HBASE_TABLE, shadowHbaseService);
         map.put(DsTypeEnum.SHADOW_KAFKA_CLUSTER, shadowKafkaService);
 
         templateServiceMap = new HashMap<>(6);
@@ -334,6 +335,10 @@ public class DsServiceImpl implements DsService {
     @Override
     public List<DsServerVO> getShadowDsServerConfigs(String namespace, DsTypeEnum dsServer) {
         List<DsServerVO> responseList = new ArrayList<>();
+        //影子es索引和hbase影子表数据不同步到agent
+        if (dsServer == DsTypeEnum.SHADOW_ES_KEY || dsServer == DsTypeEnum.SHADOW_HBASE_TABLE) {
+            return responseList;
+        }
         ApplicationDetailResult applicationMnt = applicationService.queryTApplicationMntByName(namespace);
         if (applicationMnt != null) {
             List<DsModelWithBLOBs> dsModels = applicationDsDAO.selectByAppIdForAgent(applicationMnt.getApplicationId());
@@ -422,6 +427,7 @@ public class DsServiceImpl implements DsService {
         if (Objects.isNull(createRequest)) {
             return Response.fail("0", "该配置不存在");
         }
+
         AbstractDsService dsService = getAbstractDsService(createRequest.getDsType());
         if (dsService == null) {
             return Response.fail("dsService obj is null");
@@ -708,6 +714,15 @@ public class DsServiceImpl implements DsService {
             case DB_ES_CLIENT:
                 list.add(new StyleTemplate.InputStyle("businessNodes", "业务Nodes", StyleTemplate.StyleEnums.INPUT.getCode(), true));
                 list.add(new StyleTemplate.InputStyle("performanceTestNodes", "影子Nodes", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                break;
+            case DB_HBASE_KEY:
+                list.add(new StyleTemplate.InputStyle("dataSourceBusinessQuorum", "业务Quorum", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                list.add(new StyleTemplate.InputStyle("dataSourceBusinessPort", "业务Port", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                list.add(new StyleTemplate.InputStyle("dataSourceBusinessZNode", "业务ZNode", StyleTemplate.StyleEnums.INPUT.getCode(), true));
+                list.add(new StyleTemplate.InputStyle("dataSourceBusinessParams", "业务Params", StyleTemplate.StyleEnums.INPUT.getCode(), false));
+                break;
+            case DB_ES_KEY:
+                list.add(new StyleTemplate.InputStyle("businessNodes", "业务Nodes", StyleTemplate.StyleEnums.INPUT.getCode(), true));
                 break;
             default:
         }
@@ -1068,6 +1083,7 @@ public class DsServiceImpl implements DsService {
             dsAgentVO.setDsType(detail.getDsType().byteValue());
             dsAgentVO.setUrl(detail.getUrl());
             dsAgentVO.setStatus((byte) 0);
+            dsAgentVO.setUsername(detail.getUserName());
             String fileExtedn = detail.getFileExtedn();
             JSONObject parameter = null;
             if (JSONUtil.isJson(fileExtedn)) {

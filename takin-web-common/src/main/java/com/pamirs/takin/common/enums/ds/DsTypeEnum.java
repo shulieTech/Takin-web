@@ -45,6 +45,10 @@ public enum DsTypeEnum {
     SHADOW_REDIS_KEY(6, "影子key"),
 
     SHADOW_REDIS_CLUSTER(7, "影子集群"),
+
+    SHADOW_ES_KEY(8, "影子索引"),
+
+    SHADOW_HBASE_TABLE(9, "影子表"),
     ;
 
     @Getter

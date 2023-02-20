@@ -51,6 +51,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
         entity.setTenantId(createParam.getTenantId());
         entity.setUserId(createParam.getUserId());
         entity.setStatus(createParam.getStatus());
+        entity.setConfigType(createParam.getConfigType());
 
         //数据加密处理
         aes(entity);

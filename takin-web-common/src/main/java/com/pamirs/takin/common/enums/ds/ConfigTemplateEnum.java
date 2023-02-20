@@ -11,7 +11,8 @@ public enum ConfigTemplateEnum {
 
     DB_HBASE_CLIENT("DB_HBASE_CLIENT", "HBASE集群模式"),
     DB_ES_CLIENT("DB_ES_CLIENT", "ES集群模式"),
-
+    DB_HBASE_KEY("DB_HBASE_KEY", "HBASE影子表模式"),
+    DB_ES_KEY("DB_ES_KEY", "ES影子索引模式"),
     ;
 
     private final String code;

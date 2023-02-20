@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.DistributedLock;
@@ -29,9 +30,9 @@ import org.springframework.stereotype.Component;
  * todo 不知道做什么用
  */
 @Component
-@ElasticSchedulerJob(jobName = "configureJob", cron = "0/30 * * * * ?", description = "agent接收的关闭信息后不再上报信息")
+//@ElasticSchedulerJob(jobName = "configureJob", cron = "0/30 * * * * ?", description = "agent接收的关闭信息后不再上报信息")
 @Slf4j
-public class ConfigureJob implements SimpleJob {
+public class ConfigureJob {
     @Autowired
     private ApplicationService applicationService;
 
@@ -42,8 +43,9 @@ public class ConfigureJob implements SimpleJob {
     @Autowired
     private DistributedLock distributedLock;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("configureJobExecute")
+//    @Override
+    public void execute() {
 
         if (WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源
@@ -57,7 +59,7 @@ public class ConfigureJob implements SimpleJob {
                 }
                 for (TenantEnv e : ext.getEnvs()) {
                     // 分布式锁
-                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
+                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "configureJobExecute");
                     if (distributedLock.checkLock(lockKey)) {
                         continue;
                     }

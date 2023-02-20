@@ -17,6 +17,7 @@ import javax.annotation.Resource;
 import cn.hutool.core.util.StrUtil;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.adapter.api.entrypoint.watchman.CloudWatchmanApi;
 import io.shulie.takin.adapter.api.model.request.watchman.WatchmanBatchRequest;
 import io.shulie.takin.cloud.model.response.WatchmanStatusResponse;
@@ -41,9 +42,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @Component
-@ElasticSchedulerJob(jobName = "pressureEnvInspectionJob", cron = "0 * * * * ?", description = "检测压力机环境是否正常")
+//@ElasticSchedulerJob(jobName = "pressureEnvInspectionJob", cron = "0 * * * * ?", description = "检测压力机环境是否正常")
 @Slf4j
-public class PressureEnvInspectionJob implements SimpleJob, InitializingBean {
+public class PressureEnvInspectionJob implements InitializingBean {
 
     private static final String CLUSTER = "cluster";
     private static final String NFS = "nfs";
@@ -74,8 +75,9 @@ public class PressureEnvInspectionJob implements SimpleJob, InitializingBean {
     @Value("${nfs.warning.percent:" + WARNING_PERCENT_DEFAULT + "}")
     private BigDecimal warningPercent;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("pressureEnvInspectionJobExecute")
+//    @Override
+    public void execute() {
         List<TenantEngineExt> tenantEngineList = pluginManager.getExtension(WebTenantExtApi.class).getAllTenantEngineList();
         if (CollectionUtils.isEmpty(tenantEngineList)) {
             return;

@@ -4,6 +4,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
@@ -17,16 +18,17 @@ import org.springframework.stereotype.Component;
  * @date 2021/6/15 5:40 下午
  */
 @Component
-@ElasticSchedulerJob(jobName = "showdownVerifyJob", cron = "0/10 * *  * * ?", description = "漏数验证")
+//@ElasticSchedulerJob(jobName = "showdownVerifyJob", cron = "0/10 * *  * * ?", description = "漏数验证")
 @Slf4j
-public class ShowdownVerifyJob implements SimpleJob {
+public class ShowdownVerifyJob  {
 
     @Autowired
     private VerifyTaskService verifyTaskService;
 
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("showdownVerifyJobExecute")
+//    @Override
+    public void execute() {
         verifyTaskService.showdownVerifyTask();
     }
 }

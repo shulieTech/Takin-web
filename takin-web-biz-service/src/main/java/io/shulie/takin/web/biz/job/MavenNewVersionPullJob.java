@@ -18,6 +18,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.job.entity.Docs;
 import io.shulie.takin.web.biz.job.entity.OrgMavenResponse;
@@ -38,9 +39,9 @@ import org.springframework.stereotype.Component;
  * @author liqiyu
  */
 @Component
-@ElasticSchedulerJob(jobName = "MavenNewVersionPullJob", cron = "0 0 3 * * ? *", description = "定时查询阿里云maven仓库是否有新的maven版本")
+//@ElasticSchedulerJob(jobName = "MavenNewVersionPullJob", cron = "0 0 3 * * ? *", description = "定时查询阿里云maven仓库是否有新的maven版本")
 @Slf4j
-public class MavenNewVersionPullJob implements SimpleJob {
+public class MavenNewVersionPullJob  {
 
     @Autowired
     private MiddlewareJarService middlewareJarService;
@@ -55,8 +56,9 @@ public class MavenNewVersionPullJob implements SimpleJob {
     @Value("${maven.pull.job.enable:true}")
     private boolean mavenenable;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("mavenNewVersionPullJobExecute")
+//    @Override
+    public void execute() {
         if (!mavenenable) {
             return;
         }

@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ThreadAnalyService;
@@ -28,9 +29,9 @@ import org.springframework.stereotype.Component;
  * @date 2021/6/15 5:50 下午
  */
 @Component
-@ElasticSchedulerJob(jobName = "performanceAnalyzeJob", cron = "0 0 5 * * ?", description = "性能分析-每天早晨5点执行一次，mysql 清理 5 天, 之前的统计数据")
+//@ElasticSchedulerJob(jobName = "performanceAnalyzeJob", cron = "0 0 5 * * ?", description = "性能分析-每天早晨5点执行一次，mysql 清理 5 天, 之前的统计数据")
 @Slf4j
-public class PerformanceAnalyzeJob implements SimpleJob {
+public class PerformanceAnalyzeJob  {
 
     @Autowired
     private ThreadAnalyService threadAnalyService;
@@ -42,8 +43,9 @@ public class PerformanceAnalyzeJob implements SimpleJob {
     @Autowired
     private DistributedLock distributedLock;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("performanceAnalyzeJobExecute")
+//    @Override
+    public void execute() {
         Integer second = Integer.valueOf(
             ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_PERFORMANCE_CLEAR_SECOND));
 
@@ -59,7 +61,7 @@ public class PerformanceAnalyzeJob implements SimpleJob {
                 }
                 for (TenantEnv e : ext.getEnvs()) {
                     // 分布式锁
-                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(),e.getEnvCode(),shardingContext.getJobName());
+                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(),e.getEnvCode(),"performanceAnalyzeJobExecute");
                     if (distributedLock.checkLock(lockKey)) {
                         continue;
                     }

@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
@@ -24,31 +26,32 @@ import org.springframework.stereotype.Component;
  * @date 2021/6/15 6:08 下午
  */
 @Component
-@ElasticSchedulerJob(jobName = "finishReportJob",
-        // 分片序列号和参数用等号分隔 不需要参数可以不加
-        //shardingItemParameters = "0=0,1=1,2=2",
-        isSharding = true,
-        cron = "*/10 * * * * ?",
-        description = "压测报告状态，汇总报告")
+//@ElasticSchedulerJob(jobName = "finishReportJob",
+//        // 分片序列号和参数用等号分隔 不需要参数可以不加
+//        //shardingItemParameters = "0=0,1=1,2=2",
+//        isSharding = true,
+//        cron = "*/10 * * * * ?",
+//        description = "压测报告状态，汇总报告")
 @Slf4j
-public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
+public class FinishReportJob extends AbstractSceneTask {
     @Autowired
     private ReportTaskService reportTaskService;
 
     private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
     private static AtomicInteger EMPTY = new AtomicInteger();
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("finishReportJobExecute")
+//    @Override
+    public void execute() {
         try {
-            this.execute_ext(shardingContext);
+            this.execute_ext();
         } catch (Throwable e) {
             // 捕捉全部异常,防止任务异常，导致esjob有问题
             log.error("io.shulie.takin.web.biz.job.FinishReportJob#execute error" + ExceptionUtils.getStackTrace(e));
         }
     }
-
-    public void execute_ext(ShardingContext shardingContext) {
+    
+    public void execute_ext() {
         long start = System.currentTimeMillis();
         final Boolean openVersion = WebPluginUtils.isOpenVersion();
         //任务开始
@@ -62,7 +65,7 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                 Long reportId = taskDto.getReportId();
                 // 私有化 + 开源 根据 报告id进行分片
                 // 开始数据层分片
-                if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                if (reportId % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
                     Object task = runningTasks.putIfAbsent(reportId, EMPTY);
                     if (task == null) {
                         ThreadPoolUtil.getReportFinishThreadPool().execute(() -> {
@@ -79,7 +82,7 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
             }
             this.cleanUnAvailableTasks(taskDtoList);
         } else {
-            this.runTask_ext(taskDtoList, shardingContext);
+            this.runTask_ext(taskDtoList);
             this.cleanUnAvailableTasks(taskDtoList);
         }
         log.debug("finishReport 执行时间:{}", System.currentTimeMillis() - start);

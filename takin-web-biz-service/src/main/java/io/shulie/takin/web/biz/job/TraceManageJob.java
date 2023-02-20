@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.DistributedLock;
@@ -34,9 +35,9 @@ import org.springframework.stereotype.Component;
  * @date 2021/6/15 5:45 下午
  */
 @Component
-@ElasticSchedulerJob(jobName = "traceManageJob",cron = "*/5 * * * * ?", description = "性能分析-方法追踪超时检测")
+//@ElasticSchedulerJob(jobName = "traceManageJob",cron = "*/5 * * * * ?", description = "性能分析-方法追踪超时检测")
 @Slf4j
-public class TraceManageJob implements SimpleJob {
+public class TraceManageJob  {
     @Autowired
     private TraceManageDAO traceManageDAO;
 
@@ -52,8 +53,9 @@ public class TraceManageJob implements SimpleJob {
     @Autowired
     private DistributedLock distributedLock;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("traceManageJobExecute")
+//    @Override
+    public void execute() {
         List<TraceManageDeployResult> deployResults = traceManageDAO.queryRunningTraceManageDeploy();
         if (CollectionUtils.isEmpty(deployResults)) {
             return;
@@ -65,7 +67,7 @@ public class TraceManageJob implements SimpleJob {
             Tenant key = entry.getKey();
             Long tenantId = key.getTenantId();
             String envCode = key.getEnvCode();
-            String lockKey = JobRedisUtils.getJobRedis(tenantId, envCode, shardingContext.getJobName());
+            String lockKey = JobRedisUtils.getJobRedis(tenantId, envCode, "traceManageJobExecute");
             if (distributedLock.checkLock(lockKey)) {
                 continue;
             }

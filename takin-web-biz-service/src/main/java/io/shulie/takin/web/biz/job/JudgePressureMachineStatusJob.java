@@ -6,6 +6,7 @@ import java.util.List;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.pamirs.takin.common.util.DateUtils;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.PressureMachineResponse;
@@ -24,15 +25,16 @@ import org.springframework.stereotype.Component;
  * 一分钟统计一次，压力机没更新时间距离当前超过3分钟，记为离线状态
  */
 @Component
-@ElasticSchedulerJob(jobName = "judgePressureMachineStatusJob", cron = "0 */1 * * * ?", description = "监听压力机，未使用则记为离线状态")
+//@ElasticSchedulerJob(jobName = "judgePressureMachineStatusJob", cron = "0 */1 * * * ?", description = "监听压力机，未使用则记为离线状态")
 @Slf4j
-public class JudgePressureMachineStatusJob implements SimpleJob {
+public class JudgePressureMachineStatusJob  {
 
     @Autowired
     private PressureMachineService pressureMachineService;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("judgePressureMachineStatusJobExecute")
+//    @Override
+    public void execute() {
         doJudgePressureMachineStatus();
     }
 

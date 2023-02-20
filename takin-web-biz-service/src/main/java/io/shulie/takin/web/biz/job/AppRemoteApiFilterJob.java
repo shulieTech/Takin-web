@@ -8,6 +8,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.annotation.Resource;
 
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import com.google.common.collect.Maps;
 import org.apache.commons.compress.utils.Lists;
@@ -42,12 +44,12 @@ import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 
 @Slf4j
 @Component
-@ElasticSchedulerJob(
-        jobName = "appRemoteApiFilterJob",
-        cron = "0 0/5 * * * ? *",
-        isSharding = true,
-        description = "远程调用restful风格api合并")
-public class AppRemoteApiFilterJob implements SimpleJob {
+//@ElasticSchedulerJob(
+//        jobName = "appRemoteApiFilterJob",
+//        cron = "0 0/5 * * * ? *",
+//        isSharding = true,
+//        description = "远程调用restful风格api合并")
+public class AppRemoteApiFilterJob {
 
     @Resource
     private AppRemoteCallService appRemoteCallService;
@@ -59,9 +61,10 @@ public class AppRemoteApiFilterJob implements SimpleJob {
     @Resource
     private DistributedLock distributedLock;
 
-    @Override
+    @XxlJob("appRemoteApiFilterJobExecute")
+//    @Override
     @Transactional(rollbackFor = Exception.class)
-    public void execute(ShardingContext shardingContext) {
+    public void execute() {
         if (WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源
             this.appRemoteApiFilter();
@@ -75,9 +78,9 @@ public class AppRemoteApiFilterJob implements SimpleJob {
                 for (TenantEnv e : ext.getEnvs()) {
                     // 分片key
                     int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
-                    if (shardKey % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                    if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
                         // 分布式锁
-                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
+                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "appRemoteApiFilterJobExecute");
                         if (distributedLock.checkLock(lockKey)) {
                             continue;
                         }

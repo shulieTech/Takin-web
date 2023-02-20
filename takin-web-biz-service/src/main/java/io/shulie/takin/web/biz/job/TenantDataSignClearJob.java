@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.job;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.common.constant.CacheConstants;
@@ -23,9 +24,9 @@ import java.util.stream.Stream;
 
 
 @Component
-@ElasticSchedulerJob(jobName = "tenantDataSignClearJob", cron = "0 0/5 * * * ? *", description = "签名数据重制任务")
+//@ElasticSchedulerJob(jobName = "tenantDataSignClearJob", cron = "0 0/5 * * * ? *", description = "签名数据重制任务")
 @Slf4j
-public class TenantDataSignClearJob implements SimpleJob {
+public class TenantDataSignClearJob {
 
     @Resource
     private RedisTemplate redisTemplate;
@@ -73,8 +74,9 @@ public class TenantDataSignClearJob implements SimpleJob {
 
     private List<String> tableList = Lists.newArrayList(tables);
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("tenantDataSignClearJobExecute")
+//    @Override
+    public void execute() {
         log.info("[数据重置job 开始执行]");
         if (distributedLock.tryLock(CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_lock",
                 0L, 10L, TimeUnit.MINUTES)) {

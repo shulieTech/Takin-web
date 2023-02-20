@@ -4,6 +4,8 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.nacos.NacosConfigManager;
@@ -30,12 +32,12 @@ import java.util.stream.Collectors;
  * 压测资源关联应用
  */
 @Component
-@ElasticSchedulerJob(jobName = "pressureResourceCommandJob",
-        isSharding = true,
-        cron = "0 0/10 * * * ?",
-        description = "下发验证命令")
+//@ElasticSchedulerJob(jobName = "pressureResourceCommandJob",
+//        isSharding = true,
+//        cron = "0 0/10 * * * ?",
+//        description = "下发验证命令")
 @Slf4j
-public class PressureResourceCommandJob implements SimpleJob {
+public class PressureResourceCommandJob {
 
     @Resource
     private PressureResourceDAO pressureResourceDAO;
@@ -53,8 +55,9 @@ public class PressureResourceCommandJob implements SimpleJob {
     @Resource
     private NacosConfigManager nacosConfigManager;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("pressureResourceCommandJobExecute")
+//    @Override
+    public void execute() {
         // 如果使用nacos做配置中心，则只在配置修改时才发送命令
         if (nacosConfigManager.useNacosForConfigCenter()) {
             return;
@@ -67,7 +70,7 @@ public class PressureResourceCommandJob implements SimpleJob {
         }
         // 按配置Id分片
         List<PressureResourceEntity> filterList = resourceList.stream().filter(resouce ->
-                        resouce.getId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem())
+                        resouce.getId() % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex())
                 .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(filterList)) {
             return;

@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
@@ -29,14 +31,14 @@ import org.springframework.util.CollectionUtils;
  * @date 2021/7/13 23:10
  */
 @Component
-@ElasticSchedulerJob(jobName = "calcApplicationSummaryJob",
-        // 分片序列号和参数用等号分隔 不需要参数可以不加
-        isSharding = true,
-        //shardingItemParameters = "0=0,1=1,2=2",
-        cron = "*/10 * * * * ?",
-        description = "汇总应用 机器数 风险机器数")
+//@ElasticSchedulerJob(jobName = "calcApplicationSummaryJob",
+//        // 分片序列号和参数用等号分隔 不需要参数可以不加
+//        isSharding = true,
+//        //shardingItemParameters = "0=0,1=1,2=2",
+//        cron = "*/10 * * * * ?",
+//        description = "汇总应用 机器数 风险机器数")
 @Slf4j
-public class CalcApplicationSummaryJob extends AbstractSceneTask implements SimpleJob {
+public class CalcApplicationSummaryJob extends AbstractSceneTask {
 
     @Autowired
     private ReportTaskService reportTaskService;
@@ -44,17 +46,18 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
     private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
     private static AtomicInteger EMPTY = new AtomicInteger();
 
-    @Override
+    @XxlJob("calcApplicationSummaryJobExecute")
+//    @Override
     public void execute(ShardingContext shardingContext) {
         try {
-            this.execute_ext(shardingContext);
+            this.execute_ext();
         } catch (Throwable e) {
             // 捕捉全部异常,防止任务异常，导致esjob有问题
             log.error("io.shulie.takin.web.biz.job.CalcApplicationSummaryJob#execute error" + ExceptionUtils.getStackTrace(e));
         }
     }
 
-    public void execute_ext(ShardingContext shardingContext) {
+    public void execute_ext() {
         long start = System.currentTimeMillis();
         final Boolean openVersion = WebPluginUtils.isOpenVersion();
         List<SceneTaskDto> taskDtoList = getTaskFromRedis();
@@ -66,7 +69,7 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
             for (SceneTaskDto taskDto : taskDtoList) {
                 Long reportId = taskDto.getReportId();
                 // 开始数据层分片
-                if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                if (reportId % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
                     Object task = runningTasks.putIfAbsent(reportId, EMPTY);
                     if (task == null) {
                         ThreadPoolUtil.getReportSummaryThreadPool().execute(() -> {
@@ -84,7 +87,7 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
                 }
             }
         } else {
-            this.runTask_ext(taskDtoList, shardingContext);
+            this.runTask_ext(taskDtoList);
         }
         log.debug("calcApplicationSummaryJob 执行时间:{}", System.currentTimeMillis() - start);
     }

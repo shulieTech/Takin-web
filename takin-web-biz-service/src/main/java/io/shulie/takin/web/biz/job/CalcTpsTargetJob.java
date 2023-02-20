@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
@@ -24,14 +26,14 @@ import org.springframework.stereotype.Component;
  * @date 2021/7/13 23:10
  */
 @Component
-@ElasticSchedulerJob(jobName = "calcTpsTargetJob",
-        // 分片序列号和参数用等号分隔 不需要参数可以不加
-        //shardingItemParameters = "0=0,1=1,2=2",
-        isSharding = true,
-        cron = "*/10 * * * * ?",
-        description = "获取tps指标图")
+//@ElasticSchedulerJob(jobName = "calcTpsTargetJob",
+//        // 分片序列号和参数用等号分隔 不需要参数可以不加
+//        //shardingItemParameters = "0=0,1=1,2=2",
+//        isSharding = true,
+//        cron = "*/10 * * * * ?",
+//        description = "获取tps指标图")
 @Slf4j
-public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
+public class CalcTpsTargetJob extends AbstractSceneTask {
 
     @Autowired
     private ReportTaskService reportTaskService;
@@ -39,17 +41,18 @@ public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
     private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
     private static AtomicInteger EMPTY = new AtomicInteger();
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("calcTpsTargetJobExecute")
+//    @Override
+    public void execute() {
         try {
-            this.execute_ext(shardingContext);
+            this.execute_ext();
         } catch (Throwable e) {
             // 捕捉全部异常,防止任务异常，导致esjob有问题
             log.error("io.shulie.takin.web.biz.job.CalcTpsTargetJob#execute error" + ExceptionUtils.getStackTrace(e));
         }
     }
 
-    public void execute_ext(ShardingContext shardingContext) {
+    public void execute_ext() {
         long start = System.currentTimeMillis();
         final Boolean openVersion = WebPluginUtils.isOpenVersion();
         List<SceneTaskDto> taskDtoList = getTaskFromRedis();
@@ -61,7 +64,7 @@ public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
             for (SceneTaskDto taskDto : taskDtoList) {
                 Long reportId = taskDto.getReportId();
                 // 开始数据层分片
-                if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                if (reportId % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
                     Object task = runningTasks.putIfAbsent(reportId, EMPTY);
                     if (task == null) {
                         ThreadPoolUtil.getReportTpsThreadPool().execute(() -> {
@@ -77,7 +80,7 @@ public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
                 }
             }
         } else {
-            this.runTask_ext(taskDtoList, shardingContext);
+            this.runTask_ext(taskDtoList);
         }
         log.debug("calcTpsTargetJob 执行时间:{}", System.currentTimeMillis() - start);
     }

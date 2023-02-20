@@ -1,27 +1,10 @@
 package io.shulie.takin.web.biz.job;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.util.StrUtil;
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.adapter.api.entrypoint.watchman.CloudWatchmanApi;
 import io.shulie.takin.adapter.api.model.request.watchman.WatchmanBatchRequest;
 import io.shulie.takin.cloud.model.response.WatchmanStatusResponse;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.biz.checker.EngineEnvChecker;
 import io.shulie.takin.web.common.util.RedisClientUtil;
@@ -41,8 +24,16 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Component
-//@ElasticSchedulerJob(jobName = "pressureEnvInspectionJob", cron = "0 * * * * ?", description = "检测压力机环境是否正常")
 @Slf4j
 public class PressureEnvInspectionJob implements InitializingBean {
 
@@ -76,7 +67,6 @@ public class PressureEnvInspectionJob implements InitializingBean {
     private BigDecimal warningPercent;
 
     @XxlJob("pressureEnvInspectionJobExecute")
-//    @Override
     public void execute() {
         List<TenantEngineExt> tenantEngineList = pluginManager.getExtension(WebTenantExtApi.class).getAllTenantEngineList();
         if (CollectionUtils.isEmpty(tenantEngineList)) {

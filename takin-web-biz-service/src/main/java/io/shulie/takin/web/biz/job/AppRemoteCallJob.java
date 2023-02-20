@@ -1,16 +1,7 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
@@ -27,17 +18,17 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author 无涯
  * @date 2021/6/9 3:03 下午
  */
 
 @Component
-//@ElasticSchedulerJob(
-//        jobName = "appRemoteCallJob",
-//        isSharding = true,
-//        cron = "0 0/5 * * * ? *",
-//        description = "同步大数据远程调用数据，即入口数据")
 @Slf4j
 public class AppRemoteCallJob  {
     @Resource
@@ -54,7 +45,6 @@ public class AppRemoteCallJob  {
     private DistributedLock distributedLock;
 
     @XxlJob("appRemoteCallJobExecute")
-//    @Override
     public void execute() {
         if (fixData) {
             return;

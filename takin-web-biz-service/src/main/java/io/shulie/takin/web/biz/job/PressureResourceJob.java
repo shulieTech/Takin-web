@@ -1,11 +1,8 @@
 package io.shulie.takin.web.biz.job;
 
 import com.alibaba.excel.util.CollectionUtils;
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
@@ -23,10 +20,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Component
-//@ElasticSchedulerJob(jobName = "pressureResourceJob",
-//        isSharding = true,
-//        cron = "0 0/1 * * * ? *",
-//        description = "压测资源准备自动梳理")
 @Slf4j
 public class PressureResourceJob {
     @Resource
@@ -40,7 +33,6 @@ public class PressureResourceJob {
     private ThreadPoolExecutor pressureResourceThreadPool;
 
     @XxlJob("pressureResourceJobExecute")
-//    @Override
     public void execute() {
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         for (TenantInfoExt ext : tenantInfoExts) {

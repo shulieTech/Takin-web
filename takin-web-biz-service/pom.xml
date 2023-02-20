@@ -292,11 +292,11 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.dangdang</groupId>
-            <artifactId>elastic-job-lite-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.dangdang</groupId>-->
+<!--            <artifactId>elastic-job-lite-core</artifactId>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
 
         <!-- xxl-job-core -->

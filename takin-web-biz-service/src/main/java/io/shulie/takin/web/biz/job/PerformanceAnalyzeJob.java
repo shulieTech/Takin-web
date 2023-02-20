@@ -1,13 +1,6 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.xxl.job.core.handler.annotation.XxlJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ThreadAnalyService;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
@@ -24,12 +17,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author 无涯
  * @date 2021/6/15 5:50 下午
  */
 @Component
-//@ElasticSchedulerJob(jobName = "performanceAnalyzeJob", cron = "0 0 5 * * ?", description = "性能分析-每天早晨5点执行一次，mysql 清理 5 天, 之前的统计数据")
 @Slf4j
 public class PerformanceAnalyzeJob  {
 
@@ -44,7 +40,6 @@ public class PerformanceAnalyzeJob  {
     private DistributedLock distributedLock;
 
     @XxlJob("performanceAnalyzeJobExecute")
-//    @Override
     public void execute() {
         Integer second = Integer.valueOf(
             ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_PERFORMANCE_CLEAR_SECOND));

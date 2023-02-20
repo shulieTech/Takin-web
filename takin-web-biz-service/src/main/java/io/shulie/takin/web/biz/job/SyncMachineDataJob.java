@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author 无涯
  * @date 2021/7/13 23:10
  */
-//@Component
+@Component
 //@ElasticSchedulerJob(jobName = "syncMachineDataJob",
 //        // 分片序列号和参数用等号分隔 不需要参数可以不加
 //        isSharding = true,

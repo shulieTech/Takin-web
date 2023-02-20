@@ -1,11 +1,8 @@
 package io.shulie.takin.web.biz.job;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
@@ -30,15 +27,6 @@ import java.util.concurrent.TimeUnit;
  * @date 2021/6/15 5:30 下午
  */
 @Component
-//@ElasticSchedulerJob(
-//        jobName = "appAccessStatusJob",
-//        cron = "0/20 * *  * * ?",
-//        description = "同步大数据应用状态",
-//        // 时效转移
-//        misfire = true,
-//        // 重新执行
-//        failover = true,
-//        isSharding = true)
 public class AppAccessStatusJob {
 
     @Autowired

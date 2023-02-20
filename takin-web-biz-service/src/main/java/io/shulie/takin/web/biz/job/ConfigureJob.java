@@ -1,15 +1,6 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.xxl.job.core.handler.annotation.XxlJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
@@ -24,13 +15,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author 无涯
  * @date 2021/6/15 6:23 下午
  * todo 不知道做什么用
  */
 @Component
-//@ElasticSchedulerJob(jobName = "configureJob", cron = "0/30 * * * * ?", description = "agent接收的关闭信息后不再上报信息")
 @Slf4j
 public class ConfigureJob {
     @Autowired
@@ -44,7 +40,6 @@ public class ConfigureJob {
     private DistributedLock distributedLock;
 
     @XxlJob("configureJobExecute")
-//    @Override
     public void execute() {
 
         if (WebPluginUtils.isOpenVersion()) {

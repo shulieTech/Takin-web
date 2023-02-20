@@ -1,15 +1,7 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
@@ -21,17 +13,16 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @author 无涯
  * @date 2021/7/13 23:10
  */
 @Component
-//@ElasticSchedulerJob(jobName = "calcTpsTargetJob",
-//        // 分片序列号和参数用等号分隔 不需要参数可以不加
-//        //shardingItemParameters = "0=0,1=1,2=2",
-//        isSharding = true,
-//        cron = "*/10 * * * * ?",
-//        description = "获取tps指标图")
 @Slf4j
 public class CalcTpsTargetJob extends AbstractSceneTask {
 
@@ -42,7 +33,6 @@ public class CalcTpsTargetJob extends AbstractSceneTask {
     private static AtomicInteger EMPTY = new AtomicInteger();
 
     @XxlJob("calcTpsTargetJobExecute")
-//    @Override
     public void execute() {
         try {
             this.execute_ext();

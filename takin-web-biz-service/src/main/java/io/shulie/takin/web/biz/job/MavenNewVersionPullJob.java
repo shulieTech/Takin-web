@@ -1,25 +1,11 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeSet;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
-
-import cn.hutool.http.HttpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.xxl.job.core.handler.annotation.XxlJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.job.entity.Docs;
 import io.shulie.takin.web.biz.job.entity.OrgMavenResponse;
 import io.shulie.takin.web.biz.service.application.MiddlewareJarService;
@@ -33,13 +19,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  * maven 拉取新版本job
  *
  * @author liqiyu
  */
 @Component
-//@ElasticSchedulerJob(jobName = "MavenNewVersionPullJob", cron = "0 0 3 * * ? *", description = "定时查询阿里云maven仓库是否有新的maven版本")
 @Slf4j
 public class MavenNewVersionPullJob  {
 
@@ -57,7 +46,6 @@ public class MavenNewVersionPullJob  {
     private boolean mavenenable;
 
     @XxlJob("mavenNewVersionPullJobExecute")
-//    @Override
     public void execute() {
         if (!mavenenable) {
             return;

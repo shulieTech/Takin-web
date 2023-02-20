@@ -1,8 +1,7 @@
 package io.shulie.takin.web.biz.job;
 
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
@@ -23,12 +22,8 @@ import java.util.stream.Collectors;
  * 压测资源关联远程调用
  */
 @Component
-@ElasticSchedulerJob(jobName = "pressureResourceRelateRemoteCallJob",
-        isSharding = true,
-        cron = "0 0/1 * * * ? *",
-        description = "压测资源准备-压测资源关联远程调用")
 @Slf4j
-public class PressureResourceRelateRemoteCallJob implements SimpleJob {
+public class PressureResourceRelateRemoteCallJob{
     @Resource
     private PressureResourceCommonService pressureResourceCommonService;
 
@@ -42,8 +37,8 @@ public class PressureResourceRelateRemoteCallJob implements SimpleJob {
     @Resource
     private DistributedLock distributedLock;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("pressureResourceRelateRemoteCallJobExecute")
+    public void execute() {
         // 查询所有压测资源准备配置
         List<PressureResourceEntity> resourceList = pressureResourceDAO.getAll();
         if (CollectionUtils.isEmpty(resourceList)) {
@@ -52,7 +47,7 @@ public class PressureResourceRelateRemoteCallJob implements SimpleJob {
         }
         // 按配置Id分片
         List<PressureResourceEntity> filterList = resourceList.stream().filter(resouce ->
-                        resouce.getId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem())
+                        resouce.getId() % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex())
                 .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(filterList)) {
             return;

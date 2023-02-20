@@ -1,9 +1,8 @@
 package io.shulie.takin.web.biz.job;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
@@ -28,16 +27,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2021/6/15 5:30 下午
  */
 @Component
-@ElasticSchedulerJob(
-        jobName = "appAccessStatusJob",
-        cron = "0/20 * *  * * ?",
-        description = "同步大数据应用状态",
-        // 时效转移
-        misfire = true,
-        // 重新执行
-        failover = true,
-        isSharding = true)
-public class AppAccessStatusJob implements SimpleJob {
+public class AppAccessStatusJob {
 
     @Autowired
     private ApplicationService applicationService;
@@ -48,8 +38,8 @@ public class AppAccessStatusJob implements SimpleJob {
     @Autowired
     private DistributedLock distributedLock;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("appAccessStatusJobExecute")
+    public void execute() {
         if (WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源
             applicationService.syncApplicationAccessStatus();
@@ -65,8 +55,8 @@ public class AppAccessStatusJob implements SimpleJob {
                 // 根据环境 分线程
                 for (TenantEnv e : ext.getEnvs()) {
                     int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
-                    if (shardKey % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
+                    if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
+                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "appAccessStatusJobExecute");
                         if (distributedLock.checkLock(lockKey)) {
                             continue;
                         }

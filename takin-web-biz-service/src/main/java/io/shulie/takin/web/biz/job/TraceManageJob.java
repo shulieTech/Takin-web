@@ -1,15 +1,6 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
@@ -29,14 +20,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 /**
  * @author 无涯
  * @date 2021/6/15 5:45 下午
  */
 @Component
-@ElasticSchedulerJob(jobName = "traceManageJob",cron = "*/5 * * * * ?", description = "性能分析-方法追踪超时检测")
 @Slf4j
-public class TraceManageJob implements SimpleJob {
+public class TraceManageJob  {
     @Autowired
     private TraceManageDAO traceManageDAO;
 
@@ -52,8 +49,8 @@ public class TraceManageJob implements SimpleJob {
     @Autowired
     private DistributedLock distributedLock;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("traceManageJobExecute")
+    public void execute() {
         List<TraceManageDeployResult> deployResults = traceManageDAO.queryRunningTraceManageDeploy();
         if (CollectionUtils.isEmpty(deployResults)) {
             return;
@@ -65,7 +62,7 @@ public class TraceManageJob implements SimpleJob {
             Tenant key = entry.getKey();
             Long tenantId = key.getTenantId();
             String envCode = key.getEnvCode();
-            String lockKey = JobRedisUtils.getJobRedis(tenantId, envCode, shardingContext.getJobName());
+            String lockKey = JobRedisUtils.getJobRedis(tenantId, envCode, "traceManageJobExecute");
             if (distributedLock.checkLock(lockKey)) {
                 continue;
             }

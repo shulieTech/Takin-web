@@ -1,9 +1,8 @@
 package io.shulie.takin.web.biz.job;
 
 import com.alibaba.excel.util.CollectionUtils;
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
@@ -21,12 +20,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Component
-@ElasticSchedulerJob(jobName = "pressureResourceJob",
-        isSharding = true,
-        cron = "0 0/1 * * * ? *",
-        description = "压测资源准备自动梳理")
 @Slf4j
-public class PressureResourceJob implements SimpleJob {
+public class PressureResourceJob {
     @Resource
     private PressureResourceCommonService pressureResourceCommonService;
 
@@ -37,8 +32,8 @@ public class PressureResourceJob implements SimpleJob {
     @Qualifier("pressureResourceThreadPool")
     private ThreadPoolExecutor pressureResourceThreadPool;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("pressureResourceJobExecute")
+    public void execute() {
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         for (TenantInfoExt ext : tenantInfoExts) {
             if (CollectionUtils.isEmpty(ext.getEnvs())) {
@@ -48,9 +43,9 @@ public class PressureResourceJob implements SimpleJob {
             for (TenantInfoExt.TenantEnv e : ext.getEnvs()) {
                 // 分片key
                 int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
-                if (shardKey % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
                     // 分布式锁
-                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
+                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "pressureResourceJobExecute");
                     if (distributedLock.checkLock(lockKey)) {
                         continue;
                     }

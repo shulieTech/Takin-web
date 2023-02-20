@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
+import com.xxl.job.core.context.XxlJobHelper;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
@@ -145,12 +146,11 @@ public abstract class AbstractSceneTask {
 
     /**
      * @param taskDtoList
-     * @param shardingContext
      */
-    protected void runTask_ext(List<SceneTaskDto> taskDtoList, ShardingContext shardingContext) {
+    protected void runTask_ext(List<SceneTaskDto> taskDtoList) {
         //筛选出租户的任务
         final Map<Long, List<SceneTaskDto>> listMap =
-                taskDtoList.stream().filter(t -> t.getReportId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()
+                taskDtoList.stream().filter(t -> t.getReportId() % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()
                 ).collect(Collectors.groupingBy(SceneTaskDto::getTenantId));
         if (listMap.isEmpty()) {
             return;

@@ -1,14 +1,7 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
@@ -25,19 +18,19 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author 无涯
  * @date 2021/6/9 3:03 下午
  */
 
 @Component
-@ElasticSchedulerJob(
-        jobName = "appRemoteCallJob",
-        isSharding = true,
-        cron = "0 0/5 * * * ? *",
-        description = "同步大数据远程调用数据，即入口数据")
 @Slf4j
-public class AppRemoteCallJob implements SimpleJob {
+public class AppRemoteCallJob  {
     @Resource
     private AppRemoteCallService appRemoteCallService;
 
@@ -51,8 +44,8 @@ public class AppRemoteCallJob implements SimpleJob {
     @Resource
     private DistributedLock distributedLock;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("appRemoteCallJobExecute")
+    public void execute() {
         if (fixData) {
             return;
         }
@@ -71,9 +64,9 @@ public class AppRemoteCallJob implements SimpleJob {
                 for (TenantEnv e : ext.getEnvs()) {
                     // 分片key
                     int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
-                    if (shardKey % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                    if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
                         // 分布式锁
-                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
+                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "appRemoteCallJobExecute");
                         if (distributedLock.checkLock(lockKey)) {
                             continue;
                         }

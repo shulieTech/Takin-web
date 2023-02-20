@@ -58,6 +58,7 @@ import io.shulie.takin.web.biz.utils.FileUtils;
 import io.shulie.takin.web.biz.utils.SshInitUtil;
 import io.shulie.takin.web.common.util.BeanCopyUtils;
 import io.shulie.takin.web.data.dao.scenemanage.MachineManageDAO;
+import io.shulie.takin.web.data.mapper.mysql.MachineManageMapper;
 import io.shulie.takin.web.data.model.mysql.MachineManageEntity;
 import io.shulie.takin.web.ext.api.user.WebUserExtApi;
 import io.shulie.takin.web.ext.entity.UserExt;
@@ -111,6 +112,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private Integer dockerStartTimeout;
     @Value("${ssh.exec.timeout: 100000}")
     private Integer sshExecTime;
+
+    @Resource
+    private MachineManageMapper machineManageMapper;
 
     private SymmetricCrypto des;
     private final static ExecutorService THREAD_POOL = new ThreadPoolExecutor(20, 40, 300L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), new ThreadFactoryBuilder().setNameFormat("machine-manage-exec-%d").build(), new ThreadPoolExecutor.AbortPolicy());
@@ -793,6 +797,23 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         List<MachineManageEntity> machineManageEntityPage = machineManageDAO.list(lambdaQueryWrapper);
         List<PressureMachineResponse> pressureMachineResponses = BeanCopyUtils.copyList(machineManageEntityPage, PressureMachineResponse.class);
         return pressureMachineResponses;
+    }
+
+    /**
+     * 根据机器id列表获取机器信息
+     *
+     * @param request
+     * @param httpRequest
+     * @return
+     */
+    @Override
+    public ResponseResult<List<PressureMachineResponse>> listMachinesByIds(PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest) {
+        LambdaQueryWrapper<MachineManageEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(MachineManageEntity::getId, request.getMachineIds());
+        lambdaQueryWrapper.eq(MachineManageEntity::getIsDeleted, 0);
+        List<MachineManageEntity> machineManageEntityPage = this.machineManageMapper.selectList(lambdaQueryWrapper);
+        List<PressureMachineResponse> pressureMachineResponses = BeanCopyUtils.copyList(machineManageEntityPage, PressureMachineResponse.class);
+        return ResponseResult.success(pressureMachineResponses);
     }
 
     /**

@@ -62,12 +62,7 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-constants</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-common-job</artifactId>
-        </dependency>
-
+        
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-utils</artifactId>

@@ -56,17 +56,6 @@
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-common-job</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>guava</artifactId>
-                    <groupId>com.google.guava</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-utils</artifactId>
             <scope>provided</scope>
             <exclusions>
@@ -251,17 +240,6 @@
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-spring-boot-starter</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.dangdang</groupId>
-            <artifactId>elastic-job-lite-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!--整合springboot job-->
-        <dependency>
-            <groupId>com.dangdang</groupId>
-            <artifactId>elastic-job-lite-spring</artifactId>
             <scope>provided</scope>
         </dependency>
 

@@ -1,53 +1,42 @@
 package io.shulie.takin.web.biz.service.elasticjoblite;
 
-import java.util.Map;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.sql.Statement;
-import java.sql.ResultSet;
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import com.alibaba.fastjson.JSON;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
-import com.pamirs.takin.common.util.SpringUtil;
-import com.pamirs.takin.common.util.JdbcConnection;
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import org.apache.commons.collections4.CollectionUtils;
+import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
+import com.pamirs.takin.common.util.JdbcConnection;
+import com.pamirs.takin.common.util.SpringUtil;
+import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskJobParameter;
+import io.shulie.takin.web.biz.pojo.request.leakverify.VerifyTaskConfig;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
-import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskJobParameter;
-import io.shulie.takin.web.biz.pojo.request.leakverify.VerifyTaskConfig;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author fanxx
  * @date 2021/1/7 8:31 下午
  */
-public class VerifyJob implements SimpleJob {
+public class VerifyJob  {
 
     private static final Logger logger = LoggerFactory.getLogger(VerifyJob.class);
-
-    @Override
-    public void execute(ShardingContext shardingContext) {
-        logger.info("定时任务开始检测:[{}],当前时间:[{}],定时任务ID:[{}]", shardingContext.getJobName(), new Date(),
-            shardingContext.getTaskId());
-        String jobParameterString = shardingContext.getJobParameter();
-        LeakVerifyTaskJobParameter jobParameter = JSON.parseObject(jobParameterString,
-            LeakVerifyTaskJobParameter.class);
+    
+    public void execute(LeakVerifyTaskJobParameter jobParameter) {
         Integer refType = jobParameter.getRefType();
         Long refId = jobParameter.getRefId();
         VerifyTypeEnum typeEnum = VerifyTypeEnum.getTypeByCode(refType);
 
         logger.info("开始执行验证任务[refType:{},refId:{}]", Objects.requireNonNull(typeEnum).name(), refId);
-        logger.info(shardingContext.toString());
         List<VerifyTaskConfig> taskConfigs = jobParameter.getVerifyTaskConfigList();
         Map<Integer, Integer> resultMap = verify(refType, refId, taskConfigs);
 

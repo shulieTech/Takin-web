@@ -1,13 +1,13 @@
 package com.pamirs.takin.entity.domain.vo.excel;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.metadata.BaseRowModel;
+
 
 /**
  * @author  vernon
  * @date 2019/11/1 00:33
  */
-public class LinkManageExcelVo extends BaseRowModel {
+public class LinkManageExcelVo  {
     @ExcelProperty(value = "阿斯旺场景id", index = 0)
     private String aswanId;
     @ExcelProperty(value = "接口描述", index = 1)

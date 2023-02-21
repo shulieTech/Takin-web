@@ -2,15 +2,7 @@ package io.shulie.takin.web.biz.service.risk.impl;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
@@ -36,17 +28,12 @@ import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.utils.LinkDataCalcUtil;
 import io.shulie.takin.web.biz.utils.VolumnUtil;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
 import io.shulie.takin.web.data.dao.baseserver.BaseServerDao;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
-import io.shulie.takin.web.data.param.baseserver.BaseServerParam;
-import io.shulie.takin.web.data.param.baseserver.InfluxAvgParam;
-import io.shulie.takin.web.data.param.baseserver.ProcessBaseRiskParam;
-import io.shulie.takin.web.data.param.baseserver.TimeMetricsDetailParam;
-import io.shulie.takin.web.data.param.baseserver.TimeMetricsParam;
+import io.shulie.takin.web.data.param.baseserver.*;
 import io.shulie.takin.web.data.param.report.ReportBottleneckInterfaceCreateParam;
 import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
 import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
@@ -95,9 +82,6 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
     private ReportBottleneckInterfaceDAO reportBottleneckInterfaceDAO;
 
     @Autowired
-    private InfluxDatabaseManager influxDatabaseManager;
-
-    @Autowired
     private ApplicationNodeDAO applicationNodeDAO;
 
     /**
@@ -120,9 +104,6 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             startTime = endTime - riskTime;
         }
 
-        final long sTime = formatTimestamp(startTime);
-        final long eTime = formatTimestamp(endTime);
-
         List<BaseAppVo> baseAppVoList = Lists.newArrayList();
 
         /**
@@ -134,27 +115,28 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         ApplicationNodeQueryParam param = new ApplicationNodeQueryParam();
         param.setApplicationNames(appNameList);
         List<String> onlineAgentIds = applicationNodeDAO.getOnlineAgentIds(param);
+        long finalStartTime = startTime;
         appNameList.forEach(appName -> {
-            Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(sTime, eTime, appName));
+            Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(finalStartTime, endTime, appName));
             if (CollectionUtils.isNotEmpty(baseList)) {
-                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, sTime, eTime, baseList.size());
+                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, finalStartTime, endTime, baseList.size());
                 List<BaseAppVo> tmpList = baseList.stream().map(base -> {
                     BaseAppVo vo = new BaseAppVo();
                     vo.setCore(formatDouble(base.getCpuCores()).intValue());
                     vo.setDisk(formatDouble(base.getDisk()));
                     vo.setMbps(formatDouble(base.getNetBandwidth()));
                     vo.setMemory(formatDouble(base.getMemory()));
-                    vo.setAppIp(base.getTagAppIp());
+                    vo.setAppIp(base.getAppIp());
                     vo.setAppName(appName);
                     vo.setReportId(reportId);
-                    vo.setAgentIp(base.getTagAgentId());
+                    vo.setAgentIp(base.getAgentId());
                     return vo;
                 }).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(tmpList)) {
                     baseAppVoList.addAll(tmpList);
                 }
             } else {
-                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, sTime, eTime);
+                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, finalStartTime, endTime);
             }
         });
 
@@ -166,12 +148,12 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             List<ReportMachineUpdateParam> insertList = Lists.newArrayList();
             appMap.values().forEach(value -> {
 
-                if(CollectionUtils.isEmpty(value)) {
+                if (CollectionUtils.isEmpty(value)) {
                     return;
                 }
                 BaseAppVo baseAppVo = value.stream().filter(base -> {
                     // agentId 是否在线 只有不等于空
-                    if(CollectionUtils.isNotEmpty(onlineAgentIds) && !onlineAgentIds.contains(base.getAgentIp())) {
+                    if (CollectionUtils.isNotEmpty(onlineAgentIds) && !onlineAgentIds.contains(base.getAgentIp())) {
                         return false;
                     }
                     return true;
@@ -196,7 +178,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     baseAppVo.setAgentIp(null);
                     tmp.setMachineBaseConfig(JSON.toJSONString(baseAppVo));
                     // 增加租户
-                    WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(),tmp);
+                    WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(), tmp);
                     insertList.add(tmp);
                 }
             });
@@ -225,7 +207,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             reportMachine.setMachineIp(vo.getAppIp());
             reportMachine.setRiskFlag(1);
             //reportMachine.setRiskValue();
-            if(StringUtils.isNotBlank(vo.getContent())) {
+            if (StringUtils.isNotBlank(vo.getContent())) {
                 reportMachine.setRiskContent(vo.getContent());
             }
             reportMachineDAO.updateRiskContent(reportMachine);
@@ -264,8 +246,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             return results;
         }
 
-        final long sTime = formatTimestamp(startTime);
-        final long eTime = formatTimestamp(endTime);
+        long finalStartTime = startTime;
+        long finalEndTime = endTime;
         dto.getBusinessActivity().forEach(ba -> {
             Long businessActivityId = ba.getBusinessActivityId();
             BigDecimal maxTps = ba.getMaxTps() != null ? ba.getMaxTps() : new BigDecimal("0");
@@ -283,7 +265,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             if (maxTps.compareTo(destTps) > 0) {
                 tmpList = processOverRisk(appNameList, dto.getSceneId(), reportId, destTps);
             } else {
-                tmpList = processBaseRisk(appNameList, sTime, eTime, reportId);
+                tmpList = processBaseRisk(appNameList, finalStartTime, finalEndTime, reportId);
             }
             if (CollectionUtils.isNotEmpty(tmpList)) {
                 results.addAll(tmpList);
@@ -372,7 +354,6 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
      * 根据业务活动ID、时间获取压测链路明细信息
      *
      * @param startTime 毫秒数
-     *
      * @return
      */
     @Override
@@ -526,7 +507,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
      * @return
      */
     private List<LinkDataResult> processLinkDataById(Long businessActivityId, long sTime, long eTime) {
-        if (businessActivityId == null || businessActivityId <= 0){
+        if (businessActivityId == null || businessActivityId <= 0) {
             return null;
         }
         List<LinkDataResult> linkDataResultList = Lists.newArrayList();
@@ -665,33 +646,44 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         Metrices firstMetrices = sortMetrics.get(0);
         Metrices lastMetrices = sortMetrics.get(sortMetrics.size() - 1);
         // 取60秒前后的数据
-        long firstTime = formatTimestamp(firstMetrices.getTime() - 60 * 1000);
-        long lastTime = formatTimestamp(lastMetrices.getTime() + 60 * 1000);
+        long firstTime = firstMetrices.getTime() - 60 * 1000;
+        long lastTime = lastMetrices.getTime() + 60 * 1000;
 
         final List<Metrices> metricesList = metrices;
 
         appNames.forEach(appName -> {
-            String ipSql = "select distinct(app_ip) as app_ip from app_base_data where app_name = '" + appName
-                    + "' and time > " + firstTime + " and time <= " + lastTime +
-                // 增加租户
-                " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
-            Collection<BaseServerResult> ipList = influxDatabaseManager.query(BaseServerResult.class, ipSql);
+            AppBaseDataQuery query = new AppBaseDataQuery();
+            Map<String, String> fields = new HashMap<>();
+            fields.put("distinct(app_ip)", "app_ip");
+            query.setFieldAndAlias(fields);
+            query.setStartTime(firstTime);
+            query.setEndTime(lastTime);
+            query.setAppName(appName);
+            List<BaseServerResult> ipList = baseServerDao.listBaseServerResult(query);
             if (CollectionUtils.isNotEmpty(ipList)) {
                 // 需要统计的Metrices
                 List<BaseServerResult> calMetricesList = Lists.newArrayList();
 
                 ipList.forEach(ip -> {
-                    String tmpSql =
-                            "select mean(cpu_rate) as cpu_rate,mean(cpu_load) as cpu_load,mean(mem_rate) as mem_rate,mean"
-                                    + "(iowait) as iowait,mean(net_bandwidth_rate) as net_bandwidth_rate from app_base_data"
-                                    + " where tag_app_name = '" + appName + "' and tag_app_ip = '" + ip.getAppIp()
-                                    + "' and time > " + firstTime + " and time <= " + lastTime +
-                                    // 增加租户
-                                    " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                                    " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
-                                    + " group by time(5s) order by time";
-                    Collection<BaseServerResult> voList = influxDatabaseManager.query(BaseServerResult.class, tmpSql);
+
+//                                    + " group by time(5s) order by time";
+                    AppBaseDataQuery voListQuery = new AppBaseDataQuery();
+                    Map<String, String> fieldAndAlias = new HashMap<>();
+                    fieldAndAlias.put("time", null);
+                    fieldAndAlias.put("avg(cpu_rate)", "cpu_rate");
+                    fieldAndAlias.put("avg(cpu_load)", "cpu_load");
+                    fieldAndAlias.put("avg(mem_rate)", "mem_rate");
+                    fieldAndAlias.put("avg(iowait)", "iowait");
+                    fieldAndAlias.put("avg(net_bandwidth_rate)", "net_bandwidth_rate");
+                    voListQuery.setFieldAndAlias(fieldAndAlias);
+
+                    voListQuery.setStartTime(firstTime);
+                    voListQuery.setEndTime(lastTime);
+                    voListQuery.setAppName(appName);
+                    voListQuery.setAppId(ip.getAppIp());
+                    voListQuery.setGroupByFields(Collections.singletonList("time"));
+
+                    List<BaseServerResult> voList = baseServerDao.listBaseServerResult(voListQuery);
                     if (CollectionUtils.isNotEmpty(voList)) {
                         // 按秒分组
                         Map<Long, List<BaseServerResult>> voMap = voList.stream().collect(
@@ -710,7 +702,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                             if (CollectionUtils.isNotEmpty(tmpBaseVoList)) {
                                 tmpVo = tmpBaseVoList.stream().findFirst().get();
                                 tmpVo.setTps(metricesTmp.getAvgTps());
-                                tmpVo.setTime(Instant.ofEpochMilli(metricesTmp.getTime()));
+                                tmpVo.setTime(metricesTmp.getTime());
                                 tmpVo.setAppIp(ip.getAppIp());
                                 tmpVo.setAppName(appName);
 
@@ -764,11 +756,11 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 
         // 最大 cpu 使用率
         double scale = Double.parseDouble(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_SCALE));
+                ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_SCALE));
 
         // 最大 cpu load
         int maxLoad = Integer.parseInt(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_MAX_LOAD));
+                ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_MAX_LOAD));
 
         if (CollectionUtils.isNotEmpty(lessList)) {
             BaseRiskResult risk = new BaseRiskResult();

@@ -5,13 +5,10 @@ import java.util.Map;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import io.shulie.takin.web.data.common.InfluxDatabaseWriter;
 import io.shulie.takin.web.data.param.machine.PressureMachineLogInsertParam;
 import io.shulie.takin.web.data.param.machine.PressureMachineLogQueryParam;
 import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineLogResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,9 +18,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PressureMachineLogDaoImpl implements PressureMachineLogDao {
-
-    @Autowired
-    private InfluxDatabaseWriter influxDatabaseWriter;
 
     @Override
     public void insert(PressureMachineLogInsertParam param) {
@@ -65,7 +59,7 @@ public class PressureMachineLogDaoImpl implements PressureMachineLogDao {
         tags.put("tenant_id", String.valueOf(WebPluginUtils.traceTenantId()));
         tags.put("tenant_app_key", WebPluginUtils.traceTenantAppKey() + "");
         tags.put("env_code", String.valueOf(WebPluginUtils.traceEnvCode()));
-        influxDatabaseWriter.insert("t_pressure_machine_log", tags, fields, System.currentTimeMillis());
+//        influxDatabaseWriter.insert("t_pressure_machine_log", tags, fields, System.currentTimeMillis());
 
 
     }
@@ -83,13 +77,13 @@ public class PressureMachineLogDaoImpl implements PressureMachineLogDao {
                 " and time <= " + "'" + param.getEndTime() + "'" +
                 " and machine_id =" + "'" + param.getMachineId() + "'" +
                 " TZ('Asia/Shanghai')";
-
-        List<PressureMachineLogResult> dataList = influxDatabaseWriter.query(influxDaatabaseSql,
-                PressureMachineLogResult.class);
-
-        if (CollectionUtils.isEmpty(dataList)) {
-            return Lists.newArrayList();
-        }
-        return dataList;
+        return Lists.newArrayList();
+//        List<PressureMachineLogResult> dataList = influxDatabaseWriter.query(influxDaatabaseSql,
+//                PressureMachineLogResult.class);
+//
+//        if (CollectionUtils.isEmpty(dataList)) {
+//            return Lists.newArrayList();
+//        }
+//        return dataList;
     }
 }

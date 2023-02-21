@@ -93,4 +93,9 @@ public class ReportDetailDTO extends UserCommonExt implements Serializable {
 
     @ApiModelProperty(name = "jobId", value = "压测引擎任务Id")
     private Long jobId;
+
+    /**
+     * 资源Id
+     */
+    private String resourceId;
 }

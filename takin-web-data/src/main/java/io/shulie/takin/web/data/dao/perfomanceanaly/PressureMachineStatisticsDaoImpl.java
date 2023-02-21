@@ -7,15 +7,12 @@ import javax.annotation.Resource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import io.shulie.takin.web.data.common.InfluxDatabaseWriter;
 import io.shulie.takin.web.data.mapper.mysql.PressureMachineMapper;
 import io.shulie.takin.web.data.param.perfomanceanaly.PressureMachineStatisticsInsertParam;
 import io.shulie.takin.web.data.param.perfomanceanaly.PressureMachineStatisticsQueryParam;
 import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineStatisticsDTO;
 import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineStatisticsResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -28,9 +25,6 @@ public class PressureMachineStatisticsDaoImpl implements PressureMachineStatisti
 
     @Resource
     private PressureMachineMapper pressureMachineMapper;
-
-    @Autowired
-    private InfluxDatabaseWriter influxDatabaseWriter;
 
     @Override
     public void insert(PressureMachineStatisticsInsertParam param) {
@@ -48,7 +42,7 @@ public class PressureMachineStatisticsDaoImpl implements PressureMachineStatisti
         tags.put("tenant_id", String.valueOf(WebPluginUtils.traceTenantId()));
         tags.put("tenant_app_key", WebPluginUtils.traceTenantAppKey() + "");
         tags.put("env_code", String.valueOf(WebPluginUtils.traceEnvCode()));
-        influxDatabaseWriter.insert("t_pressure_machine_statistics", tags, fields, System.currentTimeMillis());
+//        influxDatabaseWriter.insert("t_pressure_machine_statistics", tags, fields, System.currentTimeMillis());
     }
 
 
@@ -68,14 +62,14 @@ public class PressureMachineStatisticsDaoImpl implements PressureMachineStatisti
                 " and tenant_id = " + "'" + WebPluginUtils.traceTenantId() + "'" +
                 " and env_code = " + "'" + WebPluginUtils.traceEnvCode() + "'" +
                 " TZ('Asia/Shanghai')";
-
-        List<PressureMachineStatisticsResult> dataList = influxDatabaseWriter.query(influxDatabaseSql,
-                PressureMachineStatisticsResult.class);
-
-        if (CollectionUtils.isEmpty(dataList)) {
-            return Lists.newArrayList();
-        }
-        return dataList;
+        return Lists.newArrayList();
+//        List<PressureMachineStatisticsResult> dataList = influxDatabaseWriter.query(influxDatabaseSql,
+//                PressureMachineStatisticsResult.class);
+//
+//        if (CollectionUtils.isEmpty(dataList)) {
+//            return Lists.newArrayList();
+//        }
+//        return dataList;
 
     }
 
@@ -89,13 +83,14 @@ public class PressureMachineStatisticsDaoImpl implements PressureMachineStatisti
                 " order by time desc limit 1 " +
                 " TZ('Asia/Shanghai')";
 
-        List<PressureMachineStatisticsResult> dataList = influxDatabaseWriter.query(influxDatabaseSql,
-                PressureMachineStatisticsResult.class);
-
-        if (CollectionUtils.isEmpty(dataList)) {
-            return new PressureMachineStatisticsResult();
-        }
-        return dataList.get(0);
+        return new PressureMachineStatisticsResult();
+//        List<PressureMachineStatisticsResult> dataList = influxDatabaseWriter.query(influxDatabaseSql,
+//                PressureMachineStatisticsResult.class);
+//
+//        if (CollectionUtils.isEmpty(dataList)) {
+//            return new PressureMachineStatisticsResult();
+//        }
+//        return dataList.get(0);
 
     }
 

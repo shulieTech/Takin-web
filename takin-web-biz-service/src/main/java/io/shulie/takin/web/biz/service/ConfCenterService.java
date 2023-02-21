@@ -1,11 +1,9 @@
 package io.shulie.takin.web.biz.service;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,8 +23,11 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import com.alibaba.excel.EasyExcelFactory;
-import com.alibaba.excel.metadata.Sheet;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelReader;
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.read.listener.ReadListener;
+import com.alibaba.excel.read.metadata.ReadSheet;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -1517,13 +1518,27 @@ public class ConfCenterService extends CommonService {
      */
     public void batchUploadLinkList(MultipartFile[] files) throws IOException, TakinModuleException {
         for (MultipartFile file : files) {
-            //表示从第一个Sheet的第一行开始读取
-            Sheet sheet = new Sheet(1, 1);
-            InputStream stream = new BufferedInputStream(file.getInputStream());
-            List<Object> lists = EasyExcelFactory.read(stream, sheet);
-
+            // 一个文件一个reader
             List<TLinkServiceMntVo> addList = new ArrayList<>();
             List<TLinkServiceMntVo> updateList = new ArrayList<>();
+            List<Object> lists = Lists.newArrayList();
+            try (ExcelReader excelReader = EasyExcel.read(file.getInputStream(), new ReadListener(){
+
+                @Override
+                public void invoke(Object o, AnalysisContext analysisContext) {
+                    lists.add(o);
+                }
+
+                @Override
+                public void doAfterAllAnalysed(AnalysisContext analysisContext) {
+
+                }
+            }).headRowNumber(1).build()) {
+                // 构建一个sheet 这里可以指定名字或者no
+                ReadSheet readSheet = EasyExcel.readSheet(1).build();
+                // 读取一个sheet
+                excelReader.read(readSheet);
+            }
 
             int index = 0;
             for (Object list : lists) {
@@ -1633,16 +1648,31 @@ public class ConfCenterService extends CommonService {
         List<Map<String, Object>> applicationDataList = this.queryApplicationdata();
         Set<Object> applicationSet = new HashSet<Object>();
         for (MultipartFile file : files) {
+            List<Object> lists = Lists.newArrayList();
             //校验应用名
             applicationDataList.forEach(map -> {
                 applicationSet.add(map.get("applicationName"));
             });
-
             //表示从第一个Sheet的第一行开始读取
-            Sheet sheet = new Sheet(1, 1);
-            InputStream stream = new BufferedInputStream(file.getInputStream());
+            try (ExcelReader excelReader = EasyExcel.read(file.getInputStream(), new ReadListener(){
 
-            List<Object> lists = EasyExcelFactory.read(stream, sheet);
+                @Override
+                public void invoke(Object o, AnalysisContext analysisContext) {
+                    lists.add(o);
+                }
+
+                @Override
+                public void doAfterAllAnalysed(AnalysisContext analysisContext) {
+
+                }
+            }).headRowNumber(1).build()) {
+                // 构建一个sheet 这里可以指定名字或者no
+                ReadSheet readSheet = EasyExcel.readSheet(1).build();
+                // 读取一个sheet
+                excelReader.read(readSheet);
+            }
+
+
             for (Object list : lists) {
 
                 TWListVo vo = new TWListVo();

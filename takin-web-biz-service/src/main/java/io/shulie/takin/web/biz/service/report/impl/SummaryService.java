@@ -1,16 +1,6 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import com.alibaba.fastjson.JSON;
-
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
@@ -19,11 +9,12 @@ import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
-import io.shulie.takin.web.data.common.InfluxDatabaseManager;
+import io.shulie.takin.web.data.dao.baseserver.BaseServerDao;
 import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
 import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
+import io.shulie.takin.web.data.param.baseserver.AppBaseDataQuery;
 import io.shulie.takin.web.data.param.report.ReportApplicationSummaryCreateParam;
 import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
 import io.shulie.takin.web.data.param.report.ReportSummaryCreateParam;
@@ -35,6 +26,15 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 报告汇总接口
@@ -64,8 +64,8 @@ public class SummaryService {
     @Autowired
     private ReportDataCache reportDataCache;
 
-    @Autowired
-    private InfluxDatabaseManager influxDatabaseManager;
+    @Resource
+    private BaseServerDao baseServerDao;
 
     public void calcApplicationSummary(Long reportId) {
         List<Map<String, Object>> dataList = reportMachineDAO.selectCountByReport(reportId);
@@ -168,28 +168,37 @@ public class SummaryService {
         for (String applicationName : applications) {
             //机器信息
             long startTime = System.currentTimeMillis();
-            String searchAppIdSql = "select distinct(app_ip) as app_ip from app_base_data " +
-                "where time>=" + minTime + "ms and time <= " + maxTime + "ms and tag_app_name = '" + applicationName + "'" +
-                // 增加租户
-                " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
-
-            Collection<BaseServerResult> appIds = influxDatabaseManager.query(BaseServerResult.class, searchAppIdSql);
-            log.debug("search appIds :{},cost time : {}", searchAppIdSql, System.currentTimeMillis() - startTime);
+            AppBaseDataQuery query = new AppBaseDataQuery();
+            Map<String, String> fieldAndAlias = new HashMap<>();
+            fieldAndAlias.put("distinct(app_ip)", "app_ip");
+            query.setFieldAndAlias(fieldAndAlias);
+            query.setStartTime(minTime);
+            query.setEndTime(maxTime);
+            query.setAppName(applicationName);
+            List<BaseServerResult> appIds = baseServerDao.listBaseServerResult(query);
+            log.debug("search appIds ,cost time : {}", System.currentTimeMillis() - startTime);
             if (CollectionUtils.isEmpty(appIds)) {
                 continue;
             }
             List<String> hosts = appIds.stream().map(BaseServerResult::getAppIp).collect(Collectors.toList());
             for (String host : hosts) {
                 long baseTime = System.currentTimeMillis();
-                String searchBaseSql = "select time, app_ip, cpu_rate, cpu_load, mem_rate, iowait, net_bandwidth_rate" +
-                    " from app_base_data where time>=" + minTime + "ms and time <= " + maxTime
-                    + "ms and tag_app_name = '" + applicationName + "'" + " and tag_app_ip = '" + host + "'" +
-                    // 增加租户
-                    " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                    " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
-                Collection<BaseServerResult> bases = influxDatabaseManager.query(BaseServerResult.class, searchBaseSql);
-                log.debug("search baseSql :{},cost time = {} ", searchBaseSql, System.currentTimeMillis() - baseTime);
+                AppBaseDataQuery searchBaseQuery = new AppBaseDataQuery();
+                Map<String, String> searchBaseFieldAndAlias = new HashMap<>();
+                searchBaseFieldAndAlias.put("time", null);
+                searchBaseFieldAndAlias.put("app_ip", null);
+                searchBaseFieldAndAlias.put("cpu_rate", null);
+                searchBaseFieldAndAlias.put("cpu_load", null);
+                searchBaseFieldAndAlias.put("mem_rate", null);
+                searchBaseFieldAndAlias.put("iowait", null);
+                searchBaseFieldAndAlias.put("net_bandwidth_rate", null);
+                searchBaseQuery.setFieldAndAlias(searchBaseFieldAndAlias);
+                searchBaseQuery.setStartTime(minTime);
+                searchBaseQuery.setEndTime(maxTime);
+                searchBaseQuery.setAppName(applicationName);
+                searchBaseQuery.setAppId(host);
+                List<BaseServerResult> bases = baseServerDao.listBaseServerResult(searchBaseQuery);
+                log.debug("search baseSql ,cost time = {} ", System.currentTimeMillis() - baseTime);
                 TpsTargetArray array = calcTpsTarget(metrics, bases);
                 if (array == null) {
                     continue;
@@ -213,7 +222,7 @@ public class SummaryService {
             // 展示原数据
             metrics = vos.stream().map(result -> {
                 Metrices metrices = new Metrices();
-                metrices.setTime(result.getTime().toEpochMilli());
+                metrices.setTime(result.getTime());
                 metrices.setAvgTps(0D);
                 return metrices;
             }).collect(Collectors.toList());

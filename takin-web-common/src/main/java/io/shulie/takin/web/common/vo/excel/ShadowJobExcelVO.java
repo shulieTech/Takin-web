@@ -3,7 +3,7 @@ package io.shulie.takin.web.common.vo.excel;
 import java.io.Serializable;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.metadata.BaseRowModel;
+
 
 import lombok.Data;
 
@@ -13,7 +13,7 @@ import lombok.Data;
  */
 
 @Data
-public class ShadowJobExcelVO extends BaseRowModel implements Serializable {
+public class ShadowJobExcelVO  implements Serializable {
     private static final long serialVersionUID = -4797605438752120965L;
 
     @ExcelProperty(value ="name",index = 0)

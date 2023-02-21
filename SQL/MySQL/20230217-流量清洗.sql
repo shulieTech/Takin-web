@@ -1,0 +1,26 @@
+CREATE TABLE `t_traffic_record_task` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键自增',
+  `tenant_code` varchar(128) NOT NULL COMMENT '租户编码',
+  `app_name` varchar(128) NOT NULL COMMENT '应用名',
+  `service_name` varchar(128) NOT NULL COMMENT '请求服务名',
+  `service_type` int(11) NOT NULL COMMENT '服务类型',
+  `request_address` varchar(128) DEFAULT NULL COMMENT '请求地址',
+  `clear_script` varchar(512) NOT NULL COMMENT '清洗脚本',
+  `task_config` varchar(512) NOT NULL COMMENT '插件配置json',
+  `machine_room` varchar(128) DEFAULT NULL COMMENT '机房：亦庄、西咸',
+  `record_begin_time` datetime NOT NULL COMMENT '录制起始时间',
+  `record_end_time` datetime NOT NULL COMMENT '结束',
+  `process_rows` bigint(20) DEFAULT NULL COMMENT '清洗条数',
+  `process_time` bigint(20) DEFAULT NULL COMMENT '处理时长',
+  `status` tinyint(2) NOT NULL COMMENT '处理状态 0 待启动 1 执行中 2执行失败 3 执行成功 默认为0',
+  `creator` varchar(128) NOT NULL COMMENT '创建者账号',
+  `creator_name` varchar(256) NOT NULL COMMENT '创建者名称',
+  `modifier` varchar(128) NOT NULL COMMENT '修改者账号',
+  `modifier_name` varchar(256) NOT NULL COMMENT '修改者名称',
+  `gmt_create` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+  `gmt_modify` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `env_code` varchar(16) NOT NULL DEFAULT 'test' COMMENT '环境',
+  `tenant_id` int(4) NOT NULL COMMENT '租户ID',
+  `system_code` varchar(20) DEFAULT NULL  COMMENT '系统编码'
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=93 DEFAULT CHARSET=utf8mb4

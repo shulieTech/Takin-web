@@ -1,0 +1,1 @@
+INSERT INTO t_tro_resource (`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`, `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`, `IS_SUPER`) VALUES (520, 2, 0, 'flowback', '流量录制', NULL, '[\"/api/flowback\"]', 0, '[2,3,4]', NULL, NULL, NULL, '2023-02-09 16:03:00', '2023-02-09 16:03:08', 0, 0);

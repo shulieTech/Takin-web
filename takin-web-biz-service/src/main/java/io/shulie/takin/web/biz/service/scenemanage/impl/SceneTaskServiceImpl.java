@@ -461,16 +461,6 @@ public class SceneTaskServiceImpl extends AbstractIndicators implements SceneTas
                     String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
             redisClientUtil.set(redisKey, applicationNames, wrapperResp.getPressureTestSecond() + 10);
         }
-
-        Map<String, List<SceneSlaRefResp>> slaMap = getSceneSla(wrapperResp);
-        if (MapUtils.isNotEmpty(slaMap)) {
-            //获取应用列表
-            List<String> appNames = reportApplicationService.getReportApplication(reportId).getApplicationNames();
-            // 创建监控线程，监控cpu及memory
-            if (CollectionUtils.isNotEmpty(appNames)) {
-                asyncService.monitorCpuMemory(sceneId, reportId, appNames, slaMap.get("stop"), slaMap.get("warn"));
-            }
-        }
         return response;
     }
 

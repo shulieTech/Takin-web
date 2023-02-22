@@ -1,40 +1,19 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.github.pagehelper.PageInfo;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
-import com.pamirs.takin.entity.domain.dto.report.*;
+import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
+import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
+import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
+import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdReq;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailBySceneIdReq;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportQueryReq;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportTrendQueryReq;
-import io.shulie.takin.cloud.sdk.model.request.report.ScriptNodeTreeQueryReq;
-import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
-import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
-import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
-import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
-import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.cloud.sdk.model.response.report.ReportDetailResp;
-import io.shulie.takin.cloud.sdk.model.response.report.ReportResp;
-import io.shulie.takin.cloud.sdk.model.response.report.ReportTrendResp;
-import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.cloud.sdk.model.request.report.*;
+import io.shulie.takin.cloud.sdk.model.response.report.*;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
@@ -64,6 +43,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -119,18 +104,21 @@ public class ReportServiceImpl implements ReportService {
             setFilterSql(String.join(",", userIdList));
         }});
         List<Long> userIds = reportResponseList.getData().stream().map(ContextExt::getUserId)
-            .filter(Objects::nonNull).collect(Collectors.toList());
+                .filter(Objects::nonNull).collect(Collectors.toList());
         //用户信息Map key:userId  value:user对象
         Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
         List<ReportDTO> dtoList = reportResponseList.getData().stream().map(t -> {
             Long userId = t.getUserId() == null ? null : Long.valueOf(t.getUserId().toString());
             //负责人名称
             String userName = Optional.ofNullable(userMap.get(userId))
-                .map(UserExt::getName)
-                .orElse("");
+                    .map(UserExt::getName)
+                    .orElse("");
             ReportDTO result = BeanUtil.copyProperties(t, ReportDTO.class);
             result.setUserName(userName);
             result.setUserId(userId);
+            // 添加分页数据
+            result.setPageSize(param.getPageSize());
+            result.setCurrentPage(param.getCurrentPage());
             return result;
         }).collect(Collectors.toList());
         return ResponseResult.success(dtoList, reportResponseList.getTotalNum());
@@ -146,7 +134,7 @@ public class ReportServiceImpl implements ReportService {
         ReportDetailResp detailResponse = cloudReportApi.detail(idReq);
         // sa超过100 显示100
         if (detailResponse.getSa() != null
-            && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
+                && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
             detailResponse.setSa(BigDecimal.valueOf(100));
         }
         ReportDetailOutput output = new ReportDetailOutput();
@@ -164,7 +152,7 @@ public class ReportServiceImpl implements ReportService {
         if (output == null) {return;}
         // 获取用户信息
         Map<Long, UserExt> userInfo = WebPluginUtils.getUserMapByIds(
-            new ArrayList<Long>(1) {{add(output.getUserId());}});
+                new ArrayList<Long>(1) {{add(output.getUserId());}});
         // 填充用户信息
         if (userInfo.containsKey(output.getUserId())) {
             output.setOperateId(output.getUserId().toString());
@@ -178,7 +166,7 @@ public class ReportServiceImpl implements ReportService {
         LeakVerifyTaskReportQueryRequest queryRequest = new LeakVerifyTaskReportQueryRequest();
         queryRequest.setReportId(output.getId());
         LeakVerifyTaskResultResponse verifyTaskResultResponse = verifyTaskReportService.getVerifyTaskReport(
-            queryRequest);
+                queryRequest);
         if (Objects.isNull(verifyTaskResultResponse)) {
             return;
         }
@@ -286,10 +274,10 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public ResponseResult<List<ScriptNodeTreeResp>> queryNodeTree(ReportQueryRequest request) {
         List<ScriptNodeTreeResp> listResponseResult = reportApi.scriptNodeTree(
-            new ScriptNodeTreeQueryReq() {{
-                setSceneId(request.getSceneId());
-                setReportId(request.getReportId());
-            }});
+                new ScriptNodeTreeQueryReq() {{
+                    setSceneId(request.getSceneId());
+                    setReportId(request.getReportId());
+                }});
         return ResponseResult.success(listResponseResult);
     }
 

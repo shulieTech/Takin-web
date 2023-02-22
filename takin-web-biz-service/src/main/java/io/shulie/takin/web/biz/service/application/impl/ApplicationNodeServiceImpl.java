@@ -1,15 +1,5 @@
 package io.shulie.takin.web.biz.service.application.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.http.DateUtil;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
@@ -27,7 +17,6 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeResponse
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
-import io.shulie.takin.web.biz.utils.AgentZkClientUtil;
 import io.shulie.takin.web.biz.utils.business.probe.ApplicationNodeProbeUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.AppConstants;
@@ -40,17 +29,13 @@ import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.pojo.dto.probe.ApplicationNodeProbeOperateDTO;
 import io.shulie.takin.web.common.pojo.dto.probe.MatchApplicationNodeProbeStateDTO;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationNodeParam;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationNodeListResult;
-import io.shulie.takin.web.data.result.application.ApplicationNodeProbeResult;
-import io.shulie.takin.web.data.result.application.ApplicationNodeResult;
-import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.data.result.application.*;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -59,6 +44,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author mubai
@@ -89,8 +78,8 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
     @Autowired
     private ApplicationService applicationService;
 
-    @Autowired
-    private AgentZkClientUtil agentZkClientUtil;
+//    @Autowired
+//    private AgentZkClientUtil agentZkClientUtil;
 
     @Override
     public PagingList<ApplicationNodeResponse> pageNodes(ApplicationNodeQueryRequest request) {
@@ -283,10 +272,10 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
         }
         if (StringUtils.isNotBlank(agentId)) {
             // 删除指定的agentId
-            agentZkClientUtil.deleteNode(path + "/" + agentId);
+//            agentZkClientUtil.deleteNode(path + "/" + agentId);
         } else {
-            String zkString = agentZkClientUtil.getNode(path + "/172.17.0.1-14977");
-            log.info(zkString);
+//            String zkString = agentZkClientUtil.getNode(path + "/172.17.0.1-14977");
+//            log.info(zkString);
         }
     }
 

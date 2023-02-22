@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
@@ -33,6 +34,7 @@ import io.shulie.takin.web.data.param.application.ApplicationDsUpdateParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsResult;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -217,10 +219,13 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
             dsDetailResponse.setDataSourceBusinessQuorum(dataSourceBusinessObj.get("quorum"));
             dsDetailResponse.setDataSourceBusinessZNode(dataSourceBusinessObj.get("znode"));
 
-            dsDetailResponse.setDataSourcePerformanceTestParams(dataSourcePerformanceTest.get("params"));
-            dsDetailResponse.setDataSourcePerformanceTestPort(dataSourcePerformanceTest.get("port"));
-            dsDetailResponse.setDataSourcePerformanceTestQuorum(dataSourcePerformanceTest.get("quorum"));
-            dsDetailResponse.setDataSourcePerformanceTestZNode(dataSourcePerformanceTest.get("znode"));
+            if (CollectionUtil.isNotEmpty(dataSourcePerformanceTest)){
+                dsDetailResponse.setDataSourcePerformanceTestParams(dataSourcePerformanceTest.get("params"));
+                dsDetailResponse.setDataSourcePerformanceTestPort(dataSourcePerformanceTest.get("port"));
+                dsDetailResponse.setDataSourcePerformanceTestQuorum(dataSourcePerformanceTest.get("quorum"));
+                dsDetailResponse.setDataSourcePerformanceTestZNode(dataSourcePerformanceTest.get("znode"));
+            }
+
         }
     }
 

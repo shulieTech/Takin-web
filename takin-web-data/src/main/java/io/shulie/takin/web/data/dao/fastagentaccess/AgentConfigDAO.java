@@ -135,5 +135,11 @@ public interface AgentConfigDAO {
      */
     AgentConfigDetailResult getByEnKeyAndTypeAndProjectNameWithTenant(String enKey, Integer type, String projectName);
 
+    /**
+     * 根据应用名删除
+     * @param appName
+     */
+    void deleteByAppName(String appName);
+
 }
 

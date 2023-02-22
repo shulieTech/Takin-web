@@ -8,5 +8,5 @@ import lombok.Data;
  */
 @Data
 public class ReportDetailTempOutput extends ReportDetailOutput {
-    private Boolean canStartStop;
+
 }

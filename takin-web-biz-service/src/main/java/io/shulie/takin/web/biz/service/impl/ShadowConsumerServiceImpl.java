@@ -725,4 +725,19 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         return splitPage(queryInput, totalResult);
     }
 
+    @Override
+    public void deleteByAppName(String appName) {
+        if (StringUtils.isBlank(appName)){
+            return;
+        }
+        LambdaQueryWrapper<ShadowMqConsumerEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getApplicationName, appName);
+        lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getDeleted, ShadowConsumerConstants.LIVED);
+        List<ShadowMqConsumerEntity> dbResult = shadowMqConsumerMapper.selectList(lambdaQueryWrapper);
+        dbResult.forEach(shadowMqConsumerEntity -> {
+            shadowMqConsumerEntity.setDeleted(ShadowConsumerConstants.DELETED);
+            shadowMqConsumerMapper.updateById(shadowMqConsumerEntity);
+        });
+    }
+
 }

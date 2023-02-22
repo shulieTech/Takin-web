@@ -72,6 +72,17 @@ public class ShadowJobConfigService {
         System.out.println(stringStringMap);
     }
 
+    public void deleteByAppId(Long appId){
+        ShadowJobConfigQuery shadowJobConfigQuery = new ShadowJobConfigQuery();
+        shadowJobConfigQuery.setApplicationId(appId);
+        List<TShadowJobConfig> tShadowJobConfigs = tShadowJobConfigMapper.selectList(shadowJobConfigQuery);
+        if (CollectionUtils.isNotEmpty(tShadowJobConfigs)){
+            tShadowJobConfigs.forEach(tShadowJobConfig -> {
+                tShadowJobConfigMapper.delete(tShadowJobConfig.getId());
+            });
+        }
+    }
+
     public Response insert(TShadowJobConfig tShadowJobConfig) throws DocumentException {
         Map<String, String> xmlMap = XmlUtil.readStringXml(tShadowJobConfig.getConfigCode());
         String className = xmlMap.get("className");

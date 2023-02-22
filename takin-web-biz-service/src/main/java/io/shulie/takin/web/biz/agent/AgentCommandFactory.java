@@ -43,8 +43,8 @@ public class AgentCommandFactory {
     @Value("${takin.web.url}")
     private String takinWebUrl;
 
-    @Resource
-    private ServerChannel serverChannel;
+//    @Resource
+//    private ServerChannel serverChannel;
 
     @Resource
     @Qualifier("redisTemplate")
@@ -68,7 +68,7 @@ public class AgentCommandFactory {
         BeanUtils.copyProperties(takinPacket, commandPacket);
         boolean sendResult = false;
         try {
-            sendResult = serverChannel.send(commandPacket, future::success);
+//            sendResult = serverChannel.send(commandPacket, future::success);
         } catch (Exception e) {
             throw new TakinWebException(ExceptionCode.AGENT_SEND_ERROR, "agentId：" + takinPacket.getAgentId() +
                 "上传命令失败：" + e.getLocalizedMessage());
@@ -161,8 +161,8 @@ public class AgentCommandFactory {
                     try {
                         String[] temp = agentKey.split(":");
                         // 最后一个
-                        CommandPacket commandPacket = serverChannel.getCurrentCommand(temp[0], temp[temp.length - 1]);
-                        commandStatus = Optional.ofNullable(commandPacket).map(CommandPacket::getStatus).orElse(null);
+//                        CommandPacket commandPacket = serverChannel.getCurrentCommand(temp[0], temp[temp.length - 1]);
+//                        commandStatus = Optional.ofNullable(commandPacket).map(CommandPacket::getStatus).orElse(null);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

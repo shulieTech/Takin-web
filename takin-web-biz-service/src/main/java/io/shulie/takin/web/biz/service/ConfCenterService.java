@@ -71,18 +71,24 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.common.CommonService;
 import io.shulie.takin.web.biz.nacos.event.ShadowConfigRefreshEvent;
+import io.shulie.takin.web.biz.nacos.event.ShadowConfigRemoveEvent;
+import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
+import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
 import io.shulie.takin.web.biz.service.linkmanage.impl.WhiteListFileService;
+import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
+import io.shulie.takin.web.data.dao.application.ApplicationApiDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginsConfigDAO;
 import io.shulie.takin.web.data.dao.application.WhiteListDAO;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
+import io.shulie.takin.web.data.dao.fastagentaccess.AgentConfigDAO;
 import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
@@ -149,9 +155,20 @@ public class ConfCenterService extends CommonService {
 
     @Resource(name = "redisTemplate")
     private RedisTemplate redisTemplate;
-
+    @Resource
+    private ApplicationApiDAO applicationApiDAO;
     @Resource
     private ApplicationContext applicationContext;
+    @Resource
+    private DsService dsService;
+    @Resource
+    private ShadowJobConfigService shadowJobConfigService;
+    @Resource
+    private ShadowConsumerService shadowConsumerService;
+    @Resource
+    private LinkGuardService linkGuardService;
+    @Resource
+    private AgentConfigDAO agentConfigDAO;
 
     public static final String APPLICATION_CACHE_PREFIX = "application:cache";
 
@@ -375,9 +392,37 @@ public class ConfCenterService extends CommonService {
                 redisManager.removeKey(
                         WhiteBlackListRedisKey.TAKIN_WHITE_LIST_KEY_METRIC + tApplicationMnt.getApplicationName());
                 // 采用租户的userAppKey
-                //todo Aganet改造点
-                agentConfigCacheManager.evictRecallCalls(tApplicationMnt.getApplicationName());
+                //删除所有缓存
+                agentConfigCacheManager.evict(tApplicationMnt.getApplicationName(), false);
                 delApplicationCache(tApplicationMnt.getApplicationName());
+                /**
+                 * configs.put("datasource", agentConfigCacheManager.getShadowDb(appName));
+                 *             configs.put("job", agentConfigCacheManager.getShadowJobs(appName));
+                 *             configs.put("mq", agentConfigCacheManager.getShadowConsumer(appName));
+                 *             configs.put("whitelist", agentConfigCacheManager.getRemoteCallConfig(appName));
+                 *             configs.put("hbase", agentConfigCacheManager.getShadowHbase(appName));
+                 *             configs.put("redis", agentConfigCacheManager.getShadowServer(appName));
+                 *             configs.put("es", agentConfigCacheManager.getShadowEsServers(appName));
+                 *             configs.put("mock", agentConfigCacheManager.getGuards(appName));
+                 *             Map<String, List<String>> values = applicationApiManageAmdbCache.get(appName);
+                 *             configs.put("trace_rule", values == null ? new HashMap<>() : values);
+                 *             configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
+                 *             configs.put("redis-expire", agentConfigCacheManager.getAppPluginConfig(CommonUtil.generateRedisKey(appName, "redis_expire")));
+                 */
+                //删除库表相关数据
+                dsService.dsDeleteByAppName(tApplicationMnt.getApplicationName());
+                //删除对应影子job
+                shadowJobConfigService.deleteByAppId(tApplicationMnt.getApplicationId());
+                //删除对应影子消费者
+                shadowConsumerService.deleteByAppName(tApplicationMnt.getApplicationName());
+                //删除应用挡板数据
+                linkGuardService.deleteByAppName(tApplicationMnt.getApplicationName());
+                //删除agentConfig数据
+                agentConfigDAO.deleteByAppName(tApplicationMnt.getApplicationName());
+                //删除对应的入口规则
+                applicationApiDAO.deleteByAppName(tApplicationMnt.getApplicationName());
+                //删除对应的nacos数据
+                applicationContext.publishEvent(new ShadowConfigRemoveEvent(tApplicationMnt.getApplicationName(), tApplicationMnt.getClusterName()));
             });
             //删除白名单需要更新缓存
             redisManager.removeKey(WhiteBlackListRedisKey.TAKIN_WHITE_LIST_KEY);

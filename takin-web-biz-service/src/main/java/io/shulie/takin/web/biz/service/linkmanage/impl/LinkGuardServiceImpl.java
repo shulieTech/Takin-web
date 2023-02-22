@@ -98,7 +98,6 @@ public class LinkGuardServiceImpl implements LinkGuardService {
             throw new TakinWebException(ExceptionCode.GUARD_PARAM_ERROR, "创建挡板失败");
         }
         applicationService.modifyAccessStatus(vo.getApplicationId(), AppAccessTypeEnum.UNUPLOAD.getValue(), null);
-        configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), Long.parseLong(vo.getApplicationId()), vo.getApplicationName());
         //todo agent改造点
         agentConfigCacheManager.evictGuards(vo.getApplicationName());
         return Response.success();
@@ -133,8 +132,6 @@ public class LinkGuardServiceImpl implements LinkGuardService {
             return Response.fail(FALSE_CORE, "更新挡板失败", null);
         }
         // 原先是 用户基本的的key ，现在改成 租户级别的
-        configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), Long.parseLong(applicationId), vo.getApplicationName());
-        //todo agent改造点
         agentConfigCacheManager.evictGuards(vo.getApplicationName());
         return Response.success();
     }
@@ -144,8 +141,6 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         try {
             LinkGuardEntity linkGuardEntity = tLinkGuardMapper.selectById(id);
             tLinkGuardMapper.deleteById(id);
-            configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), linkGuardEntity.getApplicationId(), null);
-            //todo agent改造点
             agentConfigCacheManager.evictGuards(linkGuardEntity.getApplicationName());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -240,6 +235,21 @@ public class LinkGuardServiceImpl implements LinkGuardService {
     @Override
     public List<LinkGuardEntity> getAllEnabledGuard(String applicationId) {
         return tLinkGuardMapper.getAllEnabledGuard(applicationId);
+    }
+
+    @Override
+    public void deleteByAppName(String appName) {
+        if (StringUtils.isBlank(appName)){
+            return;
+        }
+        LinkGuardQueryParam linkGuardQueryParam = new LinkGuardQueryParam();
+        linkGuardQueryParam.setApplicationName(appName);
+        List<LinkGuardEntity> linkGuardEntities = tLinkGuardMapper.selectByExample(linkGuardQueryParam, null);
+        if (CollectionUtils.isNotEmpty(linkGuardEntities)){
+            linkGuardEntities.forEach(linkGuardEntity -> {
+                this.deleteById(linkGuardEntity.getId());
+            });
+        }
     }
 
     public LinkGuardVo entityToVo(LinkGuardEntity guardEntity, Long deptId) {

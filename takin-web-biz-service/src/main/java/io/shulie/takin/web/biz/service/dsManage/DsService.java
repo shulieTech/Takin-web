@@ -49,6 +49,8 @@ public interface DsService {
 
     Response dsDelete(ApplicationDsDeleteInput dsDeleteRequest);
 
+    void dsDeleteByAppName(String appName);
+
     List<DsAgentVO> getConfigs(String appName);
 
     List<ShadowServerConfigurationOutput> getShadowServerConfigs(String appName);

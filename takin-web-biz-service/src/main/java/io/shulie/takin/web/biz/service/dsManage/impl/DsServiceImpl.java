@@ -450,6 +450,11 @@ public class DsServiceImpl implements DsService {
     }
 
     @Override
+    public void dsDeleteByAppName(String appName) {
+        applicationDsDAO.dsDeleteByAppName(appName);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public List<ApplicationDsV2Response> dsQueryV2(Long applicationId, boolean isCache) {
         ApplicationDetailResult detailResult = applicationDAO.getApplicationById(applicationId);
@@ -477,7 +482,7 @@ public class DsServiceImpl implements DsService {
             long currentTimeMillis = System.currentTimeMillis();
             //校验时间在校验间隔2倍时间内的数据属于有效数据
             Map<String, List<ApplicationDsWarnResult>> urlMap = applicationDsWarnResults.stream().filter(o ->
-                            currentTimeMillis - o.getCheckTime() < o.getCheckInterval() * 1000 * 2)
+                            o.getStatus() != null && o.getStatus() == 1 && currentTimeMillis - o.getCheckTime() < o.getCheckInterval() * 1000 * 2)
                     .collect(Collectors.groupingBy(ApplicationDsWarnResult::getCheckUrl));
 
             List<ApplicationDsResponse> oldResponseList = (List<ApplicationDsResponse>) this.dsQuery(applicationId).getData();

@@ -40,4 +40,6 @@ public interface ApplicationDsDAO {
     List<DsModelWithBLOBs> getAllEnabledDbConfig(Long applicationId);
 
     void batchDelete(ApplicationDsDeleteParam deleteParam);
+
+    void dsDeleteByAppName(String appName);
 }

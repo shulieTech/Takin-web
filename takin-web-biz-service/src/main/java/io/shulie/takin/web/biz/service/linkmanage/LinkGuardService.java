@@ -37,4 +37,6 @@ public interface LinkGuardService {
     Response enableGuard(Long id, Boolean target);
 
     List<LinkGuardEntity> getAllEnabledGuard(String applicationId);
+
+    void deleteByAppName(String appName);
 }

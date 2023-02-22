@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
@@ -191,8 +192,8 @@ public class ShadowEsServiceImpl extends AbstractDsService {
         String config = dsResult.getConfig();
         dsDetailResponse.setConfig(config);
         dsDetailResponse.setConfigType(dsResult.getConfigType());
-        if (dsResult.getConfigType() != null && dsResult.getConfigType() == 0) {
-            Map<String, String> map = this.parseConfig(config);
+        Map<String, String> map = this.parseConfig(config);
+        if (CollectionUtil.isNotEmpty(map)) {
             dsDetailResponse.setBusinessNodes(map.get("businessNodes"));
             dsDetailResponse.setPerformanceTestNodes(map.get("performanceTestNodes"));
         }

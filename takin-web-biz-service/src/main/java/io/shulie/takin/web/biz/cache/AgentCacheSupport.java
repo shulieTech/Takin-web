@@ -14,5 +14,5 @@ public interface AgentCacheSupport<T> {
     /**
      * 缓存失效
      */
-    void evict(String namespace);
+    void evict(String namespace, boolean isPublish);
 }

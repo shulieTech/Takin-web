@@ -213,6 +213,7 @@ public class ReportServiceImpl implements ReportService {
         BeanUtils.copyProperties(result, output);
 
         fillExecuteMan(output);
+        WebPluginUtils.fillQueryResponse(output);
         return output;
 
     }

@@ -102,11 +102,11 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         checkGlobalConfig(enConfigKeyList, zhConfigKeyList);
 
         // 2、特殊校验zk地址配置是否能连接上
-        createRequestList.forEach(item -> {
-            if (ZK_CONFIG_KEY.equals(item.getEnKey()) && !TestZkConnUtils.test(item.getDefaultValue())) {
-                throw AppCommonUtil.getCommonError("zookeeper地址错误，无法连接");
-            }
-        });
+//        createRequestList.forEach(item -> {
+//            if (ZK_CONFIG_KEY.equals(item.getEnKey()) && !TestZkConnUtils.test(item.getDefaultValue())) {
+//                throw AppCommonUtil.getCommonError("zookeeper地址错误，无法连接");
+//            }
+//        });
 
         // 3、批量插入
         List<CreateAgentConfigParam> createAgentConfigParams = createRequestList.stream()
@@ -188,9 +188,9 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         AgentConfigDetailResult detailResult = agentConfigDAO.findById(updateRequest.getId());
         Assert.notNull(detailResult, "配置不存在！");
         // 特殊处理校验下zk地址
-        if (ZK_CONFIG_KEY.equals(detailResult.getEnKey()) && !TestZkConnUtils.test(updateRequest.getDefaultValue())) {
-            throw AppCommonUtil.getCommonError("zookeeper地址错误，无法连接");
-        }
+//        if (ZK_CONFIG_KEY.equals(detailResult.getEnKey()) && !TestZkConnUtils.test(updateRequest.getDefaultValue())) {
+//            throw AppCommonUtil.getCommonError("zookeeper地址错误，无法连接");
+//        }
 
         String projectName = updateRequest.getProjectName();
         if (StrUtil.isBlank(projectName)) {

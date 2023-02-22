@@ -315,6 +315,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         SceneManageWrapperOutput wrapper = cloudSceneManageService.getSceneManage(sceneId, options);
         reportDetail = ReportConverter.INSTANCE.ofReportDetail(reportResult);
         reportDetail.setUserId(wrapper.getUserId());
+        reportDetail.setDeptId(reportResult.getDeptId());
 
         // 补充停止原因
         ReportDetailOutput detailOutput = this.getReportByReportId(reportResult.getId());

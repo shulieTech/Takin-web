@@ -153,6 +153,8 @@ public class ReportResult extends ContextExt {
      */
     private String reportRemarks;
 
+    private Long deptId;
+
     public Date getStartTime() {
         if (startTime == null) {
             return new Date();

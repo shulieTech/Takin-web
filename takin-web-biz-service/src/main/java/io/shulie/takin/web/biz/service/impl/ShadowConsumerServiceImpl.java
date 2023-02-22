@@ -526,10 +526,10 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                             if (StringUtils.isNotBlank(shadowMqConsumerEntity.getCustomizeTopicGroup())){
                                 String[] customizeTopicGroup = shadowMqConsumerEntity.getCustomizeTopicGroup().trim().split("#");
                                 if (customizeTopicGroup.length == 2){
-                                    if (!key.equals("PT_" + customizeTopicGroup[0])){
+                                    if (!("PT_" + key).equals(customizeTopicGroup[0])){
                                         key = key + ">>" + customizeTopicGroup[0];
                                     }
-                                    if (!value.equals("PT_" + customizeTopicGroup[1])){
+                                    if (!("PT_" + value).equals(customizeTopicGroup[1])){
                                         value = value + ">>" + customizeTopicGroup[1];
                                     }
                                 }

@@ -81,17 +81,6 @@
 
         <dependency>
             <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-common-job</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>curator-framework</artifactId>
-                    <groupId>org.apache.curator</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-utils</artifactId>
             <exclusions>
                 <exclusion>
@@ -264,7 +253,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.curator</groupId>            
+            <groupId>org.apache.curator</groupId>
             <artifactId>curator-framework</artifactId>
         </dependency>
 
@@ -346,16 +335,12 @@
             <scope>provided</scope>
         </dependency>
 
+
+        <!-- xxl-job-core -->
         <dependency>
-            <groupId>com.dangdang</groupId>
-            <artifactId>elastic-job-lite-core</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>curator-framework</artifactId>
-                    <groupId>org.apache.curator</groupId>
-                </exclusion>
-            </exclusions>
+            <groupId>com.xuxueli</groupId>
+            <artifactId>xxl-job-core</artifactId>
+            <version>2.3.1</version>
         </dependency>
 
         <dependency>

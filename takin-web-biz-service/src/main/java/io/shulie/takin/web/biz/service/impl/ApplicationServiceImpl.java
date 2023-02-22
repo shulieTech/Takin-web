@@ -1791,7 +1791,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         this.saveRemoteCallFromImport(application, configMap);
 
         // 清除缓存
-        agentConfigCacheManager.evict(application.getApplicationName());
+        agentConfigCacheManager.evict(application.getApplicationName(), true);
     }
 
     private void saveRemoteCallFromImport(ApplicationDetailResult

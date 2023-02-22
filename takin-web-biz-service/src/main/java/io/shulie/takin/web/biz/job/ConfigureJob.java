@@ -1,14 +1,6 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
@@ -23,15 +15,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author 无涯
  * @date 2021/6/15 6:23 下午
  * todo 不知道做什么用
  */
 @Component
-@ElasticSchedulerJob(jobName = "configureJob", cron = "0/30 * * * * ?", description = "agent接收的关闭信息后不再上报信息")
 @Slf4j
-public class ConfigureJob implements SimpleJob {
+public class ConfigureJob {
     @Autowired
     private ApplicationService applicationService;
 
@@ -42,8 +39,8 @@ public class ConfigureJob implements SimpleJob {
     @Autowired
     private DistributedLock distributedLock;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("configureJobExecute")
+    public void execute() {
 
         if (WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源
@@ -57,7 +54,7 @@ public class ConfigureJob implements SimpleJob {
                 }
                 for (TenantEnv e : ext.getEnvs()) {
                     // 分布式锁
-                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
+                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "configureJobExecute");
                     if (distributedLock.checkLock(lockKey)) {
                         continue;
                     }

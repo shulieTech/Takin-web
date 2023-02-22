@@ -1,25 +1,8 @@
 package io.shulie.takin.web.biz.service.impl;
 
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
-import cn.hutool.core.bean.BeanUtil;
-import com.dangdang.ddframe.job.config.JobCoreConfiguration;
-import com.dangdang.ddframe.job.config.simple.SimpleJobConfiguration;
-import com.dangdang.ddframe.job.lite.api.JobScheduler;
-import com.dangdang.ddframe.job.lite.config.LiteJobConfiguration;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
@@ -30,29 +13,22 @@ import io.shulie.takin.adapter.api.model.common.SlaBean;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
-import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskJobParameter;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskRunAssembleRequest;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskRunWithSaveRequest;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskRunWithoutSaveRequest;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
-import io.shulie.takin.web.biz.pojo.request.leakverify.VerifyTaskConfig;
+import io.shulie.takin.web.biz.pojo.request.leakverify.*;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyDsResultResponse;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
 import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
-import io.shulie.takin.web.biz.service.elasticjoblite.CoordinatorRegistryCenterService;
 import io.shulie.takin.web.biz.service.elasticjoblite.VerifyJob;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.common.util.verify.VerifyTaskUtils;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyDetailDAO;
@@ -69,6 +45,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author fanxx
@@ -94,8 +76,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
     private SceneManageService sceneManageService;
     @Resource
     private TransactionTemplate transactionTemplate;
-    @Resource
-    private CoordinatorRegistryCenterService registryCenterService;
+  
     @Resource
     private RedisClientUtil redisClientUtil;
 
@@ -122,12 +103,10 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
                         SceneActionResp resp = JSONObject.parseObject(JSON.toJSONString(response.getData()),
                             SceneActionResp.class);
                         Long status = resp.getData();
+                        String jobParameter = (String)serviceMap.get(mapKey);
                         //停止状态
                         if (0L == status) {
                             log.info("压测场景已停止，关闭验证任务，场景ID[{}]", sceneId);
-                            String jobParameter = (String)serviceMap.get(mapKey);
-                            JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(), createJobConfiguration(jobParameter));
-                            jobScheduler.getSchedulerFacade().shutdownInstance();
                             serviceMap.remove(mapKey);
                             RedisHelper.hashDelete(jobSchedulerRedisKey, mapKey);
                             //漏数验证兜底检测
@@ -138,7 +117,14 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
                             runRequest.setReportId(resp.getReportId());
                             this.runWithResultSave(runRequest);
                         } else {
-                            log.debug("压测场景仍在运行，无法关闭验证任务，状态:[{}]", status);
+                            LeakVerifyTaskJobParameter jobParameterObject = JSON.parseObject(jobParameter,
+                                    LeakVerifyTaskJobParameter.class);
+                            int interval =jobParameterObject.getTimeInterval() * 60 * 1000 ;
+                            long temp = System.currentTimeMillis() % interval;
+                            // 需要落在0到10秒直接，计算时按毫秒进行计算
+                            if(temp< 10000 && temp >=0){
+                                new VerifyJob().execute(jobParameterObject);
+                            }
                         }
                     } else {
                         log.error("cloud返回的数据为空，无法判断压测场景状态");
@@ -170,27 +156,10 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         }
         jobParameterObject.setVerifyTaskConfigList(verifyTaskConfigList);
         String jobParameter = JSON.toJSONString(jobParameterObject);
-        JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(),this.createJobConfiguration(jobParameter));
-        jobScheduler.init();
         RedisHelper.hashPut(jobSchedulerRedisKey,
             VerifyTaskUtils.getVerifyTaskRedisMapKey(startRequest.getRefType(),startRequest.getRefId()), jobParameter);
     }
-
-    private LiteJobConfiguration createJobConfiguration(String jobParameter) {
-        LeakVerifyTaskJobParameter jobParameterObject = JSON.parseObject(jobParameter,
-            LeakVerifyTaskJobParameter.class);
-        String jobName = "验证任务$" + jobParameterObject.getRefType() + "$" + jobParameterObject.getRefId();
-        int second = Calendar.getInstance().get(Calendar.SECOND);
-        int interval = jobParameterObject.getTimeInterval();
-        String cron = second + " */" + interval + " * * * ?";
-        log.info(jobName + ",cron表达式:[{}]", cron);
-        JobCoreConfiguration simpleCoreConfig = JobCoreConfiguration.newBuilder(jobName, cron, 1).jobParameter(
-            jobParameter).build();
-        SimpleJobConfiguration simpleJobConfig = new SimpleJobConfiguration(simpleCoreConfig,
-            VerifyJob.class.getCanonicalName());
-        return LiteJobConfiguration.newBuilder(simpleJobConfig).overwrite(Boolean.TRUE).build();
-    }
-
+    
     @Override
     public void stop(LeakVerifyTaskStopRequest stopRequest) {
         //关闭验证任务线程池
@@ -199,17 +168,15 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         String mapKey = VerifyTaskUtils.getVerifyTaskRedisMapKey(refType,refId);
         Map<Object, Object> map = RedisHelper.hashGetAll(jobSchedulerRedisKey);
         if (map.containsKey(mapKey)) {
-            String jobParameter = (String)map.get(mapKey);
-            JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(), createJobConfiguration(jobParameter));
             log.info("开始关闭验证任务:[{},{}]",
                 Objects.requireNonNull(VerifyTypeEnum.getTypeByCode(stopRequest.getRefType())).name(),
                 stopRequest.getRefId());
-            jobScheduler.getSchedulerFacade().shutdownInstance();
             RedisHelper.hashDelete(jobSchedulerRedisKey, mapKey);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 log.error("error:", e);
+                Thread.currentThread().interrupt();
             }
             log.info("验证任务已关闭:[{},{}]",
                 Objects.requireNonNull(VerifyTypeEnum.getTypeByCode(stopRequest.getRefType())).name(),

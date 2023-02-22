@@ -7,6 +7,7 @@ import com.pamirs.attach.plugin.dynamic.one.template.RedisTemplate;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
 import io.shulie.takin.common.beans.component.SelectVO;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
 import io.shulie.takin.web.biz.service.BaseConfigService;
@@ -15,6 +16,7 @@ import io.shulie.takin.web.data.model.mysql.ApplicationDsCacheManageEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -67,6 +69,19 @@ public class RedisTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setShadowInfo(convert.getShaDowFileExtedn());
         shadowDetailResponse.setCacheType(convert.getType());
         shadowDetailResponse.setIsManual(convert.getSource());
+        if (StringUtils.isNotBlank(convert.getColony())){
+            Map<String, String> bizCacheMap = JsonHelper.json2Map(convert.getColony(), String.class, String.class);
+            shadowDetailResponse.setCacheDatabase(bizCacheMap.get("database"));
+            shadowDetailResponse.setCacheMaster(bizCacheMap.get("master"));
+            shadowDetailResponse.setCacheNodes(bizCacheMap.get("nodes"));
+        }
+        if (StringUtils.isNotBlank(convert.getShaDowFileExtedn())){
+            Map<String, String> shadowCacheMap = JsonHelper.json2Map(convert.getShaDowFileExtedn(), String.class, String.class);
+            shadowDetailResponse.setCacheShadowDatabase(shadowCacheMap.get("database"));
+            shadowDetailResponse.setCacheShadowMaster(shadowCacheMap.get("master"));
+            shadowDetailResponse.setCacheShadowNodes(shadowCacheMap.get("nodes"));
+            shadowDetailResponse.setCacheShadowPassword(shadowCacheMap.get("password"));
+        }
         return shadowDetailResponse;
     }
 
@@ -79,13 +94,18 @@ public class RedisTemplateParser extends AbstractTemplateParser {
     @Override
     public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum, ShadowTemplateSelect select) {
         List list = Lists.newArrayList();
+        list.add(new InputStyle("cacheNodes", "业务nodes", StyleEnums.TEXT_INPUT.getCode(), true));
+        if ("哨兵模式".equals(cacheType) || "主从模式".equals(cacheType)){
+            list.add(new InputStyle("cacheMaster", "业务master", StyleEnums.TEXT_INPUT.getCode(), true));
+        }
+        list.add(new InputStyle("cacheDatabase", "业务database", StyleEnums.TEXT_INPUT.getCode(), false));
         if (DsTypeEnum.SHADOW_REDIS_CLUSTER.getCode().equals(dsType)) {
-            Map<String, String> tipsMap = this.generateTips();
-            String tips = "";
-            if (tipsMap.containsKey(cacheType)) {
-                tips = tipsMap.get(cacheType);
+            list.add(new InputStyle("cacheShadowNodes", "影子nodes", StyleEnums.TEXT_INPUT.getCode(), true));
+            if ("哨兵模式".equals(cacheType) || "主从模式".equals(cacheType)){
+                list.add(new InputStyle("cacheShadowMaster", "影子master", StyleEnums.TEXT_INPUT.getCode(), true));
             }
-            list.add(new TipsInputStyle(REDIS_SHADOW_CONFIG, REDIS_SHADOW_CONFIG_CONTEXT, StyleEnums.TEXT_INPUT.getCode(), tips));
+            list.add(new InputStyle("cacheShadowPassword", "影子password", StyleEnums.PWD_INPUT.getCode(), true));
+            list.add(new InputStyle("cacheShadowDatabase", "影子database", StyleEnums.TEXT_INPUT.getCode(), false));
         }
         return list;
     }

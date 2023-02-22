@@ -314,15 +314,16 @@ public class SceneServiceImpl implements SceneService {
     public SceneCreateParam saveBusinessFlow(Integer source, String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
                                              List<PluginConfigCreateRequest> pluginList, boolean isPressureResource, Long extId) {
         SceneCreateParam sceneCreateParam = new SceneCreateParam();
-        sceneCreateParam.setSceneName(testName);
         sceneCreateParam.setId(extId);
         sceneCreateParam.setDeptId(WebPluginUtils.traceDeptId());
+        sceneCreateParam.setSceneName(testName);
         if (!isPressureResource) {
             SceneQueryParam sceneQueryParam = new SceneQueryParam();
             sceneQueryParam.setSceneName(testName);
             List<SceneResult> sceneResultList = sceneDao.selectListByName(sceneQueryParam);
             if (CollectionUtils.isNotEmpty(sceneResultList)) {
                 testName = testName + "_" + DateUtil.formatDateTime(new Date());
+                sceneCreateParam.setSceneName(testName);
             }
             sceneCreateParam.setLinkRelateNum(0);
             sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));

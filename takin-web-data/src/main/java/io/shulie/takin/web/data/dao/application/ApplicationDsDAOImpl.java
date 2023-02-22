@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.dao.application;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
@@ -51,6 +52,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
         entity.setTenantId(createParam.getTenantId());
         entity.setUserId(createParam.getUserId());
         entity.setStatus(createParam.getStatus());
+        entity.setConfigType(createParam.getConfigType());
 
         //数据加密处理
         aes(entity);
@@ -145,7 +147,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
         dsResult.setParseConfig(entity.getParseConfig());
         dsResult.setTenantId(entity.getTenantId());
         dsResult.setUserId(entity.getUserId());
-
+        dsResult.setConfigType(entity.getConfigType());
         return dsResult;
     }
 
@@ -200,7 +202,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
         LambdaQueryWrapper<ApplicationDsManageEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ApplicationDsManageEntity::getApplicationId, param.getApplicationId());
         List<ApplicationDsManageEntity> applicationDsManageEntityList = applicationDsManageMapper.selectList(
-            queryWrapper);
+                queryWrapper);
         if (CollectionUtils.isNotEmpty(applicationDsManageEntityList)) {
             for (ApplicationDsManageEntity entity : applicationDsManageEntityList) {
                 entity.setUserId(param.getUserId());
@@ -248,6 +250,20 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
             entity.setIsDeleted(1);
             applicationDsManageMapper.updateById(entity);
         });
+    }
+
+    @Override
+    public void dsDeleteByAppName(String appName) {
+        LambdaQueryWrapper<ApplicationDsManageEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ApplicationDsManageEntity::getApplicationName, appName);
+        queryWrapper.eq(ApplicationDsManageEntity::getStatus, 0);
+        List<ApplicationDsManageEntity> dsManageEntityList = applicationDsManageMapper.selectList(queryWrapper);
+        if (CollectionUtils.isNotEmpty(dsManageEntityList)) {
+            List<Long> ids = dsManageEntityList.stream().map(ApplicationDsManageEntity::getId).collect(Collectors.toList());
+            ApplicationDsDeleteParam applicationDsDeleteParam = new ApplicationDsDeleteParam();
+            applicationDsDeleteParam.setIdList(ids);
+            this.batchDelete(applicationDsDeleteParam);
+        }
     }
 
 }

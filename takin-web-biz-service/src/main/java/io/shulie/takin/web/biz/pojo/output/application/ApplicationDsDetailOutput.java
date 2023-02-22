@@ -73,4 +73,8 @@ public class ApplicationDsDetailOutput {
      */
     private String shadowDbMaxActive;
 
+    /**
+     * 配置方式，0字段方式，1json方式
+     */
+    private Integer configType;
 }

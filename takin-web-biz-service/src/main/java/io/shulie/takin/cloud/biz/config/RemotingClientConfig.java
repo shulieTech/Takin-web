@@ -11,8 +11,6 @@ import com.pamirs.pradar.remoting.netty.NettyClientConfigurator;
 import com.pamirs.pradar.remoting.netty.NettyRemotingClient;
 import com.pamirs.pradar.remoting.protocol.DefaultProtocolFactorySelector;
 import com.pamirs.pradar.remoting.protocol.ProtocolFactorySelector;
-import io.shulie.surge.data.common.zk.ZkClient;
-import io.shulie.surge.data.common.zk.impl.NetflixCuratorZkClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,10 +25,10 @@ public class RemotingClientConfig {
 
     private ProtocolFactorySelector selector;
 
-    private static ZkClient zkClient;
-
-    @Value("${takin.config.zk.addr}")
-    public String zkServers;
+//    private static ZkClient zkClient;
+//
+//    @Value("${takin.config.zk.addr}")
+//    public String zkServers;
 
     @Value("${takin.config.zk.timeOut:15000}")
     public int sessionTimeOut;
@@ -38,10 +36,10 @@ public class RemotingClientConfig {
     @PostConstruct
     public void init() {
         RetryPolicy policy = new ExponentialBackoffRetry(1000, 10);
-        CuratorFramework curator = CuratorFrameworkFactory.builder().
-            connectString(zkServers).sessionTimeoutMs(sessionTimeOut).retryPolicy(policy).build();
-        zkClient = new NetflixCuratorZkClient(curator, zkServers);
-        curator.start();
+//        CuratorFramework curator = CuratorFrameworkFactory.builder().
+//            connectString(zkServers).sessionTimeoutMs(sessionTimeOut).retryPolicy(policy).build();
+//        zkClient = new NetflixCuratorZkClient(curator, zkServers);
+//        curator.start();
         selector = new DefaultProtocolFactorySelector();
     }
 
@@ -53,10 +51,10 @@ public class RemotingClientConfig {
         return remotingClient;
     }
 
-    @Bean
-    public ZkClient getZkClient() {
-        return zkClient;
-    }
+//    @Bean
+//    public ZkClient getZkClient() {
+//        return zkClient;
+//    }
 
     @Bean
     public ProtocolFactorySelector getSelector() {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
 import io.shulie.takin.web.common.util.DataTransformUtil;
@@ -16,6 +17,7 @@ import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentConfigParam;
 import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentConfigParam;
 import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -185,6 +187,22 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
                 .eq(AgentConfigEntity::getEnKey, enKey)
                 .eq(AgentConfigEntity::getProjectName, projectName)
                 .eq(AgentConfigEntity::getType, type)), AgentConfigDetailResult.class);
+    }
+
+    @Override
+    public void deleteByAppName(String appName) {
+        QueryWrapper<AgentConfigEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().select(AgentConfigEntity::getId);
+        queryWrapper.lambda().eq(AgentConfigEntity::getProjectName, appName);
+        queryWrapper.lambda().eq(AgentConfigEntity::getIsDeleted, 0);
+        queryWrapper.lambda().eq(AgentConfigEntity::getEnvCode, WebPluginUtils.traceEnvCode());
+        queryWrapper.lambda().eq(AgentConfigEntity::getTenantId, WebPluginUtils.traceTenantId());
+        List<AgentConfigEntity> agentConfigEntities = agentConfigMapper.selectList(queryWrapper);
+        if (CollectionUtils.isNotEmpty(agentConfigEntities)){
+            agentConfigEntities.forEach(agentConfigEntity -> {
+                this.deleteById(agentConfigEntity.getId());
+            });
+        }
     }
 
 }

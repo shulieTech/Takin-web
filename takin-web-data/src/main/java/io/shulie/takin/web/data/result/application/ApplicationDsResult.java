@@ -77,6 +77,11 @@ public class ApplicationDsResult {
      */
     private Integer isDeleted;
 
+    /**
+     * 配置方式，0字段方式，1代码方式
+     */
+    private Integer configType;
+
     public String getFilterStr() {
         return this.getUrl() + "@@" + "" + "@@" + "";
     }

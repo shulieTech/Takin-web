@@ -59,4 +59,6 @@ public interface ShadowConsumerService {
     void createMqConsumersV2(ShadowConsumerCreateInput request,Boolean manualTag);
 
     PagingList<ShadowConsumerOutput> pageMqConsumersV2(ShadowConsumerQueryInputV2 request);
+
+    void deleteByAppName(String appName);
 }

@@ -350,7 +350,7 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
      * @param applicationName
      */
     private void reseting(String applicationName) {
-        applicationApiManageAmdbCache.evict(applicationName);
+        applicationApiManageAmdbCache.evict(applicationName, true);
     }
 
     private String lockKey(String appName) {

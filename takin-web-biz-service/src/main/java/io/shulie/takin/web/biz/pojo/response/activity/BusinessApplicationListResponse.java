@@ -18,4 +18,5 @@ public class BusinessApplicationListResponse {
     @ApiModelProperty("应用名称")
     private String applicationName;
 
+    private Integer accessStatus;
 }

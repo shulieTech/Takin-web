@@ -19,6 +19,9 @@ public class DsAgentVO {
     @ApiModelProperty(name = "url", value = "数据库url")
     private String url;
 
+    @ApiModelProperty(name = "username", value = "数据库username")
+    private String username;
+
     @ApiModelProperty(name = "status", value = "状态")
     private Byte status;
 

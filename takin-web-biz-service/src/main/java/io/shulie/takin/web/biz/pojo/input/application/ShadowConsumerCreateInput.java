@@ -1,11 +1,10 @@
 package io.shulie.takin.web.biz.pojo.input.application;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 import io.shulie.takin.web.common.annocation.Trimmed;
 import io.shulie.takin.web.common.annocation.Trimmed.TrimmerType;
 import lombok.Data;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author shiyajian
@@ -14,9 +13,22 @@ import lombok.Data;
 @Data
 public class ShadowConsumerCreateInput {
 
-    @NotBlank
     @Trimmed(value = TrimmerType.SIMPLE)
     private String topicGroup;
+
+    @NotNull
+    @Trimmed(value = TrimmerType.SIMPLE)
+    private String topic;
+
+    @NotNull
+    @Trimmed(value = TrimmerType.SIMPLE)
+    private String group;
+
+    @Trimmed(value = TrimmerType.SIMPLE)
+    private String customizeTopic;
+
+    @Trimmed(value = TrimmerType.SIMPLE)
+    private String customizeGroup;
 
     @NotNull
     private String type;
@@ -40,4 +52,8 @@ public class ShadowConsumerCreateInput {
      * 来源标识
      */
     private Integer manualTag;
+
+    public String getTopicGroup() {
+        return topic + "#" + group;
+    }
 }

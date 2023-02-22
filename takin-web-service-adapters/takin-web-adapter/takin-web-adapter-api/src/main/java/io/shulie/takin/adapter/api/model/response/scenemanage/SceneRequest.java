@@ -42,7 +42,6 @@ public class SceneRequest extends ContextExt {
     @NotNull(message = "SLA配置不能为空")
     private List<MonitoringGoal> monitoringGoal;
     @ApiModelProperty(value = "数据验证配置")
-    @NotNull(message = "数据验证配置不能为空")
     private DataValidation dataValidation;
     @ApiModelProperty(value = "压测文件")
     @NotNull(message = "压测文件不能为空")
@@ -148,7 +147,6 @@ public class SceneRequest extends ContextExt {
     @ApiModel(value = "数据验证配置")
     public static class DataValidation {
         @ApiModelProperty(value = "时间间隔")
-        @NotNull(message = "时间间隔不能为空")
         private Integer timeInterval;
         @ApiModelProperty(value = "内容-不明")
         private String content;

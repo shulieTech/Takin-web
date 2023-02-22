@@ -1,11 +1,9 @@
 package io.shulie.takin.web.biz.job;
 
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
-import io.shulie.takin.web.biz.service.pressureresource.common.IsolateTypeEnum;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
@@ -15,7 +13,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -25,12 +22,8 @@ import java.util.stream.Collectors;
  * 压测资源关联应用,数据源,表
  */
 @Component
-@ElasticSchedulerJob(jobName = "pressureResourceRelateJob",
-        isSharding = true,
-        cron = "0 0/1 * * * ? *",
-        description = "压测资源准备-压测资源关联应用,数据源,表")
 @Slf4j
-public class PressureResourceRelateJob implements SimpleJob {
+public class PressureResourceRelateJob {
     @Resource
     private PressureResourceCommonService pressureResourceCommonService;
 
@@ -44,8 +37,8 @@ public class PressureResourceRelateJob implements SimpleJob {
     @Resource
     private DistributedLock distributedLock;
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("pressureResourceRelateJobExecute")
+    public void execute() {
         // 查询所有压测资源准备配置
         List<PressureResourceEntity> resourceList = pressureResourceDAO.getAll();
         if (CollectionUtils.isEmpty(resourceList)) {
@@ -54,7 +47,7 @@ public class PressureResourceRelateJob implements SimpleJob {
         }
         // 按配置Id分片
         List<PressureResourceEntity> filterList = resourceList.stream().filter(resouce ->
-                        resouce.getId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem())
+                        resouce.getId() % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex())
                 .collect(Collectors.toList());
 
         if (CollectionUtils.isEmpty(filterList)) {

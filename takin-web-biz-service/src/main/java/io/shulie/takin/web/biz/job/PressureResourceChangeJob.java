@@ -1,15 +1,12 @@
 package io.shulie.takin.web.biz.job;
 
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommandService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
-import io.shulie.takin.web.biz.service.pressureresource.common.ModuleEnum;
 import io.shulie.takin.web.biz.service.pressureresource.vo.CommandTaskVo;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
@@ -22,22 +19,16 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * 压测资源关联应用
  */
 @Component
-@ElasticSchedulerJob(jobName = "PressureResourceChangeJob",
-        isSharding = false,
-        cron = "0/10 * * * * ? *",
-        description = "配置资源修改立即触发")
 @Slf4j
-public class PressureResourceChangeJob implements SimpleJob {
+public class PressureResourceChangeJob {
 
     @Resource
     private PressureResourceCommonService pressureResourceCommonService;
@@ -60,11 +51,11 @@ public class PressureResourceChangeJob implements SimpleJob {
 
     @PostConstruct
     public void init(){
-        execute(null);
+        execute();
     }
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("pressureResourceChangeJobExecute")
+    public void execute() {
         // 如果压测开关关闭或者静默开关打开，则不发送命令
         if (!shouldSendCommand()) {
             return;

@@ -155,4 +155,7 @@ public class ReportBusinessActivityDetailEntity {
 
     @TableField(value = "gmt_update")
     private Date gmtUpdate;
+    
+    @TableField(value = "report_json")
+    private String reportJson;
 }

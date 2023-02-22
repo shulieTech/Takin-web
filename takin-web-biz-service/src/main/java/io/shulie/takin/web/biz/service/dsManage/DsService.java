@@ -49,6 +49,8 @@ public interface DsService {
 
     Response dsDelete(ApplicationDsDeleteInput dsDeleteRequest);
 
+    void dsDeleteByAppName(String appName);
+
     List<DsAgentVO> getConfigs(String appName);
 
     List<ShadowServerConfigurationOutput> getShadowServerConfigs(String appName);
@@ -75,7 +77,7 @@ public interface DsService {
      */
     List<DsServerVO> getShadowDsServerConfigs(String namespace, DsTypeEnum shadowHbaseServer);
 
-    List<ApplicationDsV2Response> dsQueryV2(Long applicationId);
+    List<ApplicationDsV2Response> dsQueryV2(Long applicationId, boolean isCache);
 
     Response dsQueryDetailV2(Long applicationId, Long id, String middlewareType, Boolean isNewData);
 
@@ -123,4 +125,6 @@ public interface DsService {
     List<SelectVO> queryCacheType();
 
     Response enableConfigV2(Long id, String middlewareType, Boolean isNewData, Long applicationId, Integer status);
+
+    Response dsQueryConfigTemplateByCode(String configTemplateCode);
 }

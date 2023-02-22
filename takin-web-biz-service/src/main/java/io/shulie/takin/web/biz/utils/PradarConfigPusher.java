@@ -10,16 +10,13 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 import io.shulie.takin.web.biz.nacos.NacosConfigManager;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 import org.ehcache.impl.internal.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.Properties;
 
@@ -31,11 +28,11 @@ import java.util.Properties;
 @Service
 public class PradarConfigPusher {
 
-    @Value("${takin.config.zk.addr}")
-    private String zkAddr;
-
-    @Value("${takin.config.zk.timeout: 3000}")
-    private Integer timeout;
+//    @Value("${takin.config.zk.addr}")
+//    private String zkAddr;
+//
+//    @Value("${takin.config.zk.timeout: 3000}")
+//    private Integer timeout;
 
 //    @Value("${takin.config.nacos.enbale: false}")
 //    private String nacosEnbaled;
@@ -43,7 +40,7 @@ public class PradarConfigPusher {
 //    @Value("${takin.config.nacos.addr}")
 //    private String nacosAddr;
 
-    private CuratorFramework client;
+//    private CuratorFramework client;
 
 //    private ConfigService configService;
 
@@ -57,28 +54,30 @@ public class PradarConfigPusher {
 
     @PostConstruct
     public void init() {
-//        if("nacos".equals(nacosEnbaled)){
-//            try {
-//                Properties properties = new Properties();
-//                properties.put(PropertyKeyConst.SERVER_ADDR, nacosAddr);
-//                configService = ConfigFactory.createConfigService(properties);
-//            } catch (Exception e) {
-//                configService = null;
-//                log.info("初始化pradar config的nacos客户端失败, nacos地址:{}, 不实用nacos作为配置中心", nacosAddr, e);
-//            }
+        if("nacos".equals(nacosEnbaled)){
+            try {
+                Properties properties = new Properties();
+                properties.put(PropertyKeyConst.SERVER_ADDR, nacosAddr);
+                configService = ConfigFactory.createConfigService(properties);
+            } catch (Exception e) {
+                configService = null;
+                log.info("初始化pradar config的nacos客户端失败, nacos地址:{}, 不实用nacos作为配置中心", nacosAddr, e);
+            }
+        }
+
+//        try {
+//            client = CuratorFrameworkFactory
+//                    .builder()
+//                    .connectString(zkAddr)
+//                    .sessionTimeoutMs(timeout)
+//                    .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+//                    .build();
+//            client.start();
+//        } catch (Exception e) {
+//            log.error("初始化pradar config的zk客户端失败, zk地址:{},不使用zk作为配置中心", zkAddr, e);
 //        }
 
-        try {
-            client = CuratorFrameworkFactory
-                    .builder()
-                    .connectString(zkAddr)
-                    .sessionTimeoutMs(timeout)
-                    .retryPolicy(new ExponentialBackoffRetry(1000, 3))
-                    .build();
-            client.start();
-        } catch (Exception e) {
-            log.error("初始化pradar config的zk客户端失败, zk地址:{},不使用zk作为配置中心", zkAddr, e);
-        }
+
     }
 
     /**
@@ -102,7 +101,7 @@ public class PradarConfigPusher {
         }
 
         try {
-            return new String(client.getData().storingStatIn(stat).forPath(path));
+//            return new String(client.getData().storingStatIn(stat).forPath(path));
         } catch (Exception e) {
             log.error("读取zk数据节点失败;path={}, 错误信息: {}", path, e.getMessage(), e);
         }
@@ -122,7 +121,7 @@ public class PradarConfigPusher {
         }
 
         try {
-            return new String(client.getData().forPath(path));
+//            return new String(client.getData().forPath(path));
         } catch (Exception e) {
             log.error("读取zk数据节点失败;path={}, 错误信息: {}", path, e.getMessage(), e);
         }
@@ -138,7 +137,7 @@ public class PradarConfigPusher {
      */
     public boolean isNodeExists(String path) {
         try {
-            return client.checkExists().forPath(path) != null;
+//            return client.checkExists().forPath(path) != null;
         } catch (Exception e) {
             log.error("判断数据节点是否存在失败;path={}, 错误信息: {}", path, e.getMessage(), e);
         }
@@ -153,9 +152,9 @@ public class PradarConfigPusher {
      */
     public void addPersistentNode(String path, String value) {
         try {
-            client.create().creatingParentContainersIfNeeded()
-                    .withMode(CreateMode.PERSISTENT)
-                    .forPath(path, value.getBytes());
+//            client.create().creatingParentContainersIfNeeded()
+//                    .withMode(CreateMode.PERSISTENT)
+//                    .forPath(path, value.getBytes());
         } catch (Exception e) {
             log.error("创建zk数据节点失败;path={},data={}", path, value, e);
             throw new RuntimeException(String.format("创建永久节点失败, 错误信息: %s", e.getMessage()));
@@ -170,7 +169,7 @@ public class PradarConfigPusher {
      */
     public void updateNode(String path, String value) {
         try {
-            client.setData().forPath(path, value.getBytes());
+//            client.setData().forPath(path, value.getBytes());
         } catch (Exception e) {
             log.error("更新zk数据节点失败;path={},data={}", path, value, e);
             throw new RuntimeException(String.format("更新节点失败, 错误信息: %s", e.getMessage()));
@@ -184,7 +183,7 @@ public class PradarConfigPusher {
      */
     public void deleteNode(String path) {
         try {
-            client.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
+//            client.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
         } catch (Exception e) {
             log.error("删除zk数据节点失败;path={}", path, e);
             throw new RuntimeException(String.format("删除节点失败, 错误信息: %s", e.getMessage()));

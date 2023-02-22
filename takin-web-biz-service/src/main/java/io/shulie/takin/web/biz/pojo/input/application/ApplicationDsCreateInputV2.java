@@ -106,4 +106,14 @@ public class ApplicationDsCreateInputV2 extends UserCommonExt {
      * 手工还是/自动 来源类型(0-手工,1-自动)
      */
     private Integer type;
+
+    //-------缓存字段拆分------------
+    private String cacheNodes;
+    private String cacheMaster;
+    private String cacheDatabase;
+    private String cacheShadowNodes;
+    private String cacheShadowMaster;
+    private String cacheShadowPassword;
+    private String cacheShadowDatabase;
+    //-------缓存字段拆分------------
 }

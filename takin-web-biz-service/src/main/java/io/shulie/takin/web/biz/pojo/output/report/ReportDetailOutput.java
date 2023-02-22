@@ -10,6 +10,7 @@ import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.SlaBean;
 import io.shulie.takin.adapter.api.model.common.StopReasonBean;
 import io.shulie.takin.adapter.api.model.response.scenemanage.BusinessActivitySummaryBean;
+import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -21,7 +22,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ReportDetailOutput extends UserCommonExt {
+public class ReportDetailOutput extends AuthQueryResponseCommonExt {
 
     @ApiModelProperty(value = "报告状态：0/就绪状态，1/生成中, 2/完成生成")
     private Integer taskStatus;
@@ -129,4 +130,7 @@ public class ReportDetailOutput extends UserCommonExt {
     private Integer calibrationStatus;
     private String calibrationMessage;
     private List<String> ptlPath;
+    
+    @ApiModelProperty("压测报告备注")
+    private String reportRemarks;
 }

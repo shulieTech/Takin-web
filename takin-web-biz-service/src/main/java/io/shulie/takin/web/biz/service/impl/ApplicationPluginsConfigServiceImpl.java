@@ -180,7 +180,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
      * @param namespace
      */
     private void evict(String namespace) {
-        applicationPluginConfigAgentCache.evict(namespace);
+        applicationPluginConfigAgentCache.evict(namespace, true);
     }
 
     @Override

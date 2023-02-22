@@ -107,10 +107,13 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
      * @param namespace
      */
     @Override
-    public void evict(String namespace) {
+    public void evict(String namespace, boolean isPublish) {
         redisTemplate.delete(getCacheKey(namespace));
         // 仅仅对某个应用清空缓存
-        if(namespace != null){
+        if(namespace != null && isPublish){
+            if (namespace.contains(":")){
+                namespace = namespace.substring(0, namespace.lastIndexOf(":"));
+            }
             applicationContext.publishEvent(new ShadowConfigRefreshEvent(namespace));
         }
     }

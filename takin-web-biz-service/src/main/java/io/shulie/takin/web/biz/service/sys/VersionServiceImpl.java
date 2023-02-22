@@ -1,27 +1,6 @@
 package io.shulie.takin.web.biz.service.sys;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-
-import io.shulie.surge.data.common.zk.ZkClient;
-import io.shulie.surge.data.common.zk.ZkClient.CreateMode;
+import cn.hutool.core.collection.CollectionUtil;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.plugin.framework.core.configuration.IConfiguration;
 import io.shulie.takin.utils.json.JsonHelper;
@@ -35,12 +14,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.pf4j.RuntimeMode;
 import org.pf4j.util.FileUtils;
 import org.pf4j.util.JarFileFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -61,8 +50,8 @@ public class VersionServiceImpl implements VersionService {
     @Resource
     private PluginManager pluginManager;
 
-    @Autowired
-    private ZkClient zkClient;
+//    @Autowired
+//    private ZkClient zkClient;
 
     /**
      * 发布新版本，先更新一下旧版本信息
@@ -124,25 +113,25 @@ public class VersionServiceImpl implements VersionService {
 
     @Override
     public void initGitVersion() {
-        zkClient.deleteQuietly(WEB_REGISTER_PATH);
-        zkClient.deleteQuietly(WEB_EE_REGISTER_PATH);
-        zkClient.deleteQuietly(WEB_E2E_REGISTER_PATH);
+//        zkClient.deleteQuietly(WEB_REGISTER_PATH);
+//        zkClient.deleteQuietly(WEB_EE_REGISTER_PATH);
+//        zkClient.deleteQuietly(WEB_E2E_REGISTER_PATH);
         try {
             Map<String, Properties> versions = gitVersions();
             Properties web = versions.get(WEB);
             if (Objects.nonNull(web)) {
-                zkClient.ensureParentExists(WEB_REGISTER_PATH);
-                zkClient.createNode(WEB_REGISTER_PATH, JSON.toJSONBytes(web), CreateMode.PERSISTENT);
+//                zkClient.ensureParentExists(WEB_REGISTER_PATH);
+//                zkClient.createNode(WEB_REGISTER_PATH, JSON.toJSONBytes(web), CreateMode.PERSISTENT);
             }
             Properties ee = versions.get(EE);
             if (Objects.nonNull(ee)) {
-                zkClient.ensureParentExists(WEB_EE_REGISTER_PATH);
-                zkClient.createNode(WEB_EE_REGISTER_PATH, JSON.toJSONBytes(ee), CreateMode.PERSISTENT);
+//                zkClient.ensureParentExists(WEB_EE_REGISTER_PATH);
+//                zkClient.createNode(WEB_EE_REGISTER_PATH, JSON.toJSONBytes(ee), CreateMode.PERSISTENT);
             }
             Properties e2e = versions.get(E2E);
             if (Objects.nonNull(e2e)) {
-                zkClient.ensureParentExists(WEB_E2E_REGISTER_PATH);
-                zkClient.createNode(WEB_E2E_REGISTER_PATH, JSON.toJSONBytes(e2e), CreateMode.PERSISTENT);
+//                zkClient.ensureParentExists(WEB_E2E_REGISTER_PATH);
+//                zkClient.createNode(WEB_E2E_REGISTER_PATH, JSON.toJSONBytes(e2e), CreateMode.PERSISTENT);
             }
         } catch (Exception e) {
             log.error("注册版本信息异常", e);
@@ -152,23 +141,23 @@ public class VersionServiceImpl implements VersionService {
     @Override
     public Map<String, String> queryZkVersionData() {
         Map<String, String> versions = new HashMap<>(16);
-        String webVersion = buildVersionStr(WEB_REGISTER_PATH);
+        String webVersion = buildVersionStr(WEB);
         if (StringUtils.isNotBlank(webVersion)) {
             versions.put(WEB, webVersion);
         }
-        String eeVersion = buildVersionStr(WEB_EE_REGISTER_PATH);
+        String eeVersion = buildVersionStr(EE);
         if (StringUtils.isNotBlank(eeVersion)) {
             versions.put(EE, eeVersion);
         }
-        String e2eVersion = buildVersionStr(WEB_E2E_REGISTER_PATH);
+        String e2eVersion = buildVersionStr(E2E);
         if (StringUtils.isNotBlank(e2eVersion)) {
             versions.put(E2E, e2eVersion);
         }
-        String amdbVersion = buildVersionStr(AMDB_REGISTER_PATH);
+        String amdbVersion = buildVersionStr(AMDB);
         if (StringUtils.isNotBlank(amdbVersion)) {
             versions.put(AMDB, amdbVersion);
         }
-        String surgeVersion = buildVersionStr(SURGEREGISTER_PATH);
+        String surgeVersion = buildVersionStr(SURGE);
         if (StringUtils.isNotBlank(surgeVersion)) {
             versions.put(SURGE, surgeVersion);
         }
@@ -176,11 +165,14 @@ public class VersionServiceImpl implements VersionService {
     }
 
     private String buildVersionStr(String path) {
-        byte[] data = zkClient.getDataQuietly(path);
-        if (data == null || data.length <= 0) {
+        Map<String, Properties> versions = gitVersions();
+        if (CollectionUtil.isEmpty(versions)){
             return null;
         }
-        Properties properties = JSONObject.parseObject(data, Properties.class);
+        Properties properties = versions.get(path);
+        if (properties == null){
+            return null;
+        }
         return "branch：" + properties.getProperty(BRANCH) + " ( commit_id：" + properties.getProperty(COMMIT_ID) + " )";
     }
 

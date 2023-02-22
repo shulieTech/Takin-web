@@ -2,20 +2,26 @@ package io.shulie.takin.web.data.dao.application.impl;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationDsDbManageMapper;
+import io.shulie.takin.web.data.mapper.mysql.ApplicationDsWarnMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsCacheManageEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsDbManageEntity;
+import io.shulie.takin.web.data.model.mysql.ApplicationDsWarnEntity;
 import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
 import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationDsWarnResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -28,6 +34,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ApplicationDsDbManageDAOImpl extends ServiceImpl<ApplicationDsDbManageMapper, ApplicationDsDbManageEntity> implements ApplicationDsDbManageDAO, MPUtil<ApplicationDsDbManageEntity> {
+
+    @Resource
+    private ApplicationDsWarnMapper applicationDsWarnMapper;
 
     @Override
     public List<ApplicationDsDbManageDetailResult> selectList(ApplicationDsQueryParam param) {
@@ -125,6 +134,29 @@ public class ApplicationDsDbManageDAOImpl extends ServiceImpl<ApplicationDsDbMan
                 .eq(ApplicationDsDbManageEntity::getIsDeleted, 0);
         lambdaQueryWrapper.last(" limit 1");
         return getApplicationDsDbManageDetailResult(this.getOne(lambdaQueryWrapper));
+    }
+
+    @Override
+    public List<ApplicationDsWarnResult> selectListDsWarn(String appName, String url, String userName) {
+        QueryWrapper<ApplicationDsWarnEntity> queryWrapper = new QueryWrapper<>();
+        if (appName != null) {
+            queryWrapper.lambda().eq(ApplicationDsWarnEntity::getAppName, appName);
+        }
+        if (url != null) {
+            queryWrapper.lambda().eq(ApplicationDsWarnEntity::getCheckUrl, url);
+        }
+        if (userName != null) {
+            queryWrapper.lambda().eq(ApplicationDsWarnEntity::getCheckUser, userName);
+        }
+        List<ApplicationDsWarnEntity> applicationDsWarnEntities = applicationDsWarnMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(applicationDsWarnEntities)) {
+            return new ArrayList<>();
+        }
+        return applicationDsWarnEntities.stream().map(o -> {
+            ApplicationDsWarnResult applicationDsWarnResult = new ApplicationDsWarnResult();
+            BeanUtils.copyProperties(o, applicationDsWarnResult);
+            return applicationDsWarnResult;
+        }).collect(Collectors.toList());
     }
 }
 

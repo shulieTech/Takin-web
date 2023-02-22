@@ -86,21 +86,19 @@ public class AgentConfigCacheManager {
     /**
      * 清除所有缓存
      */
-    public void evict(String appName) {
-
-        allowListSwitchConfigCache.evict(appName);
-        shadowServerConfigCache.evict(appName);
-        shadowDbConfigCache.evict(appName);
-        shadowJobConfigCache.evict(appName);
-        guardConfigCache.evict(appName);
-        remoteCallConfigAgentCache.evict(appName);
-        pressureSwitchConfigCache.evict(appName);
-        shadowConsumerConfigAgentCache.evict(appName);
-        shadowEsServerConfigAgentCache.evict(appName);
-        shadowKafkaClusterConfigAgentCache.evict(appName);
-        shadowHbaseConfigAgentCache.evict(appName);
-        shadowHbaseConfigAgentCache.evict(appName);
-        applicationPluginConfigAgentCache.evict(appName);
+    public void evict(String appName, boolean isPublish) {
+        allowListSwitchConfigCache.evict(appName, isPublish);
+        shadowServerConfigCache.evict(appName, isPublish);
+        shadowDbConfigCache.evict(appName, isPublish);
+        shadowJobConfigCache.evict(appName, isPublish);
+        guardConfigCache.evict(appName, isPublish);
+        remoteCallConfigAgentCache.evict(appName, isPublish);
+        pressureSwitchConfigCache.evict(appName, isPublish);
+        shadowConsumerConfigAgentCache.evict(appName, isPublish);
+        shadowEsServerConfigAgentCache.evict(appName, isPublish);
+        shadowKafkaClusterConfigAgentCache.evict(appName, isPublish);
+        shadowHbaseConfigAgentCache.evict(appName, isPublish);
+        applicationPluginConfigAgentCache.evict(appName, isPublish);
     }
     /**
      * 获得白名单开关的缓存结果
@@ -113,7 +111,7 @@ public class AgentConfigCacheManager {
      * 开关缓存清空，下次查询时候重新加载
      */
     public void evictAllowListSwitch() {
-        allowListSwitchConfigCache.evict(null);
+        allowListSwitchConfigCache.evict(null, true);
         applicationContext.publishEvent(new SwitchConfigRefreshEvent());
     }
 
@@ -122,7 +120,7 @@ public class AgentConfigCacheManager {
     }
 
     public void evictShadowJobs(String appName) {
-        shadowJobConfigCache.evict(appName);
+        shadowJobConfigCache.evict(appName, true);
     }
 
     public List<ShadowServerConfigurationOutput> getShadowServer(String appName) {
@@ -130,7 +128,7 @@ public class AgentConfigCacheManager {
     }
 
     public void evictShadowServer(String appName) {
-        shadowServerConfigCache.evict(appName);
+        shadowServerConfigCache.evict(appName, true);
     }
 
     public List<DsAgentVO> getShadowDb(String appName) {
@@ -138,7 +136,7 @@ public class AgentConfigCacheManager {
     }
 
     public void evictShadowDb(String appName) {
-        shadowDbConfigCache.evict(appName);
+        shadowDbConfigCache.evict(appName, true);
     }
 
     public List<LinkGuardVo> getGuards(String appName) {
@@ -146,14 +144,14 @@ public class AgentConfigCacheManager {
     }
 
     public void evictGuards(String appName) {
-        guardConfigCache.evict(appName);
+        guardConfigCache.evict(appName, true);
     }
 
     /**
      * 远程调用
      */
     public void evictRecallCalls(String appName) {
-        remoteCallConfigAgentCache.evict(appName);
+        remoteCallConfigAgentCache.evict(appName, true);
     }
 
     /**
@@ -172,7 +170,7 @@ public class AgentConfigCacheManager {
     }
 
     public void evictPressureSwitch() {
-        pressureSwitchConfigCache.evict(null);
+        pressureSwitchConfigCache.evict(null, true);
         applicationContext.publishEvent(new SwitchConfigRefreshEvent());
     }
 
@@ -181,7 +179,7 @@ public class AgentConfigCacheManager {
     }
 
     public void evictShadowConsumer(String appName) {
-        shadowConsumerConfigAgentCache.evict(appName);
+        shadowConsumerConfigAgentCache.evict(appName, true);
     }
 
     /**
@@ -200,7 +198,7 @@ public class AgentConfigCacheManager {
      * @param appName 应用名称
      */
     public void evictShadowEsServers(String appName) {
-        shadowEsServerConfigAgentCache.evict(appName);
+        shadowEsServerConfigAgentCache.evict(appName, true);
     }
 
     /**
@@ -209,7 +207,7 @@ public class AgentConfigCacheManager {
      * @param appName 应用名称
      */
     public void evictShadowKafkaCluster(String appName) {
-        shadowKafkaClusterConfigAgentCache.evict(appName);
+        shadowKafkaClusterConfigAgentCache.evict(appName, true);
     }
 
     /**
@@ -228,7 +226,7 @@ public class AgentConfigCacheManager {
      * @return
      */
     public void evictShadowHbase(String applicationName) {
-        shadowHbaseConfigAgentCache.evict(applicationName);
+        shadowHbaseConfigAgentCache.evict(applicationName, true);
     }
 
     /**

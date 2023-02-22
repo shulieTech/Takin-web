@@ -75,4 +75,10 @@ public class ApplicationDsV2Response extends AuthQueryResponseCommonExt {
 
     @ApiModelProperty("禁用标识 0=启用/1=禁用")
     private Integer status;
+
+    @ApiModelProperty("影子链接状态 0=正常/1=警告")
+    private Integer shadowStatus;
+
+    @ApiModelProperty("影子链接状态告警信息")
+    private String shadowWarnMessage;
 }

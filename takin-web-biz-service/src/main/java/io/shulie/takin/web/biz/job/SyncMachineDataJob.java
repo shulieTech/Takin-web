@@ -1,8 +1,7 @@
 package io.shulie.takin.web.biz.job;
 
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
@@ -24,14 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2021/7/13 23:10
  */
 @Component
-@ElasticSchedulerJob(jobName = "syncMachineDataJob",
-        // 分片序列号和参数用等号分隔 不需要参数可以不加
-        isSharding = true,
-        //shardingItemParameters = "0=0,1=1,2=2",
-        cron = "*/10 * * * * ?",
-        description = "同步应用基础信息")
 @Slf4j
-public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
+public class SyncMachineDataJob extends AbstractSceneTask {
 
     @Autowired
     private ReportTaskService reportTaskService;
@@ -39,17 +32,18 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
     private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
     private static AtomicInteger EMPTY = new AtomicInteger();
 
-    @Override
-    public void execute(ShardingContext shardingContext) {
+    @XxlJob("syncMachineDataJobExecute")
+//    @Override
+    public void execute() {
         try {
-            this.execute_ext(shardingContext);
+            this.execute_ext();
         } catch (Throwable e) {
             // 捕捉全部异常,防止任务异常，导致esjob有问题
             log.error("io.shulie.takin.web.biz.job.SyncMachineDataJob#execute error" + ExceptionUtils.getStackTrace(e));
         }
     }
 
-    public void execute_ext(ShardingContext shardingContext) {
+    public void execute_ext() {
         long start = System.currentTimeMillis();
         final Boolean openVersion = WebPluginUtils.isOpenVersion();
         List<SceneTaskDto> taskDtoList = getTaskFromRedis();
@@ -61,7 +55,7 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
         if (openVersion) {
             for (SceneTaskDto taskDto : taskDtoList) {
                 Long reportId = taskDto.getReportId();
-                if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                if (reportId % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
                     Object task = runningTasks.putIfAbsent(reportId, EMPTY);
                     if (task == null) {
                         ThreadPoolUtil.getSyncMachinePool().execute(() -> {
@@ -77,7 +71,7 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
                 }
             }
         } else {
-            this.runTask_ext(taskDtoList, shardingContext);
+            this.runTask_ext(taskDtoList);
         }
         log.debug("syncMachineData 执行时间:{}", System.currentTimeMillis() - start);
     }

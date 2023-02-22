@@ -1,7 +1,6 @@
 package io.shulie.takin.web.biz.nacos;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.util.TypeUtils;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
@@ -15,13 +14,14 @@ import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.cache.agentimpl.ApplicationApiManageAmdbCache;
 import io.shulie.takin.web.biz.nacos.event.DynamicConfigRefreshEvent;
 import io.shulie.takin.web.biz.nacos.event.ShadowConfigRefreshEvent;
+import io.shulie.takin.web.biz.nacos.event.ShadowConfigRemoveEvent;
 import io.shulie.takin.web.biz.nacos.event.SwitchConfigRefreshEvent;
-import io.shulie.takin.web.biz.pojo.bo.ConfigListQueryBO;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigListResponse;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.fastagentaccess.impl.AgentConfigDAOImpl;
 import io.shulie.takin.web.data.mapper.mysql.ClusterNacosConfigurationMapper;
@@ -130,12 +130,55 @@ public class NacosConfigManager {
         TenantCommonExt commonExt = event.getCommonExt();
         String clusterName = queryClusterName(appName, commonExt.getEnvCode(), commonExt.getTenantId());
         if (clusterName == null) {
+            log.warn("当前应用:{}没有对应的clusterName，没有进行nacos同步", appName);
             return;
         }
         if (!configServices.containsKey(clusterName)) {
             log.warn("不存在应用指定的集群中心nacos配置，应用名称:{}, 集群名称:{}", appName, clusterName);
         }
         threadPool.submit(new ShadowConfigsRefreshTask(appName, commonExt, configServices.get(clusterName)));
+    }
+
+    /**
+     * 删除应用nacos配置
+     *
+     * @param event
+     */
+    @EventListener
+    public void deleteShadowConfigs(ShadowConfigRemoveEvent event) {
+        if (configServices.isEmpty()) {
+            return;
+        }
+        String appName = event.getAppName();
+        String clusterName = event.getClusterName();
+
+        if (clusterName == null) {
+            log.warn("当前应用:{}没有对应的clusterName，没有进行nacos删除", appName);
+            return;
+        }
+        if (!configServices.containsKey(clusterName)) {
+            log.warn("不存在应用指定的集群中心nacos配置，应用名称:{}, 集群名称:{}", appName, clusterName);
+        }
+        ConfigService configService = configServices.get(clusterName);
+        this.removeConfig(configService, appName);
+    }
+
+    private void removeConfig(ConfigService configService, String appName){
+        if (configService != null){
+            try {
+                int count = 0;
+                while (!configService.removeConfig(appName, "APP")){
+                    count ++;
+                    log.warn("应用{}删除nacos配置失败,当前为第{}次删除", appName, count);
+                    if (count > 3){
+                        log.error("应用{}删除nacos配置3次之后失败，放弃删除",appName);
+                        break;
+                    }
+                }
+            } catch (NacosException e) {
+                log.error("删除nacos配置出现异常", e);
+            }
+        }
     }
 
     /**
@@ -243,7 +286,7 @@ public class NacosConfigManager {
         // 应用配置
         queryParam.setUserAppKey(userAppKey);
         queryParam.setProjectName(appName);
-        Map<String,String> appMap = new HashMap<>();
+        Map<String, String> appMap = new HashMap<>();
         List<AgentConfigDetailResult> projectConfigList = agentConfigDAO.findProjectList(queryParam);
         // 3、将应用配置替换掉全局配置
         for (AgentConfigDetailResult detailResult : projectConfigList) {
@@ -251,7 +294,7 @@ public class NacosConfigManager {
             if (!configMap.containsKey(detailResult.getEnKey())) {
                 continue;
             }
-            appMap.put(detailResult.getEnKey(),detailResult.getDefaultValue());
+            appMap.put(detailResult.getEnKey(), detailResult.getDefaultValue());
         }
         return appMap;
     }
@@ -297,7 +340,7 @@ public class NacosConfigManager {
             Map<String, List<String>> values = applicationApiManageAmdbCache.get(appName);
             configs.put("trace_rule", values == null ? new HashMap<>() : values);
             configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
-            configs.put("redis-expire", agentConfigCacheManager.getAppPluginConfig(appName));
+            configs.put("redis-expire", agentConfigCacheManager.getAppPluginConfig(CommonUtil.generateRedisKey(appName, "redis_expire")));
             pushNacosConfigs(appName, "APP", configService, new Gson().toJson(configs));
         }
     }

@@ -125,4 +125,6 @@ public class ReportDetailOutput extends ContextExt {
    
     @ApiModelProperty("压测报告备注")
     private String reportRemarks;
+
+    private Long deptId;
 }

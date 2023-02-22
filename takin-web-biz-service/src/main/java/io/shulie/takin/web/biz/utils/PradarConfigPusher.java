@@ -1,24 +1,15 @@
 package io.shulie.takin.web.biz.utils;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
 import com.alibaba.fastjson.JSON;
-import com.alibaba.nacos.api.PropertyKeyConst;
-import com.alibaba.nacos.api.config.ConfigFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.exception.NacosException;
 import io.shulie.takin.web.biz.nacos.NacosConfigManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.data.Stat;
 import org.ehcache.impl.internal.concurrent.ConcurrentHashMap;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * @author liuchuan
@@ -28,21 +19,6 @@ import java.util.Properties;
 @Service
 public class PradarConfigPusher {
 
-//    @Value("${takin.config.zk.addr}")
-//    private String zkAddr;
-//
-//    @Value("${takin.config.zk.timeout: 3000}")
-//    private Integer timeout;
-
-//    @Value("${takin.config.nacos.enbale: false}")
-//    private String nacosEnbaled;
-//
-//    @Value("${takin.config.nacos.addr}")
-//    private String nacosAddr;
-
-//    private CuratorFramework client;
-
-//    private ConfigService configService;
 
     @Resource
     private NacosConfigManager nacosConfigManager;
@@ -51,34 +27,6 @@ public class PradarConfigPusher {
 
     private static final String DATA_ID = "pradarConfig";
     private static final String GROUP = "PRADAR_CONFIG";
-
-    @PostConstruct
-    public void init() {
-        if("nacos".equals(nacosEnbaled)){
-            try {
-                Properties properties = new Properties();
-                properties.put(PropertyKeyConst.SERVER_ADDR, nacosAddr);
-                configService = ConfigFactory.createConfigService(properties);
-            } catch (Exception e) {
-                configService = null;
-                log.info("初始化pradar config的nacos客户端失败, nacos地址:{}, 不实用nacos作为配置中心", nacosAddr, e);
-            }
-        }
-
-//        try {
-//            client = CuratorFrameworkFactory
-//                    .builder()
-//                    .connectString(zkAddr)
-//                    .sessionTimeoutMs(timeout)
-//                    .retryPolicy(new ExponentialBackoffRetry(1000, 3))
-//                    .build();
-//            client.start();
-//        } catch (Exception e) {
-//            log.error("初始化pradar config的zk客户端失败, zk地址:{},不使用zk作为配置中心", zkAddr, e);
-//        }
-
-
-    }
 
     /**
      * 是否使用nacos做配置中心

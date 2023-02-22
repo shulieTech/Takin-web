@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.job;
 
-import com.alibaba.excel.util.CollectionUtils;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.service.DistributedLock;

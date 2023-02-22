@@ -1,115 +1,115 @@
-resource:
-  mysql:
-    host: 192.168.1.129
-    port: 3306
-  redis:
-    host: 192.168.1.129
-    port: 6379
-  influxdb:
-    host: 192.168.1.129
-    port: 8086
-
-amdb:
-  out:
-    url: 192.168.1.129:10032
-
-data.path: /data/share 
-
-file.upload.script.path: ${data.path}
-file.upload.tmp.path: ${data.path}/scriptfile/temp
-takin.config.zk.addr: 192.168.1.154:2181,192.168.1.154:2181,192.168.1.154:2181
-#takin.config.zk.addr: 192.168.1.185:2181
-spring:
-  redis:
-    host: ${resource.redis.host}
-    port: 6379
-    password: pamirs@2020
-    timeout: 10000
-    jedis.pool.max-idle: 8
-    jedis.pool.min-idle: 10
-    jedis.pool.max-active: 100
-    jedis.pool.max-wait: -1
-  influxdb:
-    database: base
-    password: pradar
-    url: http://192.168.1.129:8086
-    user: pradar
-  performance:
-    influxdb:
-      database: performance
-  config:
-    whiteListPath: /data/nfs_dir/opt/tro/conf/tro-web/api/confcenter/wbmnt/query/
-  flyway:
-    enabled: true
-    clean-on-validation-error: false
-    clean-disabled: true
-    url: ${spring.datasource.url}
-    user: ${spring.datasource.username}
-    password: ${spring.datasource.password}
-    table: t_migration_history
-    baseline-on-migrate: true
-    baseline-version: 1
-    validate-on-migrate: false
-
-env: dev-225
-
-# dev-22
-takin-cloud:
-  out:
-    url: http://192.168.1.225:10010
-
-takin.cloud.url: http://127.0.0.1:10010
-
-login:
-  dingding:
-    push:
-      enable: false
-      url: https://oapi.dingtalk.com/robot/send?access_token=7ff71ca59b08340b5b07a146b053527eebb4f834856380d2c33f5a1d6fcd3bb8
-
-agent.interactive.takin.web.url: http://192.168.1.225/takin-web
-takin.web.url: ${agent.interactive.takin.web.url}
-
-spring.datasource.url: jdbc:mysql://${resource.mysql.host:127.0.0.1}:${resource.mysql.port:3306}/trodb_combine_225?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowMultiQueries=true
-
-takin.license: 5b06060a-17cb-4588-bb71-edd7f65035a
-
-# mybatis-plus.configuration.log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
-login.expire.time: 3600
-ds.database.url: jdbc:oracle:thin
-agent.ds.compareVersion: 5.3.1.0
-agent.ds.newVersion: false
-
-
-# cloud添加后增加的配置
-takin.config.zk.timeOut: 15000
-report.aggregation.interval: 5s # 脚本文件配置
-script.temp.path: ${script.path}/temp
-script.path: ${data.path:/data/nfs_dir}/scriptfile
-#nfs检测
-nfs.warning.percent: 45
-pradar.upload.client.dir: 
-
-
-#cloud influxdb
-cloud.influxdb.url: http://192.168.1.129:8086
-cloud.influxdb.user: pradar
-cloud.influxdb.password: pradar
-cloud.influxdb.database: crank
-
-
-# 正式可以不需要
-pressure.pod.start.expireTime: 30
-pressure.node.start.expireTime: 30
-pressure.node.heartbeat.expireTime: 60
-
-pressure.callback.ignore.type: 303
-
-#pressure.image.name: 192.168.1.89/library/pressure-engine:5.3.0-x57
-
-# e2e配置 
-start.task.check.topology: true
-e2e.topology.max.size: 3145728
-takin.listener.jobtask:
-
-#liantong.menu: true
+#resource:
+#  mysql:
+#    host: 192.168.1.129
+#    port: 3306
+#  redis:
+#    host: 192.168.1.129
+#    port: 6379
+#  influxdb:
+#    host: 192.168.1.129
+#    port: 8086
+#
+#amdb:
+#  out:
+#    url: 192.168.1.129:10032
+#
+#data.path: /data/share
+#
+#file.upload.script.path: ${data.path}
+#file.upload.tmp.path: ${data.path}/scriptfile/temp
+#takin.config.zk.addr: 192.168.1.154:2181,192.168.1.154:2181,192.168.1.154:2181
+##takin.config.zk.addr: 192.168.1.185:2181
+#spring:
+#  redis:
+#    host: ${resource.redis.host}
+#    port: 6379
+#    password: pamirs@2020
+#    timeout: 10000
+#    jedis.pool.max-idle: 8
+#    jedis.pool.min-idle: 10
+#    jedis.pool.max-active: 100
+#    jedis.pool.max-wait: -1
+#  influxdb:
+#    database: base
+#    password: pradar
+#    url: http://192.168.1.129:8086
+#    user: pradar
+#  performance:
+#    influxdb:
+#      database: performance
+#  config:
+#    whiteListPath: /data/nfs_dir/opt/tro/conf/tro-web/api/confcenter/wbmnt/query/
+#  flyway:
+#    enabled: true
+#    clean-on-validation-error: false
+#    clean-disabled: true
+#    url: ${spring.datasource.url}
+#    user: ${spring.datasource.username}
+#    password: ${spring.datasource.password}
+#    table: t_migration_history
+#    baseline-on-migrate: true
+#    baseline-version: 1
+#    validate-on-migrate: false
+#
+#env: dev-225
+#
+## dev-22
+#takin-cloud:
+#  out:
+#    url: http://192.168.1.225:10010
+#
+#takin.cloud.url: http://127.0.0.1:10010
+#
+#login:
+#  dingding:
+#    push:
+#      enable: false
+#      url: https://oapi.dingtalk.com/robot/send?access_token=7ff71ca59b08340b5b07a146b053527eebb4f834856380d2c33f5a1d6fcd3bb8
+#
+#agent.interactive.takin.web.url: http://192.168.1.225/takin-web
+#takin.web.url: ${agent.interactive.takin.web.url}
+#
+#spring.datasource.url: jdbc:mysql://${resource.mysql.host:127.0.0.1}:${resource.mysql.port:3306}/trodb_combine_225?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowMultiQueries=true
+#
+#takin.license: 5b06060a-17cb-4588-bb71-edd7f65035a
+#
+## mybatis-plus.configuration.log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#
+#login.expire.time: 3600
+#ds.database.url: jdbc:oracle:thin
+#agent.ds.compareVersion: 5.3.1.0
+#agent.ds.newVersion: false
+#
+#
+## cloud添加后增加的配置
+#takin.config.zk.timeOut: 15000
+#report.aggregation.interval: 5s # 脚本文件配置
+#script.temp.path: ${script.path}/temp
+#script.path: ${data.path:/data/nfs_dir}/scriptfile
+##nfs检测
+#nfs.warning.percent: 45
+#pradar.upload.client.dir:
+#
+#
+##cloud influxdb
+#cloud.influxdb.url: http://192.168.1.129:8086
+#cloud.influxdb.user: pradar
+#cloud.influxdb.password: pradar
+#cloud.influxdb.database: crank
+#
+#
+## 正式可以不需要
+#pressure.pod.start.expireTime: 30
+#pressure.node.start.expireTime: 30
+#pressure.node.heartbeat.expireTime: 60
+#
+#pressure.callback.ignore.type: 303
+#
+##pressure.image.name: 192.168.1.89/library/pressure-engine:5.3.0-x57
+#
+## e2e配置
+#start.task.check.topology: true
+#e2e.topology.max.size: 3145728
+#takin.listener.jobtask:
+#
+##liantong.menu: true

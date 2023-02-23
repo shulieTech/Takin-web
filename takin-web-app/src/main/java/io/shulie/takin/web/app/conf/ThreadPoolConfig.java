@@ -260,6 +260,13 @@ public class ThreadPoolConfig {
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
+
+    @Bean(name = "foreachQueryThreadPool")
+    public ThreadPoolExecutor foreachQueryThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("foreach-query-%d").build();
+        return new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
 	
     /**
      * 仅链路调试用的job

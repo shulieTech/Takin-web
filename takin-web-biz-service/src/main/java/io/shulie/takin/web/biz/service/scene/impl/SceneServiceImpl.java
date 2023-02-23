@@ -277,6 +277,12 @@ public class SceneServiceImpl implements SceneService {
             if (CollectionUtils.isEmpty(testPlan)) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
             }
+            /**
+             * 处理ScriptNode，如果name=JavaSampler,md5和xpathMd5 同testName
+             * fix bug hz-bank 实况没数据
+             * influx里metrics和pressure的transtions存的明文
+             */
+            dealScriptNodeMd5(testPlan);
             testPlanName = testPlan.get(0).getTestName();
         }
         String businessFlowName = null;
@@ -466,7 +472,7 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Override
-    public BusinessFlowMatchResponse autoMatchActivity(Long id) {
+    public BusinessFlowMatchResponse autoMatchActivity(Long id, boolean isUpdate) {
 
         BusinessFlowMatchResponse result = new BusinessFlowMatchResponse();
         SceneResult sceneResult = sceneDao.getSceneDetail(id);
@@ -476,6 +482,16 @@ public class SceneServiceImpl implements SceneService {
         result.setFinishDate(new Date());
         result.setId(id);
         result.setBusinessProcessName(sceneResult.getSceneName());
+        /**
+         * 如果全部匹配成功的，就不在自动匹配
+         * 修复bug-手工匹配之后，又发起了自动关联，结果看到的数据还是未匹配
+         * 当然，如果脚本发生了变更，上面的逻辑不再生效；
+         */
+        if(!isUpdate && sceneResult.getLinkRelateNum() == sceneResult.getTotalNodeNum()) {
+            result.setMatchNum(sceneResult.getLinkRelateNum());
+            result.setUnMatchNum(sceneResult.getTotalNodeNum() - sceneResult.getLinkRelateNum());
+            return result;
+        }
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
         int nodeNumByType = JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, scriptNodes);
         List<SceneLinkRelateResult> sceneLinkRelateResults = sceneService.nodeLinkToBusinessActivity(scriptNodes, id);
@@ -806,7 +822,7 @@ public class SceneServiceImpl implements SceneService {
         //脚本节点有改动，重新自动匹配
         if (CollectionUtils.isNotEmpty(data)) {
             //自动匹配
-            autoMatchActivity(businessFlowId);
+            autoMatchActivity(businessFlowId, true);
         }
         return sceneResult;
     }
@@ -896,6 +912,19 @@ public class SceneServiceImpl implements SceneService {
                 if (CollectionUtils.isNotEmpty(scriptJmxNode.getChildren())) {
                     dealScriptJmxNodes(scriptJmxNode.getChildren(), xpathMd5Map, activityMap);
                 }
+            }
+        }
+    }
+
+    private void dealScriptNodeMd5(List<ScriptNode> testPlan) {
+        for(ScriptNode node : testPlan) {
+            if("JavaSampler".equals(node.getName())) {
+                node.setMd5(node.getTestName());
+                node.setXpathMd5(node.getTestName());
+            }
+            List<ScriptNode> children = node.getChildren();
+            if(CollectionUtil.isNotEmpty(children)) {
+                dealScriptNodeMd5(children);
             }
         }
     }

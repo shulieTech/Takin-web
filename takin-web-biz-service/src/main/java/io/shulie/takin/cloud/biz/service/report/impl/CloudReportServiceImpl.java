@@ -1316,19 +1316,40 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private boolean isPass(ReportBusinessActivityDetail detail) {
         if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(
                 detail.getSuccessRate()) > 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                detail.getReportId(), detail.getBusinessActivityId(),
+                "成功率", detail.getTargetSuccessRate(), detail.getSuccessRate());
             return false;
-        } else if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
-            return false;
-        } else if (isTargetBiggerThanZero(detail.getTargetRt()) && detail.getTargetRt().compareTo(detail.getRt()) < 0) {
-            return false;
-        } else {
-            return !isTargetBiggerThanZero(detail.getTargetTps()) || detail.getTargetTps().compareTo(detail.getTps()) <= 0;
         }
+        if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                detail.getReportId(), detail.getBusinessActivityId(),
+                "SA", detail.getTargetSa(), detail.getSa());
+            return false;
+        }
+        if (isTargetBiggerThanZero(detail.getTargetRt()) && detail.getTargetRt().compareTo(detail.getRt()) < 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                detail.getReportId(), detail.getBusinessActivityId(),
+                "RT", detail.getTargetRt(), detail.getRt());
+            return false;
+        }
+        if (isTargetBiggerThanZero(detail.getTargetTps()) && detail.getTargetTps().compareTo(detail.getTps()) > 0){
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                detail.getReportId(), detail.getBusinessActivityId(),
+                "TPS", detail.getTargetTps(), detail.getTps());
+            return false;
+        }
+        return true;
     }
 
+    /**
+     * 发现问题，目标为-1的情况，做下兼容
+     * @param target
+     * @return
+     */
     private boolean isTargetBiggerThanZero(BigDecimal target) {
         if (Objects.nonNull(target)) {
-            return target.compareTo(new BigDecimal(0)) > 0;
+            return target.compareTo(new BigDecimal("-1.001")) > 0;
         }
         return false;
     }

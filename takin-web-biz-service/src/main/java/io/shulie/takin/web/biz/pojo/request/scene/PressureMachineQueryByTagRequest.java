@@ -12,4 +12,8 @@ public class PressureMachineQueryByTagRequest extends PagingDevice {
     private List<String> tags;
 
     private List<Long> machineIds;
+
+    private String suiteName;
+
+    private String machineIp;
 }

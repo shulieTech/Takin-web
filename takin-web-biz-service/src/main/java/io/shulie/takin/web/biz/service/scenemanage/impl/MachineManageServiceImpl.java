@@ -817,6 +817,24 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     /**
+     * 获取机器信息
+     *
+     * @param request
+     * @param httpRequest
+     * @return
+     */
+    @Override
+    public ResponseResult<List<PressureMachineResponse>> listMachines(PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest) {
+        LambdaQueryWrapper<MachineManageEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(MachineManageEntity::getMachineIp, request.getMachineIp());
+        lambdaQueryWrapper.eq(MachineManageEntity::getBenchmarkSuiteName, request.getSuiteName());
+        lambdaQueryWrapper.eq(MachineManageEntity::getIsDeleted, 0);
+        List<MachineManageEntity> machineManageEntityPage = this.machineManageMapper.selectList(lambdaQueryWrapper);
+        List<PressureMachineResponse> pressureMachineResponses = BeanCopyUtils.copyList(machineManageEntityPage, PressureMachineResponse.class);
+        return ResponseResult.success(pressureMachineResponses);
+    }
+
+    /**
      * 查询这个机器是否已经是节点机器
      *
      * @param machineManageEntities

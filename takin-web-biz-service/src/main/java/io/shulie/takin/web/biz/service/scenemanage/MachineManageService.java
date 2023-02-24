@@ -64,4 +64,12 @@ public interface MachineManageService {
      */
     ResponseResult<List<PressureMachineResponse>> listMachinesByIds(@RequestBody PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest);
 
+    /**
+     * 获取机器信息
+     * @param request
+     * @param httpRequest
+     * @return
+     */
+    ResponseResult<List<PressureMachineResponse>> listMachines(@RequestBody PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest);
+
 }

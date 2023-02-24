@@ -62,7 +62,7 @@ public class NotifyClientImpl implements NotifyClient {
                 .exception(TakinWebExceptionEnum.LINK_THIRD_PARTY_ERROR)
                 .one(String.class);
         } catch (Exception e) {
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_THIRD_PARTY_ERROR, e.getMessage(), e);
+            log.error("链路开始计算出现异常", e);
         }
 
         return true;

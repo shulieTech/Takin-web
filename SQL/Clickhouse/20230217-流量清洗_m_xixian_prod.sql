@@ -1,4 +1,4 @@
-CREATE TABLE aiops_shard_r.t_traffic_record
+CREATE TABLE aiops_shard_m.t_traffic_record
 (
     `task_id` Int64,
     `trace_id` String,
@@ -21,10 +21,10 @@ CREATE TABLE aiops_shard_r.t_traffic_record
     `record_time` DateTime64(3, 'Asia/Shanghai'),
     `gmt_create` DateTime('Asia/Shanghai')
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/aiops/t_traffic_record/{r_shard}', '{replica}')
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/cluster-aiops/t_traffic_record/{m_shard}', '{replica}')
 PRIMARY KEY (task_id)
 PARTITION BY toYYYYMMDD(gmt_create)
 ORDER BY (task_id)
 TTL gmt_create + toIntervalDay(7);
 
-CREATE TABLE aiops_shard_r.t_traffic_record_all as aiops_shard_r.t_traffic_record ENGINE = Distributed('cluster-aiops', '', 't_traffic_record', sipHash64(task_id));
+CREATE TABLE aiops_shard_m.t_traffic_record_all as aiops_shard_m.t_traffic_record ENGINE = Distributed('cluster-aiops', '', 't_traffic_record', sipHash64(task_id));

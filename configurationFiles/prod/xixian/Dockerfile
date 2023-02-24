@@ -6,4 +6,3 @@ COPY configurationFiles/prod/xixian/properties/msyh.ttf /data/apps/takin-web/con
 COPY configurationFiles/prod/xixian/properties/dept_example.csv /data/apps/takin-web/config/file/example/
 COPY configurationFiles/prod/xixian/properties/example.csv /data/apps/takin-web/config/file/example/
 COPY configurationFiles/prod/xixian/properties/application.properties /data/apps/takin-web/config/application.properties
-COPY configurationFiles/prod/xixian/properties/kafka.properties /data/apps/takin-web/config/kafka.properties

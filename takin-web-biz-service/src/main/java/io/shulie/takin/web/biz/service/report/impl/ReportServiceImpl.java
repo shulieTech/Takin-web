@@ -358,7 +358,7 @@ public class ReportServiceImpl implements ReportService {
             
         }else{
             String reportJson = detail.getReportJson();
-            if(reportJson == null||StringUtils.isBlank(reportJson.trim())){
+            if(StringUtils.isNotBlank(reportJson.trim())){
                 activityResponse = JSON.parseObject(reportJson,io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
             }else {
                 activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);

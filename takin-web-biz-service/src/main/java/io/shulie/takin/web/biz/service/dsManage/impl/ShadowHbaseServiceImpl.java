@@ -209,24 +209,25 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         String config = dsResult.getConfig();
         dsDetailResponse.setConfig(config);
 
-        if (dsResult.getConfigType() != null && dsResult.getConfigType() == 0) {
-            Map<String, Object> map = this.parseConfig(config);
-            Map<String, String> dataSourceBusinessObj = (Map<String, String>) map.get("dataSourceBusiness");
-            Map<String, String> dataSourcePerformanceTest = (Map<String, String>) map.get("dataSourcePerformanceTest");
+        Map<String, Object> map = this.parseConfig(config);
+        Map<String, String> dataSourceBusinessObj = (Map<String, String>) map.get("dataSourceBusiness");
+        Map<String, String> dataSourcePerformanceTest = (Map<String, String>) map.get("dataSourcePerformanceTest");
 
+        if (CollectionUtil.isNotEmpty(dataSourceBusinessObj)){
             dsDetailResponse.setDataSourceBusinessParams(dataSourceBusinessObj.get("params"));
             dsDetailResponse.setDataSourceBusinessPort(dataSourceBusinessObj.get("port"));
             dsDetailResponse.setDataSourceBusinessQuorum(dataSourceBusinessObj.get("quorum"));
             dsDetailResponse.setDataSourceBusinessZNode(dataSourceBusinessObj.get("znode"));
-
-            if (CollectionUtil.isNotEmpty(dataSourcePerformanceTest)){
-                dsDetailResponse.setDataSourcePerformanceTestParams(dataSourcePerformanceTest.get("params"));
-                dsDetailResponse.setDataSourcePerformanceTestPort(dataSourcePerformanceTest.get("port"));
-                dsDetailResponse.setDataSourcePerformanceTestQuorum(dataSourcePerformanceTest.get("quorum"));
-                dsDetailResponse.setDataSourcePerformanceTestZNode(dataSourcePerformanceTest.get("znode"));
-            }
-
         }
+
+        if (CollectionUtil.isNotEmpty(dataSourcePerformanceTest)){
+            dsDetailResponse.setDataSourcePerformanceTestParams(dataSourcePerformanceTest.get("params"));
+            dsDetailResponse.setDataSourcePerformanceTestPort(dataSourcePerformanceTest.get("port"));
+            dsDetailResponse.setDataSourcePerformanceTestQuorum(dataSourcePerformanceTest.get("quorum"));
+            dsDetailResponse.setDataSourcePerformanceTestZNode(dataSourcePerformanceTest.get("znode"));
+        }
+
+
     }
 
     @Override

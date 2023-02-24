@@ -989,7 +989,7 @@ public class DsServiceImpl implements DsService {
         WebPluginUtils.fillQueryResponse(v2Response);
         v2Response.setCanRemove(v2Response.getIsManual());
 
-        if (urlMap != null && urlMap.containsKey(v2Response.getUrl())) {
+        if (dbDetail.getStatus() != null && dbDetail.getStatus() == 0 && urlMap != null && urlMap.containsKey(v2Response.getUrl())) {
             List<ApplicationDsWarnResult> applicationDsWarnResults = urlMap.get(v2Response.getUrl());
             v2Response.setShadowStatus(1);
             StringBuilder sb = new StringBuilder();

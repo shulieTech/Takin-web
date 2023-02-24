@@ -425,6 +425,14 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     @Transactional(rollbackFor = Throwable.class)
     public void updateActivity(ActivityUpdateRequest request) {
+        //
+        if (request.getServiceName() == null && request.getMethod() == null && StringUtils.isNotBlank(request.getLabel())){
+            String[] split = request.getLabel().split("#");
+            if (split.length == 2){
+                request.setServiceName(split[0]);
+                request.setMethod(split[1]);
+            }
+        }
         // 校验业务活动更新参数
         ActivityResult oldActivity = checkActivityUpdate(request);
 

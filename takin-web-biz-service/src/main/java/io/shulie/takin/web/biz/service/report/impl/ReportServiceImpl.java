@@ -347,7 +347,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse>  getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq) {
         // 首先通过xpathMdt获取到业务活动id
-        ReportBusinessActivityDetailEntity detail = reportDao.getReportBusinessActivityDetail(reportLinkDiagramReq.getSceneId(), reportLinkDiagramReq.getXpathMd5());
+        ReportBusinessActivityDetailEntity detail = reportDao.getReportBusinessActivityDetail(reportLinkDiagramReq.getSceneId(), reportLinkDiagramReq.getXpathMd5(),reportLinkDiagramReq.getReportId());
         if(detail == null){
             return ResponseResult.fail("400","场景下不存在业务活动","请检查后重试或联系管理员处理!");
         }
@@ -358,7 +358,7 @@ public class ReportServiceImpl implements ReportService {
             
         }else{
             String reportJson = detail.getReportJson();
-            if(reportJson == null ||StringUtils.isNotBlank(reportJson)){
+            if(reportJson !=null && StringUtils.isNotBlank(reportJson.trim())){
                 activityResponse = JSON.parseObject(reportJson,io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
             }else {
                 activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);

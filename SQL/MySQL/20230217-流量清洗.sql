@@ -21,6 +21,6 @@ CREATE TABLE `t_traffic_record_task` (
   `gmt_modify` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
   `env_code` varchar(16) NOT NULL DEFAULT 'test' COMMENT '环境',
   `tenant_id` int(4) NOT NULL COMMENT '租户ID',
-  `system_code` varchar(20) DEFAULT NULL  COMMENT '系统编码'
+  `system_code` varchar(20) DEFAULT NULL  COMMENT '系统编码',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=93 DEFAULT CHARSET=utf8mb4
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4

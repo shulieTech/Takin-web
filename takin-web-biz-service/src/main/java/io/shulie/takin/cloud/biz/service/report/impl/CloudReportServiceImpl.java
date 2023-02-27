@@ -1615,14 +1615,15 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         String realLogPath = pressureEngineLogPath;
 
         // 获取集群上报的挂载目录并替换,此处不考虑分别独立挂载nfs的情况
-        if (StringUtils.isNotBlank(features)) {
-            JSONObject engineInfos = JSONObject.parseObject(features);
-            String nfsRoot = engineInfos.getString(PressureStartCache.FEATURES_NFS_ROOT);
-            if (StringUtils.isNotBlank(nfsRoot)) {
-                realJtlPath = DataUtils.mergeDirPath(nfsRoot, "ptl");
-                realLogPath = DataUtils.mergeDirPath(nfsRoot, "logs");
-            }
-        }
+        //不使用同一个nfs，使用这个不能获取到真正的地址；使用同一个nfs，那就可以直接使用web配置的nfs地址；目前暂时不考虑不使用的情况
+//        if (StringUtils.isNotBlank(features)) {
+//            JSONObject engineInfos = JSONObject.parseObject(features);
+//            String nfsRoot = engineInfos.getString(PressureStartCache.FEATURES_NFS_ROOT);
+//            if (StringUtils.isNotBlank(nfsRoot)) {
+//                realJtlPath = DataUtils.mergeDirPath(nfsRoot, "ptl");
+//                realLogPath = DataUtils.mergeDirPath(nfsRoot, "logs");
+//            }
+//        }
 
         // 1.查看是否有jtl.zip /nfs_dir/jtl/127/1637/pressure.jtl
         String jtlPath = realJtlPath + "/" + reportResult.getSceneId() + "/" + reportId;

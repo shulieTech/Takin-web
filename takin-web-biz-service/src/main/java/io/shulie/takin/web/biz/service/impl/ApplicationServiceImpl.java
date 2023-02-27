@@ -107,10 +107,7 @@ import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
-import io.shulie.takin.web.common.util.ActivityUtil;
-import io.shulie.takin.web.common.util.CommonUtil;
-import io.shulie.takin.web.common.util.JsonUtil;
-import io.shulie.takin.web.common.util.MD5Tool;
+import io.shulie.takin.web.common.util.*;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.excel.*;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
@@ -2449,7 +2446,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
         List errorList = new ArrayList<>();
         String appUniqueKey = dbApp.getApplicationId() + PRADARNODE_SEPERATE_FLAG;
-        Set<String> keys = redisTemplate.keys(appUniqueKey + "*");
+        Set<String> keys = RedisHelper.keys(appUniqueKey + "*");
         String resultStatus = null;
         if (needCalculateNodeNum) {
             if (keys == null || keys.size() < dbApp.getNodeNum()) {

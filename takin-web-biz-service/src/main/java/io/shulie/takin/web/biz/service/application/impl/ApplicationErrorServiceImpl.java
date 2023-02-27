@@ -31,6 +31,7 @@ import io.shulie.takin.web.common.enums.application.AppExceptionCodeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
@@ -179,8 +180,8 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
             String appUniqueKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
                 WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceTenantCode(),
                 app.getAppId() + ApplicationServiceImpl.PRADAR_SEPERATE_FLAG);
-            Set<String> keys = redisTemplate.keys(appUniqueKey + "*");
-            if (keys != null) {
+            Set<String> keys = RedisHelper.keys(appUniqueKey + "*");
+            if (!CollectionUtils.isEmpty(keys)) {
                 for (String nodeKey : keys) {
                     List<String> nodeUploadDataDTOList = redisTemplate.opsForList().range(nodeKey, 0, -1);
                     if (CollectionUtils.isEmpty(nodeUploadDataDTOList)) {

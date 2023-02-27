@@ -314,11 +314,12 @@ public class ReportDaoImpl implements ReportDao {
     }
 
     @Override
-    public ReportBusinessActivityDetailEntity getReportBusinessActivityDetail(Long sceneId, String xpathMd5) {
+    public ReportBusinessActivityDetailEntity getReportBusinessActivityDetail(Long sceneId, String xpathMd5,Long reportId) {
         
         LambdaQueryWrapper<ReportBusinessActivityDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, sceneId);
         queryWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5);
+        queryWrapper.eq(null != reportId,ReportBusinessActivityDetailEntity::getReportId, reportId);
         queryWrapper.last(" limit 1");
         return detailMapper.selectOne(queryWrapper);
     }

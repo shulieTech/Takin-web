@@ -47,4 +47,7 @@ public class ActivityUpdateRequest {
     private String extend;
 
     private String serviceName;
+
+    @ApiModelProperty(name = "label", value = "服务名称")
+    private String label;
 }

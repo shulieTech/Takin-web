@@ -1163,7 +1163,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         //负责人默认启动人
         report.setUserId(CloudPluginUtils.getUserId());
         report.setSceneName(scene.getPressureTestSceneName());
-        report.setDeptId(scene.getDeptId());
+        report.setDeptId(WebPluginUtils.traceDeptId());
 
         if (StringUtils.isNotBlank(scene.getFeatures())) {
             JSONObject features = JsonUtil.parse(scene.getFeatures());

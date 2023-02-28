@@ -108,6 +108,10 @@
             <artifactId>takin-web-common</artifactId>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>io.shulie.takin</groupId>-->
+<!--            <artifactId>takin-cloud-common</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>io.shulie.takin</groupId>

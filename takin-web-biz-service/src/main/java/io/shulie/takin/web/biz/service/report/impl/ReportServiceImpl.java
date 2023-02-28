@@ -1,17 +1,24 @@
 package io.shulie.takin.web.biz.service.report.impl;
 import com.alibaba.fastjson.JSON;
+import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
+import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
+import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
+import io.shulie.takin.adapter.api.model.common.DataBean;
+import io.shulie.takin.adapter.api.model.response.report.*;
+import io.shulie.takin.cloud.common.utils.JsonPathUtil;
+import io.shulie.takin.cloud.data.mapper.mysql.SceneManageMapper;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
+import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
+import io.shulie.takin.cloud.data.result.report.ReportResult;
+import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
+import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
+import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
-import java.time.LocalDateTime;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -33,13 +40,6 @@ import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.ScriptNodeTreeQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
 import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
-import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
-import io.shulie.takin.adapter.api.model.response.report.MetricesResponse;
-import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportDetailResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
-import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
@@ -59,6 +59,7 @@ import io.shulie.takin.web.biz.utils.PDFUtil;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
@@ -70,6 +71,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
+import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
 
 /**
  * @author qianshui
@@ -88,11 +91,18 @@ public class ReportServiceImpl implements ReportService {
     
     @Resource
     private ReportDao reportDao;
+
+    @Resource
+    InfluxWriter influxWriter;
     
+    @Resource
+    SceneManageMapper sceneManageMapper;
     @Resource
     private CloudReportApi cloudReportApi;
     @Resource
     private VerifyTaskReportService verifyTaskReportService;
+    @Resource
+    TReportBusinessActivityDetailMapper tReportBusinessActivityDetailMapper;
 
     @Value("${file.upload.url:''}")
     private String fileUploadUrl;
@@ -102,6 +112,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private DistributedLock distributedLock;
+
+    @Resource
+    private RedisClientUtil redisClientUtil;
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -387,6 +400,267 @@ public class ReportServiceImpl implements ReportService {
         request.setTempActivity(false);
         return activityService.getActivityWithMetricsById(request);
     }
-    
-    
+
+
+    @Override
+    public ScriptNodeSummaryBean queryNode(Long reportId, String xpathMd5, Double threadNum) {
+        ReportResult report = reportDao.selectById(reportId);
+        SceneManageEntity sceneManageEntity = sceneManageMapper.selectById(report.getSceneId());
+        List<ScriptNode> scriptAnalysis = JSON.parseArray(sceneManageEntity.getScriptAnalysisResult(), ScriptNode.class);
+        List<ScriptNode> scriptNodes = scriptAnalysis.get(0).getChildren();
+        // 获取thread_group节点
+        ScriptNode scriptNode = scriptNodes.stream().filter(scriptNode1 -> xpathMd5.equals(scriptNode1.getXpathMd5())).findFirst().get();
+        // 获取子节点
+        List<String> xpathMd5List = new ArrayList<>();
+        xpathMd5List.add(scriptNode.getXpathMd5());
+        populateInternalXpathMd5(xpathMd5List, scriptNode.getChildren());
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < xpathMd5List.size(); i++) {
+            sb.append("transaction='").append(xpathMd5List.get(i)).append("'");
+            if (i < xpathMd5List.size() - 1) {
+                sb.append(" or ");
+            }
+        }
+        String measurement = InfluxUtil.getMetricsMeasurement(report.getJobId(), report.getSceneId(), report.getId(), report.getTenantId());
+
+        int threadNumInt = new BigDecimal(threadNum).intValue();
+        String threadNumSql = "active_threads = " + threadNumInt;
+        if (threadNum != threadNumInt) {
+            threadNumSql = threadNumSql + " or active_threads = " + (threadNumInt + 1);
+        }
+
+        String sql = String.format("select count, fail_count, avg_tps , max_rt, min_rt, sum_rt, sa_count, active_threads, transaction " +
+                "from %s where (%s) and (%s) ", measurement, threadNumSql, sb);
+
+        List<Map> queryResult = influxWriter.query(sql, Map.class);
+
+        Map<String, Map<String, Object>> groupMergedResult = new HashMap<>();
+        if (queryResult != null && !queryResult.isEmpty()) {
+            // 按xpathMd5分组
+            Map<String, List<Map>> groupedResult = queryResult.stream().collect(Collectors.groupingBy(map -> (String) map.get("transaction")));
+
+            // 分组后合并的结果
+            for (Map.Entry<String, List<Map>> entry : groupedResult.entrySet()) {
+                groupMergedResult.put(entry.getKey(), mergeResult(entry.getValue()));
+            }
+
+            Map<String, Object> rootGroupResult = mergeResult(queryResult);
+
+            double maxTps = groupMergedResult.entrySet().stream().map(entry -> (BigDecimal) entry.getValue().get("maxTps")).mapToDouble(value -> value.doubleValue()).sum();
+            rootGroupResult.put("maxTps", new BigDecimal(maxTps).setScale(1, BigDecimal.ROUND_HALF_UP));
+
+            double tps = groupMergedResult.entrySet().stream().map(entry -> (BigDecimal) entry.getValue().get("tps")).mapToDouble(value -> value.doubleValue()).sum();
+            rootGroupResult.put("tps", new BigDecimal(tps).setScale(1, BigDecimal.ROUND_HALF_UP));
+
+            groupMergedResult.put(xpathMd5, rootGroupResult);
+
+        }
+
+        // 补充目标信息等
+        List<ReportBusinessActivityDetail> activityDetails = tReportBusinessActivityDetailMapper.queryReportBusinessActivityDetailByReportId(reportId);
+        Map<String, ReportBusinessActivityDetail> detailMap = activityDetails.stream().collect(Collectors.toMap(ReportBusinessActivityDetail::getBindRef, ReportBusinessActivityDetail -> ReportBusinessActivityDetail));
+
+        ScriptNodeSummaryBean summaryBean = buildNodeSummaryBean(threadNum, scriptNode, groupMergedResult, detailMap);
+        summaryBean.setConcurrentStageThreadNum(getSummaryConcurrentStageThreadNum(xpathMd5, sceneManageEntity));
+
+        return summaryBean;
+    }
+
+    /**
+     * 获取阶梯递增的阶段线程数
+     *
+     * @return
+     */
+    private List<BigDecimal> getSummaryConcurrentStageThreadNum(String xpathMd5, SceneManageEntity manageEntity) {
+
+        PtConfigExt ext = JSON.parseObject(manageEntity.getPtConfig(), PtConfigExt.class);
+        Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
+        if (configMap == null || configMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+        ThreadGroupConfigExt value = configMap.get(xpathMd5);
+        if (value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3) {
+            return Collections.emptyList();
+        }
+        // 阶梯递增模式
+        Integer steps = value.getSteps();
+        Integer threadNum = value.getThreadNum();
+        List<BigDecimal> stepList = new ArrayList<>(steps);
+        for (Integer i = 1; i <= steps; i++) {
+            stepList.add(new BigDecimal(threadNum * i).divide(new BigDecimal(steps), 2, BigDecimal.ROUND_HALF_UP));
+        }
+        return stepList;
+
+    }
+
+    private ScriptNodeSummaryBean buildNodeSummaryBean(Double threadNum, ScriptNode node, Map<String, Map<String, Object>> groupMergedResult, Map<String, ReportBusinessActivityDetail> detailMap) {
+        ScriptNodeSummaryBean summaryBean = new ScriptNodeSummaryBean();
+        summaryBean.setName(node.getName());
+        summaryBean.setTestName(node.getTestName());
+        summaryBean.setMd5(node.getMd5());
+        summaryBean.setType(node.getType().name());
+        summaryBean.setXpath(node.getXpath());
+        String xpathMd5 = node.getXpathMd5();
+        summaryBean.setXpathMd5(xpathMd5);
+
+        Map<String, Object> objectMap = groupMergedResult.get(xpathMd5);
+        objectMap = objectMap == null ? new HashMap<>() : objectMap;
+
+        if (objectMap != null) {
+            ReportBusinessActivityDetail activityDetail = detailMap.get(xpathMd5);
+            summaryBean.setTps(new DataBean(objectMap.get("tps"), activityDetail.getTargetTps()));
+            summaryBean.setAvgRt(new DataBean(objectMap.get("avgRt"), activityDetail.getTargetRt()));
+            summaryBean.setSuccessRate(new DataBean(objectMap.get("successRate"), activityDetail.getTargetSuccessRate()));
+            summaryBean.setSa(new DataBean(objectMap.get("sa"), activityDetail.getTargetSa()));
+            summaryBean.setMaxTps((BigDecimal) objectMap.get("maxTps"));
+            summaryBean.setMaxRt((BigDecimal) objectMap.get("maxRt"));
+            summaryBean.setMinRt((BigDecimal) objectMap.get("minRt"));
+            Object totalRequest = objectMap.get("totalRequest");
+            if (totalRequest != null) {
+                summaryBean.setTotalRequest(new Double((double) totalRequest).longValue());
+            }
+            summaryBean.setAvgConcurrenceNum(new BigDecimal(threadNum));
+            summaryBean.setPassFlag(activityDetail.getPassFlag());
+        }
+        List<ScriptNode> children = node.getChildren();
+        if (CollectionUtils.isNotEmpty(children)) {
+            List<ScriptNodeSummaryBean> nodeChildren = new ArrayList<>(children.size());
+            for (ScriptNode scriptNode : children) {
+                nodeChildren.add(buildNodeSummaryBean(threadNum, scriptNode, groupMergedResult, detailMap));
+            }
+            summaryBean.setChildren(nodeChildren);
+        }
+        return summaryBean;
+    }
+
+    private Map<String, Object> mergeResult(List<Map> values) {
+        Map<String, Object> v = new HashMap<>();
+        //请求数
+        double totalResultNum = values.stream().mapToDouble(value -> transform(value.get("count"))).sum();
+        v.put("totalRequest", totalResultNum);
+        //TPS
+        double maxTps = values.stream().map(map -> ((BigDecimal) map.get("count")).divide(new BigDecimal(5), 1, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).max().getAsDouble();
+        v.put("maxTps", new BigDecimal(maxTps).setScale(1, BigDecimal.ROUND_HALF_UP));
+
+        double avgTps = values.stream().map(map -> ((BigDecimal) map.get("count")).divide(new BigDecimal(5), 1, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).average().getAsDouble();
+        v.put("tps", new BigDecimal(avgTps).setScale(2, BigDecimal.ROUND_HALF_UP));
+
+        //rt
+        double maxRt = values.stream().mapToDouble(value -> transform(value.get("max_rt"))).max().getAsDouble();
+        v.put("maxRt", new BigDecimal(maxRt).setScale(1, BigDecimal.ROUND_HALF_UP));
+        double minRt = values.stream().mapToDouble(value -> transform(value.get("min_rt"))).min().getAsDouble();
+        v.put("minRt", new BigDecimal(minRt).setScale(1, BigDecimal.ROUND_HALF_UP));
+
+        double avgRt = values.stream().map(map -> ((BigDecimal) map.get("sum_rt")).divide((BigDecimal) map.get("count"), 2, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).average().getAsDouble();
+        v.put("avgRt", new BigDecimal(avgRt).setScale(2, BigDecimal.ROUND_HALF_UP));
+
+        //请求成功率
+        double totalFailedRequestNum = values.stream().mapToDouble(value -> transform(value.get("fail_count"))).sum();
+        double successRate = (totalResultNum - totalFailedRequestNum) * 100 / totalResultNum;
+        v.put("successRate", new BigDecimal(successRate).setScale(0, BigDecimal.ROUND_HALF_UP));
+
+        //sa
+        double sa = values.stream().mapToDouble(value -> transform(value.get("sa_count"))).average().getAsDouble();
+        v.put("sa", new BigDecimal(sa).setScale(0, BigDecimal.ROUND_HALF_UP));
+
+        return v;
+    }
+
+    private double transform(Object decimal) {
+        return Double.parseDouble(decimal.toString());
+    }
+
+    private void populateInternalXpathMd5(List<String> xpathMd5List, List<ScriptNode> scriptNodes) {
+        if (scriptNodes == null || scriptNodes.isEmpty()) {
+            return;
+        }
+        while (true) {
+            for (ScriptNode scriptNode : scriptNodes) {
+                xpathMd5List.add(scriptNode.getXpathMd5());
+                populateInternalXpathMd5(xpathMd5List, scriptNode.getChildren());
+            }
+            break;
+        }
+    }
+
+    @Override
+    public ThreadReportTrendResp queryReportTrendByThread(ReportTrendQueryReq reportTrendQuery) {
+
+        String key = "reportTrendByThread:" + JSON.toJSONString(reportTrendQuery);
+        if (redisClientUtil.hasKey(key)) {
+            return JSON.parseObject(redisClientUtil.getString(key), ThreadReportTrendResp.class);
+        }
+
+        ThreadReportTrendResp reportTrend = new ThreadReportTrendResp();
+        ReportResult reportResult = reportDao.selectById(reportTrendQuery.getReportId());
+        if (reportResult == null) {
+            return reportTrend;
+        }
+
+        String ptConfig = reportResult.getPtConfig();
+        PtConfigExt ext = JSON.parseObject(ptConfig, PtConfigExt.class);
+        Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
+        if (configMap == null || configMap.isEmpty()) {
+            return null;
+        }
+
+        //根据xpathMd5找到上级对应线程组的md5
+        Map<String, String> threadGroupChildMap = new HashMap<>();
+        List<ScriptNode> allThreadGroup = JsonPathUtil.getNodeListByType(reportResult.getScriptNodeTree(), NodeTypeEnum.THREAD_GROUP);
+        allThreadGroup.forEach(scriptNode -> {
+            threadGroupChildMap.put(scriptNode.getXpathMd5(), scriptNode.getXpathMd5());
+            List<ScriptNode> childControllers = JsonPathUtil.getChildControllers(reportResult.getScriptNodeTree(), scriptNode.getXpathMd5());
+            List<ScriptNode> childSamplers = JsonPathUtil.getChildSamplers(reportResult.getScriptNodeTree(), scriptNode.getXpathMd5());
+            childControllers.forEach(o -> threadGroupChildMap.put(o.getXpathMd5(), scriptNode.getXpathMd5()));
+            childSamplers.forEach(o -> threadGroupChildMap.put(o.getXpathMd5(), scriptNode.getXpathMd5()));
+        });
+        if (!threadGroupChildMap.containsKey(reportTrendQuery.getXpathMd5())){
+            return null;
+        }
+        ThreadGroupConfigExt value = configMap.get(threadGroupChildMap.get(reportTrendQuery.getXpathMd5()));
+        if (value == null || value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3 || value.getSteps() == null) {
+            return null;
+        }
+        // 阶梯递增模式
+        Integer steps = value.getSteps();
+        Integer threadNum = value.getThreadNum();
+
+        List<String> rt = new ArrayList<>();
+        List<String> tps = new ArrayList<>();
+        List<String> concurrent = new ArrayList<>(steps);
+        for (Integer i = 1; i <= steps; i++) {
+            concurrent.add(new BigDecimal(threadNum * i).divide(new BigDecimal(steps), 0, BigDecimal.ROUND_HALF_UP).toString());
+        }
+        if (CollectionUtils.isEmpty(concurrent)) {
+            return null;
+        }
+        reportTrend.setConcurrent(concurrent);
+        for (String num : concurrent){
+            ScriptNodeSummaryBean scriptNodeSummaryBean = this.queryNode(reportTrendQuery.getReportId(), threadGroupChildMap.get(reportTrendQuery.getXpathMd5()), Double.parseDouble(num));
+            ScriptNodeSummaryBean currentValue = getCurrentValue(scriptNodeSummaryBean, reportTrendQuery.getXpathMd5());
+            rt.add(currentValue.getAvgRt() != null && currentValue.getAvgRt().getResult() != null ? currentValue.getAvgRt().getResult().toString() : "0");
+            tps.add(currentValue.getTps() != null && currentValue.getTps().getResult() != null ? currentValue.getTps().getResult().toString() : "0");
+        }
+        reportTrend.setRt(rt);
+        reportTrend.setTps(tps);
+        if (CollectionUtils.isNotEmpty(reportTrend.getConcurrent()) && CollectionUtils.isNotEmpty(reportTrend.getRt()) && !"0".equals(reportTrend.getRt().get(0))) {
+            redisClientUtil.setString(key, JSON.toJSONString(reportTrend));
+            redisClientUtil.expire(key, 1000 * 60 * 120);
+        }
+        return reportTrend;
+
+    }
+
+    private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5){
+        if (scriptNodeSummaryBean.getXpathMd5().equals(xpathMd5)){
+            return scriptNodeSummaryBean;
+        }
+        if (CollectionUtils.isNotEmpty(scriptNodeSummaryBean.getChildren())){
+            for (ScriptNodeSummaryBean child : scriptNodeSummaryBean.getChildren()){
+                return getCurrentValue(child, xpathMd5);
+            }
+        }
+        return new ScriptNodeSummaryBean();
+    }
 }

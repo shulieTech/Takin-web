@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import io.shulie.takin.web.biz.nacos.event.ShadowConfigRefreshEvent;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -128,9 +129,9 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
         }
         String beClearKey = this.cacheName + "*";
         if (!"*".equals(beClearKey)) {
-            Set<String> keys = redisTemplate.keys(beClearKey);
+            Set<String> keys = RedisHelper.keys(beClearKey);
             if (CollectionUtils.isNotEmpty(keys)) {
-                keys.forEach(redisTemplate::delete);
+                keys.forEach(RedisHelper::delete);
                 log.info("清除key:{}对应的缓存成功", beClearKey);
             }
         }

@@ -1639,7 +1639,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             return jtlPath + "/" + "Jmeter.zip";
         } else if (needZip) {
             // 开始压缩
-            String command = StrUtil.indexedFormat("sudo zip -r -j {0}/Jmeter.zip {0} {1}", jtlPath, logPath);
+            String command = StrUtil.indexedFormat(" zip -r -j {0}/Jmeter.zip {0} {1}", jtlPath, logPath);
             log.info("压测日志打包成文件:{}", command);
             Boolean result = LinuxHelper.executeLinuxCmd(command);
             if (result) {

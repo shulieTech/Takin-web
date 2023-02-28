@@ -107,7 +107,7 @@ public class PressureStatisticsApiImpl implements PressureStatisticsApi {
                     r.setSuccess(t.getReportConclusionTrueCount());
                     r.setFail(t.getReportConclusionFalseCount());
                     r.setGmtCreate(sdf.format(new Date(t.getSceneCreateTime())));
-                    r.setLastTime(sdf.format(new Date(t.getLastTime())));
+//                    r.setLastTime(sdf.format(new Date(t.getLastTime())));
                     r.setName(t.getSceneName());
                     r.setId(t.getSceneId());
                     r.setCreateName(String.valueOf(t.getSceneCreateUserId()));

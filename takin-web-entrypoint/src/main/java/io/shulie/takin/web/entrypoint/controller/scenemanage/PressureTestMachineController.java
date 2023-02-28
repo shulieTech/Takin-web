@@ -147,4 +147,15 @@ public class PressureTestMachineController {
         return ResponseResult.success(this.machineManageService.listMachinesByTag(httpRequest, request));
     }
 
+    @PostMapping("/listMachinesByIds")
+    @ApiOperation("benchmark-根据机器ids获取机器信息")
+    public ResponseResult<List<PressureMachineResponse>> listMachinesByIds(@RequestBody PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest){
+        return this.machineManageService.listMachinesByIds(request,httpRequest);
+    }
+
+    @PostMapping("/listMachines")
+    @ApiOperation("benchmark-根据机器ids获取机器信息")
+    public ResponseResult<List<PressureMachineResponse>> listMachines(@RequestBody PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest){
+        return this.machineManageService.listMachines(request,httpRequest);
+    }
 }

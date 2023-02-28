@@ -4,6 +4,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.scene.*;
 import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -54,5 +55,21 @@ public interface MachineManageService {
      * @return
      */
     List<PressureMachineResponse>  listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request);
+
+    /**
+     * 根据机器id列表获取机器信息
+     * @param request
+     * @param httpRequest
+     * @return
+     */
+    ResponseResult<List<PressureMachineResponse>> listMachinesByIds(@RequestBody PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest);
+
+    /**
+     * 获取机器信息
+     * @param request
+     * @param httpRequest
+     * @return
+     */
+    ResponseResult<List<PressureMachineResponse>> listMachines(@RequestBody PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest);
 
 }

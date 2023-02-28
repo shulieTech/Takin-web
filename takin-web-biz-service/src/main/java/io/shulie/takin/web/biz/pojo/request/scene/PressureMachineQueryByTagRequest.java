@@ -10,4 +10,10 @@ import java.util.List;
 @ApiModel(value = "创建 压力机")
 public class PressureMachineQueryByTagRequest extends PagingDevice {
     private List<String> tags;
+
+    private List<Long> machineIds;
+
+    private String suiteName;
+
+    private String machineIp;
 }

@@ -399,7 +399,7 @@ public class ReportServiceImpl implements ReportService {
         // 直接调用查询业务活动的拓扑图方法即可
         ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
         request.setActivityId(activityId);
-        request.setFlowTypeEnum(FlowTypeEnum.BLEND);
+        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
         request.setStartTime(reportLinkDiagramReq.getStartTime());
         request.setEndTime(reportLinkDiagramReq.getEndTime());
         request.setTempActivity(false);
@@ -436,8 +436,8 @@ public class ReportServiceImpl implements ReportService {
 
         EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
         Map<String, String> fieldAndAlias = new HashMap<>();
-        fieldAndAlias.put("count", null);
-        fieldAndAlias.put("time", null);
+        fieldAndAlias.put("count", "count");
+        fieldAndAlias.put("time", "time");
         fieldAndAlias.put("fail_count", "failCount");
         fieldAndAlias.put("avg_tps", "avgTps");
         fieldAndAlias.put("max_rt", "maxRt");
@@ -445,7 +445,7 @@ public class ReportServiceImpl implements ReportService {
         fieldAndAlias.put("sum_rt", "sumRt");
         fieldAndAlias.put("sa_count", "saCount");
         fieldAndAlias.put("active_threads", "activeThreads");
-        fieldAndAlias.put("transaction", null);
+        fieldAndAlias.put("transaction", "transaction");
         enginePressureQuery.setFieldAndAlias(fieldAndAlias);
         enginePressureQuery.setWhereFilter(whereFilter);
         enginePressureQuery.setJobId(report.getJobId());

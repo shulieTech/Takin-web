@@ -669,7 +669,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 //                                    + " group by time(5s) order by time";
                     AppBaseDataQuery voListQuery = new AppBaseDataQuery();
                     Map<String, String> fieldAndAlias = new HashMap<>();
-                    fieldAndAlias.put("time", null);
+                    fieldAndAlias.put("time", "time");
                     fieldAndAlias.put("avg(cpu_rate)", "cpu_rate");
                     fieldAndAlias.put("avg(cpu_load)", "cpu_load");
                     fieldAndAlias.put("avg(mem_rate)", "mem_rate");

@@ -880,7 +880,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         return reportTrend;
     }
 
-    private <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
+    public <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
         try {
             query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             query.setEnvCode(WebPluginUtils.traceEnvCode());

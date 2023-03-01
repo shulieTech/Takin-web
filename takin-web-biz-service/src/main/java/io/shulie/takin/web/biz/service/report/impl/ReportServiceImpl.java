@@ -1,10 +1,12 @@
 package io.shulie.takin.web.biz.service.report.impl;
+
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.response.report.*;
+import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.common.utils.JsonPathUtil;
 import io.shulie.takin.cloud.data.mapper.mysql.SceneManageMapper;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
@@ -14,6 +16,8 @@ import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
+import io.shulie.takin.web.biz.pojo.dto.scene.EngineMetricsDTO;
+import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 
 import java.io.IOException;
@@ -64,6 +68,7 @@ import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -71,8 +76,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
-import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
 
 /**
  * @author qianshui
@@ -85,16 +88,13 @@ public class ReportServiceImpl implements ReportService {
     private ReportApi reportApi;
     @Resource
     private ActivityDAO activityDAO;
-    
+
     @Resource
     private ActivityService activityService;
-    
+
     @Resource
     private ReportDao reportDao;
 
-    @Resource
-    InfluxWriter influxWriter;
-    
     @Resource
     SceneManageMapper sceneManageMapper;
     @Resource
@@ -115,6 +115,8 @@ public class ReportServiceImpl implements ReportService {
 
     @Resource
     private RedisClientUtil redisClientUtil;
+    @Resource
+    private CloudReportService cloudReportService;
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -142,15 +144,15 @@ public class ReportServiceImpl implements ReportService {
             setFilterSql(String.join(",", userIdList));
         }});
         List<Long> userIds = reportResponseList.getData().stream().map(ContextExt::getUserId)
-            .filter(Objects::nonNull).collect(Collectors.toList());
+                .filter(Objects::nonNull).collect(Collectors.toList());
         //用户信息Map key:userId  value:user对象
         Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
         List<ReportDTO> dtoList = reportResponseList.getData().stream().map(t -> {
             Long userId = t.getUserId() == null ? null : Long.valueOf(t.getUserId().toString());
             //负责人名称
             String userName = Optional.ofNullable(userMap.get(userId))
-                .map(UserExt::getName)
-                .orElse("");
+                    .map(UserExt::getName)
+                    .orElse("");
             ReportDTO result = BeanUtil.copyProperties(t, ReportDTO.class);
             result.setUserName(userName);
             result.setUserId(userId);
@@ -170,7 +172,7 @@ public class ReportServiceImpl implements ReportService {
         ReportDetailResp detailResponse = cloudReportApi.detail(idReq);
         // sa超过100 显示100
         if (detailResponse.getSa() != null
-            && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
+                && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
             detailResponse.setSa(BigDecimal.valueOf(100));
         }
         ReportDetailOutput output = new ReportDetailOutput();
@@ -185,10 +187,14 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void fillExecuteMan(ReportDetailOutput output) {
-        if (output == null) {return;}
+        if (output == null) {
+            return;
+        }
         // 获取用户信息
         Map<Long, UserExt> userInfo = WebPluginUtils.getUserMapByIds(
-            new ArrayList<Long>(1) {{add(output.getUserId());}});
+                new ArrayList<Long>(1) {{
+                    add(output.getUserId());
+                }});
         // 填充用户信息
         if (userInfo.containsKey(output.getUserId())) {
             output.setOperateId(output.getUserId().toString());
@@ -202,7 +208,7 @@ public class ReportServiceImpl implements ReportService {
         LeakVerifyTaskReportQueryRequest queryRequest = new LeakVerifyTaskReportQueryRequest();
         queryRequest.setReportId(output.getId());
         LeakVerifyTaskResultResponse verifyTaskResultResponse = verifyTaskReportService.getVerifyTaskReport(
-            queryRequest);
+                queryRequest);
         if (Objects.isNull(verifyTaskResultResponse)) {
             return;
         }
@@ -297,10 +303,10 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public ResponseResult<List<ScriptNodeTreeResp>> queryNodeTree(ReportQueryRequest request) {
         List<ScriptNodeTreeResp> listResponseResult = reportApi.scriptNodeTree(
-            new ScriptNodeTreeQueryReq() {{
-                setSceneId(request.getSceneId());
-                setReportId(request.getReportId());
-            }});
+                new ScriptNodeTreeQueryReq() {{
+                    setSceneId(request.getSceneId());
+                    setReportId(request.getReportId());
+                }});
         return ResponseResult.success(listResponseResult);
     }
 
@@ -324,10 +330,10 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public String downloadPDFPath(Long reportId){
-        String lockKey = String.format(LockKeyConstants.LOCK_REPORT_EXPORT,reportId);
-        if(!distributedLock.tryLockSecondsTimeUnit(lockKey, 0L, 30L)){
-            throw  new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, "操作太频繁!");
+    public String downloadPDFPath(Long reportId) {
+        String lockKey = String.format(LockKeyConstants.LOCK_REPORT_EXPORT, reportId);
+        if (!distributedLock.tryLockSecondsTimeUnit(lockKey, 0L, 30L)) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, "操作太频繁!");
         }
         //获取需要导出的数据
         ReportDetailOutput detailOutput = this.getReportByReportId(reportId);
@@ -344,53 +350,52 @@ public class ReportServiceImpl implements ReportService {
                 //一直等待文件生成成功
             }
             return path;
-        }catch (IOException e){
-            throw  new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, e.getMessage(), e);
-        }finally {
+        } catch (IOException e) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, e.getMessage(), e);
+        } finally {
             distributedLock.unLock(lockKey);
         }
     }
 
     @Override
-    public void modifyRemarks(Long reportId,String remarks){
+    public void modifyRemarks(Long reportId, String remarks) {
         // 由于场景已经是合到web不在经由cloudApi-cloudService-dao兜一圈
-        reportDao.updateRemarks(reportId,remarks);
+        reportDao.updateRemarks(reportId, remarks);
     }
 
     @Override
-    public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse>  getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq) {
+    public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse> getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq) {
         // 首先通过xpathMdt获取到业务活动id
-        ReportBusinessActivityDetailEntity detail = reportDao.getReportBusinessActivityDetail(reportLinkDiagramReq.getSceneId(), reportLinkDiagramReq.getXpathMd5(),reportLinkDiagramReq.getReportId());
-        if(detail == null){
-            return ResponseResult.fail("400","场景下不存在业务活动","请检查后重试或联系管理员处理!");
+        ReportBusinessActivityDetailEntity detail = reportDao.getReportBusinessActivityDetail(reportLinkDiagramReq.getSceneId(), reportLinkDiagramReq.getXpathMd5(), reportLinkDiagramReq.getReportId());
+        if (detail == null) {
+            return ResponseResult.fail("400", "场景下不存在业务活动", "请检查后重试或联系管理员处理!");
         }
         io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse;
-        if(reportLinkDiagramReq.getReportId() == null){
+        if (reportLinkDiagramReq.getReportId() == null) {
             // 实况查询
             activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
-            
-        }else{
+
+        } else {
             String reportJson = detail.getReportJson();
-            if(reportJson !=null && StringUtils.isNotBlank(reportJson.trim())){
-                activityResponse = JSON.parseObject(reportJson,io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
-            }else {
+            if (reportJson != null && StringUtils.isNotBlank(reportJson.trim())) {
+                activityResponse = JSON.parseObject(reportJson, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
+            } else {
                 activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
                 // 将链路拓扑信息更新到表中
                 reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getSceneId(),
-                        reportLinkDiagramReq.getReportId(),reportLinkDiagramReq.getXpathMd5(),JSON.toJSONString(activityResponse));
+                        reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
             }
-            
+
         }
         return ResponseResult.success(activityResponse);
     }
 
 
     /**
-     * 
-     * @param activityId 业务活动Id
+     * @param activityId           业务活动Id
      * @param reportLinkDiagramReq 查询条件
      */
-    private io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse queryLinkDiagram(Long activityId,ReportLinkDiagramReq reportLinkDiagramReq){
+    private io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse queryLinkDiagram(Long activityId, ReportLinkDiagramReq reportLinkDiagramReq) {
         // 直接调用查询业务活动的拓扑图方法即可
         ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
         request.setActivityId(activityId);
@@ -415,37 +420,48 @@ public class ReportServiceImpl implements ReportService {
         xpathMd5List.add(scriptNode.getXpathMd5());
         populateInternalXpathMd5(xpathMd5List, scriptNode.getChildren());
 
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < xpathMd5List.size(); i++) {
-            sb.append("transaction='").append(xpathMd5List.get(i)).append("'");
-            if (i < xpathMd5List.size() - 1) {
-                sb.append(" or ");
-            }
-        }
-        String measurement = InfluxUtil.getMetricsMeasurement(report.getJobId(), report.getSceneId(), report.getId(), report.getTenantId());
-
         int threadNumInt = new BigDecimal(threadNum).intValue();
-        String threadNumSql = "active_threads = " + threadNumInt;
+
+        Map<String, Object> whereFilter = new HashMap<>();
         if (threadNum != threadNumInt) {
-            threadNumSql = threadNumSql + " or active_threads = " + (threadNumInt + 1);
+            List<String> threadNumIntList = new ArrayList<>();
+            threadNumIntList.add(threadNumInt + "");
+            threadNumIntList.add((threadNumInt + 1) + "");
+            whereFilter.put("active_threads", threadNumIntList);
+        } else {
+            whereFilter.put("active_threads", threadNumInt + "");
         }
 
-        String sql = String.format("select count, fail_count, avg_tps , max_rt, min_rt, sum_rt, sa_count, active_threads, transaction " +
-                "from %s where (%s) and (%s) ", measurement, threadNumSql, sb);
+        whereFilter.put("transaction", xpathMd5List);
 
-        List<Map> queryResult = influxWriter.query(sql, Map.class);
+        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("count", null);
+        fieldAndAlias.put("time", null);
+        fieldAndAlias.put("fail_count", "failCount");
+        fieldAndAlias.put("avg_tps", "avgTps");
+        fieldAndAlias.put("max_rt", "maxRt");
+        fieldAndAlias.put("min_rt", "minRt");
+        fieldAndAlias.put("sum_rt", "sumRt");
+        fieldAndAlias.put("sa_count", "saCount");
+        fieldAndAlias.put("active_threads", "activeThreads");
+        fieldAndAlias.put("transaction", null);
+        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+        enginePressureQuery.setWhereFilter(whereFilter);
+        enginePressureQuery.setJobId(report.getJobId());
 
+        List<EngineMetricsDTO> engineMetricsDTOS = cloudReportService.listEnginePressure(enginePressureQuery, EngineMetricsDTO.class);
         Map<String, Map<String, Object>> groupMergedResult = new HashMap<>();
-        if (queryResult != null && !queryResult.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(engineMetricsDTOS)) {
             // 按xpathMd5分组
-            Map<String, List<Map>> groupedResult = queryResult.stream().collect(Collectors.groupingBy(map -> (String) map.get("transaction")));
+            Map<String, List<EngineMetricsDTO>> stringListMap = engineMetricsDTOS.stream().collect(Collectors.groupingBy(EngineMetricsDTO::getTransaction));
 
             // 分组后合并的结果
-            for (Map.Entry<String, List<Map>> entry : groupedResult.entrySet()) {
+            for (Map.Entry<String, List<EngineMetricsDTO>> entry : stringListMap.entrySet()) {
                 groupMergedResult.put(entry.getKey(), mergeResult(entry.getValue()));
             }
 
-            Map<String, Object> rootGroupResult = mergeResult(queryResult);
+            Map<String, Object> rootGroupResult = mergeResult(engineMetricsDTOS);
 
             double maxTps = groupMergedResult.entrySet().stream().map(entry -> (BigDecimal) entry.getValue().get("maxTps")).mapToDouble(value -> value.doubleValue()).sum();
             rootGroupResult.put("maxTps", new BigDecimal(maxTps).setScale(1, BigDecimal.ROUND_HALF_UP));
@@ -454,7 +470,6 @@ public class ReportServiceImpl implements ReportService {
             rootGroupResult.put("tps", new BigDecimal(tps).setScale(1, BigDecimal.ROUND_HALF_UP));
 
             groupMergedResult.put(xpathMd5, rootGroupResult);
-
         }
 
         // 补充目标信息等
@@ -534,34 +549,34 @@ public class ReportServiceImpl implements ReportService {
         return summaryBean;
     }
 
-    private Map<String, Object> mergeResult(List<Map> values) {
+    private Map<String, Object> mergeResult(List<EngineMetricsDTO> values) {
         Map<String, Object> v = new HashMap<>();
         //请求数
-        double totalResultNum = values.stream().mapToDouble(value -> transform(value.get("count"))).sum();
+        double totalResultNum = values.stream().mapToDouble(value -> transform(value.getCount())).sum();
         v.put("totalRequest", totalResultNum);
         //TPS
-        double maxTps = values.stream().map(map -> ((BigDecimal) map.get("count")).divide(new BigDecimal(5), 1, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).max().getAsDouble();
+        double maxTps = values.stream().map(map -> (new BigDecimal(map.getCount())).divide(new BigDecimal(5), 1, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).max().getAsDouble();
         v.put("maxTps", new BigDecimal(maxTps).setScale(1, BigDecimal.ROUND_HALF_UP));
 
-        double avgTps = values.stream().map(map -> ((BigDecimal) map.get("count")).divide(new BigDecimal(5), 1, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).average().getAsDouble();
+        double avgTps = values.stream().map(map -> (new BigDecimal(map.getCount())).divide(new BigDecimal(5), 1, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).average().getAsDouble();
         v.put("tps", new BigDecimal(avgTps).setScale(2, BigDecimal.ROUND_HALF_UP));
 
         //rt
-        double maxRt = values.stream().mapToDouble(value -> transform(value.get("max_rt"))).max().getAsDouble();
+        double maxRt = values.stream().mapToDouble(value -> transform(value.getMaxRt())).max().getAsDouble();
         v.put("maxRt", new BigDecimal(maxRt).setScale(1, BigDecimal.ROUND_HALF_UP));
-        double minRt = values.stream().mapToDouble(value -> transform(value.get("min_rt"))).min().getAsDouble();
+        double minRt = values.stream().mapToDouble(value -> transform(value.getMinRt())).min().getAsDouble();
         v.put("minRt", new BigDecimal(minRt).setScale(1, BigDecimal.ROUND_HALF_UP));
 
-        double avgRt = values.stream().map(map -> ((BigDecimal) map.get("sum_rt")).divide((BigDecimal) map.get("count"), 2, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).average().getAsDouble();
+        double avgRt = values.stream().map(map -> ((BigDecimal) map.getSumRt()).divide(new BigDecimal(map.getCount()), 2, BigDecimal.ROUND_HALF_UP)).mapToDouble(value -> value.doubleValue()).average().getAsDouble();
         v.put("avgRt", new BigDecimal(avgRt).setScale(2, BigDecimal.ROUND_HALF_UP));
 
         //请求成功率
-        double totalFailedRequestNum = values.stream().mapToDouble(value -> transform(value.get("fail_count"))).sum();
+        double totalFailedRequestNum = values.stream().mapToDouble(value -> transform(value.getFailCount())).sum();
         double successRate = (totalResultNum - totalFailedRequestNum) * 100 / totalResultNum;
         v.put("successRate", new BigDecimal(successRate).setScale(0, BigDecimal.ROUND_HALF_UP));
 
         //sa
-        double sa = values.stream().mapToDouble(value -> transform(value.get("sa_count"))).average().getAsDouble();
+        double sa = values.stream().mapToDouble(value -> transform(value.getSaCount())).average().getAsDouble();
         v.put("sa", new BigDecimal(sa).setScale(0, BigDecimal.ROUND_HALF_UP));
 
         return v;
@@ -615,7 +630,7 @@ public class ReportServiceImpl implements ReportService {
             childControllers.forEach(o -> threadGroupChildMap.put(o.getXpathMd5(), scriptNode.getXpathMd5()));
             childSamplers.forEach(o -> threadGroupChildMap.put(o.getXpathMd5(), scriptNode.getXpathMd5()));
         });
-        if (!threadGroupChildMap.containsKey(reportTrendQuery.getXpathMd5())){
+        if (!threadGroupChildMap.containsKey(reportTrendQuery.getXpathMd5())) {
             return null;
         }
         ThreadGroupConfigExt value = configMap.get(threadGroupChildMap.get(reportTrendQuery.getXpathMd5()));
@@ -636,12 +651,47 @@ public class ReportServiceImpl implements ReportService {
             return null;
         }
         reportTrend.setConcurrent(concurrent);
-        for (String num : concurrent){
-            ScriptNodeSummaryBean scriptNodeSummaryBean = this.queryNode(reportTrendQuery.getReportId(), threadGroupChildMap.get(reportTrendQuery.getXpathMd5()), Double.parseDouble(num));
-            ScriptNodeSummaryBean currentValue = getCurrentValue(scriptNodeSummaryBean, reportTrendQuery.getXpathMd5());
-            rt.add(currentValue.getAvgRt() != null && currentValue.getAvgRt().getResult() != null ? currentValue.getAvgRt().getResult().toString() : "0");
-            tps.add(currentValue.getTps() != null && currentValue.getTps().getResult() != null ? currentValue.getTps().getResult().toString() : "0");
+        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("active_threads", "activeThreads");
+        fieldAndAlias.put("avg(avg_tps)", "avgTps");
+        fieldAndAlias.put("avg(avg_rt)", "avgRt");
+        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+        enginePressureQuery.setJobId(reportResult.getJobId());
+        enginePressureQuery.setTransaction(threadGroupChildMap.get(reportTrendQuery.getXpathMd5()));
+        List<String> groupByFields = new ArrayList<>();
+        groupByFields.add("active_threads");
+        enginePressureQuery.setGroupByFields(groupByFields);
+        List<EngineMetricsDTO> engineMetricsDTOS = cloudReportService.listEnginePressure(enginePressureQuery, EngineMetricsDTO.class);
+        if (CollectionUtils.isNotEmpty(engineMetricsDTOS)){
+            Map<Integer, List<EngineMetricsDTO>> listMap = engineMetricsDTOS.stream().collect(Collectors.groupingBy(EngineMetricsDTO::getActiveThreads));
+            for (String num : concurrent) {
+                String rtString = "0";
+                String tpsString = "0";
+                double parseDouble = Double.parseDouble(num);
+                int threadNumInt = new BigDecimal(num).intValue();
+                List<EngineMetricsDTO> all = new ArrayList<>();
+                List<EngineMetricsDTO> metricsDTOS = listMap.get(threadNumInt);
+                if (CollectionUtils.isNotEmpty(metricsDTOS)){
+                    all.addAll(metricsDTOS);
+                }
+                if (parseDouble != threadNumInt) {
+                    List<EngineMetricsDTO> otherMetricsDTOS = listMap.get(threadNumInt + 1);
+                    if (CollectionUtils.isNotEmpty(otherMetricsDTOS)){
+                        all.addAll(otherMetricsDTOS);
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(all)){
+                    double avgRt = all.stream().mapToDouble(o -> o.getAvgRt().doubleValue()).average().getAsDouble();
+                    double avgTps = all.stream().mapToDouble(o -> o.getAvgTps().doubleValue()).average().getAsDouble();
+                    rtString = avgRt + "";
+                    tpsString = avgTps + "";
+                }
+                rt.add(rtString);
+                tps.add(tpsString);
+            }
         }
+
         reportTrend.setRt(rt);
         reportTrend.setTps(tps);
         if (CollectionUtils.isNotEmpty(reportTrend.getConcurrent()) && CollectionUtils.isNotEmpty(reportTrend.getRt()) && !"0".equals(reportTrend.getRt().get(0))) {
@@ -652,12 +702,12 @@ public class ReportServiceImpl implements ReportService {
 
     }
 
-    private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5){
-        if (scriptNodeSummaryBean.getXpathMd5().equals(xpathMd5)){
+    private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5) {
+        if (scriptNodeSummaryBean.getXpathMd5().equals(xpathMd5)) {
             return scriptNodeSummaryBean;
         }
-        if (CollectionUtils.isNotEmpty(scriptNodeSummaryBean.getChildren())){
-            for (ScriptNodeSummaryBean child : scriptNodeSummaryBean.getChildren()){
+        if (CollectionUtils.isNotEmpty(scriptNodeSummaryBean.getChildren())) {
+            for (ScriptNodeSummaryBean child : scriptNodeSummaryBean.getChildren()) {
                 return getCurrentValue(child, xpathMd5);
             }
         }

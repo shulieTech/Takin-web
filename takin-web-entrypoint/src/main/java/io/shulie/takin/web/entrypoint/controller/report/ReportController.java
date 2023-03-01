@@ -6,12 +6,10 @@ import javax.annotation.Resource;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
+import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
-import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
-import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
-import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.adapter.api.model.response.report.*;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
@@ -117,6 +115,16 @@ public class ReportController {
         return ResponseResult.success(reportService.queryReportTrend(reportTrendQuery));
     }
 
+    @GetMapping("report/queryReportTrendByThread")
+    @ApiOperation("线程报告链路趋势")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.START_STOP
+    )
+    public ResponseResult<ThreadReportTrendResp> queryReportTrendByThread(ReportTrendQueryReq reportTrendQuery) {
+        return ResponseResult.success(reportService.queryReportTrendByThread(reportTrendQuery));
+    }
+
     @GetMapping("/report/queryNodeTree")
     @ApiOperation("脚本节点树")
     @AuthVerification(
@@ -155,6 +163,30 @@ public class ReportController {
     public ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId) {
         return ResponseResult.success(reportService.querySummaryList(reportId));
     }
+
+    /**
+     * 获取指定阶梯递增线程组的指定线程数压测明细
+     *
+     * @param reportId
+     * @param xpathMd5
+     * @param threadNum
+     * @return
+     */
+    @GetMapping("/report/businessActivity/summary/threadGroup")
+    @ApiOperation("阶梯递增压测明细")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.START_STOP
+    )
+    public ResponseResult<ScriptNodeSummaryBean> getSummaryForThreadGroup(Long reportId, String xpathMd5, Double threadNum){
+        if(threadNum == null){
+            NodeTreeSummaryResp summaryResp = reportService.querySummaryList(reportId);
+            ScriptNodeSummaryBean scriptNodeSummaryBean = summaryResp.getScriptNodeSummaryBeans().get(0).getChildren().stream().filter(bean -> xpathMd5.equals(bean.getXpathMd5())).findFirst().get();
+            return ResponseResult.success(scriptNodeSummaryBean);
+        }
+        return ResponseResult.success(reportService.queryNode(reportId, xpathMd5, threadNum));
+    }
+
 
     @GetMapping("/report/getJtlDownLoadUrl")
     @ApiOperation(value = "获取jtl文件下载路径")

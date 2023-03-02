@@ -668,6 +668,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
                                                   List<EnginePluginInput> enginePlugins) {
         Long sceneManageId;
         CloudPluginUtils.fillUserData(input);
+        input.setDeptId(WebPluginUtils.traceDeptId());
         //首先根据脚本实例id构建压测场景名称
         String pressureTestSceneName = SceneManageConstant.getTryRunSceneName(input.getScriptDeployId());
         //根据场景名称查询是否已经存在场景

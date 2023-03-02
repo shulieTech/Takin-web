@@ -19,7 +19,7 @@ public class VerifyTaskUtils {
      * @return
      */
     public static String getVerifyTaskRedisMapKey(Integer refType,Long refId) {
-        return WebPluginUtils.traceTenantId() + "$" + WebPluginUtils.traceEnvCode()  + "$"  + refType + "$" + refId;
+        return WebPluginUtils.traceTenantId() + "$" + WebPluginUtils.traceEnvCode() + "$" + WebPluginUtils.traceTenantAppKey()  + "$"  + refType + "$" + refId;
     }
 
     /**
@@ -32,6 +32,7 @@ public class VerifyTaskUtils {
         TenantCommonExt ext = new TenantCommonExt();
         ext.setTenantId(Long.parseLong(temp[0]));
         ext.setEnvCode(temp[1]);
+        ext.setTenantAppKey(temp[2]);
         return ext;
     }
 

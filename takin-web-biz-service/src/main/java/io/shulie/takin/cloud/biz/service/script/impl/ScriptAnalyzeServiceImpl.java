@@ -163,7 +163,7 @@ public class ScriptAnalyzeServiceImpl implements ScriptAnalyzeService {
             fileMapping.put(String.valueOf(FileTypeEnum.DATA.getCode()), verifyRequest.getDataFilePath());
             fileMapping.put(String.valueOf(FileTypeEnum.ATTACHMENT.getCode()), verifyRequest.getAttachmentsPath());
             redisClientUtil.hmset(mappingKey, fileMapping);
-            redisClientUtil.expire(mappingKey, 1, TimeUnit.DAYS);
+            redisClientUtil.expire(mappingKey, 2, TimeUnit.MINUTES);
         }
     }
 

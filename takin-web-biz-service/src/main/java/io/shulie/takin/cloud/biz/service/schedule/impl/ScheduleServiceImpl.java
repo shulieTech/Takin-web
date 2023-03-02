@@ -515,22 +515,22 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
 
     // 处理文件路径映射
     private void fileMappingIfNecessary(ScheduleStartRequestExt requestExt, List<FileInfo> dataFile, FileTypeEnum data) {
-        if (requestExt.isFileMapping() && !CollectionUtils.isEmpty(dataFile)) {
-            String mappingKey = PressureStartCache.getScriptMappingKey(requestExt.getAttachId());
-            List<String> filePath = (List<String>) redisClientUtil.hmget(mappingKey, String.valueOf(data.getCode()));
-            Map<String, String> fileMap = filePath.stream().collect(
-                    Collectors.toMap(path -> path.substring(path.lastIndexOf(SceneManageConstant.FILE_SPLIT)), Function.identity()));
-            dataFile.forEach(file -> {
-                String uri = file.getUri();
-                // 文件名称
-                String fileName = uri.substring(uri.lastIndexOf(SceneManageConstant.FILE_SPLIT));
-                // 映射的路径
-                String mapPath = fileMap.get(fileName);
-                // 如果没有映射就不做变更
-                if (StringUtils.isNotBlank(mapPath)) {
-                    file.setUri(mapPath);
-                }
-            });
-        }
+//        if (requestExt.isFileMapping() && !CollectionUtils.isEmpty(dataFile)) {
+//            String mappingKey = PressureStartCache.getScriptMappingKey(requestExt.getAttachId());
+//            List<String> filePath = (List<String>) redisClientUtil.hmget(mappingKey, String.valueOf(data.getCode()));
+//            Map<String, String> fileMap = filePath.stream().collect(
+//                    Collectors.toMap(path -> path.substring(path.lastIndexOf(SceneManageConstant.FILE_SPLIT)), Function.identity()));
+//            dataFile.forEach(file -> {
+//                String uri = file.getUri();
+//                // 文件名称
+//                String fileName = uri.substring(uri.lastIndexOf(SceneManageConstant.FILE_SPLIT));
+//                // 映射的路径
+//                String mapPath = fileMap.get(fileName);
+//                // 如果没有映射就不做变更
+//                if (StringUtils.isNotBlank(mapPath)) {
+//                    file.setUri(mapPath);
+//                }
+//            });
+//        }
     }
 }

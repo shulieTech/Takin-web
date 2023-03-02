@@ -43,7 +43,7 @@ public class VerifyTaskUtils {
      */
     public static Integer getRefType(String redisKey) {
         String[] temp = redisKey.split("\\$");
-        return Integer.parseInt(temp[2]);
+        return Integer.parseInt(temp[3]);
     }
 
     /**
@@ -53,6 +53,6 @@ public class VerifyTaskUtils {
      */
     public static Long getRefId(String redisKey) {
         String[] temp = redisKey.split("\\$");
-        return Long.parseLong(temp[3]);
+        return Long.parseLong(temp[4]);
     }
 }

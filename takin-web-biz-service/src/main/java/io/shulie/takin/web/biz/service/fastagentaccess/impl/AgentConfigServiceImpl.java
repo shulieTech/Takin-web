@@ -87,7 +87,6 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
     @Override
     public void batchInsert(List<AgentConfigCreateRequest> createRequestList) {
-        this.cacheEvict(CACHE_KEY_AGENT_CONFIG);
         List<String> enConfigKeyList = new ArrayList<>();
         List<String> zhConfigKeyList = new ArrayList<>();
 
@@ -124,6 +123,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             })
             .collect(Collectors.toList());
         agentConfigDAO.batchInsert(createAgentConfigParams);
+        this.cacheEvict(CACHE_KEY_AGENT_CONFIG);
     }
 
     @Override
@@ -184,7 +184,6 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
     @Override
     public void update(AgentConfigUpdateRequest updateRequest) {
-        this.cacheEvict(CACHE_KEY_AGENT_CONFIG);
         AgentConfigDetailResult detailResult = agentConfigDAO.findById(updateRequest.getId());
         Assert.notNull(detailResult, "配置不存在！");
         // 特殊处理校验下zk地址
@@ -198,6 +197,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         }else{
             this.updateWithProjectName(updateRequest, detailResult);
         }
+        this.cacheEvict(CACHE_KEY_AGENT_CONFIG);
         applicationContext.publishEvent(new DynamicConfigRefreshEvent(projectName));
     }
 
@@ -313,7 +313,6 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
     @Override
     public void useGlobal(Long id) {
-        this.cacheEvict(CACHE_KEY_AGENT_CONFIG);
         AgentConfigDetailResult detailResult = agentConfigDAO.findById(id);
         // 如果当前id对应的配置不是应用配置则直接return
         if (detailResult == null || !AgentConfigTypeEnum.PROJECT.getVal().equals(detailResult.getType())) {
@@ -321,6 +320,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         }
         // 删除应用配置
         agentConfigDAO.deleteById(id);
+        this.cacheEvict(CACHE_KEY_AGENT_CONFIG);
     }
 
     @Override
@@ -561,7 +561,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
     }
 
     private void cacheEvict(String keyPre){
-        Set<String> keys = RedisHelper.keys(keyPre);
+        Set<String> keys = RedisHelper.keys(keyPre + "*");
         if (!CollectionUtils.isEmpty(keys)){
             keys.forEach(RedisHelper::delete);
         }

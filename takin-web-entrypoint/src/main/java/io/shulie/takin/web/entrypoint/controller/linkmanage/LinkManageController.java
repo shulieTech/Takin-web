@@ -74,11 +74,7 @@ public class LinkManageController {
     )
     public Response<String> deleteScene(@RequestBody SceneManageDeleteReq req) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
-        BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(req.getId());
-        if (null == dto) {
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, "该业务流程不存在");
-        }
-        OperationLogContextHolder.addVars(Vars.BUSINESS_FLOW_ID, dto.getId());
+        OperationLogContextHolder.addVars(Vars.BUSINESS_FLOW_ID, req.getId().toString());
         return Response.success(linkManageService.deleteScene(req.getId().toString()));
     }
 

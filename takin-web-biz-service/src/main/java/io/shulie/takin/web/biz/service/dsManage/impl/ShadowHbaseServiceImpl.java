@@ -210,21 +210,21 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         dsDetailResponse.setConfig(config);
 
         Map<String, Object> map = this.parseConfig(config);
-        Map<String, String> dataSourceBusinessObj = (Map<String, String>) map.get("dataSourceBusiness");
-        Map<String, String> dataSourcePerformanceTest = (Map<String, String>) map.get("dataSourcePerformanceTest");
+        Map<String, Object> dataSourceBusinessObj = (Map<String, Object>) map.get("dataSourceBusiness");
+        Map<String, Object> dataSourcePerformanceTest = (Map<String, Object>) map.get("dataSourcePerformanceTest");
 
         if (CollectionUtil.isNotEmpty(dataSourceBusinessObj)){
-            dsDetailResponse.setDataSourceBusinessParams(dataSourceBusinessObj.get("params"));
-            dsDetailResponse.setDataSourceBusinessPort(dataSourceBusinessObj.get("port"));
-            dsDetailResponse.setDataSourceBusinessQuorum(dataSourceBusinessObj.get("quorum"));
-            dsDetailResponse.setDataSourceBusinessZNode(dataSourceBusinessObj.get("znode"));
+            dsDetailResponse.setDataSourceBusinessParams(dataSourceBusinessObj.get("params") == null ? null : dataSourceBusinessObj.get("params").toString());
+            dsDetailResponse.setDataSourceBusinessPort(dataSourceBusinessObj.get("port") == null ? null : dataSourceBusinessObj.get("port").toString());
+            dsDetailResponse.setDataSourceBusinessQuorum(dataSourceBusinessObj.get("quorum") == null ? null : dataSourceBusinessObj.get("quorum").toString());
+            dsDetailResponse.setDataSourceBusinessZNode(dataSourceBusinessObj.get("znode") == null ? null : dataSourceBusinessObj.get("znode").toString());
         }
 
         if (CollectionUtil.isNotEmpty(dataSourcePerformanceTest)){
-            dsDetailResponse.setDataSourcePerformanceTestParams(dataSourcePerformanceTest.get("params"));
-            dsDetailResponse.setDataSourcePerformanceTestPort(dataSourcePerformanceTest.get("port"));
-            dsDetailResponse.setDataSourcePerformanceTestQuorum(dataSourcePerformanceTest.get("quorum"));
-            dsDetailResponse.setDataSourcePerformanceTestZNode(dataSourcePerformanceTest.get("znode"));
+            dsDetailResponse.setDataSourcePerformanceTestParams(dataSourcePerformanceTest.get("params") == null ? null : dataSourcePerformanceTest.get("params").toString());
+            dsDetailResponse.setDataSourcePerformanceTestPort(dataSourcePerformanceTest.get("port") == null ? null : dataSourcePerformanceTest.get("port").toString());
+            dsDetailResponse.setDataSourcePerformanceTestQuorum(dataSourcePerformanceTest.get("quorum") == null ? null : dataSourcePerformanceTest.get("quorum").toString());
+            dsDetailResponse.setDataSourcePerformanceTestZNode(dataSourcePerformanceTest.get("znode") == null ? null : dataSourcePerformanceTest.get("znode").toString());
         }
 
 

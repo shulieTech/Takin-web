@@ -1,12 +1,9 @@
 package io.shulie.takin.web.data.dao.impl;
 
-import java.util.List;
-
-import javax.annotation.Resource;
-
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import io.shulie.takin.web.common.constant.CacheConstants;
 import io.shulie.takin.web.common.util.DataTransformUtil;
+import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationNodeProbeMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationNodeProbeEntity;
@@ -16,8 +13,11 @@ import io.shulie.takin.web.data.result.application.ApplicationNodeProbeResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 应用节点探针操作表(ApplicationNodeProbe)表数据库 dao
@@ -42,17 +42,17 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO,
             ApplicationNodeProbeResult.class);
     }
 
-    @CacheEvict(value = CACHE_KEY_AGENT_APPLICATION_NODE, allEntries = true)
     @Override
     public boolean updateById(UpdateOperateResultParam updateOperateResultParam) {
+        this.cacheEvict(CACHE_KEY_AGENT_APPLICATION_NODE);
         ApplicationNodeProbeEntity applicationNodeProbeEntity = new ApplicationNodeProbeEntity();
         BeanUtils.copyProperties(updateOperateResultParam, applicationNodeProbeEntity);
         return SqlHelper.retBool(applicationNodeProbeMapper.updateById(applicationNodeProbeEntity));
     }
 
-    @CacheEvict(value = CACHE_KEY_AGENT_APPLICATION_NODE, allEntries = true)
     @Override
     public boolean create(CreateApplicationNodeProbeParam createApplicationNodeProbeParam) {
+        this.cacheEvict(CACHE_KEY_AGENT_APPLICATION_NODE);
         ApplicationNodeProbeEntity applicationNodeProbeEntity = new ApplicationNodeProbeEntity();
         BeanUtils.copyProperties(createApplicationNodeProbeParam, applicationNodeProbeEntity);
         return SqlHelper.retBool(applicationNodeProbeMapper.insert(applicationNodeProbeEntity));
@@ -70,9 +70,9 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO,
         return DataTransformUtil.list2list(applicationNodeProbeEntityList, ApplicationNodeProbeResult.class);
     }
 
-    @CacheEvict(value = CACHE_KEY_AGENT_APPLICATION_NODE, allEntries = true)
     @Override
     public void delByAppNamesAndOperate(Integer operate, List<String> appNames) {
+        this.cacheEvict(CACHE_KEY_AGENT_APPLICATION_NODE);
         applicationNodeProbeMapper.delete(this.getLambdaQueryWrapper()
             .eq(ApplicationNodeProbeEntity::getOperate, operate)
             .in(CollectionUtils.isNotEmpty(appNames), ApplicationNodeProbeEntity::getApplicationName, appNames));
@@ -100,6 +100,13 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO,
                 .eq(ApplicationNodeProbeEntity::getOperate, code)
                 .in(ApplicationNodeProbeEntity::getApplicationName, appNames));
         return DataTransformUtil.list2list(applicationNodeProbeEntities, ApplicationNodeProbeResult.class);
+    }
+
+    private void cacheEvict(String keyPre){
+        Set<String> keys = RedisHelper.keys(keyPre);
+        if (!org.springframework.util.CollectionUtils.isEmpty(keys)){
+            keys.forEach(RedisHelper::delete);
+        }
     }
 
 }

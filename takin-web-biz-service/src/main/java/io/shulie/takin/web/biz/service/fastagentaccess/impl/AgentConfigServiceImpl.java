@@ -38,6 +38,7 @@ import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEffectMechani
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigValueTypeEnum;
 import io.shulie.takin.web.common.util.AppCommonUtil;
+import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentConfigDAO;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentConfigQueryParam;
@@ -50,7 +51,6 @@ import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -85,9 +85,9 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
      */
     private final static String ZK_CONFIG_KEY = "simulator.zk.servers";
 
-    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
     @Override
     public void batchInsert(List<AgentConfigCreateRequest> createRequestList) {
+        this.cacheEvict(CACHE_KEY_AGENT_CONFIG);
         List<String> enConfigKeyList = new ArrayList<>();
         List<String> zhConfigKeyList = new ArrayList<>();
 
@@ -182,9 +182,9 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         return filterConfigEffect(list, queryRequest);
     }
 
-    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
     @Override
     public void update(AgentConfigUpdateRequest updateRequest) {
+        this.cacheEvict(CACHE_KEY_AGENT_CONFIG);
         AgentConfigDetailResult detailResult = agentConfigDAO.findById(updateRequest.getId());
         Assert.notNull(detailResult, "配置不存在！");
         // 特殊处理校验下zk地址
@@ -311,9 +311,9 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         return createParam;
     }
 
-    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
     @Override
     public void useGlobal(Long id) {
+        this.cacheEvict(CACHE_KEY_AGENT_CONFIG);
         AgentConfigDetailResult detailResult = agentConfigDAO.findById(id);
         // 如果当前id对应的配置不是应用配置则直接return
         if (detailResult == null || !AgentConfigTypeEnum.PROJECT.getVal().equals(detailResult.getType())) {
@@ -558,6 +558,13 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
     private String getOperator() {
         UserExt userExt = WebPluginUtils.traceUser();
         return userExt == null ? LoginConstant.DEFAULT_OPERATOR : userExt.getName();
+    }
+
+    private void cacheEvict(String keyPre){
+        Set<String> keys = RedisHelper.keys(keyPre);
+        if (!CollectionUtils.isEmpty(keys)){
+            keys.forEach(RedisHelper::delete);
+        }
     }
 
 }

@@ -561,7 +561,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
     }
 
     private void cacheEvict(String keyPre){
-        Set<String> keys = RedisHelper.keys(keyPre);
+        Set<String> keys = RedisHelper.keys(keyPre + "*");
         if (!CollectionUtils.isEmpty(keys)){
             keys.forEach(RedisHelper::delete);
         }

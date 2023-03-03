@@ -106,7 +106,7 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO,
     }
 
     private void cacheEvict(String keyPre){
-        Set<String> keys = RedisHelper.keys(keyPre);
+        Set<String> keys = RedisHelper.keys(keyPre + "*");
         if (!org.springframework.util.CollectionUtils.isEmpty(keys)){
             keys.forEach(RedisHelper::delete);
         }

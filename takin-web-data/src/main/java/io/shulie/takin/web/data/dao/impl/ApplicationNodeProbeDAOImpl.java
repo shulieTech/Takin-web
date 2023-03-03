@@ -44,18 +44,21 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO,
 
     @Override
     public boolean updateById(UpdateOperateResultParam updateOperateResultParam) {
-        this.cacheEvict(CACHE_KEY_AGENT_APPLICATION_NODE);
         ApplicationNodeProbeEntity applicationNodeProbeEntity = new ApplicationNodeProbeEntity();
         BeanUtils.copyProperties(updateOperateResultParam, applicationNodeProbeEntity);
-        return SqlHelper.retBool(applicationNodeProbeMapper.updateById(applicationNodeProbeEntity));
+        boolean retBool = SqlHelper.retBool(applicationNodeProbeMapper.updateById(applicationNodeProbeEntity));
+        this.cacheEvict(CACHE_KEY_AGENT_APPLICATION_NODE);
+        return retBool;
     }
 
     @Override
     public boolean create(CreateApplicationNodeProbeParam createApplicationNodeProbeParam) {
-        this.cacheEvict(CACHE_KEY_AGENT_APPLICATION_NODE);
+
         ApplicationNodeProbeEntity applicationNodeProbeEntity = new ApplicationNodeProbeEntity();
         BeanUtils.copyProperties(createApplicationNodeProbeParam, applicationNodeProbeEntity);
-        return SqlHelper.retBool(applicationNodeProbeMapper.insert(applicationNodeProbeEntity));
+        boolean retBool = SqlHelper.retBool(applicationNodeProbeMapper.insert(applicationNodeProbeEntity));
+        this.cacheEvict(CACHE_KEY_AGENT_APPLICATION_NODE);
+        return retBool;
     }
 
     @Override
@@ -72,10 +75,10 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO,
 
     @Override
     public void delByAppNamesAndOperate(Integer operate, List<String> appNames) {
-        this.cacheEvict(CACHE_KEY_AGENT_APPLICATION_NODE);
         applicationNodeProbeMapper.delete(this.getLambdaQueryWrapper()
             .eq(ApplicationNodeProbeEntity::getOperate, operate)
             .in(CollectionUtils.isNotEmpty(appNames), ApplicationNodeProbeEntity::getApplicationName, appNames));
+        this.cacheEvict(CACHE_KEY_AGENT_APPLICATION_NODE);
     }
 
     @Override

@@ -54,10 +54,11 @@ public interface MachineManageService {
      * @param request
      * @return
      */
-    List<PressureMachineResponse>  listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request);
+    List<PressureMachineResponse> listMachinesByTag(HttpServletRequest httpRequest, PressureMachineQueryByTagRequest request);
 
     /**
      * 根据机器id列表获取机器信息
+     *
      * @param request
      * @param httpRequest
      * @return
@@ -66,10 +67,20 @@ public interface MachineManageService {
 
     /**
      * 获取机器信息
+     *
      * @param request
      * @param httpRequest
      * @return
      */
     ResponseResult<List<PressureMachineResponse>> listMachines(@RequestBody PressureMachineQueryByTagRequest request, HttpServletRequest httpRequest);
+
+    /**
+     * 外网安装，只选择一台机器拉取tar包，然后自动分发到所有机器，最后倒入镜像部署
+     *
+     * @param request
+     * @param httpRequest
+     * @return
+     */
+    String benchmarkEnableExternal(PressureMachineLoadRequest request, HttpServletRequest httpRequest);
 
 }

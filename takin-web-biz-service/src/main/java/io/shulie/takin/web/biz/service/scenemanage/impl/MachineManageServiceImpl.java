@@ -44,14 +44,7 @@ import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
 import io.shulie.takin.web.biz.constant.MachineManageConstants;
 import io.shulie.takin.web.biz.pojo.dto.machinemanage.PressureMachineDTO;
-import io.shulie.takin.web.biz.pojo.request.scene.BenchmarkMachineDeployRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.BenchmarkSuitePageRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineBaseRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineQueryByTagRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineResponse;
-import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.*;
 import io.shulie.takin.web.biz.pojo.response.scene.BenchmarkSuiteResponse;
 import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
 import io.shulie.takin.web.biz.utils.FileUtils;
@@ -67,7 +60,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -122,6 +118,10 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     private static final ConcurrentHashMap<Long, String> deployStatusMap = new ConcurrentHashMap<>();
 
     private static final List<String> deployProgressList = new ArrayList<>();
+
+    @Autowired
+    @Qualifier("redisTemplate")
+    private RedisTemplate redisTemplate;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -835,6 +835,238 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     }
 
     /**
+     * 外网安装，只选择一台机器拉取tar包，然后自动分发到所有机器，最后倒入镜像部署
+     *
+     * @param request
+     * @param httpRequest
+     * @return
+     */
+    @Override
+    public String benchmarkEnableExternal(PressureMachineLoadRequest request, HttpServletRequest httpRequest) {
+        if (request.getBenchmarkSuiteName() == null) {
+            return "benchmark部署需要上传部署组件名称";
+        }
+        MachineManageEntity manageDAOById = machineManageDAO.getById(request.getId());
+        if (manageDAOById == null) {
+            return "没有找到对应机器数据，请刷新页面再试";
+        }
+        if (manageDAOById.getUserName() == null) {
+            return "当前机器没有用户名，请先补充用户名";
+        }
+        if (manageDAOById.getPassword() == null) {
+            return "当前机器没有密码，请先补充密码";
+        }
+        SshInitUtil sshInitUtil = new SshInitUtil(manageDAOById.getMachineIp(), des.decryptStr(manageDAOById.getPassword()), manageDAOById.getUserName());
+
+        //检测harbor连通性
+        StringBuffer checkHarborBuffer = new StringBuffer().append("curl --connect-timeout 10 ").append(harborMachineIp);
+        String checkHarborLinkExec = sshInitUtil.execute(checkHarborBuffer.toString(), sshExecTime);
+        deployStatusMap.put(request.getId(), "检测harbor连通性");
+        if (StringUtils.isBlank(checkHarborLinkExec.trim()) || checkHarborLinkExec.contains("Connection timed out")) {
+            log.info("检测harbor连通性:{}", checkHarborLinkExec);
+            manageDAOById.setStatus(3);
+            return "机器" + manageDAOById.getMachineIp() + "检测harbor连通性验证未通过，请确认与harbor机器" + harborMachineIp + "连通性";
+        }
+
+        Map<String, String> headerMap = getHeaderMap(httpRequest);
+        //首先更新状态为进行中
+        manageDAOById.setBenchmarkSuiteName(request.getBenchmarkSuiteName());
+        manageDAOById.setDeployType(MachineManageConstants.TYPE_BENCHMARK);
+        manageDAOById.setUpdateTime(new Date());
+        manageDAOById.setStatus(1);
+        machineManageDAO.updateById(manageDAOById);
+
+        //开始部署
+        deployStatusMap.put(request.getId(), "检查docker环境");
+        THREAD_POOL.execute(() -> {
+            try {
+                //docker环境安装
+                String checkDockerExec = sshInitUtil.execute("docker -v", sshExecTime);
+                if (checkDockerExec == null || !checkDockerExec.contains("version")) {
+                    log.info("当前服务不存在docker环境,开始拉取docker环境安装包:" + checkDockerExec);
+                    deployStatusMap.put(request.getId(), "拉docker环境安装包");
+                    String dockerPullExec = sshInitUtil.execute(dockerDownloadCmd, sshExecTime);
+                    log.info("拉docker环境安装包日志：" + dockerPullExec);
+                    log.info("安装docker环境");
+                    deployStatusMap.put(request.getId(), "安装docker环境");
+                    String dockerInstallExec = sshInitUtil.execute("source /etc/profile && " + dockerInstallCmd, sshExecTime);
+                    log.info("安装日志：" + dockerInstallExec);
+                }
+                //安装完成后再次检测docker环境是否安装成功，如果不成功就退出
+                String checkDockerExecTwice = sshInitUtil.execute("docker -v", sshExecTime);
+                if (checkDockerExecTwice == null || !checkDockerExecTwice.contains("version")) {
+                    manageDAOById.setStatus(3);
+                    return;
+                }
+
+                //检测harbor配置
+                String checkHarborExec = sshInitUtil.execute("cat /etc/docker/daemon.json", sshExecTime);
+                if (checkHarborExec == null || !checkHarborExec.contains(harborMachineIp)) {
+                    log.info("开始修改目标机器的harbor配置");
+                    String harborConf = "sed -i 's/\"quay.io\"/\"quay.io\",\"" + harborMachineIp + "\"/' /etc/docker/daemon.json";
+                    String harborConfExec = sshInitUtil.execute(harborConf + " && systemctl daemon-reload && systemctl restart docker", sshExecTime);
+                    log.info("harbor配置修改日志：" + harborConfExec);
+                }
+
+                //设置harbor白名单
+                deployStatusMap.put(request.getId(), "设置harbor白名单");
+                log.info("开始设置harbor白名单");
+                SshInitUtil harborShellUtil = this.getHarborShellInfo();
+                StringBuffer whiteListBuffer = new StringBuffer()
+                        .append("iptables -I INPUT -s ").append(manageDAOById.getMachineIp()).append(" -p TCP --dport 80 -j ACCEPT");
+                String harborShellExec = harborShellUtil.execute(whiteListBuffer.toString(), sshExecTime);
+                log.info("设置harbor白名单日志：" + harborShellExec);
+
+                //拉取镜像
+                StringBuffer loadStr = new StringBuffer().append("cd /opt && docker load -i ").append(request.getBenchmarkSuiteName()).append(".tar");
+                sshInitUtil.execute(loadStr.toString(), sshExecTime);
+                deployStatusMap.put(request.getId(), "拉取镜像");
+                log.info("开始拉取镜像，镜像命令为:{}", loadStr.toString());
+                String dockerPullExec = sshInitUtil.execute(loadStr.toString(), sshExecTime);
+                log.info("拉取镜像日志：" + dockerPullExec);
+
+                StringBuffer dockerImagesCheckBuffer = new StringBuffer().append("docker images | grep ").append(manageDAOById.getBenchmarkSuiteName()).append("| grep -v grep | awk '{print $1}'");
+                String dockerImagesExec = sshInitUtil.execute(dockerImagesCheckBuffer.toString(), sshExecTime);
+                if (null == dockerImagesExec || !dockerImagesExec.contains(manageDAOById.getBenchmarkSuiteName())) {
+                    manageDAOById.setStatus(3);
+                    return;
+                }
+
+                //启动容器
+                deployStatusMap.put(request.getId(), "启动容器");
+                String dockerRun = dockerRunCmd.replaceAll("BENCHMARK_SUITE_NAME", request.getBenchmarkSuiteName());
+                log.info("开始执行docker命令，运行命令为:{}", dockerRun);
+                String dockerRunExec = sshInitUtil.execute(dockerRun, sshExecTime);
+                log.info("启动容器日志：" + dockerRunExec);
+
+                //替换配置文件
+                StringBuffer dockerPressureEnvConfBuffer = new StringBuffer().append("docker exec ")
+                        .append(manageDAOById.getBenchmarkSuiteName()).append(" /bin/bash -c ").append("'cd /data")
+                        .append(" && rm -rf /data/*.swp")
+                        .append(" && sed -i \"s/192.168.1.205/").append(benchmarkServerIp).append("/g\" /data/pressure.engine.env.conf")
+                        .append(" && sed -i \"s/192.168.1.222/").append(manageDAOById.getMachineIp()).append("/g\" /data/pressure.engine.env.conf")
+                        .append(" && sed -i \"s/test@shulie2021/").append(des.decryptStr(manageDAOById.getPassword())).append("/g\" /data/pressure.engine.env.conf")
+                        .append(" && rm -rf pressure-engine")
+                        .append(" && rm -rf pressure-engine.zip*")
+                        .append(" && wget ").append(dockerPressureUrl)
+                        .append(" && unzip -o pressure-engine.zip")
+                        .append(" && rm -rf pressure-engine.zip*")
+                        .append(" && rm -rf /data/pressure-engine/config/*.swp")
+                        .append(" && sed -i 's/LOCAL_PASSWORD/").append(des.decryptStr(manageDAOById.getPassword())).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/TAKIN_LITE_IP/").append(benchmarkServerIp).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/TAKIN_LITE_PORT/").append(benchmarkServerPort).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/LOCAL_HOST_IP/").append(manageDAOById.getMachineIp()).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/USER_APPKEY/").append(benchmarkUserAppKey).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/TENANT_ID/").append(WebPluginUtils.traceTenantId()).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/ENV_CODE/").append(WebPluginUtils.traceEnvCode()).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/PORT/").append(10000 + request.getId() + "").append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/BENCHMARK_SUITE_NAME/").append(request.getBenchmarkSuiteName()).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && sed -i 's/BENCHMARK_MACHINE_ID/").append(manageDAOById.getId()).append("/g' /data/pressure-engine/config/application-test.yml")
+                        .append(" && cd /data/pressure-engine")
+                        .append(" && sh start.sh -e test -t 1'");
+
+                //启动进程
+                deployStatusMap.put(request.getId(), "启动服务");
+                log.info("开始执行docker命令，运行命令为:{}", dockerPressureEnvConfBuffer);
+                String dockerAppRunExec = sshInitUtil.execute(dockerPressureEnvConfBuffer.toString(), sshExecTime);
+                log.info("启动服务日志：" + dockerAppRunExec);
+                //监听启动成功
+                long startTimeMillis = System.currentTimeMillis();
+                while (true) {
+                    try {
+                        if (System.currentTimeMillis() - startTimeMillis > dockerStartTimeout * 1000 * 60) {
+                            log.error("docker启动超过指定时间，设置为成功，机器状态还是不会成功，让客户从页面卸载");
+                            break;
+                        }
+                        Thread.sleep(3000);
+                        List<PressureMachineDTO> pressureMachineDTOS = this.getPressureMachineDTOList(headerMap);
+                        if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
+                            long count = pressureMachineDTOS.stream().filter(o -> manageDAOById.getMachineIp().equals(o.getConfigIp()) && manageDAOById.getBenchmarkSuiteName().trim().equals(o.getTypeMachine().trim())).count();
+                            if (count > 0) {
+                                deployStatusMap.put(request.getId(), "启动成功");
+                                log.info("启动成功，结束监听");
+                                manageDAOById.setStatus(2);
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.error("查询已部署机器列表出现异常", e);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("监听部署过程出现异常", e);
+                manageDAOById.setStatus(3);
+            } finally {
+                //部署成功
+                deployStatusMap.remove(request.getId());
+                manageDAOById.setUpdateTime(new Date());
+                log.info("部署完成更新状态，" + manageDAOById.getId());
+                machineManageDAO.updateById(manageDAOById);
+                log.info("部署完成更新状态完成" + manageDAOById.getId());
+            }
+        });
+        return null;
+    }
+
+    private String loadImage(PressureMachineLoadRequest request, HttpServletRequest httpServletRequest) {
+        MachineManageEntity manage = request.getMachineManageEntity();
+        SshInitUtil sshInitUtil =  new SshInitUtil(manage.getMachineIp(), des.decryptStr(manage.getPassword()), manage.getUserName());
+
+        //机器联通测试
+        String checkMachineExec = sshInitUtil.execute("echo machine_test", sshExecTime);
+        deployStatusMap.put(request.getId(), "验证机器连通性");
+        if (checkMachineExec == null || !checkMachineExec.contains("machine_test")) {
+            manage.setStatus(3);
+            return "机器" + manage.getMachineIp() + "连通性验证未通过，请确认用户名和密码是否正确";
+        }
+        //安装scp一键登录脚本
+        StringBuffer sshpassStr = new StringBuffer()
+                .append("yum install -y gcc && cd /opt")
+                .append(" && wget https://shulie-daily.oss-cn-hangzhou.aliyuncs.com/yidongyun-hy/sshpass-1.10.tar.gz ")
+                .append(" && tar xvzf sshpass-1.10.tar.gz && cd sshpass-1.10")
+                .append(" && ./configure && make && make install");
+        sshInitUtil.execute(sshpassStr.toString(), sshExecTime);
+
+        StringBuffer imageStr = new StringBuffer()
+                .append("sshpass -p ").append(des.decryptStr(request.getBashPass()))
+                .append(" scp ").append(request.getBaseUserName()).append("@").append(request.getBaseIp()).append(":/opt/").append(request.getBenchmarkSuiteName()).append(".tar ")
+                .append(" /opt");
+        sshInitUtil.execute(imageStr.toString(), sshExecTime);
+
+        redisTemplate.opsForValue().set("machine:load:info" + request.getTag(), JSON.toJSONString(manage));
+        benchmarkEnableExternal(request, httpServletRequest);
+        return "部署成功";
+    }
+
+    public void tt(PressureMachineLoadRequest request, HttpServletRequest httpServletRequest) {
+        LambdaQueryWrapper<MachineManageEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(MachineManageEntity::getTag, request.getTag());
+        lambdaQueryWrapper.eq(MachineManageEntity::getIsDeleted, 0);
+        List<MachineManageEntity> manageList = this.machineManageMapper.selectList(lambdaQueryWrapper);
+        Object installMachine = redisTemplate.opsForValue().get("machine:load:info" + request.getTag());
+        MachineManageEntity manage;
+        if (Objects.nonNull(installMachine)) {
+            String machineStr = installMachine.toString();
+            manage = JSON.parseObject(machineStr,MachineManageEntity.class);
+            request.setBaseIp(manage.getMachineIp());
+            request.setBaseUserName(manage.getUserName());
+            request.setBaseUserName(manage.getPassword());
+        } else {
+            //如果redis没有，就去从harbor scp过去
+            request.setBaseIp(harborMachineIp);
+            request.setBashPass(harborMachinePassword);
+            request.setBaseUserName(harborMachineUserName);
+        }
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+        for (MachineManageEntity machineManageEntity : manageList) {
+            request.setMachineManageEntity(machineManageEntity);
+            executorService.submit(() -> loadImage(request, httpServletRequest));
+        }
+    }
+
+
+    /**
      * 查询这个机器是否已经是节点机器
      *
      * @param machineManageEntities
@@ -900,28 +1132,31 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         try {
             JSONObject jsonObject = JSONObject.parseObject(sendGet);
             Object data = jsonObject.get("data");
-            if (data != null) {
-                List<PressureMachineDTO> pressureMachineDTOS = JSONObject.parseArray(data.toString(), PressureMachineDTO.class);
-                //处理ip上面的特殊字符
-                if (CollectionUtils.isNotEmpty(pressureMachineDTOS)) {
-                    pressureMachineDTOS.forEach(o -> {
-                        if (o.getIp() != null) {
-                            String ip = o.getIp();
-                            if (ip.startsWith("[")) {
-                                ip = ip.substring(1);
-                            }
-                            if (ip.endsWith("]")) {
-                                ip = ip.substring(0, ip.length() - 1);
-                            }
-                            o.setIp(ip);
-                        }
-                        if (o.getConfigIp() == null) {
-                            o.setConfigIp(o.getIp());
-                        }
-                    });
-                }
+            if (Objects.isNull(data)) {
+                return null;
+            }
+            List<PressureMachineDTO> pressureMachineDTOS = JSONObject.parseArray(data.toString(), PressureMachineDTO.class);
+            //处理ip上面的特殊字符
+            if (CollectionUtils.isEmpty(pressureMachineDTOS)) {
                 return pressureMachineDTOS;
             }
+            pressureMachineDTOS.forEach(o -> {
+                if (o.getIp() != null) {
+                    String ip = o.getIp();
+                    if (ip.startsWith("[")) {
+                        ip = ip.substring(1);
+                    }
+                    if (ip.endsWith("]")) {
+                        ip = ip.substring(0, ip.length() - 1);
+                    }
+                    o.setIp(ip);
+                }
+                if (o.getConfigIp() == null) {
+                    o.setConfigIp(o.getIp());
+                }
+            });
+            return pressureMachineDTOS;
+
         } catch (Exception e) {
             log.error("解析benchmarkMachineUrl返回结果出现异常,返回值为:{}", sendGet, e);
         }

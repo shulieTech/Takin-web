@@ -858,6 +858,11 @@ public class SceneServiceImpl implements SceneService {
                     scriptJmxNode.setRequestPath("|beanshell");
                     scriptJmxNode.setIdentification("takin|beanshell");
                     scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+                }else if(scriptJmxNode.getName().equals("JavaSampler")){
+                    scriptJmxNode.setEntrace("|java");
+                    scriptJmxNode.setRequestPath("|java");
+                    scriptJmxNode.setIdentification("takin|java");
+                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
                 }
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {
                     ActivityListResult activityListResult = activityMap.get(xpathMd5Map.get(scriptJmxNode.getXpathMd5()));
@@ -885,7 +890,6 @@ public class SceneServiceImpl implements SceneService {
                                 entranceJoinEntity.getMethodName() + "|" + entranceJoinEntity.getServiceName() : entranceJoinEntity.getServiceName());
                         scriptJmxNode.setStatus(1);
                     }
-
                 }
                 if (CollectionUtils.isNotEmpty(scriptJmxNode.getChildren())) {
                     dealScriptJmxNodes(scriptJmxNode.getChildren(), xpathMd5Map, activityMap);

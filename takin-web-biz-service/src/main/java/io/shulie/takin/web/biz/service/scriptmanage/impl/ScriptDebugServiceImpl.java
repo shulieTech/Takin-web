@@ -900,6 +900,8 @@ public class ScriptDebugServiceImpl extends AbstractIndicators implements Script
             ScriptDebugEntity newScriptDebug = new ScriptDebugEntity();
             newScriptDebug.setId(scriptDebug.getId());
             newScriptDebug.setRequestNum(scriptDebug.getRequestNum());
+            newScriptDebug.setCloudReportId(scriptDebug.getCloudReportId());
+            newScriptDebug.setCloudSceneId(scriptDebug.getCloudSceneId());
 
             try {
                 // 脚本变动更新

@@ -31,4 +31,4 @@ spec:
             memory: 1G
           limits:
             memory: 4G
-        command: ["java","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005","-Duser.timezone=Asia/Shanghai","-jar","/data/apps/takin-web/takin-web.jar","-javaagent","/data/apps/takin-web/pinpoint-agent-2.0.3-origin/pinpoint-bootstrap.jar", "-Dpinpoint.agentId=${HOSTNAME:0-16}","-Dpinpoint.applicationName=pressure_web_xixian_test","Dpinpoint.licence=1d07fa023d02d60d" ]
+        command: ["/bin/sh","-c","java -javaagent:/data/apps/takin-web/pinpoint-agent-2.0.3-origin/pinpoint-bootstrap.jar -Dpinpoint.agentId=${HOSTNAME:0-16} -Dpinpoint.applicationName=pressure_web_xixian_test -Dpinpoint.licence=1d07fa023d02d60d -Dpinpoint.log=/data/apps/takin-web/pinpoint-agent-2.0.3-origin/ -Duser.timezone=Asia/Shanghai -jar /data/apps/takin-web/takin-web.jar" ]

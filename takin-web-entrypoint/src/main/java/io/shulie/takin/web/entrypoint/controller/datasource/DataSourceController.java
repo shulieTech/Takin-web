@@ -6,7 +6,10 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.datasource.DataSourceCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.datasource.DataSourceDeleteRequest;
 import io.shulie.takin.web.biz.pojo.request.datasource.DataSourceQueryRequest;
@@ -47,24 +50,40 @@ public class DataSourceController {
 
     @PostMapping("/create")
     @ApiOperation(value = "创建数据源")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.DATASOURCE_MANAGE,
+            needAuth = ActionTypeEnum.CREATE
+    )
     public void createDatasource(@Validated @RequestBody DataSourceCreateRequest createRequest) {
         datasourceService.createDatasource(createRequest);
     }
 
     @PutMapping("/update")
     @ApiOperation("更新数据源")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.DATASOURCE_MANAGE,
+            needAuth = ActionTypeEnum.UPDATE
+    )
     public void updateDatasource(@Validated @RequestBody DataSourceUpdateRequest updateRequest) {
         datasourceService.updateDatasource(updateRequest);
     }
 
     @DeleteMapping("/delete")
     @ApiOperation("删除数据源")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.DATASOURCE_MANAGE,
+            needAuth = ActionTypeEnum.DELETE
+    )
     public void deleteDatasource(@Validated @RequestBody DataSourceDeleteRequest request) {
         datasourceService.deleteDatasource(request.getDatasourceIds());
     }
 
     @PostMapping("/list")
     @ApiOperation("数据源列表")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.DATASOURCE_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public PagingList<DatasourceListResponse> listDatasource(@Validated @RequestBody DataSourceQueryRequest queryRequest) {
         PagingList<DatasourceListResponse> results = datasourceService.listDatasource(queryRequest);
         return results;
@@ -72,12 +91,20 @@ public class DataSourceController {
 
     @GetMapping("/list/dictionary")
     @ApiOperation("数据源列表(下拉框筛选数据源)")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.DATASOURCE_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public List<DatasourceDictionaryResponse> listDatasourceNoPage() {
         return datasourceService.listDatasourceNoPage();
     }
 
     @GetMapping("/detail")
     @ApiOperation("数据源详情")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.DATASOURCE_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public DatasourceDetailResponse getDatasourceById(@Valid @NotNull Long datasourceId) {
         DatasourceDetailResponse response = datasourceService.getDatasource(datasourceId);
         return response;

@@ -6,4 +6,4 @@ COPY configurationFiles/prod/xixian/properties/msyh.ttf /data/apps/takin-web/con
 COPY configurationFiles/prod/xixian/properties/dept_example.csv /data/apps/takin-web/config/file/example/
 COPY configurationFiles/prod/xixian/properties/example.csv /data/apps/takin-web/config/file/example/
 COPY configurationFiles/prod/xixian/properties/application.properties /data/apps/takin-web/config/application.properties
-COPY configurationFiles/common/pinpoint-agent-2.0.3-tianyan  /data/apps/takin-web/pinpoint-agent-2.0.3-tianyan
+COPY configurationFiles/common/pinpoint-agent-2.0.3-origin  /data/apps/takin-web/pinpoint-agent-2.0.3-origin

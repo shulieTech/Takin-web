@@ -83,6 +83,7 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
@@ -956,7 +957,7 @@ public class ActivityServiceImpl implements ActivityService {
     private void tryClearActivityCache(long activityId) {
         try {
             String key = ActivityCacheAspect.REDIS_PREFIX_KEY + activityId + "::*";
-            Set keys = redisTemplate.keys(key);
+            Set keys = RedisHelper.keys(key);
             keys.forEach(k -> redisTemplate.delete(k));
         } catch (Exception e) {
             //Ignore

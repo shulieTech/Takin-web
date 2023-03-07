@@ -32,6 +32,9 @@ public class EnginePressureQuery {
 
     private Integer limit;
 
+    @ApiModelProperty("where过滤条件")
+    private Map<String, Object> whereFilter;
+
     @ApiModelProperty("排序策略,0:升序;1:降序")
     private Integer orderByStrategy;
 

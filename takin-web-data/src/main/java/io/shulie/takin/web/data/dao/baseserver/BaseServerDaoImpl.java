@@ -48,8 +48,8 @@ public class BaseServerDaoImpl implements BaseServerDao {
         long startTime = System.currentTimeMillis();
         AppBaseDataQuery query = new AppBaseDataQuery();
         Map<String, String> fieldAndAlias = new HashMap<>();
-        fieldAndAlias.put("agent_id", null);
-        fieldAndAlias.put("app_ip", null);
+        fieldAndAlias.put("agent_id", "agent_id");
+        fieldAndAlias.put("app_ip", "app_ip");
         fieldAndAlias.put("max(memory)", "memory");
         fieldAndAlias.put("max(disk)", "disk");
         fieldAndAlias.put("max(cpu_cores)", "cpu_cores");
@@ -108,7 +108,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
         appNames.forEach(appName -> {
             AppBaseDataQuery query = new AppBaseDataQuery();
             Map<String, String> fieldAndAlias = new HashMap<>();
-            fieldAndAlias.put("app_ip", null);
+            fieldAndAlias.put("app_ip", "app_ip");
             fieldAndAlias.put("max(cpu_rate)", "cpu_rate");
             fieldAndAlias.put("max(cpu_load)", "cpu_load");
             fieldAndAlias.put("max(mem_rate)", "mem_rate");
@@ -184,7 +184,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
 //        sb.append(" group by time(5s) order by time");
         AppBaseDataQuery query = new AppBaseDataQuery();
         Map<String, String> fieldAndAlias = new HashMap<>();
-        fieldAndAlias.put("time", null);
+        fieldAndAlias.put("time", "time");
         fieldAndAlias.put("avg(cpu_rate)", "cpu_rate");
         query.setFieldAndAlias(fieldAndAlias);
         query.setStartTime(param.getStartTime());

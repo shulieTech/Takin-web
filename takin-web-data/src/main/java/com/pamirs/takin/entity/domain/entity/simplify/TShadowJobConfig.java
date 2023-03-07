@@ -52,8 +52,6 @@ public class TShadowJobConfig extends UserCommonExt {
 
     private Integer isDeleted;
 
-    private Long customerId;
-
     private String sign;
 
 }

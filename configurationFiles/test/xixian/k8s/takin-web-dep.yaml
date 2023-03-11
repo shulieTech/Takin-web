@@ -1,26 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: takin-web
+  name: web
   namespace: shulie-takin
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: takin-web
+      app: web
   template:
     metadata:
       labels:
-        app: takin-web
+        app: web
     spec:
       containers:
-      - name: takin-web
+      - name: web
         image: harbor.dcos.xixian.unicom.local/skyeye-platform/stresstest/web:2.0.0
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
             exec:
-              command: ["/bin/sh", "-c", "mkdir -p /data/nfs_dir && mount -o rw,intr,soft,timeo=30,retry=3,nolock -t nfs 10.125.131.12:/data/share /data/nfs_dir"]
+              command:
+                - "/bin/sh"
+                - "-c"
+                - "mkdir -p /data/nfs_dir && mount -o rw,intr,soft,timeo=30,retry=3,nolock -t nfs 10.125.18.246:/data/share /data/nfs_dir"
         ports:
           - containerPort: 10008
         securityContext:
@@ -28,7 +31,7 @@ spec:
             add: ["SYS_ADMIN"]
         resources:
           requests:
-            memory: 1G
+            memory: 4G
           limits:
             memory: 4G
-        command: ["/bin/sh","-c","java -javaagent:/data/apps/takin-web/pinpoint-agent-2.0.3-origin/pinpoint-bootstrap.jar -Dpinpoint.agentId=${HOSTNAME:0-16} -Dpinpoint.applicationName=pressure_web_xixian_test -Dpinpoint.licence=1d07fa023d02d60d -Dpinpoint.log=/data/apps/takin-web/pinpoint-agent-2.0.3-origin/ -Duser.timezone=Asia/Shanghai -jar /data/apps/takin-web/takin-web.jar" ]
+        command: ["./start.sh" ]

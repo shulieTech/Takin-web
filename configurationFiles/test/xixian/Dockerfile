@@ -5,3 +5,5 @@ COPY repositories/ /data/apps/takin-web/plugins/
 COPY configurationFiles/test/xixian/properties/msyh.ttf /data/apps/takin-web/config/fonts/msyh.ttf
 COPY configurationFiles/test/xixian/properties/application.properties /data/apps/takin-web/config/application.properties
 COPY configurationFiles/common/pinpoint-agent-2.0.3-origin  /data/apps/takin-web/pinpoint-agent-2.0.3-origin
+COPY configurationFiles/test/xixian/start.sh ./start.sh
+RUN chmod +x ./start.sh

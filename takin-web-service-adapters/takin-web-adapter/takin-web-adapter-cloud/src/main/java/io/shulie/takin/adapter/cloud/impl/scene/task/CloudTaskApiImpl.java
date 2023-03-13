@@ -178,7 +178,7 @@ public class CloudTaskApiImpl implements CloudTaskApi {
                 setPluginVersion(plugin.getVersion());
             }}).collect(Collectors.toList());
         }
-        SceneTryRunTaskStartOutput output = sceneTaskService.startTryRun(input, enginePluginInputs);
+        SceneTryRunTaskStartOutput output = sceneTaskService.startTryRun(input, enginePluginInputs,req);
         return BeanUtil.copyProperties(output, SceneTryRunTaskStartResp.class);
     }
 

@@ -334,13 +334,6 @@ public class ScriptDebugServiceImpl extends AbstractIndicators implements Script
             }
             debugCloudRequest.setMachineId(machineId);
             debugCloudRequest.setEngineType(engineType);
-            // 脚本检查
-            log.info("调试 --> 脚本校验!");
-            List<String> errorMessages = this.checkScriptCorrelationAndGetError(debugCloudRequest);
-            if (!errorMessages.isEmpty()) {
-                response.setErrorMessages(errorMessages);
-                return response;
-            }
             //填充当前用户信息为操作人
             UserExt user = WebPluginUtils.traceUser();
             if (user != null) {
@@ -900,6 +893,8 @@ public class ScriptDebugServiceImpl extends AbstractIndicators implements Script
             ScriptDebugEntity newScriptDebug = new ScriptDebugEntity();
             newScriptDebug.setId(scriptDebug.getId());
             newScriptDebug.setRequestNum(scriptDebug.getRequestNum());
+            newScriptDebug.setCloudReportId(scriptDebug.getCloudReportId());
+            newScriptDebug.setCloudSceneId(scriptDebug.getCloudSceneId());
 
             try {
                 // 脚本变动更新

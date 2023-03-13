@@ -822,8 +822,10 @@ public class SceneServiceImpl implements SceneService {
     }
 
     private void dealScriptJmxNodes(List<SceneLinkRelateResult> sceneLinkRelateResults, List<ScriptJmxNode> scriptJmxNodes) {
+        Map<String, String> xpathMd5Map = new HashMap<>();
+        Map<String, ActivityListResult> collect = new HashMap<>();
         if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
-            Map<String, String> xpathMd5Map = sceneLinkRelateResults.stream().filter(Objects::nonNull)
+            xpathMd5Map = sceneLinkRelateResults.stream().filter(Objects::nonNull)
                     .filter(o -> StringUtils.isNotBlank(o.getScriptXpathMd5()))
                     .collect(Collectors.toMap(SceneLinkRelateResult::getScriptXpathMd5, SceneLinkRelateResult::getBusinessLinkId));
             List<Long> businessLinkIds = sceneLinkRelateResults.stream().filter(Objects::nonNull)
@@ -834,10 +836,10 @@ public class SceneServiceImpl implements SceneService {
             activityQueryParam.setActivityIds(businessLinkIds);
             List<ActivityListResult> activityList = activityDao.getActivityList(activityQueryParam);
             if (CollectionUtils.isNotEmpty(activityList)) {
-                Map<String, ActivityListResult> collect = activityList.stream().collect(Collectors.toMap(o -> o.getActivityId().toString(), t -> t));
-                dealScriptJmxNodes(scriptJmxNodes, xpathMd5Map, collect);
+                collect = activityList.stream().collect(Collectors.toMap(o -> o.getActivityId().toString(), t -> t));
             }
         }
+        dealScriptJmxNodes(scriptJmxNodes, xpathMd5Map, collect);
     }
 
     /**
@@ -853,15 +855,41 @@ public class SceneServiceImpl implements SceneService {
                 //默认不匹配
                 scriptJmxNode.setStatus(0);
                 // 支持beanshell,默认匹配
-                if (scriptJmxNode.getName().equals("BeanShellSampler")) {
+                if ("BeanShellSampler".equals(scriptJmxNode.getName())) {
                     scriptJmxNode.setEntrace("|beanshell");
                     scriptJmxNode.setRequestPath("|beanshell");
                     scriptJmxNode.setIdentification("takin|beanshell");
                     scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
-                }else if(scriptJmxNode.getName().equals("JavaSampler")){
+                }else if("JavaSampler".equals(scriptJmxNode.getName())){
                     scriptJmxNode.setEntrace("|java");
                     scriptJmxNode.setRequestPath("|java");
                     scriptJmxNode.setIdentification("takin|java");
+                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+                    // 以下代码解决websocket采样器无法进行路径蒲培的问题
+                }else if("eu.luminis.jmeter.wssampler.OpenWebSocketSampler".equals(scriptJmxNode.getName())){
+                    scriptJmxNode.setEntrace("websocket-openconnection");
+                    scriptJmxNode.setRequestPath("|websocket-openconnection");
+                    scriptJmxNode.setIdentification("takin|websocket-openconnection");
+                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+                }else if("eu.luminis.jmeter.wssampler.PingPongSampler".equals(scriptJmxNode.getName())){
+                    scriptJmxNode.setEntrace("|webSocket-pingpong");
+                    scriptJmxNode.setRequestPath("|webSocket-pingpong");
+                    scriptJmxNode.setIdentification("takin|webSocket-pingpong");
+                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+                }else if("eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler".equals(scriptJmxNode.getName())){
+                    scriptJmxNode.setEntrace("|websocket-singleread");
+                    scriptJmxNode.setRequestPath("|websocket-singleread");
+                    scriptJmxNode.setIdentification("takin|websocket-singleread");
+                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+                }else if("eu.luminis.jmeter.wssampler.SingleWriteWebSocketSampler".equals(scriptJmxNode.getName())){
+                    scriptJmxNode.setEntrace("|websocket-singlewrite");
+                    scriptJmxNode.setRequestPath("|websocket-singlewrite");
+                    scriptJmxNode.setIdentification("takin|websocket-singlewrite");
+                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+                }else if("eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler".equals(scriptJmxNode.getName())){
+                    scriptJmxNode.setEntrace("|websocket-requestqesponse");
+                    scriptJmxNode.setRequestPath("|websocket-requestqesponse");
+                    scriptJmxNode.setIdentification("takin|websocket-requestqesponse");
                     scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
                 }
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {

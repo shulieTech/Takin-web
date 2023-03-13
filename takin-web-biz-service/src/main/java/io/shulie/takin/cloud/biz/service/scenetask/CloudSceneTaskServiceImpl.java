@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -30,9 +32,16 @@ import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivity
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneFileReadPosition;
 import com.pamirs.takin.cloud.entity.domain.vo.file.FileSliceRequest;
 import com.pamirs.takin.cloud.entity.domain.vo.report.SceneTaskNotifyParam;
+import com.pamirs.takin.common.constant.Constants;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
 import io.shulie.takin.adapter.api.model.common.RuleBean;
 import io.shulie.takin.adapter.api.model.common.TimeBean;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneScriptRefOpen;
+import io.shulie.takin.adapter.api.model.request.scenetask.SceneTryRunTaskStartReq;
 import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.input.scenemanage.EnginePluginInput;
@@ -123,6 +132,9 @@ import io.shulie.takin.web.biz.checker.EngineResourceChecker;
 import io.shulie.takin.web.biz.checker.StartConditionChecker.CheckResult;
 import io.shulie.takin.web.biz.checker.StartConditionChecker.CheckStatus;
 import io.shulie.takin.web.biz.checker.StartConditionCheckerContext;
+import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
+import io.shulie.takin.web.biz.utils.FileUtils;
+import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
@@ -187,6 +199,13 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
     private PressureTaskVarietyDAO pressureTaskVarietyDAO;
     @Resource
     private ActivityDAO activityDAO;
+
+    @Value("${file.upload.script.path:/nfs/takin/script/}")
+    private String scriptFilePath;
+
+    @Resource
+    private SceneTaskService sceneTaskService;
+
 
     private static final Long KB = 1024L;
     private static final Long MB = KB * 1024;
@@ -656,7 +675,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
     }
 
     @Override
-    public SceneTryRunTaskStartOutput startTryRun(SceneManageWrapperInput input, List<EnginePluginInput> enginePlugins) {
+    public SceneTryRunTaskStartOutput startTryRun(SceneManageWrapperInput input, List<EnginePluginInput> enginePlugins, SceneTryRunTaskStartReq debugCloudRequest) {
         Long sceneManageId;
         CloudPluginUtils.fillUserData(input);
         //首先根据脚本实例id构建压测场景名称
@@ -692,6 +711,12 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         } else {
             sceneManageId = sceneManageResult.getId();
         }
+        // 脚本检查
+        log.info("调试 --> 脚本校验!");
+        List<String> errorMessage = this.checkScriptCorrelationAndGetError(debugCloudRequest);
+        if (!errorMessage.isEmpty()) {
+            throw new RuntimeException(errorMessage.toString());
+        }
 
         // 前置环境校验
         SceneTaskStartInput sceneTaskStartInput = new SceneTaskStartInput();
@@ -725,6 +750,47 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         sceneTryRunTaskStartOutput.setReportId(context.getReportId());
         return sceneTryRunTaskStartOutput;
     }
+
+    /**
+     * 脚本检查
+     *
+     * @param debugCloudRequest 相关入参
+     * @return 错误信息
+     */
+    private List<String> checkScriptCorrelationAndGetError(SceneTryRunTaskStartReq debugCloudRequest) {
+        SceneManageWrapperDTO sceneData = new SceneManageWrapperDTO();
+        sceneData.getWatchmanIdList().add(debugCloudRequest.getMachineId());
+        sceneData.setScriptType(debugCloudRequest.getScriptType());
+        sceneData.setScriptId(debugCloudRequest.getScriptDeployId());
+        // 上传路径
+        List<SceneScriptRefOpen> uploadFileList = debugCloudRequest.getUploadFile();
+        if (CollectionUtil.isNotEmpty(uploadFileList)) {
+            List<SceneScriptRefDTO> uploadFileDTOList = uploadFileList.stream().map(uploadFile -> {
+                SceneScriptRefDTO sceneScriptRefDTO = new SceneScriptRefDTO();
+                sceneScriptRefDTO.setFileType(uploadFile.getFileType());
+                sceneScriptRefDTO.setIsDeleted(AppConstants.NO);
+                sceneScriptRefDTO.setId(uploadFile.getId());
+                sceneScriptRefDTO.setUploadPath(uploadFile.getUploadPath());
+                return sceneScriptRefDTO;
+            }).collect(Collectors.toList());
+            sceneData.setUploadFile(uploadFileDTOList);
+        }
+
+        List<SceneBusinessActivityRefOpen> businessActivityConfigList = debugCloudRequest.getBusinessActivityConfig();
+        List<SceneBusinessActivityRefDTO> businessActivityConfigDTOList = businessActivityConfigList.stream().map(businessActivityConfig -> {
+            SceneBusinessActivityRefDTO sceneBusinessActivityRefDTO = new SceneBusinessActivityRefDTO();
+            sceneBusinessActivityRefDTO.setBusinessActivityId(businessActivityConfig.getBusinessActivityId());
+            sceneBusinessActivityRefDTO.setBusinessActivityName(businessActivityConfig.getBusinessActivityName());
+            return sceneBusinessActivityRefDTO;
+        }).collect(Collectors.toList());
+
+        sceneData.setBusinessActivityConfig(businessActivityConfigDTOList);
+        sceneData.setIsAbsoluteScriptPath(FileUtils.isAbsoluteUploadPath(sceneData.getUploadFile(), scriptFilePath));
+        sceneData.setPressureTestSceneName(SceneManageConstant.getTryRunSceneName(debugCloudRequest.getScriptDeployId()));
+        String result = sceneTaskService.checkScriptCorrelation(sceneData);
+        return Arrays.asList(StrUtil.split(result, Constants.SPLIT));
+    }
+
 
     @Override
     public SceneTryRunTaskStatusOutput checkTaskStatus(Long sceneId, Long reportId) {

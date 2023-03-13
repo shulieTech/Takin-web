@@ -466,7 +466,7 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Override
-    public BusinessFlowMatchResponse autoMatchActivity(Long id) {
+    public BusinessFlowMatchResponse autoMatchActivity(Long id, boolean isUpdate) {
 
         BusinessFlowMatchResponse result = new BusinessFlowMatchResponse();
         SceneResult sceneResult = sceneDao.getSceneDetail(id);
@@ -476,6 +476,16 @@ public class SceneServiceImpl implements SceneService {
         result.setFinishDate(new Date());
         result.setId(id);
         result.setBusinessProcessName(sceneResult.getSceneName());
+        /**
+         * 如果全部匹配成功的，就不在自动匹配
+         * 修复bug-手工匹配之后，又发起了自动关联，结果看到的数据还是未匹配
+         * 当然，如果脚本发生了变更，上面的逻辑不再生效；
+         */
+        if(!isUpdate && sceneResult.getLinkRelateNum().equals(sceneResult.getTotalNodeNum())) {
+            result.setMatchNum(sceneResult.getLinkRelateNum());
+            result.setUnMatchNum(sceneResult.getTotalNodeNum() - sceneResult.getLinkRelateNum());
+            return result;
+        }
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
         int nodeNumByType = JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, scriptNodes);
         List<SceneLinkRelateResult> sceneLinkRelateResults = sceneService.nodeLinkToBusinessActivity(scriptNodes, id);
@@ -806,7 +816,7 @@ public class SceneServiceImpl implements SceneService {
         //脚本节点有改动，重新自动匹配
         if (CollectionUtils.isNotEmpty(data)) {
             //自动匹配
-            autoMatchActivity(businessFlowId);
+            autoMatchActivity(businessFlowId,false);
         }
         return sceneResult;
     }
@@ -855,12 +865,12 @@ public class SceneServiceImpl implements SceneService {
                 //默认不匹配
                 scriptJmxNode.setStatus(0);
                 // 支持beanshell,默认匹配
-                if (scriptJmxNode.getName().equals("BeanShellSampler")) {
+                if ("BeanShellSampler".equals(scriptJmxNode.getName())) {
                     scriptJmxNode.setEntrace("|beanshell");
                     scriptJmxNode.setRequestPath("|beanshell");
                     scriptJmxNode.setIdentification("takin|beanshell");
                     scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
-                }else if(scriptJmxNode.getName().equals("JavaSampler")){
+                }else if("JavaSampler".equals(scriptJmxNode.getName())){
                     scriptJmxNode.setEntrace("|java");
                     scriptJmxNode.setRequestPath("|java");
                     scriptJmxNode.setIdentification("takin|java");

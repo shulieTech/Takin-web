@@ -50,7 +50,7 @@ public interface SceneService {
 
     List<SceneLinkRelateResult> getSceneLinkRelates(Long sceneId);
 
-    BusinessFlowMatchResponse autoMatchActivity(Long id, boolean isUpdate);
+    BusinessFlowMatchResponse autoMatchActivity(Long id);
 
     void matchActivity(SceneLinkRelateRequest sceneLinkRelateRequest);
 

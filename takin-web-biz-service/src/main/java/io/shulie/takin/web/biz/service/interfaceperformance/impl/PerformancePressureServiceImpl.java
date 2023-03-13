@@ -161,7 +161,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
      * @return
      */
     public void activityAutoMatcher(Long id) {
-        sceneService.autoMatchActivity(id, true);
+        sceneService.autoMatchActivity(id);
     }
 
     /**

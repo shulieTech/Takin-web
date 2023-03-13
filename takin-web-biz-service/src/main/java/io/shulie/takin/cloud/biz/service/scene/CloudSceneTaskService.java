@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.pamirs.takin.cloud.entity.domain.vo.report.SceneTaskNotifyParam;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.adapter.api.model.request.scenetask.SceneTryRunTaskStartReq;
 import io.shulie.takin.cloud.biz.input.scenemanage.EnginePluginInput;
 import io.shulie.takin.cloud.biz.input.scenemanage.SceneManageWrapperInput;
 import io.shulie.takin.cloud.biz.input.scenemanage.SceneTaskQueryTpsInput;
@@ -89,7 +90,8 @@ public interface CloudSceneTaskService {
      * @param enginePlugins 压测引擎列表
      * @return -
      */
-    SceneTryRunTaskStartOutput startTryRun(SceneManageWrapperInput input, List<EnginePluginInput> enginePlugins);
+    SceneTryRunTaskStartOutput startTryRun(SceneManageWrapperInput input, List<EnginePluginInput> enginePlugins,
+                                           SceneTryRunTaskStartReq debugCloudRequest);
 
     /**
      * 调整压测任务的tps

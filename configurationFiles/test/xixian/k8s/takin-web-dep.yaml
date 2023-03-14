@@ -24,8 +24,6 @@ spec:
                 - "/bin/sh"
                 - "-c"
                 - "mkdir -p /data/nfs_dir && mount -o rw,intr,soft,timeo=30,retry=3,nolock -t nfs 10.125.18.246:/data/share /data/nfs_dir"
-        ports:
-          - containerPort: 10008
         securityContext:
           capabilities:
             add: ["SYS_ADMIN"]

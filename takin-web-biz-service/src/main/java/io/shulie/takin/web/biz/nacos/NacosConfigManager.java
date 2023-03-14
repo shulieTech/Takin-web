@@ -225,7 +225,10 @@ public class NacosConfigManager {
      */
     public void pushNacosConfigs(String dataId, String group, ConfigService configService, String configString) {
         try {
-            configService.publishConfig(dataId, group, configString);
+            boolean success = configService.publishConfig(dataId, group, configString);
+            if(!success) {
+                throw new NacosException(0,"推送配置失败");
+            }
         } catch (NacosException e) {
             log.error("推送配置到nacos发生异常,dataId:{}, group:{}, content:{}", dataId, group, configString);
         }

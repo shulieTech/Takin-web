@@ -76,6 +76,7 @@
                     <groupId>com.alibaba</groupId>
                 </exclusion>
             </exclusions>
+            <version>${takin.cloud.sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>

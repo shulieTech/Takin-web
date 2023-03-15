@@ -260,7 +260,7 @@ CREATE TABLE default.t_app_base_data (
   `user_id` Int64,
   `createDate` DateTime DEFAULT toDateTime (
   now()) 
-) ENGINE = ReplicatedMergeTree ( '/clickhouse/tables/cluster-1/t_app_base_data/{shard}', '{replica}' ) PARTITION BY modulo(time,3600000) PRIMARY KEY ( time,agent_id, app_name, tenant_app_key, user_id )
+) ENGINE = ReplicatedMergeTree ( '/clickhouse/tables/cluster-1/t_app_base_data/{shard}', '{replica}' ) PARTITION BY intDiv(time,3600000) PRIMARY KEY ( time,agent_id, app_name, tenant_app_key, user_id )
 ORDER BY( time, agent_id, app_name, tenant_app_key, user_id ) TTL createDate + toIntervalDay ( 3 );
 
 
@@ -313,7 +313,7 @@ CREATE TABLE default.t_performance_base_data (
   `tenant_id` Int64,
   `createDate` DateTime DEFAULT toDateTime (
   now()) 
-) ENGINE = ReplicatedMergeTree ( '/clickhouse/tables/cluster-1/t_performance_base_data/{shard}', '{replica}' ) PARTITION BY modulo(time,3600000) PRIMARY KEY ( app_name,time )
+) ENGINE = ReplicatedMergeTree ( '/clickhouse/tables/cluster-1/t_performance_base_data/{shard}', '{replica}' ) PARTITION BY intDiv(time,3600000) PRIMARY KEY ( app_name,time )
 ORDER BY( app_name,time  ) TTL createDate + toIntervalDay ( 7 );
 
 
@@ -374,7 +374,7 @@ CREATE TABLE default.trace_metrics (
   `log_time` String,
   `createDate` DateTime DEFAULT toDateTime (
   now()) 
-) ENGINE = ReplicatedMergeTree ( '/clickhouse/tables/cluster-1/trace_metrics/{shard}', '{replica}' ) PARTITION BY modulo(time,3600000) PRIMARY KEY (time, appName )
+) ENGINE = ReplicatedMergeTree ( '/clickhouse/tables/cluster-1/trace_metrics/{shard}', '{replica}' ) PARTITION BY intDiv(time,3600000) PRIMARY KEY (time, appName )
 ORDER BY( time, appName ) TTL createDate + toIntervalDay ( 3 );
 
 CREATE TABLE default.trace_metrics_all (

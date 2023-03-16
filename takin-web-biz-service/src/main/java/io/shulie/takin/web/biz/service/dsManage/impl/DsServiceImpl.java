@@ -958,7 +958,21 @@ public class DsServiceImpl implements DsService {
         detailResult.setApplicationId(appId);
         detailResult.setApplicationName(amdbData.getAppName());
         detailResult.setCacheName(amdbData.getConnectionPool());
-        detailResult.setColony(amdbData.getDataSource());
+
+        Map<String, Object> json2Map = JsonHelper.json2Map(amdbData.getAttachment(), String.class, Object.class);
+        Map<String, String> bizCache = new HashMap<>();
+        if (json2Map != null){
+            if (json2Map.containsKey("nodes")){
+                bizCache.put("nodes", json2Map.get("nodes").toString());
+            }
+            if (json2Map.containsKey("master")) {
+                bizCache.put("master", json2Map.get("master").toString());
+            }
+            if (json2Map.containsKey("database")) {
+                bizCache.put("database", json2Map.get("database").toString());
+            }
+        }
+        detailResult.setColony(JsonHelper.bean2Json(bizCache));
         detailResult.setUserName(amdbData.getTableUser());
         detailResult.setPwd(amdbData.getPassword());
         detailResult.setFileExtedn(amdbData.getAttachment());

@@ -191,5 +191,9 @@ public interface ReportService {
     ScriptNodeSummaryBean queryNode(Long reportId, String xpathMd5, Double threadNum);
 
 
+    io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse queryLinkDiagram(Long activityId, ReportLinkDiagramReq reportLinkDiagramReq);
+
     ThreadReportTrendResp queryReportTrendByThread(ReportTrendQueryReq reportTrendQuery);
+
+    void modifyLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
 }

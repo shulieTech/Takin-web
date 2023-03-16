@@ -215,12 +215,21 @@ public class ReportController {
     public ResponseResult<String> modifyRemarks(@RequestParam Long reportId,@RequestParam String remarks){
         reportService.modifyRemarks(reportId, remarks);
         return ResponseResult.success();
-    } 
-    
+    }
+
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     @GetMapping("/report/getLinkDiagram")
     public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse> getLinkDiagram(@Validated ReportLinkDiagramReq reportLinkDiagramReq){
         return reportService.getLinkDiagram(reportLinkDiagramReq);
     }
-    
+
+    @GetMapping("/report/modifyLinkDiagram")
+    public ResponseResult<String> modifyLinkDiagram(@Validated ReportLinkDiagramReq reportLinkDiagramReq){
+        reportService.modifyLinkDiagram(reportLinkDiagramReq);
+        return ResponseResult.success();
+    }
 }
 

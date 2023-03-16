@@ -22,6 +22,7 @@ import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -370,7 +371,7 @@ public class ReportServiceImpl implements ReportService {
         if (detail == null) {
             return ResponseResult.fail("400", "场景下不存在业务活动", "请检查后重试或联系管理员处理!");
         }
-        io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse;
+        io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = null;
         if (reportLinkDiagramReq.getReportId() == null) {
             // 实况查询
             activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
@@ -379,13 +380,7 @@ public class ReportServiceImpl implements ReportService {
             String reportJson = detail.getReportJson();
             if (reportJson != null && StringUtils.isNotBlank(reportJson.trim())) {
                 activityResponse = JSON.parseObject(reportJson, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
-            } else {
-                activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
-                // 将链路拓扑信息更新到表中
-                reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getSceneId(),
-                        reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
             }
-
         }
         return ResponseResult.success(activityResponse);
     }
@@ -395,7 +390,8 @@ public class ReportServiceImpl implements ReportService {
      * @param activityId           业务活动Id
      * @param reportLinkDiagramReq 查询条件
      */
-    private io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse queryLinkDiagram(Long activityId, ReportLinkDiagramReq reportLinkDiagramReq) {
+    @Override
+    public io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse queryLinkDiagram(Long activityId, ReportLinkDiagramReq reportLinkDiagramReq) {
         // 直接调用查询业务活动的拓扑图方法即可
         ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
         request.setActivityId(activityId);
@@ -700,6 +696,18 @@ public class ReportServiceImpl implements ReportService {
         }
         return reportTrend;
 
+    }
+
+    @Override
+    public void modifyLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq) {
+        reportLinkDiagramReq.setEndTime(LocalDateTime.now());
+        ReportBusinessActivityDetailEntity detail = reportDao.getReportBusinessActivityDetail(reportLinkDiagramReq.getSceneId(), reportLinkDiagramReq.getXpathMd5(), reportLinkDiagramReq.getReportId());
+        if (detail == null){
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_VALIDATE_ERROR, "重新生成拓扑图，没有获取到对应的数据!");
+        }
+        io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
+        // 将链路拓扑信息更新到表中
+        reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
     }
 
     private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5) {

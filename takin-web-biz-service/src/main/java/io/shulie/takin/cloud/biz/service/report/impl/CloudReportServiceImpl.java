@@ -1207,25 +1207,29 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     }
 
     private void saveAllLinkDiagramInfo(Long reportId, Date startTime) {
-        List<ReportBusinessActivityDetailEntity> activityByReportIds = reportDao.getActivityByReportIds(Collections.singletonList(reportId));
-        if (CollectionUtils.isNotEmpty(activityByReportIds)) {
-            activityByReportIds.forEach(detail -> {
-                if (detail.getBindRef() != null) {
-                    ReportLinkDiagramReq reportLinkDiagramReq = new ReportLinkDiagramReq();
-                    reportLinkDiagramReq.setXpathMd5(detail.getBindRef());
-                    Instant instant = startTime.toInstant();
-                    ZoneId zoneId = ZoneId.systemDefault();
-                    LocalDateTime localDateTime = instant.atZone(zoneId).toLocalDateTime();
-                    reportLinkDiagramReq.setStartTime(localDateTime);
-                    reportLinkDiagramReq.setEndTime(LocalDateTime.now());
-                    reportLinkDiagramReq.setReportId(reportId);
-                    ActivityResponse activityResponse = reportService.queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
-                    if (activityResponse != null) {
-                        // 将链路拓扑信息更新到表中
-                        reportDao.modifyReportLinkDiagram(reportId, detail.getBindRef(), JSON.toJSONString(activityResponse));
+        try {
+            List<ReportBusinessActivityDetailEntity> activityByReportIds = reportDao.getActivityByReportIds(Collections.singletonList(reportId));
+            if (CollectionUtils.isNotEmpty(activityByReportIds)) {
+                activityByReportIds.forEach(detail -> {
+                    if (detail.getBindRef() != null && detail.getBusinessActivityId() != null && detail.getBusinessActivityId() > 0) {
+                        ReportLinkDiagramReq reportLinkDiagramReq = new ReportLinkDiagramReq();
+                        reportLinkDiagramReq.setXpathMd5(detail.getBindRef());
+                        Instant instant = startTime.toInstant();
+                        ZoneId zoneId = ZoneId.systemDefault();
+                        LocalDateTime localDateTime = instant.atZone(zoneId).toLocalDateTime();
+                        reportLinkDiagramReq.setStartTime(localDateTime);
+                        reportLinkDiagramReq.setEndTime(LocalDateTime.now());
+                        reportLinkDiagramReq.setReportId(reportId);
+                        ActivityResponse activityResponse = reportService.queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
+                        if (activityResponse != null) {
+                            // 将链路拓扑信息更新到表中
+                            reportDao.modifyReportLinkDiagram(reportId, detail.getBindRef(), JSON.toJSONString(activityResponse));
+                        }
                     }
-                }
-            });
+                });
+            }
+        } catch (Throwable e) {
+            log.error("生产报告保存链路拓扑图出现异常", e);
         }
     }
 

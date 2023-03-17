@@ -162,10 +162,9 @@ public interface ReportDao {
 
     /**
      * 更新链路拓扑图
-     * @param sceneId 场景Id
      * @param reportId 报告id
      * @param xpathMd5 业务活动xpathMd5值
      * @param linkDiagram 链路拓扑图json数据
      */
-    void modifyReportLinkDiagram(Long sceneId,Long reportId,String xpathMd5,String linkDiagram);
+    void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram);
 }

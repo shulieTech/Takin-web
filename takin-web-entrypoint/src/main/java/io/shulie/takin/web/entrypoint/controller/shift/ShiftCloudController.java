@@ -314,7 +314,7 @@ public class ShiftCloudController {
                 if (!flag[0]) baseResult.fail("压力机繁忙");
                 else {
                     Map data = new HashMap();
-                    data.put("machineId", id.get());
+                    data.put("machineIds", Arrays.asList(id.get()));
                     data.put("machineType", type);
                     data.put("sceneId", taskId.replaceFirst(BENCH, ""));
                     data.put("type", "BENCHMARK");

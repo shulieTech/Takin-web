@@ -16,12 +16,7 @@
 
 package io.shulie.takin.web.biz.service.linkmanage.impl;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -97,6 +92,7 @@ import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author 无涯
@@ -895,6 +891,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     }
 
     @Override
+    @Transactional(rollbackFor = Throwable.class)
     public void create(AppRemoteCallCreateV2Request request) {
         ApplicationDetailResult detailResult = applicationDAO.getApplicationById(request.getApplicationId());
         if (detailResult == null) {
@@ -920,6 +917,20 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         param.setInterfaceChildType(request.getInterfaceType());
         param.setMockReturnValue(request.getMockValue());
         param.setRemark(request.getRemark());
+        // fix:远程调用接口RestFull风格未聚合好，调用频繁,
+        String interfaceName = request.getInterfaceName();
+        if(interfaceName.contains("}")){
+            // 将匹配restfull风格的白名单进行禁用
+            int i = interfaceName.indexOf("{");
+            int i1 = interfaceName.indexOf("}");
+            String prefix = interfaceName.substring(0, i);
+            String suffix = interfaceName.substring(i1+1, interfaceName.length());
+            List<Long> list = appRemoteCallDAO.listIdByMatchRestFull(detailResult.getApplicationName(),request.getInterfaceType(), prefix, suffix);
+            if(!CollectionUtils.isEmpty(list)){
+                // 将所有匹配的路径进行禁用
+                appRemoteCallDAO.updateTypeByIds(list,0);
+            }
+        }
         appRemoteCallDAO.insert(param);
         agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
     }

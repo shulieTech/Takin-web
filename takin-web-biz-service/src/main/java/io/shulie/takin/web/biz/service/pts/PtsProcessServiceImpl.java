@@ -59,7 +59,7 @@ public class PtsProcessServiceImpl implements PtsProcessService{
             String jmxString = PtsBuildTools.parseJmxString(jsonApi);
             //将jmxstring写入文件，并返回地址
             uploadResponse = cloudFileApi.saveJmxStringToFile(request.getProcessName(), jmxString);
-        } catch (MalformedURLException e) {
+        } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_ADD_ERROR,
                     "创建PTS脚本失败！" + e.getMessage());
         }

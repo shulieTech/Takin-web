@@ -161,6 +161,9 @@ public class PtsJmxBuildUtil {
     }
 
     public static Element buildHttpHeader(Element element, List<ScriptHeader> headers) {
+        if (CollUtil.isEmpty(headers)) {
+            return element;
+        }
         Element header = element.addElement("HeaderManager");
         header.addAttribute(GUI_CLASS, "HeaderPanel");
         header.addAttribute(TEST_CLASS, "HeaderManager");
@@ -169,19 +172,18 @@ public class PtsJmxBuildUtil {
 
         Element collectionProp = header.addElement(COLLECTION_PROP);
         collectionProp.addAttribute(NAME, "HeaderManager.headers");
-        if (!CollUtil.isEmpty(headers)) {
-            for (ScriptHeader scriptHeader : headers) {
-                Element elementProp = collectionProp.addElement(ELEMENT_PROP);
-                elementProp.addAttribute(NAME, "");
-                elementProp.addAttribute(ELEMENT_TYPE, "Header");
-                Element stringPropKey = elementProp.addElement(STRING_PROP);
-                stringPropKey.addAttribute(NAME, "Header.name");
-                stringPropKey.setText(scriptHeader.getKey());
 
-                Element stringPropVal = elementProp.addElement(STRING_PROP);
-                stringPropVal.addAttribute(NAME, "Header.value");
-                stringPropVal.setText(scriptHeader.getValue());
-            }
+        for (ScriptHeader scriptHeader : headers) {
+            Element elementProp = collectionProp.addElement(ELEMENT_PROP);
+            elementProp.addAttribute(NAME, "");
+            elementProp.addAttribute(ELEMENT_TYPE, "Header");
+            Element stringPropKey = elementProp.addElement(STRING_PROP);
+            stringPropKey.addAttribute(NAME, "Header.name");
+            stringPropKey.setText(scriptHeader.getKey());
+
+            Element stringPropVal = elementProp.addElement(STRING_PROP);
+            stringPropVal.addAttribute(NAME, "Header.value");
+            stringPropVal.setText(scriptHeader.getValue());
         }
         return element.addElement(HASH_TREE);
     }

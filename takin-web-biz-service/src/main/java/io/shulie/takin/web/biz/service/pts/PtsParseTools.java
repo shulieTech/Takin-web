@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.pts;
 
+import com.alibaba.fastjson.JSON;
 import io.shulie.takin.cloud.common.constants.JmxConstant;
 import io.shulie.takin.cloud.common.utils.PtsJmxParseUtil;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
@@ -16,6 +17,10 @@ import java.util.stream.Collectors;
 public class PtsParseTools {
 
     private static final List<String> SUPPORT_CONDTION = Arrays.asList("1","2","8");
+
+    public static void main(String[] args) {
+        System.out.println(JSON.toJSONString(parseJmxFile("/Users/xiaoshu/Documents/okhttp3.jmx")));
+    }
 
     public static PtsSceneResponse parseJmxFile(String fileFullPath) {
         PtsSceneResponse response = new PtsSceneResponse();
@@ -66,18 +71,20 @@ public class PtsParseTools {
                 apiRequest.getBase().setKeepAlive(Boolean.parseBoolean(node.getProps().get(JmxConstant.httpSamplerUseKeepalive)));
                 //处理入参
                 fillRequestBodyData(apiRequest.getBody(), node.getProps());
-                //处理请求头
-                List<ScriptNode> headerList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.HEADERMANAGER).collect(Collectors.toList());
-                if(CollectionUtils.isNotEmpty(headerList) && headerList.size() > 1) {
-                    response.getMessage().add(String.format("接口【】下定义了多个HeaderManager，只生效第一个", apiRequest.getApiName()));
+                if(CollectionUtils.isNotEmpty(node.getChildren())) {
+                    //处理请求头
+                    List<ScriptNode> headerList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.HEADERMANAGER).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(headerList) && headerList.size() > 1) {
+                        response.getMessage().add(String.format("接口【】下定义了多个HeaderManager，只生效第一个", apiRequest.getApiName()));
+                    }
+                    fillRequestHeaderData(apiRequest.getHeader(), headerList);
+                    //处理JSON提取器
+                    List<ScriptNode> jsonProcessList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.POSTPROCESSOR).collect(Collectors.toList());
+                    fillJsonProcessData(apiRequest.getReturnVar(), jsonProcessList);
+                    //处理断言
+                    List<ScriptNode> assertList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.ASSERTION).collect(Collectors.toList());
+                    fillJsonProcessData(apiRequest.getCheckAssert(), assertList);
                 }
-                fillRequestHeaderData(apiRequest.getHeader(), headerList);
-                //处理JSON提取器
-                List<ScriptNode> jsonProcessList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.POSTPROCESSOR).collect(Collectors.toList());
-                fillJsonProcessData(apiRequest.getReturnVar(), jsonProcessList);
-                //处理断言
-                List<ScriptNode> assertList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.ASSERTION).collect(Collectors.toList());
-                fillJsonProcessData(apiRequest.getCheckAssert(), assertList);
 
                 linkRequest.getApis().add(apiRequest);
             }

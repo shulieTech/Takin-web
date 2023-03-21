@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.pts;
 
+import cn.hutool.core.util.XmlUtil;
 import com.alibaba.fastjson.JSON;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonAssert;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonProcessor;
@@ -10,7 +11,6 @@ import io.shulie.takin.cloud.model.script.ScriptHeader;
 import io.shulie.takin.web.biz.pojo.request.pts.*;
 import org.apache.commons.collections4.CollectionUtils;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +18,11 @@ import java.util.Map;
 
 public class PtsBuildTools {
 
-    public static String parseJmxString(String jsonString) throws MalformedURLException {
+    public static void main(String[] args) throws Exception{
+        System.out.println(parseJmxString("{\"dataSource\":{\"csvs\":[]},\"existError\":false,\"links\":[{\"apis\":[{\"apiName\":\"testtwo\",\"base\":{\"allowForward\":true,\"keepAlive\":true,\"requestMethod\":\"GET\",\"requestUrl\":\"http://192.168.1.213:8107/agent/test/tomcat7/okhttp3x/testtwo\"},\"body\":{\"forms\":[]},\"checkAssert\":{\"asserts\":[]},\"header\":{\"headers\":[]},\"returnVar\":{\"vars\":[]}}],\"linkName\":\"Thread Group\"}],\"message\":[],\"preLink\":{\"apis\":[]},\"processName\":\"okhttp3\"}\n"));
+    }
+
+    public static String parseJmxString(String jsonString) throws Exception {
         PtsSceneRequest sceneRequest = JSON.parseObject(jsonString, PtsSceneRequest.class);
         org.dom4j.Document document = org.dom4j.DocumentHelper.createDocument();
         //创建基础脚本
@@ -50,7 +54,7 @@ public class PtsBuildTools {
                 }
             }
         }
-        return PtsJmxBuildUtil.getDocumentStr(document);
+        return XmlUtil.format(PtsJmxBuildUtil.getDocumentStr(document));
     }
 
     private static List<ScriptResponseAssert> convertResponseAssert(PtsApiAssertRequest request) {

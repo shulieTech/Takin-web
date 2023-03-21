@@ -41,6 +41,7 @@ public class DashboardApplicationServiceImpl implements DashboardApplicationServ
             setSwitchStatus(applicationService.getUserSwitchStatusForVo());
         }};
         response.setUserId(WebPluginUtils.traceUserId());
+        response.setDeptId(WebPluginUtils.traceDeptId());
         WebPluginUtils.fillQueryResponse(response);
         return response;
     }

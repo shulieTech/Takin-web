@@ -1,10 +1,10 @@
 package io.shulie.takin.cloud.ext.content.enums;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import lombok.Getter;
 import org.apache.commons.lang.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author liyuanba
@@ -27,6 +27,26 @@ public enum NodeTypeEnum {
      * 取样器
      */
     SAMPLER("SamplerProxy", "Sampler", "Sample"),
+    /**
+     * 用户定义的变量
+     */
+    ARGUMENTS("Arguments"),
+    /**
+     * 信息头管理
+     */
+    HEADERMANAGER("HeaderManager"),
+    /**
+     * 提取器
+     */
+    POSTPROCESSOR("PostProcessor"),
+    /**
+     * 断言
+     */
+    ASSERTION("Assertion"),
+    /**
+     * 断言
+     */
+    DATASET("DataSet"),
     ;
 
     @Getter

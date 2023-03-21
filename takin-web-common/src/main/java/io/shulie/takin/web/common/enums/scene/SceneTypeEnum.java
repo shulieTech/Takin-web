@@ -12,7 +12,8 @@ import lombok.Getter;
 public enum SceneTypeEnum {
     NORMAL_SCENE(0, "手工创建枚举"),
     JMETER_UPLOAD_SCENE(1, "jmeter上传创建"),
-    PERFORMANCE_AUTO_SCENE(2, "单接口压测场景创建");
+    PERFORMANCE_AUTO_SCENE(2, "单接口压测场景创建"),
+    PTS_UPLOAD_SCENE(3, "PTS串联链路创建");
 
     private Integer type;
     private String desc;

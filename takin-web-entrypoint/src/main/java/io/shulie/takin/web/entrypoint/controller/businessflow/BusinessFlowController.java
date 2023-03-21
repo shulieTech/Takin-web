@@ -129,7 +129,7 @@ public class BusinessFlowController {
         needAuth = ActionTypeEnum.UPDATE
     )
     public ResponseResult<BusinessFlowMatchResponse> autoMatchActivity(@RequestBody @Valid BusinessFlowAutoMatchRequest businessFlowAutoMatchRequest) {
-        BusinessFlowMatchResponse sceneDetailDto = sceneService.autoMatchActivity(businessFlowAutoMatchRequest.getId(), false);
+        BusinessFlowMatchResponse sceneDetailDto = sceneService.autoMatchActivity(businessFlowAutoMatchRequest.getId());
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
         OperationLogContextHolder.addVars("data", JsonUtil.toJson(businessFlowAutoMatchRequest));
         return ResponseResult.success(sceneDetailDto);

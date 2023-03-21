@@ -1,10 +1,10 @@
 package io.shulie.takin.web.data.param.linkmanage;
 
-import java.util.Date;
-
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.Date;
 
 /**
  * 业务流程

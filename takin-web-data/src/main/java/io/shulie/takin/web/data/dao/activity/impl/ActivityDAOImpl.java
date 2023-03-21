@@ -409,6 +409,9 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         if (StringUtils.isNotBlank(param.getApplicationName())) {
             lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getApplicationName, param.getApplicationName());
         }
+        if (CollectionUtils.isNotEmpty(param.getEntranceList())) {
+            lambdaQueryWrapper.in(BusinessLinkManageTableEntity::getEntrace, param.getEntranceList());
+        }
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
         List<BusinessLinkManageTableEntity> tableEntities = businessLinkManageTableMapper.selectList(
             lambdaQueryWrapper);

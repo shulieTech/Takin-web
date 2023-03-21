@@ -1,16 +1,12 @@
 package io.shulie.takin.adapter.api.entrypoint.file;
 
-import java.util.List;
-import java.util.Map;
-
 import io.shulie.takin.adapter.api.model.request.file.DeleteTempRequest;
 import io.shulie.takin.adapter.api.model.request.file.UploadRequest;
-import io.shulie.takin.adapter.api.model.request.filemanager.FileContentParamReq;
-import io.shulie.takin.adapter.api.model.request.filemanager.FileCopyParamReq;
-import io.shulie.takin.adapter.api.model.request.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.adapter.api.model.request.filemanager.FileDeleteParamReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.*;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
-import io.shulie.takin.adapter.api.model.request.filemanager.FileZipParamReq;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author shiyajian
@@ -72,4 +68,9 @@ public interface CloudFileApi {
      * @return 上传结果
      */
     List<UploadResponse> upload(UploadRequest req);
+
+    /**
+     * 保存String到文件
+     */
+    UploadResponse saveJmxStringToFile(String processName, String jmxString);
 }

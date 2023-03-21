@@ -38,6 +38,11 @@ public class ActivityQueryParam extends AuthQueryParamCommonExt {
     private String entrance;
 
     /**
+     * 多链路入口
+     */
+    private List<String> entranceList;
+
+    /**
      * 应用名
      */
     private String applicationName;

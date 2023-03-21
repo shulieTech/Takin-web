@@ -16,9 +16,6 @@
 
 package io.shulie.takin.web.app.conf;
 
-import java.time.LocalDate;
-import java.util.function.Predicate;
-
 import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
@@ -41,6 +38,9 @@ import springfox.documentation.spring.web.paths.DefaultPathProvider;
 import springfox.documentation.spring.web.paths.Paths;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
+
+import java.time.LocalDate;
+import java.util.function.Predicate;
 
 /**
  * The type Swagger config.
@@ -266,6 +266,21 @@ public class SwaggerConfig {
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
             .paths(getRegex("/api/(application/names|application/entrances|activities).*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo()).enable(swaggerEnable)
+            ;
+    }
+
+    @Bean
+    public Docket apiHzbank() {
+        return new Docket(DocumentationType.SWAGGER_2)
+            .pathProvider(this.pathProvider())
+            .groupName("压测平台-hzbank")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .paths(getRegex("/api/pts.*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)

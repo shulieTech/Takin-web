@@ -163,21 +163,4 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
     List<AppRemoteCallResult> getAllRecord();
 
     AppRemoteCallResult queryOne(String appName, Integer interfaceType, String interfaceName);
-
-    /**
-     * 根据创建的restfull风格进行匹配查询，查询出符合格式的远程调用配置id
-     * @param appName 应用名称
-     * @param interfaceType 接口类型
-     * @param prefix 前缀
-     * @param suffix 后缀
-     * @return List<Long>
-     */
-    List<Long> listIdByMatchRestFull(String appName,String interfaceType, String prefix,String suffix);
-
-    /**
-     * 根据id修改配置类型
-     * @param idList id列表
-     * @param type 类型
-     */
-    void updateTypeByIds(List<Long> idList,Integer type);
 }

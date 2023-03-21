@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -370,34 +369,5 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
             return null;
         }
         return Convert.convert(AppRemoteCallResult.class, entity);
-    }
-
-    @Override
-    public List<Long> listIdByMatchRestFull(String appName, String interfaceType,String prefix,String suffix) {
-        LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
-        lambdaQueryWrapper.eq(AppRemoteCallEntity::getIsDeleted, 0);
-        lambdaQueryWrapper.eq(AppRemoteCallEntity::getAppName, appName);
-        lambdaQueryWrapper. eq(AppRemoteCallEntity::getInterfaceType, interfaceType);
-        // 模糊查询接口名称 prefix restFull前缀 suffix restFull后缀
-        lambdaQueryWrapper.last(" and interface_name like '"+prefix+"%"+suffix+"'");
-        List<AppRemoteCallEntity> list = this.list(lambdaQueryWrapper);
-        if(CollectionUtils.isEmpty(list)){
-            return Collections.emptyList();
-        }
-        List<Long> idList = new ArrayList<>();
-        list.forEach(c->idList.add(c.getId()));
-        return idList;
-    }
-
-    @Override
-    public void updateTypeByIds(List<Long> idList, Integer type) {
-        List<AppRemoteCallEntity> entities = new ArrayList<>();
-        idList.forEach(c->{
-            AppRemoteCallEntity entity = new AppRemoteCallEntity();
-            entity.setId(c);
-            entity.setType(type);
-            entities.add(entity);
-        });
-        this.updateBatchById(entities);
     }
 }

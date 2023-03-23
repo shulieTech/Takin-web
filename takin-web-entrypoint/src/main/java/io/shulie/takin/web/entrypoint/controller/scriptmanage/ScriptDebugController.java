@@ -1,5 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.scriptmanage;
 
+import com.pamirs.takin.common.constant.TakinErrorEnum;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
@@ -16,6 +17,11 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.ext.entity.ecloud.CheckPackageRequestExt;
+import io.shulie.takin.web.ext.entity.ecloud.CheckPackageRespExt;
+import io.shulie.takin.web.ext.entity.ecloud.TenantPackageInfoExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -53,7 +59,22 @@ public class ScriptDebugController {
         moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
         needAuth = ActionTypeEnum.UPDATE
     )
-    public ScriptDebugResponse debug(@Validated @RequestBody ScriptDebugDoDebugRequest request) {
+    public ScriptDebugResponse debug(@Validated @RequestBody ScriptDebugDoDebugRequest request) throws TakinWebException {
+
+        // 开放云验证套餐
+        CheckPackageRequestExt ext = new CheckPackageRequestExt();
+        ext.setTenantId(WebPluginUtils.traceTenantId());
+        ext.setDuration(1);
+        ext.setPodNum(1);
+        ext.setThreadNum(request.getConcurrencyNum());
+        CheckPackageRespExt respExt = WebPluginUtils.checkPackage(ext);
+        if(respExt != null && !respExt.getCheckStatus()){
+            throw new TakinWebException(TakinErrorEnum.PACKAGE_EXPIRED,null);
+        }
+        TenantPackageInfoExt packageInfoExt = WebPluginUtils.getTenantPackage(WebPluginUtils.traceTenantId());
+        if(packageInfoExt != null)
+        request.setExclusiveEngine(packageInfoExt.getExclusiveEngine());
+
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DEBUG);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCRIPT_MANAGE_DEPLOY_ID,
             String.valueOf(request.getScriptDeployId()));

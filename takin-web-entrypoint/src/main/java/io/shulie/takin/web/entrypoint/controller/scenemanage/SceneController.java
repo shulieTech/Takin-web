@@ -21,6 +21,7 @@ import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
+import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryReq;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Response;
@@ -58,9 +59,14 @@ import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
+import io.shulie.takin.web.ext.entity.ecloud.CheckPackageRequestExt;
+import io.shulie.takin.web.ext.entity.ecloud.CheckPackageRespExt;
+import io.shulie.takin.web.ext.entity.ecloud.TenantPackageInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,9 +128,14 @@ public class SceneController {
         SceneRequest sceneRequest = buildSceneRequest(request);
 
         WebPluginUtils.fillCloudUserData(sceneRequest);
+        // 验证是否符合租户套餐
+        CheckPackageRespExt resp = checkPackage(sceneRequest);
+        if (!resp.getCheckStatus()) {
+            return ResponseResult.fail(resp.getErrorDetail(), resp.getSolution());
+        }
         Long sceneId = multipleSceneApi.create(sceneRequest);
         List<Date> executeTimeList = new ArrayList<>();
-        switch (request.getBasicInfo().getIsScheduler()){
+        switch (request.getBasicInfo().getIsScheduler()) {
             case 0:
                 break;
             case 1:
@@ -135,13 +146,13 @@ public class SceneController {
                 executeTimeList = getTaskPlan(request.getBasicInfo().getExecuteCron());
                 break;
         }
-        executeTimeList.forEach(s->{
+        executeTimeList.forEach(s -> {
             try {
                 sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
                     setSceneId(sceneId);
                     setExecuteTime(s);
                 }});
-            }catch (TakinWebException e){
+            } catch (TakinWebException e) {
                 e.printStackTrace();
             }
         });
@@ -160,16 +171,16 @@ public class SceneController {
         String versionId = request.getVersionId();
         if (StringUtils.isNotBlank(versionId)) {
             String demandIds = JSON.toJSONString(request.getDemandIds());
-            createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),sceneId,false);
+            createVersion(versionId, demandIds, WebPluginUtils.traceEnvCode(), sceneId, false);
         }
 
         return ResponseResult.success(sceneId);
     }
 
-    private void createVersion(String versionId, String demandIds, String projectId,long sceneId,boolean delete) {
+    private void createVersion(String versionId, String demandIds, String projectId, long sceneId, boolean delete) {
         if (delete) {
             LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(YVersionEntity::getSid,sceneId);
+            wrapper.eq(YVersionEntity::getSid, sceneId);
             yVersionMapper.delete(wrapper);
         }
         YVersionEntity entity = new YVersionEntity();
@@ -180,9 +191,89 @@ public class SceneController {
         yVersionMapper.insert(entity);
     }
 
+
+    /**
+     * 1. 按次套餐最大压测时长为1小时
+     * 2. 10w并发以下用户（非自有压力机） 限制pod数量为 套餐vu/1000 + 1
+     * 3. 设定最大并发数不能超过套餐并发数，TPS 模式折算并发规则为 TPS/2
+     *
+     * @param request
+     * @return
+     */
+    private CheckPackageRespExt checkPackage(SceneRequest request) {
+
+
+        // 计算场景并发数量
+        Map<String, ThreadGroupConfigExt> map = request.getConfig().getThreadGroupConfigMap();
+        int realThreadNum = 0;
+        for (String key : map.keySet()) {
+            ThreadGroupConfigExt threadGroupConfig = map.get(key);
+            //并发模式
+            if (threadGroupConfig.getType() == 0) {
+                realThreadNum = realThreadNum + threadGroupConfig.getThreadNum();
+            }
+            // TODO: 2023/2/15  tps模式预估并发数 规则为maxVu*2
+            if (threadGroupConfig.getType() == 1) {
+                List<String> xPathMd5 = new ArrayList<>();
+                ScriptNode scriptNode = findScriptNode(key,request.getAnalysisResult());
+                if(scriptNode == null){
+                    continue;
+                }
+                getAllXPathMd5(Collections.singletonList(scriptNode), xPathMd5);
+                for(String xPath : xPathMd5){
+                    if(request.getGoal() != null &&
+                            request.getGoal().get(xPath) != null &&
+                            request.getGoal().get(xPath).getTps() !=null){
+                        realThreadNum = realThreadNum + request.getGoal().get(key).getTps() / 2;
+                    }
+                }
+            }
+        }
+        CheckPackageRequestExt requestExt = new CheckPackageRequestExt();
+        requestExt.setDuration(request.getConfig().getDuration().intValue());
+        requestExt.setPodNum(request.getConfig().getPodNum());
+        requestExt.setTenantId(WebPluginUtils.traceTenantId());
+        requestExt.setThreadNum(realThreadNum);
+        CheckPackageRespExt checkPackageRespExt = WebPluginUtils.checkPackage(requestExt);
+        if (checkPackageRespExt == null) {
+            return new CheckPackageRespExt(true, "", "");
+        }
+        return checkPackageRespExt;
+    }
+
+    private static void getAllXPathMd5(List<ScriptNode> nodeList,List<String> xPathMd5){
+
+        for(ScriptNode node : nodeList){
+            if(node.getType().equals(NodeTypeEnum.SAMPLER)){
+                xPathMd5.add(node.getXpathMd5());
+            }
+            if(node.getChildren() == null){
+                continue;
+            }
+            getAllXPathMd5(node.getChildren(),xPathMd5);
+        }
+    }
+
+    private  ScriptNode findScriptNode(String xPathMd5, List<ScriptNode> nodeList) {
+        for (ScriptNode scriptNode : nodeList) {
+            if(scriptNode.getXpathMd5().equals(xPathMd5)){
+                return scriptNode;
+            }
+            if(scriptNode.getChildren() == null){
+                continue;
+            }
+            ScriptNode returnNode = findScriptNode(xPathMd5,scriptNode.getChildren());
+            if(returnNode != null){
+                return returnNode;
+            }
+        }
+        return null;
+    }
+
     /**
      * 根据cron表达式生成执行计划；
      * 固定返回50次计划：根据使用场景，最小周级别频率，一年即50次即可满足
+     *
      * @param cron
      * @return
      */
@@ -195,11 +286,11 @@ public class SceneController {
         List<Date> resultList = new ArrayList<>();
         int i = 50;
         Date time = new Date();
-        do{
+        do {
             time = cronSequenceGenerator.next(time);      //下次执行时间
             resultList.add(time);
             i--;
-        }while (i>0);
+        } while (i > 0);
         return resultList;
     }
 
@@ -218,11 +309,18 @@ public class SceneController {
         }
         SceneRequest sceneRequest = buildSceneRequest(request);
         WebPluginUtils.fillCloudUserData(sceneRequest);
+
+        // 验证是否符合租户套餐--开放云
+        CheckPackageRespExt resp = checkPackage(sceneRequest);
+        if (!resp.getCheckStatus()) {
+            return ResponseResult.fail(resp.getErrorDetail(), resp.getSolution());
+        }
+
         Boolean updateResult = multipleSceneApi.update(sceneRequest);
         sceneSchedulerTaskService.deleteBySceneId(request.getBasicInfo().getSceneId());
 
         List<Date> executeTimeList = new ArrayList<>();
-        switch (request.getBasicInfo().getIsScheduler()){
+        switch (request.getBasicInfo().getIsScheduler()) {
             case 0:
                 break;
             case 1:
@@ -233,14 +331,14 @@ public class SceneController {
                 executeTimeList = getTaskPlan(request.getBasicInfo().getExecuteCron());
                 break;
         }
-        executeTimeList.forEach(s->{
+        executeTimeList.forEach(s -> {
             try {
                 sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
                     setSceneId(request.getBasicInfo().getSceneId());
                     setExecuteTime(s);
                     setExecuteCron(request.getBasicInfo().getExecuteCron());
                 }});
-            }catch (TakinWebException e) {
+            } catch (TakinWebException e) {
                 e.printStackTrace();
             }
         });
@@ -262,7 +360,7 @@ public class SceneController {
         String versionId = request.getVersionId();
         if (StringUtils.isNotBlank(versionId)) {
             String demandIds = JSON.toJSONString(request.getDemandIds());
-            createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),request.getBasicInfo().getSceneId(),true);
+            createVersion(versionId, demandIds, WebPluginUtils.traceEnvCode(), request.getBasicInfo().getSceneId(), true);
         }
 
         return ResponseResult.success(updateResult);
@@ -388,10 +486,10 @@ public class SceneController {
         if (sceneSchedulerResponse == null) {
             copyDetailResult.getBasicInfo().setIsScheduler(0);
         } else {
-            if(StringUtils.isNotBlank(sceneSchedulerResponse.getExecuteCron())&&sceneSchedulerResponse.getExecuteCron().length()>=5){
+            if (StringUtils.isNotBlank(sceneSchedulerResponse.getExecuteCron()) && sceneSchedulerResponse.getExecuteCron().length() >= 5) {
                 copyDetailResult.getBasicInfo().setExecuteCron(sceneSchedulerResponse.getExecuteCron());
                 copyDetailResult.getBasicInfo().setIsScheduler(2);
-            }else{
+            } else {
                 copyDetailResult.getBasicInfo().setIsScheduler(1);
                 copyDetailResult.getBasicInfo().setExecuteTime(DateUtil.formatDateTime(sceneSchedulerResponse.getExecuteTime()));
             }
@@ -402,8 +500,8 @@ public class SceneController {
         copyDetailResult.getDataValidation().setExcludedApplicationIds(DataTransformUtil.list2list(excludedApplicationIds, String.class));
 
         LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.select(YVersionEntity::getDids,YVersionEntity::getVid);
-        wrapper.eq(YVersionEntity::getSid,sceneId);
+        wrapper.select(YVersionEntity::getDids, YVersionEntity::getVid);
+        wrapper.eq(YVersionEntity::getSid, sceneId);
         YVersionEntity entity = yVersionMapper.selectOne(wrapper);
         if (null != entity) {
             copyDetailResult.setDemandIds(JSON.parseArray(entity.getDids()));
@@ -436,8 +534,8 @@ public class SceneController {
         SceneEntity entity = sceneService.businessActivityFlowDetail(id);
 
         LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.select(YVersionEntity::getDids,YVersionEntity::getVid);
-        wrapper.eq(YVersionEntity::getSid,id);
+        wrapper.select(YVersionEntity::getDids, YVersionEntity::getVid);
+        wrapper.eq(YVersionEntity::getSid, id);
         YVersionEntity e = yVersionMapper.selectOne(wrapper);
         if (null != e) {
             entity.setDemandIds(JSON.parseArray(e.getDids()));
@@ -530,7 +628,7 @@ public class SceneController {
         SceneDetailV2Response detailResult = multipleSceneApi.detail(request);
         Long businessFlowId = detailResult.getBasicInfo().getBusinessFlowId();
         List<ApplicationDetailResult> applicationMntEntities = this.sceneService.getAppsByFlowId(businessFlowId);
-        if (CollectionUtils.isEmpty(applicationMntEntities)){
+        if (CollectionUtils.isEmpty(applicationMntEntities)) {
             return ResponseResult.success(Collections.EMPTY_LIST);
         }
         // 添加排除的应用

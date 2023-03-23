@@ -5,6 +5,8 @@ import java.util.Set;
 import java.util.HashSet;
 
 import com.pamirs.takin.entity.domain.vo.shift.BaseResult;
+import io.shulie.takin.web.common.common.ECloudResponse;
+import io.shulie.takin.web.common.common.ECloudUserResponse;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import com.github.pagehelper.PageInfo;
@@ -66,6 +68,8 @@ public class ResponseWrapAdvice extends ResponseEntityExceptionHandler implement
                 || body instanceof ResponseResult
                 || body instanceof io.shulie.takin.common.beans.response.ResponseResult
                 || body instanceof BaseResult
+                || body instanceof ECloudResponse
+                || body instanceof ECloudUserResponse
         ) {
             return body;
         }

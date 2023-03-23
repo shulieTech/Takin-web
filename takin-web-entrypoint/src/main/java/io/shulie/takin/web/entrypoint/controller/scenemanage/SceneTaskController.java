@@ -36,6 +36,9 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.entity.ecloud.CheckPackageRequestExt;
+import io.shulie.takin.web.ext.entity.ecloud.CheckPackageRespExt;
+import io.shulie.takin.web.ext.entity.ecloud.TenantPackageInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -97,6 +100,28 @@ public class SceneTaskController {
     public WebResponse<SceneActionResp> start(@RequestBody SceneActionParam param) {
         try {
             ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(param.getSceneId());
+
+            // 开放云验证套餐
+            CheckPackageRequestExt requestExt = new CheckPackageRequestExt();
+            requestExt.setThreadNum(webResponse.getData().getRealThreadNum());
+            requestExt.setDuration(webResponse.getData().getPressureTestSecond().intValue());
+            requestExt.setPodNum(webResponse.getData().getIpNum());
+            requestExt.setTenantId(WebPluginUtils.traceTenantId());
+            CheckPackageRespExt respExt = WebPluginUtils.checkPackage(requestExt);
+            if(respExt != null && !respExt.getCheckStatus()){
+                return  WebResponse.fail(respExt.getErrorDetail(),respExt.getErrorDetail());
+            }
+
+            // 按次套餐启动场景次数扣除
+            TenantPackageInfoExt packageInfo = WebPluginUtils.getTenantPackage(WebPluginUtils.traceTenantId());
+            if(packageInfo != null){
+                // 次卡扣除
+                if(packageInfo.getPackageType() == 1){
+                    WebPluginUtils.reduceTimesOfCustomer(WebPluginUtils.traceTenantId());
+                }
+                param.setExclusiveEngine(packageInfo.getExclusiveEngine());
+            }
+
             OperationLogContextHolder.operationType(BizOpConstants.OpTypes.START);
 
             SceneManageWrapperDTO sceneData = BeanUtil.copyProperties(webResponse.getData(), SceneManageWrapperDTO.class);
@@ -111,6 +136,7 @@ public class SceneTaskController {
             SceneActionResp startTaskResponse = sceneTaskService.startTask(param);
             // 开启漏数
             startCheckLeakTask(param, sceneData);
+
             return WebResponse.success(startTaskResponse);
         } catch (TakinWebException ex) {
             // 解除 场景锁

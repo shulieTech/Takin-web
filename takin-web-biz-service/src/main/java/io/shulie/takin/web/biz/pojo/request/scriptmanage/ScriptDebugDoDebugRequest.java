@@ -29,4 +29,6 @@ public class ScriptDebugDoDebugRequest implements AppConstants {
     @NotNull(message = "请求并发数"+ MUST_BE_NOT_NULL)
     private Integer concurrencyNum = 1;
 
+    private Integer exclusiveEngine;
+
 }

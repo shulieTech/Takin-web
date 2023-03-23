@@ -23,6 +23,8 @@ import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.ecloud.CheckPackageRequestExt;
+import io.shulie.takin.web.ext.entity.ecloud.CheckPackageRespExt;
 import io.shulie.takin.web.ext.entity.ecloud.TenantPackageInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
@@ -765,19 +767,26 @@ public class WebPluginUtils {
      * @param tenantId
      * @return
      */
-    private static TenantPackageInfoExt getTenantPackage(Long tenantId) {
+    public static TenantPackageInfoExt getTenantPackage(Long tenantId) {
         if(openEcloudExtApi != null){
             return openEcloudExtApi.getTenantPackageInfo(tenantId);
         }
         return null;
     }
 
-    private static void reduceTimesOfCustomer(Long tenantPackageId) {
+    public static void reduceTimesOfCustomer(Long tenantPackageId) {
         if(openEcloudExtApi != null){
             openEcloudExtApi.reduceTimesOfCustomer(tenantPackageId);
         }
     }
 
+    public static CheckPackageRespExt checkPackage(CheckPackageRequestExt requestExt){
+        if(openEcloudExtApi != null){
+           return openEcloudExtApi.checkPackage(requestExt);
+        }else {
+            return null;
+        }
+    }
     //********************************移动云开放云市场模块**********************************//
 
 }

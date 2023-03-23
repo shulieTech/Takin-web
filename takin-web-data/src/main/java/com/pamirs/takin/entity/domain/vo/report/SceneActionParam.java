@@ -29,4 +29,6 @@ public class SceneActionParam extends ContextExt {
      * 来源名称。压测报告取场景名称、流量验证取业务活动名称、脚本调试取脚本名称
      */
     private String resourceName;
+    // ecloud 专用发压机器标识
+    private Integer exclusiveEngine;
 }

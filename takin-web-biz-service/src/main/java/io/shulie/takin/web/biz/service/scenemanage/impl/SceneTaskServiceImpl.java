@@ -298,7 +298,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             //填充占位符字段
             Map<String, String> placeholderMap = placeholderManageService.getKvValue();
             sceneTaskStartReq.setPlaceholderMap(placeholderMap);
-
+            // ecloud 专用发压机标识
+            sceneTaskStartReq.setExclusiveEngine(param.getExclusiveEngine());
             startResult = cloudTaskApi.start(sceneTaskStartReq);
         } catch (Exception e) {
             log.error("takin-cloud启动压测场景返回错误，id={}", param.getSceneId(), e);

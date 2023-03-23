@@ -433,6 +433,8 @@ public enum TakinErrorEnum implements ExceptionReadable {
     //公共任务
     GOLBAL_SCENE_COPY_EXCEPTION(1070701001, "公共任务复制异常"),
 
+    // 开放云套餐
+    PACKAGE_EXPIRED(1080101001, "套餐已过期"),
     ;
 
     /**

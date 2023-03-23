@@ -324,6 +324,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             Map<String,String> placeholderMap = placeholderManageService.getKvValue();
             debugCloudRequest.setPlaceholderMap(placeholderMap);
             // 启动调试
+            debugCloudRequest.setExclusiveEngine(request.getExclusiveEngine());
             SceneTryRunTaskStartResp cloudResponse = this.doDebug(debugCloudRequest);
 
             //推送到任务队列
@@ -336,7 +337,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             response.setScriptDebugId(scriptDebug.getId());
 
             //回写调试记录ID到流量账户
-            callBackToWriteBalance(cloudResponse, scriptDebug.getId());
+            //开放云暂时对流量不做处理
+//            callBackToWriteBalance(cloudResponse, scriptDebug.getId());
 
             log.info("调试 --> 异步启动循环查询启动成功, 压测完成!");
             tenantCommonExt.setSource(ContextSourceEnum.JOB_SCRIPT_DEBUG.getCode());

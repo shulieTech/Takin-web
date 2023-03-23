@@ -1,5 +1,7 @@
 package io.shulie.takin.web.ext.api.ecloud;
 
+import io.shulie.takin.web.ext.entity.ecloud.CheckPackageRequestExt;
+import io.shulie.takin.web.ext.entity.ecloud.CheckPackageRespExt;
 import io.shulie.takin.web.ext.entity.ecloud.TenantPackageInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import org.pf4j.ExtensionPoint;
@@ -23,8 +25,11 @@ public interface WebOpenEcloudExtApi extends ExtensionPoint {
     /**
      * 根据 用户套餐Id， 扣除压测次数
      *
-     * @param tenantPackageId 用户套餐Id
+     * @param tenantId 租户ID
      */
-    void reduceTimesOfCustomer(Long tenantPackageId);
+    void reduceTimesOfCustomer(Long tenantId);
+
+    CheckPackageRespExt checkPackage(CheckPackageRequestExt request);
+
 
 }

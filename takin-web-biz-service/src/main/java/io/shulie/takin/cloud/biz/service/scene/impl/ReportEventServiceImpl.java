@@ -71,6 +71,9 @@ public class ReportEventServiceImpl implements ReportEventService {
 
     private <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
         try {
+            if (query == null || query.getJobId() == null){
+                return new ArrayList<>();
+            }
             query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             query.setEnvCode(WebPluginUtils.traceEnvCode());
 

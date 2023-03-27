@@ -5,7 +5,6 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.pamirs.takin.common.constant.ConfigConstants;
@@ -73,39 +72,35 @@ public class NacosConfigManager {
 
     @PostConstruct
     public void init() {
-        List<ClusterNacosConfiguration> nacosEntities;
-        try {
-            nacosEntities = clusterNacosConfigurationMapper.selectAll();
-        } catch (Exception e) {
-            return;
-        }
-        if (CollectionUtils.isEmpty(nacosEntities)) {
-            return;
-        }
-        try {
-            for (ClusterNacosConfiguration entity : nacosEntities) {
-                Properties properties = new Properties();
-                properties.put(PropertyKeyConst.SERVER_ADDR, entity.getNacosServerAddr());
+        List<ClusterNacosConfiguration> nacosClusters = Optional.ofNullable(clusterNacosConfigurationMapper.selectAll())
+                .orElse(new ArrayList<>());
 
-                if (entity.getNacosNamespace() != null) {
-                    properties.put(PropertyKeyConst.NAMESPACE, entity.getNacosNamespace());
-                }
+        for (ClusterNacosConfiguration nacosCluster : nacosClusters) {
+            ConfigService nacosConfigService;
 
-                if (entity.getNacosUsername() != null) {
-                    properties.put(PropertyKeyConst.USERNAME, entity.getNacosUsername());
-                }
+            Properties properties = new Properties();
+            properties.put(PropertyKeyConst.SERVER_ADDR, nacosCluster.getNacosServerAddr());
 
-                if (entity.getNacosPassword() != null) {
-                    properties.put(PropertyKeyConst.PASSWORD, entity.getNacosPassword());
-                }
-
-                ConfigService service = ConfigFactory.createConfigService(properties);
-                configServices.put(entity.getClusterName(), service);
+            if (nacosCluster.getNacosNamespace() != null) {
+                properties.put(PropertyKeyConst.NAMESPACE, nacosCluster.getNacosNamespace());
             }
-        } catch (Exception e) {
-            log.error("创建nacos连接时失败, 不使用nacos作为配置中心", e);
-            configServices = Collections.EMPTY_MAP;
-            return;
+
+            if (nacosCluster.getNacosUsername() != null) {
+                properties.put(PropertyKeyConst.USERNAME, nacosCluster.getNacosUsername());
+            }
+
+            if (nacosCluster.getNacosPassword() != null) {
+                properties.put(PropertyKeyConst.PASSWORD, nacosCluster.getNacosPassword());
+            }
+
+            try {
+                nacosConfigService = ConfigFactory.createConfigService(properties);
+            } catch (NacosException e) {
+                log.error("NACOS: Failed to connect to the nacos server! Address={}, {}",  nacosCluster.getNacosServerAddr(), e.toString());
+                continue;
+            }
+
+            configServices.put(nacosCluster.getClusterName(), nacosConfigService);
         }
 
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("nacos-config-push-thread-%d").build();
@@ -113,7 +108,7 @@ public class NacosConfigManager {
         RejectedExecutionHandler handler = (r, executor) -> log.error("Task " + r.toString() + " rejected from " + executor.toString());
         int processors = Runtime.getRuntime().availableProcessors();
         threadPool = new ThreadPoolExecutor(processors + 1, 2 * processors, 1L, TimeUnit.MINUTES,
-                new LinkedBlockingQueue<Runnable>(100), factory, handler);
+                new LinkedBlockingQueue<>(100), factory, handler);
     }
 
     /**
@@ -163,15 +158,15 @@ public class NacosConfigManager {
         this.removeConfig(configService, appName);
     }
 
-    private void removeConfig(ConfigService configService, String appName){
-        if (configService != null){
+    private void removeConfig(ConfigService configService, String appName) {
+        if (configService != null) {
             try {
                 int count = 0;
-                while (!configService.removeConfig(appName, "APP")){
-                    count ++;
+                while (!configService.removeConfig(appName, "APP")) {
+                    count++;
                     log.warn("应用{}删除nacos配置失败,当前为第{}次删除", appName, count);
-                    if (count > 3){
-                        log.error("应用{}删除nacos配置3次之后失败，放弃删除",appName);
+                    if (count > 3) {
+                        log.error("应用{}删除nacos配置3次之后失败，放弃删除", appName);
                         break;
                     }
                 }
@@ -218,6 +213,7 @@ public class NacosConfigManager {
 
     /**
      * 把配置推送给指定数据中心的nacos集群
+     *
      * @param dataId
      * @param group
      * @param configService
@@ -226,8 +222,8 @@ public class NacosConfigManager {
     public void pushNacosConfigs(String dataId, String group, ConfigService configService, String configString) {
         try {
             boolean success = configService.publishConfig(dataId, group, configString);
-            if(!success) {
-                throw new NacosException(0,"推送配置失败");
+            if (!success) {
+                throw new NacosException(0, "推送配置失败");
             }
         } catch (NacosException e) {
             log.error("推送配置到nacos发生异常,dataId:{}, group:{}, content:{}", dataId, group, configString);
@@ -236,12 +232,13 @@ public class NacosConfigManager {
 
     /**
      * 把配置推送给所有数据中心的nacos集群
+     *
      * @param dataId
      * @param group
      * @param configString
      */
     public void pushNacosConfigs(String dataId, String group, String configString) {
-        for (Map.Entry<String, ConfigService> entry: configServices.entrySet()) {
+        for (Map.Entry<String, ConfigService> entry : configServices.entrySet()) {
             String clusterName = entry.getKey();
             ConfigService configService = entry.getValue();
 
@@ -369,7 +366,6 @@ public class NacosConfigManager {
             Map<String, String> configMap = configListResponses.stream().collect(Collectors.toMap(AgentConfigListResponse::getEnKey, AgentConfigListResponse::getDefaultValue));
             // 全局配置每个nacos都推送
             pushNacosConfigs("globalConfig", "GLOBAL_CONFIG", JSON.toJSONString(configMap));
-            //configServices.entrySet().forEach(entry -> pushNacosConfigs("globalConfig", "GLOBAL_CONFIG", entry.getValue(), JSON.toJSONString(configMap)));
         }
     }
 
@@ -389,7 +385,6 @@ public class NacosConfigManager {
 
             // 全局配置每个nacos都推送
             pushNacosConfigs("clusterConfig", "CLUSTER_CONFIG", JSON.toJSONString(values));
-            //configServices.entrySet().forEach(entry -> pushNacosConfigs("clusterConfig", "CLUSTER_CONFIG", entry.getValue(), JSON.toJSONString(values)));
         }
     }
 

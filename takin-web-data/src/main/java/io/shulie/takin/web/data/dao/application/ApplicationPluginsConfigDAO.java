@@ -17,5 +17,7 @@ public interface ApplicationPluginsConfigDAO extends IService<ApplicationPlugins
     IPage<ApplicationPluginsConfigEntity> findListPage(ApplicationPluginsConfigParam param);
 
     List<ApplicationPluginsConfigEntity> findList(ApplicationPluginsConfigParam param);
+
+    void deleteByAppName(String applicationName);
 }
 

@@ -422,6 +422,8 @@ public class ConfCenterService extends CommonService {
                 agentConfigDAO.deleteByAppName(tApplicationMnt.getApplicationName());
                 //删除对应的入口规则
                 applicationApiDAO.deleteByAppName(tApplicationMnt.getApplicationName());
+                //删除对应的应用插件数据
+                applicationPluginsConfigDAO.deleteByAppName(tApplicationMnt.getApplicationName());
                 //删除对应的nacos数据
                 applicationContext.publishEvent(new ShadowConfigRemoveEvent(tApplicationMnt.getApplicationName(), tApplicationMnt.getClusterName()));
             });

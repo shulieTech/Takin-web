@@ -580,19 +580,19 @@ public class DsServiceImpl implements DsService {
 
             Map<String, AppShadowDatabaseDTO> amdbCacheMap = amdbByCaches
                     .stream()
-                    .collect(Collectors.toMap(AppShadowDatabaseDTO::getFilterStr, Function.identity(), (key1, key2) -> key2));
+                    .collect(Collectors.toMap(o -> this.converter(o.getAttachment()), Function.identity(), (key1, key2) -> key2));
 
             Map<String, ApplicationDsResult> cacheOldMap = new HashMap<>();
             Map<String, ApplicationDsCacheManageDetailResult> cacheMap = new HashMap<>();
             if (CollectionUtils.isNotEmpty(cacheOlds)) {
                 cacheOldMap = cacheOlds
                         .stream()
-                        .collect(Collectors.toMap(ApplicationDsResult::getFilterStr, Function.identity(), (key1, key2) -> key2));
+                        .collect(Collectors.toMap(ApplicationDsResult::getUrl, Function.identity(), (key1, key2) -> key2));
             }
             if (CollectionUtils.isNotEmpty(caches)) {
                 cacheMap = caches
                         .stream()
-                        .collect(Collectors.toMap(ApplicationDsCacheManageDetailResult::getFilterStr, Function.identity(), (key1, key2) -> key2));
+                        .collect(Collectors.toMap(ApplicationDsCacheManageDetailResult::getColony, Function.identity(), (key1, key2) -> key2));
             }
 
             for (String k : amdbCacheMap.keySet()) {
@@ -958,7 +958,7 @@ public class DsServiceImpl implements DsService {
         detailResult.setApplicationId(appId);
         detailResult.setApplicationName(amdbData.getAppName());
         detailResult.setCacheName(amdbData.getConnectionPool());
-        detailResult.setColony(amdbData.getDataSource());
+        detailResult.setColony(this.converter(amdbData.getAttachment()));
         detailResult.setUserName(amdbData.getTableUser());
         detailResult.setPwd(amdbData.getPassword());
         detailResult.setFileExtedn(amdbData.getAttachment());
@@ -968,6 +968,23 @@ public class DsServiceImpl implements DsService {
         detailResult.setSource(0);
         detailResult.setStatus(1);
         return detailResult;
+    }
+
+    private String converter(String amdbAttachment){
+        Map<String, Object> json2Map = JsonHelper.json2Map(amdbAttachment, String.class, Object.class);
+        Map<String, String> bizCache = new HashMap<>();
+        if (json2Map != null){
+            if (json2Map.containsKey("nodes")){
+                bizCache.put("nodes", json2Map.get("nodes").toString());
+            }
+            if (json2Map.containsKey("master")) {
+                bizCache.put("master", json2Map.get("master").toString());
+            }
+            if (json2Map.containsKey("database")) {
+                bizCache.put("database", json2Map.get("database").toString());
+            }
+        }
+        return JsonHelper.bean2Json(bizCache);
     }
 
     private ApplicationDsV2Response dbBuild(ApplicationDsDbManageDetailResult dbDetail, Map<String, List<ApplicationDsWarnResult>> urlMap) {

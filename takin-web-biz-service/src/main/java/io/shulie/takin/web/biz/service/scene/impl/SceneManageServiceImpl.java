@@ -1087,6 +1087,9 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     private List<SceneReportListOutput> listEnginePressure(EnginePressureQuery query) {
         try {
+            if (query == null || query.getJobId() == null){
+                return new ArrayList<>();
+            }
             query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             query.setEnvCode(WebPluginUtils.traceEnvCode());
 

@@ -321,6 +321,9 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         // 删除应用配置
         agentConfigDAO.deleteById(id);
         this.cacheEvict(CACHE_KEY_AGENT_CONFIG);
+        if (detailResult.getProjectName() != null) {
+            applicationContext.publishEvent(new DynamicConfigRefreshEvent(detailResult.getProjectName()));
+        }
     }
 
     @Override

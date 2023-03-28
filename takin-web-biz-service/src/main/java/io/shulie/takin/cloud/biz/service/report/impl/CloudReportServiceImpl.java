@@ -884,7 +884,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         fieldAndAlias.put("sum(count)", "tempRequestCount");
         fieldAndAlias.put("sum(fail_count)", "failRequest");
         fieldAndAlias.put("avg(avg_tps)", "tps");
-        fieldAndAlias.put("sum(sum_rt)/sum(count)", "avgRt");
+        fieldAndAlias.put("sum(sum_rt)", "sumRt");
         fieldAndAlias.put("sum(sa_count)", "saCount");
         fieldAndAlias.put("count(avg_rt)", "recordCount");
         fieldAndAlias.put("avg(active_threads)", "avgConcurrenceNum");
@@ -1273,7 +1273,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         fieldAndAlias.put("sum(count)", "totalRequest");
         fieldAndAlias.put("sum(fail_count)", "failRequest");
         fieldAndAlias.put("avg(avg_tps)", "tps");
-        fieldAndAlias.put("sum(sum_rt)/sum(count)", "avgRt");
+        fieldAndAlias.put("sum(sum_rt)", "sumRt");
         fieldAndAlias.put("sum(sa_count)", "saCount");
         fieldAndAlias.put("max(avg_tps)", "maxTps");
         fieldAndAlias.put("min(min_rt)", "minRt");

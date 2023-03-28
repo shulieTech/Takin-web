@@ -72,6 +72,9 @@ public class StatReportDTO {
      */
     private BigDecimal maxTps;
 
+
+    private BigDecimal sumRt;
+
     /**
      * 查询记录数
      */
@@ -85,6 +88,10 @@ public class StatReportDTO {
      */
     public BigDecimal getSa() {
         return BigDecimal.valueOf(NumberUtil.getPercentRate(saCount, getTempRequestCount()));
+    }
+
+    public BigDecimal getAvgRt() {
+        return BigDecimal.valueOf(NumberUtil.getPercentRate(sumRt, getTempRequestCount()));
     }
 
     /**

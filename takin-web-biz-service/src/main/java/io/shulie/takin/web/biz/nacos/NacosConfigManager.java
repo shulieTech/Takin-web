@@ -94,10 +94,8 @@ public class NacosConfigManager {
                 log.error("NACOS: Failed to connect to the nacos server! Address={}, {}", nacosCluster.getNacosServerAddr(), e.toString());
                 continue;
             }
-        } catch (Exception e) {
-            log.error("创建nacos连接时失败, 不使用nacos作为配置中心", e);
-            configServices = Collections.EMPTY_MAP;
-            return;
+
+            configServices.put(nacosCluster.getClusterName(), nacosConfigService);
         }
 
     }
@@ -208,9 +206,9 @@ public class NacosConfigManager {
      * @param dataId
      * @param group
      * @param configService
-     * @param configString
+     * @param configs
      */
-    public void pushNacosConfigs(String dataId, String group, ConfigService configService, String configString) {
+    public void pushNacosConfigs(String dataId, String group, ConfigService configService, String configs) {
         try {
             boolean result = configService.publishConfig(dataId, group, configs);
             if (!result) {

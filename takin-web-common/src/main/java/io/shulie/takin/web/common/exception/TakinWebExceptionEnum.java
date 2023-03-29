@@ -84,6 +84,12 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     AGENT_UPDATE_AGENT_VERSION_UPDATE_ERROR("0504-" + ErrorConstant.UPDATE_ERROR, "Agent 更新 agent 版本, 更新错误"),
     AGENT_UPLOAD_TRACE_VALIDATE_ERROR("0505-" + ErrorConstant.VALIDATE_ERROR, "Agent 上传 trace 相关, 校验错误"),
 
+
+    /**
+     * 探针配置更新
+     */
+    AGENT_CONFIG_CLIENT_QUERY_ERROR("0505-"+ErrorConstant.QUERY_ERROR,"探针配置查询错误"),
+
     /**
      * 链路梳理
      */

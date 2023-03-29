@@ -200,6 +200,14 @@ public class NacosConfigManager {
         this.refreshSwitchConfig();
     }
 
+    /**
+     * 把配置推送给指定数据中心的nacos集群
+     *
+     * @param dataId
+     * @param group
+     * @param configService
+     * @param configs
+     */
     public void pushNacosConfigs(String dataId, String group, ConfigService configService, String configs) {
         try {
             boolean result = configService.publishConfig(dataId, group, configs);
@@ -209,6 +217,20 @@ public class NacosConfigManager {
         } catch (NacosException e) {
             log.error("推送配置到nacos发生异常,dataId:{}, group:{}, content:{}", dataId, group, configs, e);
             throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "dataId:" + dataId + "推送nacos出现异常:" + e.getErrMsg());
+        }
+    }
+
+
+    /**
+     * 把配置推送给所有数据中心的nacos集群
+     *
+     * @param dataId
+     * @param group
+     * @param configString
+     */
+    public void pushNacosConfigs(String dataId, String group, String configString) {
+        for (Map.Entry<String, ConfigService> entry : configServices.entrySet()) {
+            this.pushNacosConfigs(dataId, group, entry.getValue(), configString);
         }
     }
 
@@ -286,7 +308,7 @@ public class NacosConfigManager {
         configs.put("trace_rule", values == null ? new HashMap<>() : values);
         configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
         configs.put("redis-expire", agentConfigCacheManager.getAppPluginConfig(CommonUtil.generateRedisKey(appName, "redis_expire")));
-        pushNacosConfigs(appName, "APP", configService, new Gson().toJson(configs));
+        this.pushNacosConfigs(appName, "APP", configService, new Gson().toJson(configs));
     }
 
     private void refreshGlobalDynamicConfig(TenantCommonExt commonExt) {
@@ -297,8 +319,7 @@ public class NacosConfigManager {
         List<AgentConfigListResponse> configListResponses = agentConfigService.list(queryRequest);
         Map<String, String> configMap = configListResponses.stream().collect(Collectors.toMap(AgentConfigListResponse::getEnKey, AgentConfigListResponse::getDefaultValue));
         // 全局配置每个nacos都推送
-        configServices.entrySet().forEach(entry -> pushNacosConfigs("globalConfig", "GLOBAL_CONFIG", entry.getValue(), JSON.toJSONString(configMap)));
-
+        this.pushNacosConfigs("globalConfig", "GLOBAL_CONFIG", JSON.toJSONString(configMap));
     }
 
 
@@ -310,7 +331,7 @@ public class NacosConfigManager {
         values.put("whiteListSwitch", switchDTO);
 
         values.put("globalSwithc", agentConfigCacheManager.getPressureSwitch());
-        configServices.entrySet().forEach(entry -> pushNacosConfigs("clusterConfig", "CLUSTER_CONFIG", entry.getValue(), JSON.toJSONString(values)));
+        this.pushNacosConfigs("clusterConfig", "CLUSTER_CONFIG", JSON.toJSONString(values));
     }
 
 }

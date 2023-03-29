@@ -151,6 +151,9 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<
         if (CollectionUtils.isNotEmpty(queryParam.getUserIdList())) {
             businessLinkManageWrapper.in(BusinessLinkManageTableEntity::getUserId, queryParam.getUserIdList());
         }
+        if (CollectionUtils.isNotEmpty(queryParam.getDeptIdList())) {
+            businessLinkManageWrapper.in(BusinessLinkManageTableEntity::getDeptId, queryParam.getDeptIdList());
+        }
         if (!StringUtils.isEmpty(queryParam.getBussinessActiveName())) {
             businessLinkManageWrapper.like(BusinessLinkManageTableEntity::getLinkName, queryParam.getBussinessActiveName());
         }

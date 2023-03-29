@@ -8,12 +8,14 @@
         <result column="cluster_name" jdbcType="VARCHAR" property="clusterName"/>
         <result column="nacos_server_addr" jdbcType="VARCHAR" property="nacosServerAddr"/>
         <result column="nacos_namespace" jdbcType="VARCHAR" property="nacosNamespace"/>
+        <result column="nacos_username" jdbcType="VARCHAR" property="nacosUsername"/>
+        <result column="nacos_password" jdbcType="VARCHAR" property="nacosPassword"/>
         <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
         <result column="gmt_update" jdbcType="TIMESTAMP" property="gmtUpdate"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
-        id, `cluster_name`, `nacos_server_addr`, nacos_namespace, gmt_create, gmt_update
+        id, `cluster_name`, `nacos_server_addr`, nacos_namespace, nacos_username, nacos_password, gmt_create, gmt_update
     </sql>
 
     <select id="selectAll" resultMap="BaseResultMap">

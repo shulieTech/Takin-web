@@ -17,7 +17,6 @@ import io.shulie.takin.web.biz.nacos.event.SwitchConfigRefreshEvent;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigListResponse;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
-import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -30,7 +29,6 @@ import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentConfigQueryParam;
 import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -111,8 +109,7 @@ public class NacosConfigManager {
             throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "推送nacos失败,没有可用的nacos服务");
         }
         String appName = event.getAppName();
-        TenantCommonExt commonExt = event.getCommonExt();
-        String clusterName = queryClusterName(appName, commonExt.getEnvCode(), commonExt.getTenantId());
+        String clusterName = queryClusterName(appName, WebPluginUtils.traceEnvCode(), WebPluginUtils.traceTenantId());
         if (clusterName == null) {
             log.error("当前应用:{}没有对应的clusterName，不进行nacos同步", appName);
             throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "应用名:" + event.getAppName() + "推送nacos失败,没有对应的clusterName:" + clusterName);
@@ -121,7 +118,7 @@ public class NacosConfigManager {
             log.error("不存在应用指定的集群中心nacos配置，应用名称:{}, 集群名称:{}", appName, clusterName);
             throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "应用名:" + event.getAppName() + "推送nacos失败,应用对应的nacos集群中心" + clusterName + "不存在");
         }
-        this.refreshShadowConfigs(appName, commonExt, configServices.get(clusterName));
+        this.refreshShadowConfigs(appName, configServices.get(clusterName));
     }
 
     /**
@@ -178,7 +175,7 @@ public class NacosConfigManager {
         String appName = event.getAppName();
         // 刷新全局配置
         if (appName == null) {
-            this.refreshGlobalDynamicConfig(event.getCommonExt());
+            this.refreshGlobalDynamicConfig();
             return;
         }
         WebPluginUtils.setTraceTenantContext(event.getCommonExt());
@@ -187,7 +184,7 @@ public class NacosConfigManager {
         if (result == null || result.getClusterName() == null) {
             return;
         }
-        this.refreshShadowConfigs(appName, event.getCommonExt(), configServices.get(result.getClusterName()));
+        this.refreshShadowConfigs(appName, configServices.get(result.getClusterName()));
     }
 
     /**
@@ -291,9 +288,7 @@ public class NacosConfigManager {
         return !configServices.isEmpty();
     }
 
-    private void refreshShadowConfigs(String appName, TenantCommonExt commonExt, ConfigService configService) {
-        commonExt.setSource(ContextSourceEnum.FRONT.getCode());
-        WebPluginUtils.setTraceTenantContext(commonExt);
+    private void refreshShadowConfigs(String appName, ConfigService configService) {
 
         Map<String, Object> configs = new HashMap<>();
         configs.put("datasource", agentConfigCacheManager.getShadowDb(appName));
@@ -306,14 +301,13 @@ public class NacosConfigManager {
         configs.put("mock", agentConfigCacheManager.getGuards(appName));
         Map<String, List<String>> values = applicationApiManageAmdbCache.get(appName);
         configs.put("trace_rule", values == null ? new HashMap<>() : values);
-        configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
+        configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), WebPluginUtils.traceTenantAppKey()));
         configs.put("redis-expire", agentConfigCacheManager.getAppPluginConfig(CommonUtil.generateRedisKey(appName, "redis_expire")));
         this.pushNacosConfigs(appName, "APP", configService, new Gson().toJson(configs));
     }
 
-    private void refreshGlobalDynamicConfig(TenantCommonExt commonExt) {
+    private void refreshGlobalDynamicConfig() {
         // 全局配置
-        WebPluginUtils.setTraceTenantContext(commonExt);
         AgentConfigQueryRequest queryRequest = new AgentConfigQueryRequest();
         queryRequest.setReadProjectConfig(false);
         List<AgentConfigListResponse> configListResponses = agentConfigService.list(queryRequest);

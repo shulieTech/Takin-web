@@ -675,10 +675,12 @@ public class ApplicationDAOImpl
 
     @Override
     public List<ApplicationListResult> pageFromSync(PageBaseDTO pageBaseDTO) {
-        IPage<ApplicationMntEntity> applicationMntEntityPage = applicationMntMapper.selectPage(this.setPage(pageBaseDTO),
-            this.getLambdaQueryWrapper().select(ApplicationMntEntity::getApplicationId,
+        LambdaQueryWrapper<ApplicationMntEntity> queryWrapper = this.getLambdaQueryWrapper().select(ApplicationMntEntity::getId, ApplicationMntEntity::getApplicationId,
                 ApplicationMntEntity::getApplicationName, ApplicationMntEntity::getAccessStatus,
-                ApplicationMntEntity::getNodeNum));
+                ApplicationMntEntity::getNodeNum);
+        queryWrapper.orderByAsc(ApplicationMntEntity::getId);
+        IPage<ApplicationMntEntity> applicationMntEntityPage = applicationMntMapper.selectPage(this.setPage(pageBaseDTO),
+                queryWrapper);
         return DataTransformUtil.list2list(applicationMntEntityPage.getRecords(), ApplicationListResult.class);
     }
 

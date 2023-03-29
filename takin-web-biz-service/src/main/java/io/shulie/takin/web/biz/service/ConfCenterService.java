@@ -393,8 +393,6 @@ public class ConfCenterService extends CommonService {
                 redisManager.removeKey(
                         WhiteBlackListRedisKey.TAKIN_WHITE_LIST_KEY_METRIC + tApplicationMnt.getApplicationName());
                 // 采用租户的userAppKey
-                //删除所有缓存
-                agentConfigCacheManager.evict(tApplicationMnt.getApplicationName(), false);
                 delApplicationCache(tApplicationMnt.getApplicationName());
                 /**
                  * configs.put("datasource", agentConfigCacheManager.getShadowDb(appName));
@@ -424,6 +422,8 @@ public class ConfCenterService extends CommonService {
                 applicationApiDAO.deleteByAppName(tApplicationMnt.getApplicationName());
                 //删除对应的应用插件数据
                 applicationPluginsConfigDAO.deleteByAppName(tApplicationMnt.getApplicationName());
+                //删除所有缓存
+                agentConfigCacheManager.evict(tApplicationMnt.getApplicationName(), false);
                 //删除对应的nacos数据
                 applicationContext.publishEvent(new ShadowConfigRemoveEvent(tApplicationMnt.getApplicationName(), tApplicationMnt.getClusterName()));
             });

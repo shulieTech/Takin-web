@@ -729,8 +729,9 @@ public class ApplicationDAOImpl
     @Override
     public PagingList<ApplicationListResult> pageByApplicationNamesAndUserId(Collection<String> applicationNames,
         PageBaseDTO pageBaseDTO) {
-        Page<ApplicationMntEntity> page = applicationMntMapper.selectPage(this.setPage(pageBaseDTO),
-            this.getWrapperByApplicationNamesAndUserId(applicationNames, null));
+        LambdaQueryWrapper<ApplicationMntEntity> queryWrapper = this.getWrapperByApplicationNamesAndUserId(applicationNames, null);
+        queryWrapper.orderByAsc(ApplicationMntEntity::getId);
+        Page<ApplicationMntEntity> page = applicationMntMapper.selectPage(this.setPage(pageBaseDTO), queryWrapper);
         if (page.getTotal() == 0) {
             return PagingList.empty();
         }

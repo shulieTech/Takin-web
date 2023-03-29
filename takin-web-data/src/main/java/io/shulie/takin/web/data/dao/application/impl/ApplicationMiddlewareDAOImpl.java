@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.dao.application.impl;
 
 import java.util.List;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
@@ -35,13 +36,13 @@ public class ApplicationMiddlewareDAOImpl implements ApplicationMiddlewareDAO, M
 
     @Override
     public IPage<ApplicationMiddlewareListResult> page(PageApplicationMiddlewareParam param) {
-        IPage<ApplicationMiddlewareEntity> entityPage =
-            applicationMiddlewareMapper.selectPage(this.setPage(param),
-                this.getLambdaQueryWrapper().eq(ApplicationMiddlewareEntity::getApplicationId, param.getApplicationId())
-                    .eq(param.getStatus() != null, ApplicationMiddlewareEntity::getStatus, param.getStatus())
-                    .and(!StringUtils.isEmpty(param.getKeywords()),
+        LambdaQueryWrapper<ApplicationMiddlewareEntity> queryWrapper = this.getLambdaQueryWrapper().eq(ApplicationMiddlewareEntity::getApplicationId, param.getApplicationId())
+                .eq(param.getStatus() != null, ApplicationMiddlewareEntity::getStatus, param.getStatus())
+                .and(!StringUtils.isEmpty(param.getKeywords()),
                         wrapper -> wrapper.like(ApplicationMiddlewareEntity::getGroupId, param.getKeywords()).or()
-                            .like(ApplicationMiddlewareEntity::getArtifactId, param.getKeywords())));
+                                .like(ApplicationMiddlewareEntity::getArtifactId, param.getKeywords()));
+        queryWrapper.orderByAsc(ApplicationMiddlewareEntity::getId);
+        IPage<ApplicationMiddlewareEntity> entityPage = applicationMiddlewareMapper.selectPage(this.setPage(param), queryWrapper);
 
         IPage<ApplicationMiddlewareListResult> resultPage = new Page<>();
         BeanUtils.copyProperties(entityPage, resultPage);

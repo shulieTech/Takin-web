@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.text.CharSequenceUtil;
@@ -38,6 +37,7 @@ import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;

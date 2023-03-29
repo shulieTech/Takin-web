@@ -2,7 +2,7 @@ package io.shulie.takin.web.common.vo.excel;
 
 import java.io.Serializable;
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.metadata.BaseRowModel;
+
 import lombok.Data;
 
 /**
@@ -12,7 +12,7 @@ import lombok.Data;
  */
 
 @Data
-public class DsExcelVO extends BaseRowModel implements Serializable {
+public class DsExcelVO  implements Serializable {
     private static final long serialVersionUID = -8089242784938560042L;
 
     @ExcelProperty(value ="dbType",index = 0)

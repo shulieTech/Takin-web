@@ -43,7 +43,7 @@
         <!-- biz version -->
         <takin.web.version>takin-web-5.10.2.2</takin.web.version>
         <takin.common.version>common-2.0.2-SNAPSHOT</takin.common.version>
-        <command.channel>common-2.0.0-SNAPSHOT</command.channel>
+        <command.channel>common-2.0.2-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.6.2</pardar.log.protocol.version>
         <instrument.core.version>1.0.0</instrument.core.version>
 
@@ -77,7 +77,7 @@
         <easypoi-annotation.version>4.3.0</easypoi-annotation.version>
         <openpdf.version>9.1.22</openpdf.version>
         <transmittable-thread-local>2.12.4</transmittable-thread-local>
-        <cloud.version>5.4.0.12</cloud.version>
+        <cloud.version>5.4.1.0</cloud.version>
         <log4j.version>2.16.0</log4j.version>
         <logback.version>1.2.9</logback.version>
         <tomcat.version>9.0.67</tomcat.version>
@@ -168,6 +168,11 @@
                 <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>easyexcel</artifactId>
+                <version>3.2.1</version>
             </dependency>
             <!--redis-->
             <dependency>

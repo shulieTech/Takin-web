@@ -2,13 +2,13 @@ package io.shulie.takin.web.biz.service.pressureresource.vo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
-import com.alibaba.excel.metadata.BaseRowModel;
+
 import lombok.Data;
 
 import java.io.Serializable;
 
 @Data
-public class ShadowTableExcelVO extends BaseRowModel implements Serializable {
+public class ShadowTableExcelVO  implements Serializable {
     @ColumnWidth(50)
     @ExcelProperty(value = "业务数据源地址", index = 0)
     private String businessDatabase;

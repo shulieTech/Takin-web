@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import com.alibaba.excel.util.CollectionUtils;
-
 import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -20,6 +18,7 @@ import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
 import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 

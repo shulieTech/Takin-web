@@ -5,7 +5,6 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.entity.domain.dto.config.WhiteListSwitchDTO;
@@ -20,6 +19,8 @@ import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigListResp
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.fastagentaccess.impl.AgentConfigDAOImpl;
@@ -38,19 +39,13 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class NacosConfigManager {
 
-    /**
-     * 业务线程池
-     */
-    private ThreadPoolExecutor threadPool;
-
-    private Map<String, ConfigService> configServices = new HashMap<>();
+    private final Map<String, ConfigService> configServices = new HashMap<>();
 
     @Resource
     private AgentConfigCacheManager agentConfigCacheManager;
@@ -96,19 +91,15 @@ public class NacosConfigManager {
             try {
                 nacosConfigService = ConfigFactory.createConfigService(properties);
             } catch (NacosException e) {
-                log.error("NACOS: Failed to connect to the nacos server! Address={}, {}",  nacosCluster.getNacosServerAddr(), e.toString());
+                log.error("NACOS: Failed to connect to the nacos server! Address={}, {}", nacosCluster.getNacosServerAddr(), e.toString());
                 continue;
             }
-
-            configServices.put(nacosCluster.getClusterName(), nacosConfigService);
+        } catch (Exception e) {
+            log.error("创建nacos连接时失败, 不使用nacos作为配置中心", e);
+            configServices = Collections.EMPTY_MAP;
+            return;
         }
 
-        ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("nacos-config-push-thread-%d").build();
-        //丢弃任务，写异常日志，但是不抛出异常
-        RejectedExecutionHandler handler = (r, executor) -> log.error("Task " + r.toString() + " rejected from " + executor.toString());
-        int processors = Runtime.getRuntime().availableProcessors();
-        threadPool = new ThreadPoolExecutor(processors + 1, 2 * processors, 1L, TimeUnit.MINUTES,
-                new LinkedBlockingQueue<>(100), factory, handler);
     }
 
     /**
@@ -119,19 +110,20 @@ public class NacosConfigManager {
     @EventListener
     public void refreshShadowConfigs(ShadowConfigRefreshEvent event) {
         if (configServices.isEmpty()) {
-            return;
+            throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "推送nacos失败,没有可用的nacos服务");
         }
         String appName = event.getAppName();
         TenantCommonExt commonExt = event.getCommonExt();
         String clusterName = queryClusterName(appName, commonExt.getEnvCode(), commonExt.getTenantId());
         if (clusterName == null) {
-            log.warn("当前应用:{}没有对应的clusterName，没有进行nacos同步", appName);
-            return;
+            log.error("当前应用:{}没有对应的clusterName，不进行nacos同步", appName);
+            throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "应用名:" + event.getAppName() + "推送nacos失败,没有对应的clusterName:" + clusterName);
         }
         if (!configServices.containsKey(clusterName)) {
-            log.warn("不存在应用指定的集群中心nacos配置，应用名称:{}, 集群名称:{}", appName, clusterName);
+            log.error("不存在应用指定的集群中心nacos配置，应用名称:{}, 集群名称:{}", appName, clusterName);
+            throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "应用名:" + event.getAppName() + "推送nacos失败,应用对应的nacos集群中心" + clusterName + "不存在");
         }
-        threadPool.submit(new ShadowConfigsRefreshTask(appName, commonExt, configServices.get(clusterName)));
+        this.refreshShadowConfigs(appName, commonExt, configServices.get(clusterName));
     }
 
     /**
@@ -167,11 +159,12 @@ public class NacosConfigManager {
                     log.warn("应用{}删除nacos配置失败,当前为第{}次删除", appName, count);
                     if (count > 3) {
                         log.error("应用{}删除nacos配置3次之后失败，放弃删除", appName);
-                        break;
+                        throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "应用名:" + appName + "删除nacos配置3次之后失败");
                     }
                 }
             } catch (NacosException e) {
                 log.error("删除nacos配置出现异常", e);
+                throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "应用名:" + appName + "删除nacos配置出现异常:" + e.getErrMsg());
             }
         }
     }
@@ -187,18 +180,16 @@ public class NacosConfigManager {
         String appName = event.getAppName();
         // 刷新全局配置
         if (appName == null) {
-            threadPool.submit(new GlobalDynamicConfigRefreshTask(event.getCommonExt()));
+            this.refreshGlobalDynamicConfig(event.getCommonExt());
             return;
         }
         WebPluginUtils.setTraceTenantContext(event.getCommonExt());
         // 刷新应用配置
         ApplicationDetailResult result = applicationDAO.getApplicationByTenantIdAndName(appName);
-        String clusterName = result.getClusterName();
-        if (result == null || clusterName == null) {
+        if (result == null || result.getClusterName() == null) {
             return;
         }
-        threadPool.submit(new ShadowConfigsRefreshTask(appName, event.getCommonExt(), configServices.get(clusterName)));
-
+        this.refreshShadowConfigs(appName, event.getCommonExt(), configServices.get(result.getClusterName()));
     }
 
     /**
@@ -208,7 +199,7 @@ public class NacosConfigManager {
      */
     @EventListener
     public void refreshSwitchConfigs(SwitchConfigRefreshEvent event) {
-        threadPool.submit(new SwitchConfigRefreshTask());
+        this.refreshSwitchConfig();
     }
 
     /**
@@ -221,33 +212,13 @@ public class NacosConfigManager {
      */
     public void pushNacosConfigs(String dataId, String group, ConfigService configService, String configString) {
         try {
-            boolean success = configService.publishConfig(dataId, group, configString);
-            if (!success) {
-                throw new NacosException(0, "推送配置失败");
+            boolean result = configService.publishConfig(dataId, group, configs);
+            if (!result) {
+                throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "dataId:" + dataId + "推送nacos失败");
             }
         } catch (NacosException e) {
-            log.error("推送配置到nacos发生异常,dataId:{}, group:{}, content:{}", dataId, group, configString);
-        }
-    }
-
-    /**
-     * 把配置推送给所有数据中心的nacos集群
-     *
-     * @param dataId
-     * @param group
-     * @param configString
-     */
-    public void pushNacosConfigs(String dataId, String group, String configString) {
-        for (Map.Entry<String, ConfigService> entry : configServices.entrySet()) {
-            String clusterName = entry.getKey();
-            ConfigService configService = entry.getValue();
-
-            try {
-                configService.publishConfig(dataId, group, configString);
-
-            } catch (NacosException e) {
-                log.error("推送配置到nacos发生异常, cluster:{}, dataId:{}, group:{}, content:{}", clusterName, dataId, group, configString);
-            }
+            log.error("推送配置到nacos发生异常,dataId:{}, group:{}, content:{}", dataId, group, configs, e);
+            throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "dataId:" + dataId + "推送nacos出现异常:" + e.getErrMsg());
         }
     }
 
@@ -308,84 +279,48 @@ public class NacosConfigManager {
         return !configServices.isEmpty();
     }
 
-    /**
-     * 影子配置和应用动态参数配置
-     */
-    private class ShadowConfigsRefreshTask implements Runnable {
+    private void refreshShadowConfigs(String appName, TenantCommonExt commonExt, ConfigService configService) {
+        commonExt.setSource(ContextSourceEnum.FRONT.getCode());
+        WebPluginUtils.setTraceTenantContext(commonExt);
 
-        private String appName;
-        private TenantCommonExt commonExt;
-        private ConfigService configService;
-
-        public ShadowConfigsRefreshTask(String appName, TenantCommonExt commonExt, ConfigService configService) {
-            this.appName = appName;
-            this.commonExt = commonExt;
-            this.configService = configService;
-        }
-
-        @Override
-        public void run() {
-            commonExt.setSource(ContextSourceEnum.FRONT.getCode());
-            WebPluginUtils.setTraceTenantContext(commonExt);
-
-            Map<String, Object> configs = new HashMap<>();
-            configs.put("datasource", agentConfigCacheManager.getShadowDb(appName));
-            configs.put("job", agentConfigCacheManager.getShadowJobs(appName));
-            configs.put("mq", agentConfigCacheManager.getShadowConsumer(appName));
-            configs.put("whitelist", agentConfigCacheManager.getRemoteCallConfig(appName));
-            configs.put("hbase", agentConfigCacheManager.getShadowHbase(appName));
-            configs.put("redis", agentConfigCacheManager.getShadowServer(appName));
-            configs.put("es", agentConfigCacheManager.getShadowEsServers(appName));
-            configs.put("mock", agentConfigCacheManager.getGuards(appName));
-            Map<String, List<String>> values = applicationApiManageAmdbCache.get(appName);
-            configs.put("trace_rule", values == null ? new HashMap<>() : values);
-            configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
-            configs.put("redis-expire", agentConfigCacheManager.getAppPluginConfig(CommonUtil.generateRedisKey(appName, "redis_expire")));
-            pushNacosConfigs(appName, "APP", configService, new Gson().toJson(configs));
-        }
+        Map<String, Object> configs = new HashMap<>();
+        configs.put("datasource", agentConfigCacheManager.getShadowDb(appName));
+        configs.put("job", agentConfigCacheManager.getShadowJobs(appName));
+        configs.put("mq", agentConfigCacheManager.getShadowConsumer(appName));
+        configs.put("whitelist", agentConfigCacheManager.getRemoteCallConfig(appName));
+        configs.put("hbase", agentConfigCacheManager.getShadowHbase(appName));
+        configs.put("redis", agentConfigCacheManager.getShadowServer(appName));
+        configs.put("es", agentConfigCacheManager.getShadowEsServers(appName));
+        configs.put("mock", agentConfigCacheManager.getGuards(appName));
+        Map<String, List<String>> values = applicationApiManageAmdbCache.get(appName);
+        configs.put("trace_rule", values == null ? new HashMap<>() : values);
+        configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, commonExt.getTenantId(), commonExt.getEnvCode(), commonExt.getTenantAppKey()));
+        configs.put("redis-expire", agentConfigCacheManager.getAppPluginConfig(CommonUtil.generateRedisKey(appName, "redis_expire")));
+        pushNacosConfigs(appName, "APP", configService, new Gson().toJson(configs));
     }
 
-    /**
-     * 全局动态参数配置刷新
-     */
-    private class GlobalDynamicConfigRefreshTask implements Runnable {
+    private void refreshGlobalDynamicConfig(TenantCommonExt commonExt) {
+        // 全局配置
+        WebPluginUtils.setTraceTenantContext(commonExt);
+        AgentConfigQueryRequest queryRequest = new AgentConfigQueryRequest();
+        queryRequest.setReadProjectConfig(false);
+        List<AgentConfigListResponse> configListResponses = agentConfigService.list(queryRequest);
+        Map<String, String> configMap = configListResponses.stream().collect(Collectors.toMap(AgentConfigListResponse::getEnKey, AgentConfigListResponse::getDefaultValue));
+        // 全局配置每个nacos都推送
+        configServices.entrySet().forEach(entry -> pushNacosConfigs("globalConfig", "GLOBAL_CONFIG", entry.getValue(), JSON.toJSONString(configMap)));
 
-        private TenantCommonExt commonExt;
-
-        public GlobalDynamicConfigRefreshTask(TenantCommonExt commonExt) {
-            this.commonExt = commonExt;
-        }
-
-        @Override
-        public void run() {
-            // 全局配置
-            WebPluginUtils.setTraceTenantContext(commonExt);
-            AgentConfigQueryRequest queryRequest = new AgentConfigQueryRequest();
-            queryRequest.setReadProjectConfig(false);
-            List<AgentConfigListResponse> configListResponses = agentConfigService.list(queryRequest);
-            Map<String, String> configMap = configListResponses.stream().collect(Collectors.toMap(AgentConfigListResponse::getEnKey, AgentConfigListResponse::getDefaultValue));
-            // 全局配置每个nacos都推送
-            pushNacosConfigs("globalConfig", "GLOBAL_CONFIG", JSON.toJSONString(configMap));
-        }
     }
 
-    /**
-     * 压测开关和白名单开关配置
-     */
-    private class SwitchConfigRefreshTask implements Runnable {
 
-        @Override
-        public void run() {
-            Map<String, Object> values = new HashMap<>();
-            WhiteListSwitchDTO switchDTO = new WhiteListSwitchDTO();
-            switchDTO.setConfigCode(ConfigConstants.WHITE_LIST_SWITCH);
-            switchDTO.setSwitchFlagFix(agentConfigCacheManager.getAllowListSwitch());
-            values.put("whiteListSwitch", switchDTO);
-            values.put("globalSwithc", agentConfigCacheManager.getPressureSwitch());
+    private void refreshSwitchConfig() {
+        Map<String, Object> values = new HashMap<>();
+        WhiteListSwitchDTO switchDTO = new WhiteListSwitchDTO();
+        switchDTO.setConfigCode(ConfigConstants.WHITE_LIST_SWITCH);
+        switchDTO.setSwitchFlagFix(agentConfigCacheManager.getAllowListSwitch());
+        values.put("whiteListSwitch", switchDTO);
 
-            // 全局配置每个nacos都推送
-            pushNacosConfigs("clusterConfig", "CLUSTER_CONFIG", JSON.toJSONString(values));
-        }
+        values.put("globalSwithc", agentConfigCacheManager.getPressureSwitch());
+        configServices.entrySet().forEach(entry -> pushNacosConfigs("clusterConfig", "CLUSTER_CONFIG", entry.getValue(), JSON.toJSONString(values)));
     }
 
 }

@@ -12,6 +12,10 @@ import java.util.Map;
  */
 public enum NodeTypeEnum {
     /**
+     * HashTree
+     */
+    HASH_TREE("HashTree"),
+    /**
      * TestPlan
      */
     TEST_PLAN("TestPlan"),
@@ -19,6 +23,11 @@ public enum NodeTypeEnum {
      * 线程组
      */
     THREAD_GROUP("ThreadGroup"),
+
+    /**
+     * HTTP请求默认值
+     */
+    CONFIG_TEST_ELEMENT("ConfigTestElement"),
     /**
      * 逻辑控制器
      */
@@ -44,9 +53,21 @@ public enum NodeTypeEnum {
      */
     ASSERTION("Assertion"),
     /**
-     * 断言
+     * CSV文件
      */
     DATASET("DataSet"),
+    /**
+     * 定时器
+     */
+    TIMER("Timer"),
+    /**
+     * 计数器
+     */
+    COUNTER("CounterConfig"),
+    /**
+     * BeanShell预处理程序
+     */
+    BEANSHELLPRE("BeanShellPreProcessor"),
     ;
 
     @Getter

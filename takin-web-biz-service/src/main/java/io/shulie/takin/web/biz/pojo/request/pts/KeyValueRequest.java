@@ -6,7 +6,9 @@ import javax.validation.constraints.NotBlank;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author junshi
@@ -16,6 +18,8 @@ import lombok.Data;
  */
 @Data
 @ApiModel("key-value格式的入参")
+@NoArgsConstructor
+@AllArgsConstructor
 public class KeyValueRequest implements Serializable {
 
     @ApiModelProperty(value = "key", required = true)

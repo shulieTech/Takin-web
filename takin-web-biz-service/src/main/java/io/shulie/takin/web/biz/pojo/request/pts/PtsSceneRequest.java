@@ -30,9 +30,19 @@ public class PtsSceneRequest implements Serializable {
     @ApiModelProperty(value = "前置链路")
     private PtsPreLinkRequest preLink = new PtsPreLinkRequest();
 
+    @ApiModelProperty(value = "全局默认Header")
+    private PtsApiHeaderRequest globalHeader = new PtsApiHeaderRequest();
+
+    @ApiModelProperty(value = "全局默认HTTP")
+    private PtsGlobalHttpRequest globalHttp = new PtsGlobalHttpRequest();
+
+    @ApiModelProperty(value = "计数器")
+    private List<PtsCounterRequest> counters = new ArrayList<>();
+
     @ApiModelProperty(value = "串联链路", required = true)
     @NotNull(message = "串联链路不能为空")
     private List<PtsLinkRequest> links = new ArrayList<>();
 
+    @ApiModelProperty(value = "数据源")
     private PtsDataSourceRequest dataSource = new PtsDataSourceRequest();
 }

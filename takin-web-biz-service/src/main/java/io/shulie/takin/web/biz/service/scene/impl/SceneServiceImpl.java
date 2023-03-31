@@ -1,23 +1,18 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
-import io.shulie.takin.cloud.common.utils.CommonUtil;
-import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.adapter.api.entrypoint.scene.mix.SceneMixApi;
-import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
-import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.adapter.api.model.request.filemanager.FileCreateByStringParamReq;
 import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SynchronizeRequest;
+import io.shulie.takin.cloud.common.utils.CommonUtil;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
@@ -25,11 +20,7 @@ import io.shulie.takin.web.biz.convert.linkmanage.LinkManageConvert;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
@@ -40,6 +31,7 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchRespons
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.pts.PtsParseJmxToObjectTools;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
@@ -85,12 +77,17 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author liyuanba
@@ -135,85 +132,129 @@ public class SceneServiceImpl implements SceneService {
     @Resource
     private ApplicationDAO applicationDAO;
 
-    @Override
-    public List<SceneLinkRelateResult> nodeLinkToBusinessActivity(List<ScriptNode> nodes, Long sceneId) {
-        List<ScriptNode> nodeList = getNodes(nodes);
-        if (CollectionUtils.isEmpty(nodeList)) {
-            return null;
-        }
-        return nodeList.stream().filter(Objects::nonNull)
-                .filter(node -> NodeTypeEnum.SAMPLER == node.getType())
-                .map(node -> this.nodeLinkToBusinessActivity(node, sceneId))
-                .collect(Collectors.toList());
-    }
-
     /**
-     * 节点和业务活动匹配
+     * 返回SceneNode匹配个数
+     * 1、根据sceneId，查询原来的业务流程关联活动表数据
+     *  - 如果entrance在表中存在，且xpath_md5一致，则记录保留的id
+     *  - 如果entrance在表中存在，但xpath_md5不一致，记录新增（业务活动字段从记录中拿）
+     *  - 如果entrance在表中不存在，执行2
+     * 2、根据entrance，查询业务活动数据
+     *  - 优先如果entrance一致，且type（非虚拟）=0，记录新增
+     *  - 其次如果entrance一致，且type（虚拟）=1，记录新增
+     * 3、执行删除 - 原表ids去掉保留ids，
+     * 4、执行新增
+     * 5、返回匹配个数=不动个数+新增个数
+     * @param scriptNodeList
+     * @param sceneId
+     * @return
      */
-    public SceneLinkRelateResult nodeLinkToBusinessActivity(ScriptNode node, Long sceneId) {
-        List<SceneLinkRelateResult> links = sceneLinkRelateDao.getByIdentification(node.getIdentification());
-        SceneLinkRelateResult link = null;
-        ActivityListResult activity = null;
-        boolean isMany = false;
+    private Integer bindNodeLinkToBusinessActivity(List<ScriptNode> scriptNodeList, Long sceneId) {
+        Integer matchNum = 0;
+        List<ScriptNode> nodeList = getNodes(scriptNodeList);
+        if (CollectionUtils.isEmpty(nodeList)) {
+            sceneLinkRelateDao.deleteBySceneId(String.valueOf(sceneId));
+            return matchNum;
+        }
+        List<ScriptNode> samperNodeList = nodeList.stream().filter(Objects::nonNull).filter(node -> NodeTypeEnum.SAMPLER == node.getType()).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(samperNodeList)) {
+            sceneLinkRelateDao.deleteBySceneId(String.valueOf(sceneId));
+            return matchNum;
+        }
+        List<SceneLinkRelateSaveParam> insertList = new ArrayList<>();
+        List<String> entranceMatchList = new ArrayList<>();
+        List<Long> keepIds = new ArrayList<>();
+        List<SceneLinkRelateResult> relateList = sceneLinkRelateDao.selectBySceneId(sceneId);
+        if(CollectionUtils.isNotEmpty(relateList)) {
+            Map<String, Map<String, SceneLinkRelateResult>> relateMap = new HashMap<>();
+            for(SceneLinkRelateResult relate : relateList) {
+                Map<String, SceneLinkRelateResult> md5Map = relateMap.get(relate.getEntrance());
+                if(MapUtils.isEmpty(md5Map)) {
+                    md5Map = new HashMap<>();
+                    relateMap.put(relate.getEntrance(), md5Map);
+                }
+                md5Map.put(relate.getScriptXpathMd5(), relate);
+            }
 
-        if (CollectionUtils.isNotEmpty(links)) {
-            //sceneId不为空，更新过程
-            if (null != sceneId) {
-                //如果存在业务流程id相同情况，优先匹配业务流程相同的
-                List<SceneLinkRelateResult> collect = links.stream().filter(o -> sceneId.equals(NumberUtils.toLong(o.getSceneId())))
-                        .collect(Collectors.toList());
-                if (CollectionUtils.isNotEmpty(collect)) {
-                    Set<String> businessActivitySet = collect.stream().map(SceneLinkRelateResult::getBusinessLinkId).collect(Collectors.toSet());
-                    //即便业务流程相同，也不能匹配到两个业务活动
-                    if (CollectionUtils.isNotEmpty(businessActivitySet)) {
-                        if (businessActivitySet.size() == 1) {
-                            link = collect.get(0);
-                        } else {
-                            isMany = true;
+            for(ScriptNode scriptNode : samperNodeList) {
+                if(relateMap.containsKey(scriptNode.getIdentification())) {
+                    Map<String, SceneLinkRelateResult> md5Map = relateMap.get(scriptNode.getIdentification());
+                    if(md5Map.containsKey(scriptNode.getXpathMd5())) {
+                        //记录保留的id
+                        keepIds.add(md5Map.get(scriptNode.getXpathMd5()).getId());
+                        matchNum++;
+                    } else {
+                        SceneLinkRelateSaveParam relateSaveParam = new SceneLinkRelateSaveParam();
+                        relateSaveParam.setSceneId(String.valueOf(sceneId));
+                        relateSaveParam.setEntrance(scriptNode.getIdentification());
+                        relateSaveParam.setScriptIdentification(scriptNode.getIdentification());
+                        relateSaveParam.setScriptXpathMd5(scriptNode.getXpathMd5());
+                        SceneLinkRelateResult relateResult = md5Map.values().stream().findAny().get();
+                        relateSaveParam.setBusinessLinkId(relateResult.getBusinessLinkId());
+                        relateSaveParam.setTechLinkId(relateResult.getTechLinkId());
+                        relateSaveParam.setParentBusinessLinkId(relateResult.getParentBusinessLinkId());
+                        insertList.add(relateSaveParam);
+                    }
+                    entranceMatchList.add(scriptNode.getIdentification());
+                }
+            }
+
+            List<Long> ids = relateList.stream().map(SceneLinkRelateResult::getId).collect(Collectors.toList());
+            ids.removeAll(keepIds);
+            if(CollectionUtils.isNotEmpty(ids)) {
+                sceneLinkRelateDao.deleteByIds(ids);
+            }
+        }
+        List<ScriptNode> nodeNotMatchList = samperNodeList.stream().filter(data -> !entranceMatchList.contains(data.getIdentification())).collect(Collectors.toList());
+        if(CollectionUtils.isNotEmpty(nodeNotMatchList)) {
+            //继续匹配
+            List<String> entranceList = nodeNotMatchList.stream().map(ScriptNode::getIdentification).distinct().collect(Collectors.toList());
+            ActivityQueryParam param = new ActivityQueryParam();
+            param.setEntranceList(entranceList);
+            param.setCurrent(0);
+            param.setPageSize(200);
+            WebPluginUtils.fillQueryParam(param);
+            PagingList<ActivityListResult> pagingList = activityDao.pageActivities(param);
+            if(pagingList != null && CollectionUtils.isNotEmpty(pagingList.getList())) {
+                List<ActivityListResult> activityList = pagingList.getList();
+                Map<String, Map<Integer, ActivityListResult>> activityMap = new HashMap<>();
+                for(ActivityListResult activity : activityList) {
+                    Map<Integer, ActivityListResult> typeMap = activityMap.get(activity.getEntrace());
+                    if(MapUtils.isEmpty(typeMap)) {
+                        typeMap = new HashMap<>();
+                        activityMap.put(activity.getEntrace(), typeMap);
+                    }
+                    typeMap.put(activity.getBusinessType(), activity);
+                }
+                for(ScriptNode scriptNode : nodeNotMatchList) {
+                    if(activityMap.containsKey(scriptNode.getIdentification())) {
+                        Map<Integer, ActivityListResult> typeMap = activityMap.get(scriptNode.getIdentification());
+                        if(typeMap.containsKey(0)) {
+                            insertList.add(buildSceneLinkRelateSaveParam(sceneId, scriptNode, typeMap.get(0)));
+                        } else if(typeMap.containsKey(1)) {
+                            insertList.add(buildSceneLinkRelateSaveParam(sceneId, scriptNode, typeMap.get(1)));
                         }
                     }
                 }
             }
-            //如果相同业务流程id中没有匹配到，并且没有多个匹配的情况
-            if (null == link && !isMany) {
-                //没有匹配到
-                Set<String> businessActivitySet = links.stream().map(SceneLinkRelateResult::getBusinessLinkId).collect(Collectors.toSet());
-                if (CollectionUtils.isNotEmpty(businessActivitySet)) {
-                    if (businessActivitySet.size() == 1) {
-                        link = links.get(0);
-                    } else {
-                        isMany = true;
-                    }
-                }
-            }
-        }
-        //没有在关联关系中匹配到，去业务活动中匹配
-        if (link == null && !isMany) {
-            ActivityQueryParam param = new ActivityQueryParam();
-            param.setEntrance(node.getIdentification());
-            List<ActivityListResult> activities = activityDao.getActivityList(param);
-            //只有匹配到一个业务活动，才可以进行自动匹配
-            if (CollectionUtils.isNotEmpty(activities) && activities.size() == 1) {
-                activity = activities.get(0);
-            }
         }
 
-        SceneLinkRelateResult r = new SceneLinkRelateResult();
-        r.setScriptIdentification(node.getIdentification());
-        r.setScriptXpathMd5(node.getXpathMd5());
-        if (null != link) {
-            r.setSceneId(link.getSceneId());
-            r.setEntrance(link.getEntrance());
-            r.setBusinessLinkId(link.getBusinessLinkId());
-            r.setTechLinkId(link.getTechLinkId());
-            r.setParentBusinessLinkId(link.getParentBusinessLinkId());
-        } else if (null != activity) {
-            r.setEntrance(node.getIdentification());
-            r.setBusinessLinkId(activity.getActivityId().toString());
-            r.setTechLinkId(activity.getTechLinkId());
-            r.setParentBusinessLinkId(activity.getParentTechLinkId());
+        if(CollectionUtils.isNotEmpty(insertList)) {
+            sceneLinkRelateDao.batchInsert(insertList);
+            matchNum += insertList.size();
         }
-        return r;
+        return matchNum;
+    }
+
+    private SceneLinkRelateSaveParam buildSceneLinkRelateSaveParam(Long sceneId, ScriptNode scriptNode, ActivityListResult activityResult) {
+        SceneLinkRelateSaveParam relateSaveParam = new SceneLinkRelateSaveParam();
+        relateSaveParam.setSceneId(String.valueOf(sceneId));
+        relateSaveParam.setEntrance(scriptNode.getIdentification());
+        relateSaveParam.setScriptIdentification(scriptNode.getIdentification());
+        relateSaveParam.setScriptXpathMd5(scriptNode.getXpathMd5());
+        relateSaveParam.setBusinessLinkId(String.valueOf(activityResult.getActivityId()));
+        relateSaveParam.setTechLinkId(activityResult.getTechLinkId());
+        relateSaveParam.setParentBusinessLinkId(activityResult.getParentTechLinkId());
+        return relateSaveParam;
     }
 
     /**
@@ -308,13 +349,15 @@ public class SceneServiceImpl implements SceneService {
         sceneQueryParam.setSceneName(testName);
         List<SceneResult> sceneResultList = sceneDao.selectListByName(sceneQueryParam);
         if (CollectionUtils.isNotEmpty(sceneResultList)) {
-            testName = testName + "_" + DateUtil.formatDateTime(new Date());
+            testName = testName + "_" + DateUtil.format(new Date(), "yyyyMMddHHmmss");
         }
         //保存业务流程
         SceneCreateParam sceneCreateParam = new SceneCreateParam();
         sceneCreateParam.setSceneName(testName);
         sceneCreateParam.setLinkRelateNum(0);
-        sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
+        List<ScriptNode> saveNode = new ArrayList<>(data);
+        PtsParseJmxToObjectTools.removeSamplerNodeChildren(saveNode);
+        sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(saveNode));
         sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
         if (source != null) {
             sceneCreateParam.setType(source);
@@ -473,7 +516,6 @@ public class SceneServiceImpl implements SceneService {
 
     @Override
     public BusinessFlowMatchResponse autoMatchActivity(Long id) {
-
         BusinessFlowMatchResponse result = new BusinessFlowMatchResponse();
         SceneResult sceneResult = sceneDao.getSceneDetail(id);
         if (sceneResult == null) {
@@ -484,29 +526,7 @@ public class SceneServiceImpl implements SceneService {
         result.setBusinessProcessName(sceneResult.getSceneName());
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
         int nodeNumByType = JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, scriptNodes);
-        List<SceneLinkRelateResult> sceneLinkRelateResults = sceneService.nodeLinkToBusinessActivity(scriptNodes, id);
-        if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
-            sceneLinkRelateResults = sceneLinkRelateResults.stream().filter(Objects::nonNull)
-                    .filter(o -> StringUtils.isNotBlank(o.getBusinessLinkId())).peek(o -> {
-                        o.setId(null);
-                        o.setSceneId(id.toString());
-                    }).collect(Collectors.toList());
-        }
-
-        //查询已有的匹配关系,删除现在没有关联的节点
-        SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
-        sceneLinkRelateParam.setSceneIds(Collections.singletonList(id.toString()));
-        List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDao.getList(sceneLinkRelateParam);
-
-        if (CollectionUtils.isNotEmpty(sceneLinkRelateList)) {
-            List<Long> oldIds = sceneLinkRelateList.stream().map(SceneLinkRelateResult::getId).collect(Collectors.toList());
-            sceneLinkRelateDao.deleteByIds(oldIds);
-        }
-
-        if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
-            sceneLinkRelateDao.batchInsert(LinkManageConvert.INSTANCE.ofSceneLinkRelateResults(sceneLinkRelateResults));
-        }
-        int matchNum = CollectionUtils.isEmpty(sceneLinkRelateResults) ? 0 : sceneLinkRelateResults.size();
+        int matchNum = this.bindNodeLinkToBusinessActivity(scriptNodes, id);
         result.setMatchNum(matchNum);
         result.setUnMatchNum(nodeNumByType - matchNum);
         //更新匹配数量
@@ -801,7 +821,9 @@ public class SceneServiceImpl implements SceneService {
         Long scriptDeployId = scriptManageService.updateScriptManage(updateRequest);
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
         if (CollectionUtils.isNotEmpty(data)) {
-            sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
+            List<ScriptNode> saveNode = new ArrayList<>(data);
+            PtsParseJmxToObjectTools.removeSamplerNodeChildren(saveNode);
+            sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(saveNode));
             List<ScriptNode> samplerNodes = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);
             sceneUpdateParam.setTotalNodeNum(null == samplerNodes ? 0 : samplerNodes.size());
         }

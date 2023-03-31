@@ -33,5 +33,5 @@ public class PtsApiBaseRequest implements Serializable {
     private Boolean allowForward = true;
 
     @ApiModelProperty(value = "是否使用KeepAlive，false-否 true-是")
-    private Boolean keepAlive = false;
+    private Boolean keepAlive = true;
 }

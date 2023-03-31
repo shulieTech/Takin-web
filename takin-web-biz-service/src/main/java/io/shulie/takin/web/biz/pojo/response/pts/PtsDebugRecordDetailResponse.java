@@ -16,6 +16,15 @@ import lombok.Data;
 @ApiModel("调试详情返参")
 public class PtsDebugRecordDetailResponse implements Serializable {
 
+    @ApiModelProperty(value = "请求时间")
+    private String requestTime;
+
+    @ApiModelProperty(value = "请求耗时，单位ms")
+    private String requestCost;
+
+    @ApiModelProperty(value = "响应状态")
+    private Boolean responseStatus;
+
     @ApiModelProperty(value = "General")
     private GeneralResponse general = new GeneralResponse();
 

@@ -76,15 +76,19 @@ public class JmeterFunctionFactory {
         functionMap.put("__dateTimeConvert", new DateTimeConvertFunction());
 
         // 脚本函数
-        //functionMap.put("__groovy", new Groovy());
-        //functionMap.put("__javaScript", new JavaScript());
-        //functionMap.put("__BeanShell", new BeanShell());
+        functionMap.put("__groovy", new Groovy());
+        functionMap.put("__javaScript", new JavaScript());
+        functionMap.put("__BeanShell", new BeanShell());
 
         // 把数字转化成Unicode字符。
         functionMap.put("__char", new CharFunction());
+        functionMap.put("__changeCase", new ChangeCase());
 
         //计算表达式。
         functionMap.put("__eval", new EvalFunction());
+
+        functionMap.put("__urldecode", new UrlDecode());
+        functionMap.put("__urlencode", new UrlEncode());
     }
 
     public static AbstractFunction getAbstractFunction(String key) {

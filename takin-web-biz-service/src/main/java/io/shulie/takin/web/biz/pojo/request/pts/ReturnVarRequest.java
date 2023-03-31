@@ -18,6 +18,9 @@ import lombok.Data;
 @ApiModel("出参格式的入参")
 public class ReturnVarRequest implements Serializable {
 
+    @ApiModelProperty(value = "testname-给jmx用")
+    private String testName;
+
     @ApiModelProperty(value = "出参名", required = true)
     @NotBlank(message = "出参名不能为空")
     private String varName;

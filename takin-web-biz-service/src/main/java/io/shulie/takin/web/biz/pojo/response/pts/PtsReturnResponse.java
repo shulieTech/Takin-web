@@ -1,13 +1,12 @@
 package io.shulie.takin.web.biz.pojo.response.pts;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import io.shulie.takin.web.biz.pojo.request.pts.KeyValueRequest;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author junshi
@@ -20,13 +19,16 @@ import lombok.Data;
 public class PtsReturnResponse implements Serializable {
 
     @ApiModelProperty(value = "Response Header")
-    private List<KeyValueRequest> responseHeaders = new ArrayList<>();
+    private String responseHeaders;
+
+    @ApiModelProperty(value = "Assert Message")
+    private List<PtsAssertResponse> asserts = new ArrayList<>();
 
     @ApiModelProperty(value = "Response Body结构化")
     private String responseBody;
 
-    @ApiModelProperty(value = "Response 原文")
-    private String responseOrigData;
+//    @ApiModelProperty(value = "Response 原文")
+//    private String responseOrigData;
 
     @ApiModelProperty(value = "Error 信息")
     private String errorMessage;

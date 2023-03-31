@@ -33,6 +33,8 @@ public class ScriptNode extends AbstractEntry {
      */
     private NodeTypeEnum type;
 
+    private NodeTypeEnum parentType;
+
     /**
      * 采样器类型
      */

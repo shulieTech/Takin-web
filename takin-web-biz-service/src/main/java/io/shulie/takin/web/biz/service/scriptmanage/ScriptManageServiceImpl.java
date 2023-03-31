@@ -1936,7 +1936,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         boolean existJmx = false;
         for (FileManageUpdateRequest fileManageUpdateRequest : scriptManageDeployUpdateRequest
             .getFileManageUpdateRequests()) {
-
+            log.warn("开始文件名检查：fileName={}", fileManageUpdateRequest.getFileName());
             ScriptManageExceptionUtil.isUpdateValidError(StringUtil.isBlank(fileManageUpdateRequest.getFileName()),
                 "文件列表中存在文件名为空!");
             ScriptManageExceptionUtil.isUpdateValidError(fileManageUpdateRequest.getFileName().length() > 64,

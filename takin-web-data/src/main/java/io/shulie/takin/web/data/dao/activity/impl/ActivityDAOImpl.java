@@ -336,6 +336,9 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
             lambdaQueryWrapper.in(BusinessLinkManageTableEntity::getUserId, param.getUserIdList());
         }
+        if (CollectionUtils.isNotEmpty(param.getEntranceList())) {
+            lambdaQueryWrapper.in(BusinessLinkManageTableEntity::getEntrace, param.getEntranceList());
+        }
         if(param.getType() != null) {
             lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getType, param.getType());
         }
@@ -389,6 +392,9 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
                 result.setBusinessDomain(entity.getBusinessDomain());
                 result.setBusinessType(
                     entity.getType() != null ? entity.getType() : BusinessTypeEnum.NORMAL_BUSINESS.getType());
+                result.setEntrace(entity.getEntrace());
+                result.setTechLinkId(entity.getRelatedTechLink());
+                result.setParentTechLinkId(entity.getParentBusinessId());
                 return result;
             }).collect(Collectors.toList());
         return PagingList.of(collect, tableEntityPage.getTotal());

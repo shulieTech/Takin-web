@@ -8,11 +8,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Data
-@ApiModel("数据源")
-public class PtsDataSourceRequest implements Serializable {
+@ApiModel("Beanshell 前置处理器")
+public class PtsApiBeanShellPreRequest implements Serializable {
 
-    @ApiModelProperty("csv文件")
-    private List<PtsCsvRequest> csvs = new ArrayList<>();
+    @ApiModelProperty("脚本")
+    private List<String> script = new ArrayList<>();
 }

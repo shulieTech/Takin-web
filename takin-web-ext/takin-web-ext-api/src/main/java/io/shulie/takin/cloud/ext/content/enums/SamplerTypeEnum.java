@@ -35,6 +35,7 @@ public enum SamplerTypeEnum {
      * JDBC 请求
      */
     JDBC("JDBC", RpcTypeEnum.DB),
+    JAVA("JAVA", RpcTypeEnum.UNKNOWN),
     /**
      * 未知请求类型
      */

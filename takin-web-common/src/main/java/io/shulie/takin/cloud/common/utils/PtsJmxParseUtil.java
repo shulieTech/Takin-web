@@ -62,28 +62,28 @@ public class PtsJmxParseUtil {
                 return null;
             }
             List<Element> elements = elements(childContainer);
-            return buildNodeTree(elements);
+            return buildNodeTree(elements, NodeTypeEnum.HASH_TREE);
         } catch (DocumentException e) {
             log.error("buildNodeTree DocumentException, file=" + file.getAbsolutePath(), e);
         }
         return null;
     }
 
-    public static List<ScriptNode> buildNodeTree(List<Element> elements) {
+    public static List<ScriptNode> buildNodeTree(List<Element> elements, NodeTypeEnum parentType) {
         if (CollUtil.isEmpty(elements)) {
             return null;
         }
         List<ScriptNode> nodes = CollUtil.newArrayList();
         for (int i = 0; i < elements.size(); i++) {
             Element e = elements.get(i);
-            ScriptNode node = buildNode(e);
+            ScriptNode node = buildNode(e, parentType);
             if (null == node) {
                 continue;
             }
             if (i < elements.size() - 1) {
                 Element nextElement = elements.get(i + 1);
                 if ("hashTree".equals(nextElement.getName())) {
-                    node.setChildren(buildNodeTree(elements(nextElement)));
+                    node.setChildren(buildNodeTree(elements(nextElement), node.getType()));
                 }
             }
             nodes.add(node);
@@ -91,7 +91,7 @@ public class PtsJmxParseUtil {
         return nodes;
     }
 
-    public static ScriptNode buildNode(Element element) {
+    public static ScriptNode buildNode(Element element, NodeTypeEnum parentType) {
         if (isNotEnabled(element)) {
             return null;
         }
@@ -105,6 +105,7 @@ public class PtsJmxParseUtil {
         node.setName(name);
         node.setTestName(testName);
         node.setType(type);
+        node.setParentType(parentType);
         node.setXpath(element.getUniquePath());
         node.setXpathMd5(Md5Util.md5(node.getXpath()));
         node.setMd5(Md5Util.md5(element.asXML()));
@@ -160,7 +161,7 @@ public class PtsJmxParseUtil {
                     node.setProps(props);
                     //kafka:topic, 其他：返回null
                     setJavaSamplerIdentification(node);
-                    node.setSamplerType(getJavaSamplerType(node));
+                    node.setSamplerType(SamplerTypeEnum.JAVA);
                 } else if ("FTPSampler".equals(name)) {
                     Map<String, String> props = buildProps(element);
                     Element configElement = findConfigElement(element, "ConfigTestElement", "FtpConfigGui");
@@ -263,6 +264,18 @@ public class PtsJmxParseUtil {
                 node.setProps(buildProps(element, BASE_PROP_ELEMENTS));
                 break;
             case DATASET:
+                node.setProps(buildProps(element, BASE_PROP_ELEMENTS));
+                break;
+            case CONFIG_TEST_ELEMENT:
+                node.setProps(buildProps(element, BASE_PROP_ELEMENTS));
+                break;
+            case TIMER:
+                node.setProps(buildProps(element, BASE_PROP_ELEMENTS));
+                break;
+            case COUNTER:
+                node.setProps(buildProps(element, BASE_PROP_ELEMENTS));
+                break;
+            case BEANSHELLPRE:
                 node.setProps(buildProps(element, BASE_PROP_ELEMENTS));
                 break;
             default:
@@ -593,7 +606,8 @@ public class PtsJmxParseUtil {
             node.setRequestPath(topic);
             node.setIdentification(String.format("%s|%s", topic, SamplerTypeEnum.KAFKA.getRpcTypeEnum().getValue()));
         } else {
-            log.warn("没有成功解析脚本节点:{}", javaClass);
+            node.setRequestPath(javaClass);
+            node.setIdentification(String.format("%s|%s", javaClass, SamplerTypeEnum.JAVA.getRpcTypeEnum().getValue()));
         }
     }
 

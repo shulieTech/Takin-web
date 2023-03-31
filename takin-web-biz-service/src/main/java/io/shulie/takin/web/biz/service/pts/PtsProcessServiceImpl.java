@@ -1,29 +1,39 @@
 package io.shulie.takin.web.biz.service.pts;
 
-import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import io.shulie.takin.adapter.api.entrypoint.file.CloudFileApi;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.pts.PtsSceneRequest;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.pts.PtsDebugRecordDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.pts.PtsDebugRecordResponse;
+import io.shulie.takin.web.biz.pojo.response.pts.PtsDebugResponse;
 import io.shulie.takin.web.biz.pojo.response.pts.PtsSceneResponse;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
+import io.shulie.takin.web.biz.utils.LinuxHelper;
 import io.shulie.takin.web.common.enums.scene.SceneTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.pts.PtsProcessDAO;
-import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.MalformedURLException;
-import java.util.Date;
+import javax.annotation.Resource;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author junshi
@@ -32,6 +42,7 @@ import java.util.Date;
  * @createTime 2023年03月16日 15:26
  */
 @Service
+@Slf4j
 public class PtsProcessServiceImpl implements PtsProcessService{
 
     @Autowired
@@ -49,14 +60,27 @@ public class PtsProcessServiceImpl implements PtsProcessService{
     @Autowired
     private SceneService sceneService;
 
+    @Resource
+    @Qualifier("redisTemplate")
+    private RedisTemplate redisTemplate;
+
+    @Resource
+    private PtsDebugAsync ptsDebugAsync;
+
+    /**
+     * 缓存 业务里程id 对应 jmx的请求路径信息
+     */
+    private static final String PTS_KEY = "TAKIN.WEB.pts.process.%s";
+
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public BusinessFlowDetailResponse saveProcess(PtsSceneRequest request) {
-        request.setProcessName(calcProcessName(request.getId(), request.getProcessName()));
+        request.setProcessName(request.getProcessName().replace(" ", ""));
         String jsonApi = JSON.toJSONString(request);
         UploadResponse uploadResponse;
         try {
-            String jmxString = PtsBuildTools.parseJmxString(jsonApi);
+            String jmxString = PtsBuildJsonToJmxTextTools.parseJmxString(jsonApi);
             //将jmxstring写入文件，并返回地址
             uploadResponse = cloudFileApi.saveJmxStringToFile(request.getProcessName(), jmxString);
         } catch (Exception e) {
@@ -69,7 +93,25 @@ public class PtsProcessServiceImpl implements PtsProcessService{
         FileManageUpdateRequest updateRequest = new FileManageUpdateRequest();
         BeanUtils.copyProperties(uploadResponse, updateRequest);
         businessFlowParseRequest.setScriptFile(updateRequest);
-        return sceneService.parseScriptAndSave(businessFlowParseRequest);
+        BusinessFlowDetailResponse detailResponse = sceneService.parseScriptAndSave(businessFlowParseRequest);
+        //更新业务流程名称 存在id，且新旧名称不一样
+        if(request.getId() != null && !detailResponse.getBusinessProcessName().equals(request.getProcessName())) {
+            BusinessFlowUpdateRequest nameUpdateRequest = new BusinessFlowUpdateRequest();
+            nameUpdateRequest.setId(request.getId());
+            nameUpdateRequest.setSceneName(request.getProcessName());
+            sceneService.updateBusinessFlow(nameUpdateRequest);
+        }
+        detailResponse.setBusinessProcessName(request.getProcessName());
+        /**
+         * 自动匹配业务活动信息
+         */
+        sceneService.autoMatchActivity(detailResponse.getId());
+        /**
+         * 有新增|修改jmx信息，删除redis缓存数据
+         */
+        String key = String.format(PTS_KEY, detailResponse.getId());
+        redisTemplate.delete(key);
+        return detailResponse;
     }
 
     @Override
@@ -79,15 +121,100 @@ public class PtsProcessServiceImpl implements PtsProcessService{
         if(scriptFile == null) {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "没有业务流程id找到对应脚本！");
         }
-        return PtsParseTools.parseJmxFile(scriptFile.getUploadPath());
+        PtsSceneResponse sceneResponse = PtsParseJmxToObjectTools.parseJmxFile(scriptFile.getUploadPath(), false);
+        sceneResponse.setId(id);
+        sceneResponse.setProcessName(businessFlowDetail.getBusinessProcessName());
+        return sceneResponse;
     }
 
-    private String calcProcessName(Long processId, String processName) {
-        SceneQueryParam queryParam = new SceneQueryParam();
-        queryParam.setSceneName(processName);
-        if(!ptsProcessDAO.existProcessQueryByName(processId, queryParam)) {
-            return processName;
+    @Override
+    public String debugProcess(Long id) {
+        //调用jmeter命令，运行jmx脚本；
+        String uploadPath = getJmxPathById(id);
+        String cmdDir = uploadPath.substring(0, uploadPath.lastIndexOf("/"));
+        String fileName = uploadPath.substring(uploadPath.lastIndexOf("/") + 1);
+        String command = "cd " + cmdDir + " && rm -rf jmeter.log result.xml && jmeter -n -t " + fileName;
+        ptsDebugAsync.runJmeterCommand(command);
+        log.info("PTS调试，执行启动jmeter命令={}", command);
+        return command;
+    }
+
+    @Override
+    public PtsDebugResponse getDebugRecord(Long id) {
+        String uploadPath = getJmxPathById(id);
+        PtsDebugResponse response = new PtsDebugResponse();
+        //判断文件是否已存在
+        String cmdDir = uploadPath.substring(0, uploadPath.lastIndexOf("/"));
+        File file = new File(cmdDir + "/result.xml");
+        if(!file.exists()) {
+            response.setHasResult(false);
+            return response;
         }
-        return processName + "_" + DateUtil.formatDateTime(new Date());
+        response.setHasResult(true);
+        Long queryTimestamp = System.currentTimeMillis();
+        List<PtsDebugRecordResponse> recordList = new ArrayList<>();
+        /**
+         * 存在有文件，但没内容的情况
+         * 多查询几次
+         */
+        while(recordList.size() == 0 && System.currentTimeMillis() - queryTimestamp < 6000) {
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                log.error("getDebugRecord InterruptedException={}", e.getMessage());
+            }
+            List<PtsDebugRecordDetailResponse> detailList = PtsParseResultToObjectTools.parseResultFile(file);
+            for (PtsDebugRecordDetailResponse detail : detailList) {
+                PtsDebugRecordResponse record = new PtsDebugRecordResponse();
+                record.setApiName(detail.getGeneral().getRequestUrl());
+                record.setRequestTime(detail.getRequestTime());
+                record.setRequestCost(detail.getRequestCost() != null ? detail.getRequestCost() + "ms" : "-");
+                record.setResponseStatus(detail.getResponseStatus());
+                record.setResponseCode(detail.getGeneral().getResponseCode());
+                /**
+                 * 详情信息
+                 */
+                record.setDetail(detail);
+                recordList.add(record);
+            }
+        }
+        response.setRecords(recordList);
+        return response;
+    }
+
+    @Override
+    public String getDebugLog(Long id) {
+        String uploadPath = getJmxPathById(id);
+        String cmdDir = uploadPath.substring(0, uploadPath.lastIndexOf("/"));
+        File file = new File(cmdDir + "/jmeter.log");
+        if(!file.exists()) {
+            return "日志文件不存在";
+        }
+        return com.pamirs.takin.common.util.FileUtils.readTextFileContent(file);
+    }
+
+//    private String calcProcessName(Long processId, String processName) {
+//        String name = StringUtils.replace(processName, " ", "");
+//        SceneQueryParam queryParam = new SceneQueryParam();
+//        queryParam.setSceneName(name);
+//        if(!ptsProcessDAO.existProcessQueryByName(processId, queryParam)) {
+//            return name;
+//        }
+//        return name + "_" + DateUtil.format(new Date(), "yyMMddHHmm");
+//    }
+
+    private String getJmxPathById(Long id) {
+        String key = String.format(PTS_KEY, id);
+        Object value = redisTemplate.opsForValue().get(key);
+        if(null != value) {
+            return (String) value;
+        }
+        BusinessFlowDetailResponse businessFlowDetail = sceneService.getBusinessFlowDetail(id);
+        FileManageResponse scriptFile = businessFlowDetail.getScriptFile();
+        if(scriptFile == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "没有业务流程id找到对应脚本！");
+        }
+        redisTemplate.opsForValue().set(key, scriptFile.getUploadPath(), 10, TimeUnit.MINUTES);
+        return scriptFile.getUploadPath();
     }
 }

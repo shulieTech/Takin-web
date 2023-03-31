@@ -12,4 +12,6 @@ public class ScriptJsonProcessor implements Serializable {
     private String jsonPathExprs;
 
     private String matchNumbers;
+
+    private String useHeader;
 }

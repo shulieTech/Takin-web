@@ -118,4 +118,14 @@ public class JmeterFunctionAdapter {
     public boolean supportFunction(String funStr) {
         return JmeterFunctionFactory.functionMap.containsKey(funStr);
     }
+
+    public String getFunctionName(String funStr) {
+        String functionName = "";
+        if (funStr.contains("(")) {
+            functionName = funStr.substring(funStr.indexOf("__"), funStr.indexOf("("));
+        } else {
+            functionName = funStr.substring(funStr.indexOf("__"), funStr.indexOf("}"));
+        }
+        return functionName;
+    }
 }

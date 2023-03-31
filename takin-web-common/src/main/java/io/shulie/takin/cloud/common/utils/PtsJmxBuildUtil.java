@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.IORuntimeException;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonAssert;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonProcessor;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptKeyValueParam;
@@ -18,8 +19,7 @@ import org.dom4j.Element;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * ClassName:    JmeterScriptUtil
@@ -160,6 +160,119 @@ public class PtsJmxBuildUtil {
         return element.addElement(HASH_TREE);
     }
 
+    public static Element buildTimer(Element element, String delay) {
+        if(StringUtils.isBlank(delay)) {
+            return element;
+        }
+        Element postProcessor = element.addElement("ConstantTimer");
+        postProcessor.addAttribute(GUI_CLASS, "ConstantTimerGui");
+        postProcessor.addAttribute(TEST_CLASS, "ConstantTimer");
+        postProcessor.addAttribute(TEST_NAME, "固定定时器");
+        postProcessor.addAttribute(ENABLED, Boolean.TRUE.toString());
+
+        Element delayE = postProcessor.addElement(STRING_PROP);
+        delayE.addAttribute(NAME, "ConstantTimer.delay");
+        delayE.setText(delay);
+
+        return element.addElement(HASH_TREE);
+    }
+
+    public static Element buildHttpDefault(Element element, JSONObject dataMap) {
+        if (CollUtil.isEmpty(dataMap)) {
+            return element;
+        }
+        Element header = element.addElement("ConfigTestElement");
+        header.addAttribute(GUI_CLASS, "HttpDefaultsGui");
+        header.addAttribute(TEST_CLASS, "ConfigTestElement");
+        header.addAttribute(TEST_NAME, "HTTP请求默认值");
+        header.addAttribute(ENABLED, Boolean.TRUE.toString());
+
+        Element elementProp = header.addElement(ELEMENT_PROP);
+        elementProp.addAttribute(NAME, "HTTPsampler.Arguments");
+        elementProp.addAttribute(ELEMENT_TYPE, "Arguments");
+        elementProp.addAttribute(GUI_CLASS, "HTTPArgumentsPanel");
+        elementProp.addAttribute(TEST_CLASS, "Arguments");
+        elementProp.addAttribute(TEST_NAME, "用户定义的变量");
+        elementProp.addAttribute(ENABLED, Boolean.TRUE.toString());
+
+        Element collectionProp = elementProp.addElement(COLLECTION_PROP);
+        collectionProp.addAttribute(NAME, "Arguments.arguments");
+
+        Element domain = header.addElement(STRING_PROP);
+        domain.addAttribute(NAME, "HTTPSampler.domain");
+        domain.setText(dataMap.getString("domain"));
+
+        Element port = header.addElement(STRING_PROP);
+        port.addAttribute(NAME, "HTTPSampler.port");
+        port.setText(dataMap.getString("port"));
+
+        Element protocol = header.addElement(STRING_PROP);
+        protocol.addAttribute(NAME, "HTTPSampler.protocol");
+        protocol.setText(dataMap.getString("protocol"));
+
+        Element contentEncoding = header.addElement(STRING_PROP);
+        contentEncoding.addAttribute(NAME, "HTTPSampler.contentEncoding");
+        contentEncoding.setText(dataMap.getString("contentEncoding"));
+
+        Element path = header.addElement(STRING_PROP);
+        path.addAttribute(NAME, "HTTPSampler.path");
+        path.setText(dataMap.getString("path"));
+
+        Element concurrentPool = header.addElement(STRING_PROP);
+        concurrentPool.addAttribute(NAME, "HTTPSampler.concurrentPool");
+        concurrentPool.setText("6");
+
+        Element connect_timeout = header.addElement(STRING_PROP);
+        connect_timeout.addAttribute(NAME, "HTTPSampler.connect_timeout");
+        connect_timeout.setText("");
+
+        Element response_timeout = header.addElement(STRING_PROP);
+        response_timeout.addAttribute(NAME, "HTTPSampler.response_timeout");
+        response_timeout.setText("");
+
+        return element.addElement(HASH_TREE);
+    }
+
+    public static Element buildCounter(Element element, List<JSONObject> jsonList) {
+        if (CollUtil.isEmpty(jsonList)) {
+            return element;
+        }
+        for(JSONObject jsonObject : jsonList) {
+            Element header = element.addElement("CounterConfig");
+            header.addAttribute(GUI_CLASS, "CounterConfigGui");
+            header.addAttribute(TEST_CLASS, "CounterConfig");
+            header.addAttribute(TEST_NAME, "计数器");
+            header.addAttribute(ENABLED, Boolean.TRUE.toString());
+
+            Element start = header.addElement(STRING_PROP);
+            start.addAttribute(NAME, "CounterConfig.start");
+            start.setText(jsonObject.getString("start"));
+
+            Element end = header.addElement(STRING_PROP);
+            end.addAttribute(NAME, "CounterConfig.end");
+            end.setText(jsonObject.getString("end"));
+
+            Element incr = header.addElement(STRING_PROP);
+            incr.addAttribute(NAME, "CounterConfig.incr");
+            incr.setText(jsonObject.getString("incr"));
+
+            Element name = header.addElement(STRING_PROP);
+            name.addAttribute(NAME, "CounterConfig.name");
+            name.setText(jsonObject.getString("name"));
+
+            Element format = header.addElement(STRING_PROP);
+            format.addAttribute(NAME, "CounterConfig.format");
+            format.setText(jsonObject.getString("format"));
+
+            Element per_user = header.addElement(BOOL_PROP);
+            per_user.addAttribute(NAME, "CounterConfig.per_user");
+            per_user.setText("false");
+
+            element.addElement(HASH_TREE);
+        }
+        return element;
+    }
+
     public static Element buildHttpHeader(Element element, List<ScriptHeader> headers) {
         if (CollUtil.isEmpty(headers)) {
             return element;
@@ -173,13 +286,19 @@ public class PtsJmxBuildUtil {
         Element collectionProp = header.addElement(COLLECTION_PROP);
         collectionProp.addAttribute(NAME, "HeaderManager.headers");
 
+        Set<String> headerName = new HashSet<>();
         for (ScriptHeader scriptHeader : headers) {
+            String key = scriptHeader.getKey();
+            if(StringUtils.isBlank(key) || headerName.contains(key)) {
+                continue;
+            }
+            headerName.add(key);
             Element elementProp = collectionProp.addElement(ELEMENT_PROP);
             elementProp.addAttribute(NAME, "");
             elementProp.addAttribute(ELEMENT_TYPE, "Header");
             Element stringPropKey = elementProp.addElement(STRING_PROP);
             stringPropKey.addAttribute(NAME, "Header.name");
-            stringPropKey.setText(scriptHeader.getKey());
+            stringPropKey.setText(key);
 
             Element stringPropVal = elementProp.addElement(STRING_PROP);
             stringPropVal.addAttribute(NAME, "Header.value");
@@ -188,16 +307,56 @@ public class PtsJmxBuildUtil {
         return element.addElement(HASH_TREE);
     }
 
+    public static Element buildApiBeanshellPre(Element element, List<String> scripts) {
+        if (CollUtil.isEmpty(scripts)) {
+            return element;
+        }
+        for(String scriptContent : scripts) {
+            if(StringUtils.isBlank(scriptContent)) {
+                continue;
+            }
+            Element header = element.addElement("BeanShellPreProcessor");
+            header.addAttribute(GUI_CLASS, "TestBeanGUI");
+            header.addAttribute(TEST_CLASS, "BeanShellPreProcessor");
+            header.addAttribute(TEST_NAME, "BeanShell预处理程序");
+            header.addAttribute(ENABLED, Boolean.TRUE.toString());
+
+            Element filename = header.addElement(STRING_PROP);
+            filename.addAttribute(NAME, "filename");
+            filename.setText("");
+
+            Element parameters = header.addElement(STRING_PROP);
+            parameters.addAttribute(NAME, "parameters");
+            parameters.setText("");
+
+            Element resetInterpreter = header.addElement(BOOL_PROP);
+            resetInterpreter.addAttribute(NAME, "resetInterpreter");
+            resetInterpreter.setText("false");
+
+            Element script = header.addElement(STRING_PROP);
+            script.addAttribute(NAME, "script");
+            script.setText(scriptContent);
+
+            element.addElement(HASH_TREE);
+        }
+        return element;
+    }
+
     public static Element buildJsonPostProcessor(Element element, List<ScriptJsonProcessor> processors) {
         if(CollUtil.isEmpty(processors)) {
             return element;
         }
-        Element postProcessor = element.addElement("JSONPostProcessor");
-        postProcessor.addAttribute(GUI_CLASS, "JSONPostProcessorGui");
-        postProcessor.addAttribute(TEST_CLASS, "JSONPostProcessor");
-        postProcessor.addAttribute(TEST_NAME, "JSON提取器");
-        postProcessor.addAttribute(ENABLED, Boolean.TRUE.toString());
         for (ScriptJsonProcessor processor : processors) {
+            if(StringUtils.isBlank(processor.getReferenceNames())
+                    || StringUtils.isBlank(processor.getJsonPathExprs())) {
+                continue;
+            }
+            Element postProcessor = element.addElement("JSONPostProcessor");
+            postProcessor.addAttribute(GUI_CLASS, "JSONPostProcessorGui");
+            postProcessor.addAttribute(TEST_CLASS, "JSONPostProcessor");
+            postProcessor.addAttribute(TEST_NAME, "JSON提取器");
+            postProcessor.addAttribute(ENABLED, Boolean.TRUE.toString());
+
             Element referenceNamesKey = postProcessor.addElement(STRING_PROP);
             referenceNamesKey.addAttribute(NAME, "JSONPostProcessor.referenceNames");
             referenceNamesKey.setText(processor.getReferenceNames());
@@ -211,24 +370,76 @@ public class PtsJmxBuildUtil {
             if(processor.getMatchNumbers() != null) {
                 matchNumbersKey.setText(processor.getMatchNumbers());
             }
+
+            element.addElement(HASH_TREE);
         }
-        return element.addElement(HASH_TREE);
+        return element;
+    }
+
+    public static Element buildRegexExtractor(Element element, List<ScriptJsonProcessor> regexExtractors) {
+        if(CollUtil.isEmpty(regexExtractors)) {
+            return element;
+        }
+        for (ScriptJsonProcessor regex : regexExtractors) {
+            if(StringUtils.isBlank(regex.getUseHeader())
+                    || StringUtils.isBlank(regex.getReferenceNames())
+                    || StringUtils.isBlank(regex.getJsonPathExprs())) {
+                continue;
+            }
+            Element postProcessor = element.addElement("RegexExtractor");
+            postProcessor.addAttribute(GUI_CLASS, "RegexExtractorGui");
+            postProcessor.addAttribute(TEST_CLASS, "RegexExtractor");
+            postProcessor.addAttribute(TEST_NAME, "正则表达式提取器");
+            postProcessor.addAttribute(ENABLED, Boolean.TRUE.toString());
+
+            Element useHeaders = postProcessor.addElement(STRING_PROP);
+            useHeaders.addAttribute(NAME, "RegexExtractor.useHeaders");
+            useHeaders.setText(regex.getUseHeader());
+
+            Element refName = postProcessor.addElement(STRING_PROP);
+            refName.addAttribute(NAME, "RegexExtractor.refname");
+            refName.setText(regex.getReferenceNames());
+
+            Element regexE = postProcessor.addElement(STRING_PROP);
+            regexE.addAttribute(NAME, "RegexExtractor.regex");
+            regexE.setText(regex.getJsonPathExprs());
+
+            Element template = postProcessor.addElement(STRING_PROP);
+            template.addAttribute(NAME, "RegexExtractor.template");
+
+            Element defaultE = postProcessor.addElement(STRING_PROP);
+            defaultE.addAttribute(NAME, "RegexExtractor.default");
+
+            Element matchNumbersKey = postProcessor.addElement(STRING_PROP);
+            matchNumbersKey.addAttribute(NAME, "RegexExtractor.match_number");
+            if(regex.getMatchNumbers() != null) {
+                matchNumbersKey.setText(regex.getMatchNumbers());
+            }
+            element.addElement(HASH_TREE);
+        }
+        return element;
     }
 
     public static Element buildResponseAssert(Element element, List<ScriptResponseAssert> asserts) {
         if(CollUtil.isEmpty(asserts)) {
             return element;
         }
-        Element postProcessor = element.addElement("ResponseAssertion");
-        postProcessor.addAttribute(GUI_CLASS, "AssertionGui");
-        postProcessor.addAttribute(TEST_CLASS, "ResponseAssertion");
-        postProcessor.addAttribute(TEST_NAME, "响应断言");
-        postProcessor.addAttribute(ENABLED, Boolean.TRUE.toString());
         for (ScriptResponseAssert responseAssert : asserts) {
+            if(StringUtils.isBlank(responseAssert.getTestType())
+                    || StringUtils.isBlank(responseAssert.getTestStrings())
+                    || StringUtils.isBlank(responseAssert.getTestField())) {
+                continue;
+            }
+            Element postProcessor = element.addElement("ResponseAssertion");
+            postProcessor.addAttribute(GUI_CLASS, "AssertionGui");
+            postProcessor.addAttribute(TEST_CLASS, "ResponseAssertion");
+            postProcessor.addAttribute(TEST_NAME, "响应断言");
+            postProcessor.addAttribute(ENABLED, Boolean.TRUE.toString());
+
             Element collectionKey = postProcessor.addElement(COLLECTION_PROP);
             collectionKey.addAttribute(NAME, "Asserion.test_strings");
             Element testStringsKey = collectionKey.addElement(STRING_PROP);
-            testStringsKey.addAttribute(NAME, "12345");
+            testStringsKey.addAttribute(NAME, String.valueOf(new Random().nextInt(5000) + 1000));
             testStringsKey.setText(responseAssert.getTestStrings());
 
             Element customMessageKey = postProcessor.addElement(STRING_PROP);
@@ -245,20 +456,28 @@ public class PtsJmxBuildUtil {
             Element testTypeKey = postProcessor.addElement(INT_PROP);
             testTypeKey.addAttribute(NAME, "Assertion.test_type");
             testTypeKey.setText(responseAssert.getTestType());
+
+            element.addElement(HASH_TREE);
         }
-        return element.addElement(HASH_TREE);
+        return element;
     }
 
     public static Element buildJsonAssert(Element element, List<ScriptJsonAssert> asserts) {
         if(CollUtil.isEmpty(asserts)) {
             return element;
         }
-        Element postProcessor = element.addElement("JSONPathAssertion");
-        postProcessor.addAttribute(GUI_CLASS, "JSONPathAssertionGui");
-        postProcessor.addAttribute(TEST_CLASS, "JSONPathAssertion");
-        postProcessor.addAttribute(TEST_NAME, "JSON断言");
-        postProcessor.addAttribute(ENABLED, Boolean.TRUE.toString());
         for (ScriptJsonAssert jsonAssert : asserts) {
+            if(StringUtils.isBlank(jsonAssert.getJsonPath())
+                    || StringUtils.isBlank(jsonAssert.getExpectedValue())
+                    || jsonAssert.getJsonvalidation() == null) {
+                continue;
+            }
+            Element postProcessor = element.addElement("JSONPathAssertion");
+            postProcessor.addAttribute(GUI_CLASS, "JSONPathAssertionGui");
+            postProcessor.addAttribute(TEST_CLASS, "JSONPathAssertion");
+            postProcessor.addAttribute(TEST_NAME, "JSON断言");
+            postProcessor.addAttribute(ENABLED, Boolean.TRUE.toString());
+
             Element jsonPathKey = postProcessor.addElement(STRING_PROP);
             jsonPathKey.addAttribute(NAME, "JSON_PATH");
             jsonPathKey.setText(jsonAssert.getJsonPath());
@@ -283,8 +502,10 @@ public class PtsJmxBuildUtil {
             isregexKey.addAttribute(NAME, "ISREGEX");
             isregexKey.setText(Boolean.FALSE.toString());
 
+            element.addElement(HASH_TREE);
+
         }
-        return element.addElement(HASH_TREE);
+        return element;
     }
 
     public static Element buildCsvData(Element element, List<ScriptData> datas) {
@@ -292,10 +513,15 @@ public class PtsJmxBuildUtil {
             return element;
         }
         for (ScriptData scriptData : datas) {
+            if(StringUtils.isBlank(scriptData.getPath())
+                    || StringUtils.isBlank(scriptData.getFormat())
+                    || scriptData.getIgnoreFirstLine() == null) {
+                continue;
+            }
             Element data = element.addElement("CSVDataSet");
             data.addAttribute(GUI_CLASS, "TestBeanGUI");
             data.addAttribute(TEST_CLASS, "CSVDataSet");
-            data.addAttribute(TEST_NAME, scriptData.getName());
+            data.addAttribute(TEST_NAME, "CSV数据文件设置");
             data.addAttribute(ENABLED, Boolean.TRUE.toString());
 
             Element stringProp = data.addElement(STRING_PROP);
@@ -333,30 +559,32 @@ public class PtsJmxBuildUtil {
             Element shareMode = data.addElement(STRING_PROP);
             shareMode.addAttribute(NAME, "shareMode");
             shareMode.setText("shareMode.all");
+
+            element.addElement(HASH_TREE);
         }
 
-        return element.addElement(HASH_TREE);
+        return element;
     }
 
-    public static Element buildHttpSampler(Element element, URL queryUrl, String method, String getData, String postData) {
+    public static Element buildHttpSampler(Element element, String apiName, URL queryUrl, String method, String getData, String postData, Map<String, String> paramMap) {
         Element sampler = element.addElement("HTTPSamplerProxy");
         sampler.addAttribute(GUI_CLASS, "HttpTestSampleGui");
         sampler.addAttribute(TEST_CLASS, "HTTPSamplerProxy");
-        sampler.addAttribute(TEST_NAME, "HTTP请求");
+        sampler.addAttribute(TEST_NAME, StringUtils.isNotBlank(apiName) ? apiName : "HTTP请求");
         sampler.addAttribute(ENABLED, Boolean.TRUE.toString());
 
         if(StringUtils.isNotBlank(getData)) {
             List<ScriptKeyValueParam> params = JSON.parseArray(getData, ScriptKeyValueParam.class);
+            Element arguments = sampler.addElement(ELEMENT_PROP);
+            arguments.addAttribute(NAME, "HTTPsampler.Arguments");
+            arguments.addAttribute(ELEMENT_TYPE, ARGUMENTS);
+            arguments.addAttribute(GUI_CLASS, "HTTPArgumentsPanel");
+            arguments.addAttribute(TEST_CLASS, ARGUMENTS);
+            arguments.addAttribute(TEST_NAME, "User Defined Variables");
+            arguments.addAttribute(ENABLED, Boolean.TRUE.toString());
+            Element collection = arguments.addElement(COLLECTION_PROP);
+            collection.addAttribute(NAME, "Arguments.arguments");
             if(CollectionUtils.isNotEmpty(params)) {
-                Element arguments = sampler.addElement(ELEMENT_PROP);
-                arguments.addAttribute(NAME, "HTTPsampler.Arguments");
-                arguments.addAttribute(ELEMENT_TYPE, ARGUMENTS);
-                arguments.addAttribute(GUI_CLASS, "HTTPArgumentsPanel");
-                arguments.addAttribute(TEST_CLASS, ARGUMENTS);
-                arguments.addAttribute(TEST_NAME, "User Defined Variables");
-                arguments.addAttribute(ENABLED, Boolean.TRUE.toString());
-                Element collection = arguments.addElement(COLLECTION_PROP);
-                collection.addAttribute(NAME, "Arguments.arguments");
                 for(ScriptKeyValueParam param : params) {
                     Element arg = collection.addElement(ELEMENT_PROP);
                     arg.addAttribute("name", param.getKey());
@@ -415,7 +643,7 @@ public class PtsJmxBuildUtil {
 
         Element port = sampler.addElement(STRING_PROP);
         port.addAttribute(NAME, "HTTPSampler.port");
-        port.setText(queryUrl.getPort() + "");
+        port.setText(queryUrl.getPort() != -1 ? String.valueOf(queryUrl.getPort()) : "");
 
         Element protocol = sampler.addElement(STRING_PROP);
         protocol.addAttribute(NAME, "HTTPSampler.protocol");
@@ -439,7 +667,7 @@ public class PtsJmxBuildUtil {
 
         Element followRedirects = sampler.addElement(BOOL_PROP);
         followRedirects.addAttribute(NAME, "HTTPSampler.follow_redirects");
-        followRedirects.setText(Boolean.TRUE.toString());
+        followRedirects.setText(paramMap.get("allowForward"));
 
         Element autoRedirects = sampler.addElement(BOOL_PROP);
         autoRedirects.addAttribute(NAME, "HTTPSampler.auto_redirects");
@@ -447,7 +675,7 @@ public class PtsJmxBuildUtil {
 
         Element useKeepalive = sampler.addElement(BOOL_PROP);
         useKeepalive.addAttribute(NAME, "HTTPSampler.use_keepalive");
-        useKeepalive.setText(Boolean.TRUE.toString());
+        useKeepalive.setText(paramMap.get("keepAlive"));
 
         Element doMultipartPost = sampler.addElement(BOOL_PROP);
         doMultipartPost.addAttribute(NAME, "HTTPSampler.DO_MULTIPART_POST");
@@ -463,7 +691,117 @@ public class PtsJmxBuildUtil {
 
         Element responseTimeout = sampler.addElement(STRING_PROP);
         responseTimeout.addAttribute(NAME, "HTTPSampler.response_timeout");
-        responseTimeout.setText("");
+        responseTimeout.setText(paramMap.get("requestTimeout"));
+
+        return element.addElement(HASH_TREE);
+    }
+
+    public static Element buildJavaSampler(Element element, String apiName, Map<String, String> propsMap) {
+        Element data = element.addElement("JavaSampler");
+        data.addAttribute(GUI_CLASS, "JavaTestSamplerGui");
+        data.addAttribute(TEST_CLASS, "JavaSampler");
+        data.addAttribute(TEST_NAME, apiName);
+        data.addAttribute(ENABLED, Boolean.TRUE.toString());
+
+        Element arg = data.addElement(ELEMENT_PROP);
+        arg.addAttribute(NAME, "arguments");
+        arg.addAttribute(ELEMENT_TYPE, "Arguments");
+        arg.addAttribute(GUI_CLASS, "ArgumentsPanel");
+        arg.addAttribute(TEST_CLASS, "Arguments");
+        arg.addAttribute(ENABLED, Boolean.TRUE.toString());
+
+        Element collection = arg.addElement(COLLECTION_PROP);
+        collection.addAttribute(NAME, "Arguments.arguments");
+
+        propsMap.forEach((key, value) -> {
+            if(!"classname".equals(key)) {
+                Element param = collection.addElement(ELEMENT_PROP);
+                param.addAttribute(NAME, key);
+                param.addAttribute(ELEMENT_TYPE, "Argument");
+
+                Element argName = param.addElement(STRING_PROP);
+                argName.addAttribute(NAME, "Argument.name");
+                argName.setText(key);
+
+                Element argValue = param.addElement(STRING_PROP);
+                argValue.addAttribute(NAME, "Argument.name");
+                argValue.setText(apiName);
+
+                Element argMetadata = param.addElement(STRING_PROP);
+                argMetadata.addAttribute(NAME, "Argument.metadata");
+                argMetadata.setText("=");
+            }
+        });
+        Element className = data.addElement(STRING_PROP);
+        className.addAttribute(NAME, "classname");
+        className.setText(propsMap.get("classname"));
+        return element.addElement(HASH_TREE);
+    }
+
+    public static Element buildViewResultsTree(Element element) {
+        Element data = element.addElement("ResultCollector");
+        data.addAttribute(GUI_CLASS, "ViewResultsFullVisualizer");
+        data.addAttribute(TEST_CLASS, "ResultCollector");
+        data.addAttribute(TEST_NAME, "View Results Tree");
+        data.addAttribute(ENABLED, Boolean.TRUE.toString());
+
+        Element errorLogging = data.addElement(BOOL_PROP);
+        errorLogging.addAttribute(NAME, "ResultCollector.error_logging");
+        errorLogging.setText(Boolean.FALSE.toString());
+
+        Element objProp = data.addElement("objProp");
+        Element name = objProp.addElement("name");
+        name.setText("saveConfig");
+        Element value = objProp.addElement("value");
+        value.addAttribute("class", "SampleSaveConfiguration");
+        Element time = value.addElement("time");
+        time.setText(Boolean.TRUE.toString());
+        Element latency = value.addElement("latency");
+        latency.setText(Boolean.FALSE.toString());
+        Element timestamp = value.addElement("timestamp");
+        timestamp.setText(Boolean.TRUE.toString());
+        Element success = value.addElement("success");
+        success.setText(Boolean.TRUE.toString());
+        Element label = value.addElement("label");
+        label.setText(Boolean.FALSE.toString());
+        Element code = value.addElement("code");
+        code.setText(Boolean.TRUE.toString());
+        Element message = value.addElement("message");
+        message.setText(Boolean.TRUE.toString());
+        Element threadName = value.addElement("threadName");
+        threadName.setText(Boolean.FALSE.toString());
+        Element dataType = value.addElement("dataType");
+        dataType.setText(Boolean.FALSE.toString());
+        Element encoding = value.addElement("encoding");
+        encoding.setText(Boolean.FALSE.toString());
+        Element assertions = value.addElement("assertions");
+        assertions.setText(Boolean.TRUE.toString());
+        Element subresults = value.addElement("subresults");
+        subresults.setText(Boolean.FALSE.toString());
+        Element responseData = value.addElement("responseData");
+        responseData.setText(Boolean.TRUE.toString());
+        Element samplerData = value.addElement("samplerData");
+        samplerData.setText(Boolean.TRUE.toString());
+        Element xml = value.addElement("xml");
+        xml.setText(Boolean.TRUE.toString());
+        Element fieldNames = value.addElement("fieldNames");
+        fieldNames.setText(Boolean.FALSE.toString());
+        Element responseHeaders = value.addElement("responseHeaders");
+        responseHeaders.setText(Boolean.TRUE.toString());
+        Element requestHeaders = value.addElement("requestHeaders");
+        requestHeaders.setText(Boolean.TRUE.toString());
+        Element responseDataOnError = value.addElement("responseDataOnError");
+        responseDataOnError.setText(Boolean.FALSE.toString());
+        Element saveAssertionResultsFailureMessage = value.addElement("saveAssertionResultsFailureMessage");
+        saveAssertionResultsFailureMessage.setText(Boolean.FALSE.toString());
+        Element assertionsResultsToSave = value.addElement("assertionsResultsToSave");
+        assertionsResultsToSave.setText("0");
+        Element url = value.addElement("url");
+        url.setText(Boolean.TRUE.toString());
+
+        Element filename = data.addElement(STRING_PROP);
+        filename.addAttribute(NAME, "filename");
+        filename.setText("./result.xml");
 
         return element.addElement(HASH_TREE);
     }

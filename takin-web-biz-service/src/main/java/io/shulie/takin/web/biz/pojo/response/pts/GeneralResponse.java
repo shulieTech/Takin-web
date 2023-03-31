@@ -23,7 +23,7 @@ public class GeneralResponse implements Serializable {
     private String requestMethod;
 
     @ApiModelProperty(value = "Response Code")
-    private Integer responseCode;
+    private String responseCode;
 
     @ApiModelProperty(value = "Export Content")
     private String exportContent;

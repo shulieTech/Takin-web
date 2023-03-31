@@ -22,6 +22,14 @@ public class PtsDebugRecordResponse implements Serializable {
     @ApiModelProperty(value = "请求时间")
     private String requestTime;
 
-    @ApiModelProperty(value = "响应状态")
-    private String responseStatus;
+    @ApiModelProperty(value = "请求耗时")
+    private String requestCost;
+
+    @ApiModelProperty(value = "响应状态 成功|失败")
+    private Boolean responseStatus;
+
+    @ApiModelProperty(value = "响应状态码")
+    private String responseCode;
+
+    private PtsDebugRecordDetailResponse detail = new PtsDebugRecordDetailResponse();
 }

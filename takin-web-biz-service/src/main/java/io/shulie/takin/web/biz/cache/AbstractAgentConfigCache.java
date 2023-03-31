@@ -90,6 +90,9 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
             if (isLock) {
                 try {
                     result = queryValue(namespace);
+                    if(result == null){
+                        return null;
+                    }
                     redisTemplate.opsForValue().set(cacheKey, result, app_config_expire, TimeUnit.MINUTES);
                 } catch (Throwable e) {
                     log.error("数据操作失败 " + ExceptionUtils.getStackTrace(e));

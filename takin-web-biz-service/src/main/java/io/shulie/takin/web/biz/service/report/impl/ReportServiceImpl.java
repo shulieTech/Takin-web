@@ -102,6 +102,8 @@ public class ReportServiceImpl implements ReportService {
     @Resource
     private RedisClientUtil redisClientUtil;
 
+    private static final String PRESSURE_MODE = "\"mode\":";
+
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
         // 前端查询条件 传用户
@@ -162,8 +164,21 @@ public class ReportServiceImpl implements ReportService {
         //dealVirtualBusiness(output);
         //补充报告执行人
         fillExecuteMan(output);
+        //补充施压模式，递增施压模式，为了展示趋势图（横坐标-并发数，纵坐标-TPS、RT）
+        output.setPressureMode(parseReportPressureMode(detailResponse.getPtConfig()));
         return output;
 
+    }
+
+    private String parseReportPressureMode(String ptConfig) {
+        if(StringUtils.isBlank(ptConfig)) {
+            return null;
+        }
+        int pos = ptConfig.indexOf(PRESSURE_MODE);
+        if(pos == -1) {
+            return null;
+        }
+        return ptConfig.substring(pos + PRESSURE_MODE.length(), pos + PRESSURE_MODE.length() + 1);
     }
 
     private void fillExecuteMan(ReportDetailOutput output) {

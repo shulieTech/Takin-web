@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class PtsParseJmxToObjectTools {
 
     public static void main(String[] args) {
-        System.out.println(JSON.toJSONString(parseJmxFile("/Users/xiaoshu/Downloads/20230328/grxjqk.jmx", false)));
+        System.out.println(JSON.toJSONString(parseJmxFile("/Users/xiaoshu/Documents/jmx/Java请求IB2.jmx", false)));
     }
 
     public static void removeSamplerNodeChildren(List<ScriptNode> nodes) {
@@ -148,7 +148,7 @@ public class PtsParseJmxToObjectTools {
                         fillRequestHeaderData(apiRequest.getHeader(), headerList.get(0));
                     }
                     //处理JSON提取器
-                    List<ScriptNode> jsonProcessList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.POSTPROCESSOR).collect(Collectors.toList());
+                    List<ScriptNode> jsonProcessList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.POSTPROCESSOR || data.getType() == NodeTypeEnum.REGEXEXTRACTOR).collect(Collectors.toList());
                     fillExtractorData(apiRequest.getReturnVar(), jsonProcessList);
                     //处理断言
                     List<ScriptNode> assertList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.ASSERTION).collect(Collectors.toList());
@@ -160,7 +160,10 @@ public class PtsParseJmxToObjectTools {
                 PtsApiRequest apiRequest = new PtsApiRequest();
                 apiRequest.setApiType(SamplerTypeEnum.JAVA.getType());
                 apiRequest.setApiName(node.getTestName());
-                fillJavaHeaderData(apiRequest.getHeader(), node.getProps());
+                PtsApiBaseRequest baseRequest = new PtsApiBaseRequest();
+                baseRequest.setRequestUrl(node.getProps().get("classname"));
+                apiRequest.setBase(baseRequest);
+                fillJavaParamData(apiRequest.getParam(), node.getProps());
                 linkRequest.getApis().add(apiRequest);
             }
         }
@@ -248,13 +251,11 @@ public class PtsParseJmxToObjectTools {
         scriptNode.getProps().forEach((key, value) -> headerRequest.getHeaders().add(new KeyValueRequest(key, value)));
     }
 
-    private static void fillJavaHeaderData(PtsApiHeaderRequest headerRequest, Map<String, String> propsMap) {
+    private static void fillJavaParamData(PtsApiParamRequest paramRequest, Map<String, String> propsMap) {
         Set<Map.Entry<String, String>> entries = propsMap.entrySet();
         for(Map.Entry<String, String> entry : entries) {
             if(entry.getKey().startsWith(JmxConstant.argumentNamePrefix)) {
-                headerRequest.getHeaders().add(new KeyValueRequest(entry.getKey().substring(JmxConstant.argumentNamePrefix.length()), entry.getValue()));
-            } else {
-                headerRequest.getHeaders().add(new KeyValueRequest(entry.getKey(), entry.getValue()));
+                paramRequest.getParams().add(new JavaParamRequest(entry.getKey().substring(JmxConstant.argumentNamePrefix.length()), entry.getValue()));
             }
         }
     }

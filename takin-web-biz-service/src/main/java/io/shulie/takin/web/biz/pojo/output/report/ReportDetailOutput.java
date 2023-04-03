@@ -129,4 +129,7 @@ public class ReportDetailOutput extends UserCommonExt {
     private Integer calibrationStatus;
     private String calibrationMessage;
     private List<String> ptlPath;
+
+    @ApiModelProperty(value = "施压模式，1-固定模式 2-线性模式 3-递增模式")
+    private String pressureMode;
 }

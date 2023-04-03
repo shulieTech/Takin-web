@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.pts;
 
 import com.alibaba.fastjson.JSON;
+import com.pamirs.takin.common.util.FileUtils;
 import io.shulie.takin.adapter.api.entrypoint.file.CloudFileApi;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
@@ -9,10 +10,7 @@ import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest
 import io.shulie.takin.web.biz.pojo.request.pts.PtsSceneRequest;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.pts.PtsDebugRecordDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.pts.PtsDebugRecordResponse;
-import io.shulie.takin.web.biz.pojo.response.pts.PtsDebugResponse;
-import io.shulie.takin.web.biz.pojo.response.pts.PtsSceneResponse;
+import io.shulie.takin.web.biz.pojo.response.pts.*;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.LinuxHelper;
@@ -21,6 +19,8 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.pts.PtsProcessDAO;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.saxon.str.StringTool;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -157,16 +157,24 @@ public class PtsProcessServiceImpl implements PtsProcessService{
          * 存在有文件，但没内容的情况
          * 多查询几次
          */
-        while(recordList.size() == 0 && System.currentTimeMillis() - queryTimestamp < 6000) {
+        File logFile = new File(cmdDir + "/jmeter.log");
+        while(!response.getHasException() && recordList.size() == 0 && System.currentTimeMillis() - queryTimestamp < 6000) {
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
                 log.error("getDebugRecord InterruptedException={}", e.getMessage());
             }
+            if(logFile.exists()) {
+              String exception = FileUtils.readTextFileContentAndException(logFile).get("exception");
+              if(StringUtils.isNotBlank(exception)) {
+                  response.setHasException(true);
+                  response.setExceptionMessage("调试异常："+exception+"，点击【查看日志】看详情");
+              }
+            }
             List<PtsDebugRecordDetailResponse> detailList = PtsParseResultToObjectTools.parseResultFile(file);
             for (PtsDebugRecordDetailResponse detail : detailList) {
                 PtsDebugRecordResponse record = new PtsDebugRecordResponse();
-                record.setApiName(detail.getGeneral().getRequestUrl());
+                record.setApiName(StringUtils.isNotBlank(detail.getGeneral().getRequestUrl()) ? detail.getGeneral().getRequestUrl() : detail.getApiName());
                 record.setRequestTime(detail.getRequestTime());
                 record.setRequestCost(detail.getRequestCost() != null ? detail.getRequestCost() + "ms" : "-");
                 record.setResponseStatus(detail.getResponseStatus());
@@ -190,7 +198,7 @@ public class PtsProcessServiceImpl implements PtsProcessService{
         if(!file.exists()) {
             return "日志文件不存在";
         }
-        return com.pamirs.takin.common.util.FileUtils.readTextFileContent(file);
+        return com.pamirs.takin.common.util.FileUtils.readTextFileContentAndException(file).get("content");
     }
 
 //    private String calcProcessName(Long processId, String processName) {

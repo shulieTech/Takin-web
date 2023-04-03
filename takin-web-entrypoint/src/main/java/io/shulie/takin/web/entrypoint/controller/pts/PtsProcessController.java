@@ -2,6 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.pts;
 
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
+import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
@@ -10,9 +11,7 @@ import io.shulie.takin.jmeter.adapter.JmeterFunctionAdapter;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.pts.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.pts.JmeterFunctionResponse;
-import io.shulie.takin.web.biz.pojo.response.pts.PtsDebugResponse;
-import io.shulie.takin.web.biz.pojo.response.pts.PtsSceneResponse;
+import io.shulie.takin.web.biz.pojo.response.pts.*;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.BaseConfigService;
 import io.shulie.takin.web.biz.service.pts.PtsParseJmxToObjectTools;
@@ -37,7 +36,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author junshi
@@ -64,6 +66,8 @@ public class PtsProcessController {
     private BaseConfigService baseConfigService;
 
     private static final String JMETER_FUNCTION = "JMETER_FUNCTION";
+
+    private static final String JMETER_JAVA_REQUEST = "JMETER_JAVE_REQUEST";
 
     @ApiOperation("解析jmx文件")
     @PostMapping("/parse/jmx")
@@ -136,11 +140,12 @@ public class PtsProcessController {
             needAuth = ActionTypeEnum.QUERY
     )
     public PtsSceneResponse detailActivity(@RequestParam(name = "id") Long id) {
+        JmeterJavaRequestResponse javaConfig = getJavaRequestConfig("IB2");
         PtsSceneResponse sceneResponse = ptsProcessService.detailProcess(id);
         //处理Get请求，拼参数到url里
-        dealLinks((sceneResponse.getPreLink()));
+        dealLinks((sceneResponse.getPreLink()), javaConfig);
         for(PtsLinkRequest linkRequest : sceneResponse.getLinks()) {
-            dealLinks(linkRequest);
+            dealLinks(linkRequest, javaConfig);
         }
         return sceneResponse;
     }
@@ -153,14 +158,25 @@ public class PtsProcessController {
 
     @ApiOperation("API调试列表|明细")
     @GetMapping("/process/debug/record/list")
-    public PtsDebugResponse debugRecordList(@RequestParam(name = "id") Long id) {
-        return ptsProcessService.getDebugRecord(id);
+    public ResponseResult<PtsDebugResponse> debugRecordList(@RequestParam(name = "id") Long id) {
+        PtsDebugResponse debugResponse = ptsProcessService.getDebugRecord(id);
+        if(debugResponse.getHasException()) {
+            return ResponseResult.fail("0", debugResponse.getExceptionMessage(), "");
+        } else {
+            return ResponseResult.success(debugResponse);
+        }
     }
 
     @ApiOperation("API调试日志")
     @GetMapping("/process/debug/log")
     public ResponseResult debugRecordLog(@RequestParam(name = "id") Long id) {
         return ResponseResult.success(ptsProcessService.getDebugLog(id));
+    }
+
+    @ApiOperation("JavaRequest详情")
+    @GetMapping("/javaRequest/detail")
+    public JmeterJavaRequestResponse getJavaRequestByType(@RequestParam(name = "javaType") String javaType) {
+        return getJavaRequestConfig(javaType);
     }
 
     @ApiOperation("函数列表")
@@ -194,23 +210,66 @@ public class PtsProcessController {
         }
     }
 
-    private void dealLinks(PtsLinkRequest linkRequest) {
+    private JmeterJavaRequestResponse getJavaRequestConfig(String javaType) {
+        TBaseConfig baseConfig = baseConfigService.queryByConfigCode(JMETER_JAVA_REQUEST);
+        if(baseConfig == null) {
+            return new JmeterJavaRequestResponse();
+        }
+        List<JmeterJavaRequestResponse> responseList = JSON.parseArray(baseConfig.getConfigValue(), JmeterJavaRequestResponse.class);
+        JmeterJavaRequestResponse requestResponse = responseList.stream().filter(data -> data.getJavaType().equals(javaType)).findFirst().orElse(new JmeterJavaRequestResponse());
+        List<JmeterJavaRequestParamsResponse> params = requestResponse.getParams();
+        for(int i = 0; i < params.size(); i++) {
+            params.get(i).setSortNum(i + 1);
+        }
+        return requestResponse;
+    }
+
+    private void dealLinks(PtsLinkRequest linkRequest, JmeterJavaRequestResponse javaConfig) {
         for(PtsApiRequest apiRequest : linkRequest.getApis()) {
-            if(apiRequest.getBase().getRequestMethod().equalsIgnoreCase("GET")) {
-                String url = apiRequest.getBase().getRequestUrl();
-                List<KeyValueRequest> forms = apiRequest.getBody().getForms();
-                if(CollectionUtils.isEmpty(forms)) {
-                    continue;
+            if(apiRequest.getApiType().equals(SamplerTypeEnum.HTTP.getType())) {
+                if (apiRequest.getBase().getRequestMethod().equalsIgnoreCase("GET")) {
+                    String url = apiRequest.getBase().getRequestUrl();
+                    List<KeyValueRequest> forms = apiRequest.getBody().getForms();
+                    if (CollectionUtils.isEmpty(forms)) {
+                        continue;
+                    }
+                    StringBuffer sb = new StringBuffer();
+                    for (KeyValueRequest keyValueRequest : forms) {
+                        sb.append(keyValueRequest.getKey());
+                        sb.append("=");
+                        sb.append(keyValueRequest.getValue());
+                        sb.append("&");
+                    }
+                    sb.deleteCharAt(sb.length() - 1);
+                    apiRequest.getBase().setRequestUrl(appendUrlAndParams(url, sb.toString()));
                 }
-                StringBuffer sb = new StringBuffer();
-                for(KeyValueRequest keyValueRequest : forms) {
-                    sb.append(keyValueRequest.getKey());
-                    sb.append("=");
-                    sb.append(keyValueRequest.getValue());
-                    sb.append("&");
+            } else if (apiRequest.getApiType().equals(SamplerTypeEnum.JAVA.getType())) {
+                Map<String, JmeterJavaRequestParamsResponse> paramMap = new HashMap<>();
+                javaConfig.getParams().stream().forEach(data -> {
+                    paramMap.put(data.getParamName(), data);
+                });
+                if(CollectionUtils.isNotEmpty(apiRequest.getParam().getParams())) {
+                    apiRequest.getParam().getParams().stream().forEach(param -> {
+                        if (paramMap.containsKey(param.getParamName())) {
+                            param.setAllowEdit(false);
+                            param.setParamCNDesc(paramMap.get(param.getParamName()).getParamCNDesc());
+                            param.setParamType(paramMap.get(param.getParamName()).getParamType());
+                            param.setRequire(paramMap.get(param.getParamName()).getRequire());
+                            param.setSortNum(paramMap.get(param.getParamName()).getSortNum());
+                        } else {
+                            param.setSortNum(99999);
+                        }
+                    });
+                    apiRequest.getParam().getParams().sort((o1, o2) -> {
+                        if(o1.getSortNum() < o2.getSortNum()) {
+                            return -1;
+                        } else if (o1.getSortNum() > o2.getSortNum()) {
+                            return 1;
+                        } else {
+                            return o1.getParamName().compareTo(o2.getParamName());
+                        }
+                    });
                 }
-                sb.deleteCharAt(sb.length() - 1);
-                apiRequest.getBase().setRequestUrl(appendUrlAndParams(url, sb.toString()));
             }
         }
     }

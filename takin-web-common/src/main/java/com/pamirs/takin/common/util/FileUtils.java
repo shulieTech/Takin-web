@@ -1,22 +1,13 @@
 package com.pamirs.takin.common.util;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -175,6 +166,41 @@ public class FileUtils {
         return stringBuilder.toString();
     }
 
+    public static Map<String, String> readTextFileContentAndException(File file) {
+        BufferedReader reader = null;
+        StringBuilder stringBuilder = new StringBuilder();
+        String exception = "";
+        try {
+            reader = new BufferedReader(new FileReader(file));
+            String lineString = null;
+            while ((lineString = reader.readLine()) != null) {
+                stringBuilder.append(lineString);
+                stringBuilder.append("\r\n");
+                int pos = lineString.indexOf("Exception:");
+                if(pos > -1 && exception.length() == 0) {
+                    exception = lineString;
+                }
+            }
+        } catch (Exception e) {
+            logger.warn(e.getMessage(), e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (Exception e) {
+                    logger.warn(e.getMessage(), e);
+                }
+            }
+        }
+        Map<String, String> dataMap = new HashMap<>();
+        dataMap.put("content",stringBuilder.toString());
+        dataMap.put("exception", exception);
+        return dataMap;
+    }
+
+    public static void main(String[] args) {
+        readTextFileContentAndException(new File("/Users/xiaoshu/Documents/jmeter.log"));
+    }
     public static void appentContent2(String filePath, String content) {
         if (StringUtils.isBlank(content)) {
             return;

@@ -696,7 +696,7 @@ public class PtsJmxBuildUtil {
         return element.addElement(HASH_TREE);
     }
 
-    public static Element buildJavaSampler(Element element, String apiName, Map<String, String> propsMap) {
+    public static Element buildJavaSampler(Element element, String apiName, String className, Map<String, String> propsMap) {
         Element data = element.addElement("JavaSampler");
         data.addAttribute(GUI_CLASS, "JavaTestSamplerGui");
         data.addAttribute(TEST_CLASS, "JavaSampler");
@@ -724,17 +724,17 @@ public class PtsJmxBuildUtil {
                 argName.setText(key);
 
                 Element argValue = param.addElement(STRING_PROP);
-                argValue.addAttribute(NAME, "Argument.name");
-                argValue.setText(apiName);
+                argValue.addAttribute(NAME, "Argument.value");
+                argValue.setText(value);
 
                 Element argMetadata = param.addElement(STRING_PROP);
                 argMetadata.addAttribute(NAME, "Argument.metadata");
                 argMetadata.setText("=");
             }
         });
-        Element className = data.addElement(STRING_PROP);
-        className.addAttribute(NAME, "classname");
-        className.setText(propsMap.get("classname"));
+        Element classNameE = data.addElement(STRING_PROP);
+        classNameE.addAttribute(NAME, "classname");
+        classNameE.setText(className);
         return element.addElement(HASH_TREE);
     }
 
@@ -763,7 +763,7 @@ public class PtsJmxBuildUtil {
         Element success = value.addElement("success");
         success.setText(Boolean.TRUE.toString());
         Element label = value.addElement("label");
-        label.setText(Boolean.FALSE.toString());
+        label.setText(Boolean.TRUE.toString());
         Element code = value.addElement("code");
         code.setText(Boolean.TRUE.toString());
         Element message = value.addElement("message");

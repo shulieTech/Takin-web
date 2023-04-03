@@ -32,6 +32,9 @@ public class PtsApiRequest implements Serializable {
     @NotNull(message = "基本请求信息不能为空")
     private PtsApiBaseRequest base = new PtsApiBaseRequest();
 
+    @ApiModelProperty(value = "参数定义")
+    private PtsApiParamRequest param = new PtsApiParamRequest();
+
     @ApiModelProperty(value = "Header定义")
     private PtsApiHeaderRequest header = new PtsApiHeaderRequest();
 

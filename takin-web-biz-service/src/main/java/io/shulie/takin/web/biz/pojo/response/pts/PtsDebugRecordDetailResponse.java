@@ -25,6 +25,9 @@ public class PtsDebugRecordDetailResponse implements Serializable {
     @ApiModelProperty(value = "响应状态")
     private Boolean responseStatus;
 
+    @ApiModelProperty(value = "API名称")
+    private String apiName;
+
     @ApiModelProperty(value = "General")
     private GeneralResponse general = new GeneralResponse();
 

@@ -260,6 +260,9 @@ public class PtsJmxParseUtil {
             case POSTPROCESSOR:
                 node.setProps(buildProps(element, BASE_PROP_ELEMENTS));
                 break;
+            case REGEXEXTRACTOR:
+                node.setProps(buildProps(element, BASE_PROP_ELEMENTS));
+                break;
             case ASSERTION:
                 node.setProps(buildProps(element, BASE_PROP_ELEMENTS));
                 break;

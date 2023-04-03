@@ -119,4 +119,6 @@ public class ReportDetailResp extends ContextExt {
     private Integer calibrationStatus;
     private String calibrationMessage;
     private List<String> ptlPath;
+
+    private String ptConfig;
 }

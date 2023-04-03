@@ -45,9 +45,13 @@ public enum NodeTypeEnum {
      */
     HEADERMANAGER("HeaderManager"),
     /**
-     * 提取器
+     * JSON提取器
      */
     POSTPROCESSOR("PostProcessor"),
+    /**
+     * 正则提取器
+     */
+    REGEXEXTRACTOR("RegexExtractor"),
     /**
      * 断言
      */

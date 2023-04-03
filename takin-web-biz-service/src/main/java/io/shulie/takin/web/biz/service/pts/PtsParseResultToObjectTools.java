@@ -64,6 +64,7 @@ public class PtsParseResultToObjectTools {
             node.setRequestCost(element.attributeValue("t"));
             node.setRequestTime(DateUtil.formatDateTime(DateUtil.date(Long.parseLong(element.attributeValue("ts")))));
             node.getGeneral().setResponseCode(element.attributeValue("rc"));
+            node.setApiName(element.attributeValue("lb"));
             node.getResponseData().setErrorMessage(element.attributeValue("rm"));
             buildNode(node, element);
             nodes.add(node);

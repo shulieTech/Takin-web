@@ -403,9 +403,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public Long getAccessErrorNum() {
-        ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
-        requestV2.setAccessStatus(3);
-        return this.pageApplication(requestV2).getTotal();
+//        ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
+//        requestV2.setAccessStatus(3);
+        TenantCommonExt ext = WebPluginUtils.traceTenantCommonExt();
+        return this.applicationDAO.getAppCountByStatus(ext.getTenantId(), ext.getEnvCode(), 3);
+//        return this.pageApplication(requestV2).getTotal();
     }
 
 //    @Override

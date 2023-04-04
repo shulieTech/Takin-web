@@ -751,4 +751,21 @@ public class ApplicationDAOImpl
             .eq(ApplicationMntEntity::getEnvCode, envCode);
         return SqlHelper.retBool(applicationMntMapper.selectCount(wrapper));
     }
+
+    /**
+     * 根据应用状态获取应用数目
+     *
+     * @param tenantId
+     * @param envCode
+     * @param status
+     * @return
+     */
+    @Override
+    public long getAppCountByStatus(Long tenantId, String envCode, Integer status) {
+        LambdaQueryWrapper<ApplicationMntEntity> wrapper = this.getLambdaQueryWrapper()
+            .eq(ApplicationMntEntity::getTenantId, tenantId)
+            .eq(ApplicationMntEntity::getEnvCode, envCode)
+            .eq(ApplicationMntEntity::getAccessStatus, status);
+        return applicationMntMapper.selectCount(wrapper);
+    }
 }

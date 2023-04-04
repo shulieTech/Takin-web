@@ -544,6 +544,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
                 if (!filePath.equals(t.getPath())) {
                     //指定文件路径和名称创建一个文件
                     FileUtil.touch(filePath);
+                    //复制文件到指定路径
                     FileUtil.copy(t.getPath(), filePath, true);
                 }
                 sceneScriptRefEntityList.add(new SceneScriptRefEntity() {{

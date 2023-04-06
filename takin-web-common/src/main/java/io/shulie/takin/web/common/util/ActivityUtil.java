@@ -46,7 +46,7 @@ public class ActivityUtil {
                 .append("|")
                 .append(objectToString(rpcType, ""))
                 .append("|")
-                .append(objectToString(extend, ""));
+                .append("");
         // 保持跟amdb生成的md5一致
         return MD5Tool.md5(tags.toString());
     }

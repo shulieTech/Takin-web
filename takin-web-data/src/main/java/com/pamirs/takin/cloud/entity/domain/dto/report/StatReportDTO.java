@@ -1,6 +1,7 @@
 package com.pamirs.takin.cloud.entity.domain.dto.report;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import io.shulie.takin.cloud.common.utils.NumberUtil;
 import lombok.Data;
@@ -91,7 +92,13 @@ public class StatReportDTO {
     }
 
     public BigDecimal getAvgRt() {
-        return BigDecimal.valueOf(NumberUtil.getPercentRate(sumRt, getTempRequestCount()));
+        if (sumRt == null) {
+            return new BigDecimal(0);
+        }
+        if (tempRequestCount == null || tempRequestCount == 0){
+            return new BigDecimal(0);
+        }
+        return sumRt.divide(new BigDecimal(tempRequestCount), 2, RoundingMode.UP);
     }
 
     /**

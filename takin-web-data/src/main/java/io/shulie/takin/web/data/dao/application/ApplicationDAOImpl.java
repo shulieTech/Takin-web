@@ -15,12 +15,8 @@
 
 package io.shulie.takin.web.data.dao.application;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -760,6 +756,7 @@ public class ApplicationDAOImpl
         LambdaUpdateWrapper<ApplicationMntEntity> wrapper = this.getLambdaUpdateWrapper();
 
         wrapper.set(ApplicationMntEntity::getAccessStatus, 0)
+                .set(ApplicationMntEntity::getUpdateTime, new Date())
                 .set(ApplicationMntEntity::getExceptionInfo,"")
                 .eq(ApplicationMntEntity::getApplicationId, applicationId);
         applicationMntMapper.update(null, wrapper);

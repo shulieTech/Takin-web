@@ -92,10 +92,13 @@ public class StatReportDTO {
     }
 
     public BigDecimal getAvgRt() {
+        if (avgRt != null) {
+            return avgRt;
+        }
         if (sumRt == null) {
             return new BigDecimal(0);
         }
-        if (tempRequestCount == null || tempRequestCount == 0){
+        if (tempRequestCount == null || tempRequestCount == 0) {
             return new BigDecimal(0);
         }
         return sumRt.divide(new BigDecimal(tempRequestCount), 2, RoundingMode.UP);

@@ -747,6 +747,7 @@ public class ApplicationDAOImpl
 
         wrapper.set(ApplicationMntEntity::getAccessStatus, 3)
                 .set(ApplicationMntEntity::getExceptionInfo,e)
+                .set(ApplicationMntEntity::getUpdateTime, new Date())
                 .eq(ApplicationMntEntity::getApplicationId, applicationId);
         applicationMntMapper.update(null, wrapper);
     }

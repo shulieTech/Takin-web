@@ -1259,6 +1259,10 @@ public class DsServiceImpl implements DsService {
                 .filter(agentDto -> agentDto.getAgentVersion() != null)
                 .map(agentDto -> agentDto.getAgentVersion())
                 .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(agentVersionList)){
+            log.error("过滤后从amdb未获取到应用版本信息,当前应用名{}", appName);
+            return select;
+        }
         // 倒序排
         Collections.sort(agentVersionList, (o1, o2) -> AgentVersionUtil.compareVersion(o1, o2, false));
         // 获取最大版本号

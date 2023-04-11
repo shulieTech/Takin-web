@@ -176,6 +176,9 @@ public class DsServiceImpl implements DsService {
     @Value("${agent.ds.newVersion:false}")
     private boolean newVersion;
 
+    @Value("${agent.ds.useNewVersionShadowTemplate:false}")
+    private boolean useNewVersionShadowTemplate;
+
     public static final String EXT_FLAG = "extFlag";
 
     @PostConstruct
@@ -1233,6 +1236,9 @@ public class DsServiceImpl implements DsService {
      */
     @Override
     public ShadowTemplateSelect processSelect(String appName) {
+        if (useNewVersionShadowTemplate) {
+            return new ShadowTemplateSelect(true);
+        }
         ShadowTemplateSelect select = new ShadowTemplateSelect(newVersion);
         if (StringUtils.isBlank(appName)) {
             // 默认

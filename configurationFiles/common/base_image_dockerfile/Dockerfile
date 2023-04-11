@@ -1,4 +1,5 @@
 FROM alpine:3.17.2
+COPY arthas-bin.zip /opt/arthas-bin.zip
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
     && apk update \
     && apk add openjdk8 unzip zip vim curl tzdata tcpdump traceroute \

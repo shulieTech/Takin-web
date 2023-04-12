@@ -15,17 +15,15 @@
 
 package io.shulie.takin.web.data.dao.application;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -60,12 +58,16 @@ import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
 import io.shulie.takin.web.data.result.application.LibraryResult;
 import io.shulie.takin.web.data.util.MPUtil;
+import io.shulie.takin.web.data.util.RedisUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -84,6 +86,11 @@ public class ApplicationDAOImpl
 
     @Resource
     private ApplicationAttentionListMapper applicationAttentionListMapper;
+
+    @Resource
+    private RedisTemplate redisTemplate;
+
+    private final static String TAKIN_USER_INFO_SHADOW = "takin_user_info_shadow";
 
     @Override
     public List<ApplicationDetailResult> getApplications(List<String> appNames) {
@@ -188,14 +195,13 @@ public class ApplicationDAOImpl
         List<String> appName = applicationDtoTotalList.stream().map(ApplicationDTO::getAppName).collect(
             Collectors.toList());
 
-        LambdaQueryWrapper<ApplicationMntEntity> query = new LambdaQueryWrapper<>();
-        query.in(ApplicationMntEntity::getApplicationName, appName);
-        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(query);
-
         /* key：应用名称，value：userId */
         Map<String, Long> appNameUserIdMap = Maps.newHashMap();
         /* key：应用名称，value：用户名称 */
         Map<String, String> appNameUserNameMap = Maps.newHashMap();
+        LambdaQueryWrapper<ApplicationMntEntity> query = new LambdaQueryWrapper<>();
+        query.in(ApplicationMntEntity::getApplicationName, appName);
+        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(query);
 
         if (!CollectionUtils.isEmpty(applicationMntEntities)) {
             applicationMntEntities.forEach(localApp -> {
@@ -203,7 +209,7 @@ public class ApplicationDAOImpl
             });
             List<Long> userIds = applicationMntEntities.stream().map(ApplicationMntEntity::getUserId).distinct()
                 .collect(Collectors.toList());
-            Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(userIds);
+            Map<Long, UserExt> userExtMap = getLongUserExtMap(userIds);
 
             for (Entry<String, Long> entry : appNameUserIdMap.entrySet()) {
                 String k = entry.getKey();
@@ -251,6 +257,56 @@ public class ApplicationDAOImpl
         });
 
         return applicationResultList;
+    }
+
+    @NotNull
+    private Map<Long, UserExt> getLongUserExtMap(List<Long> userIds) {
+        Map<Long,String> cacheUserInfoStr = RedisUtil.hmget(redisTemplate, TAKIN_USER_INFO_SHADOW, userIds);
+        Map<Long,UserExt> cacheUserInfos =  Maps.newHashMap();
+        if (MapUtils.isNotEmpty(cacheUserInfoStr)){
+            cacheUserInfoStr.forEach((k,v)->{
+                UserExt userExt = JSON.parseObject(v, UserExt.class);
+                cacheUserInfos.put(k,userExt);
+            });
+        }
+
+        if (MapUtils.isEmpty(cacheUserInfos)){
+            Map<String, String> userExtMapStr = new HashMap<>();
+            Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(userIds);
+            userExtMap.keySet().forEach(k->{
+                UserExt userExt = userExtMap.get(k);
+                String userExtStr = JSON.toJSONString(userExt);
+                userExtMapStr.put(String.valueOf(k),userExtStr);
+            });
+            RedisUtil.hmset(redisTemplate, TAKIN_USER_INFO_SHADOW, userExtMapStr);
+            redisTemplate.expire(TAKIN_USER_INFO_SHADOW, 24, TimeUnit.HOURS);
+            return userExtMap;
+        }
+        Map<Long, UserExt> userExtMap = new HashMap<>();
+        List<Long> cacheNoHasList = Lists.newArrayList();
+        Iterator<Long> iterator = userIds.iterator();
+        while (iterator.hasNext()){
+            Long userId = iterator.next();
+            UserExt userExt = cacheUserInfos.get(userId);
+            if (Objects.isNull(userExt)){
+                cacheNoHasList.add(userId);
+            }else {
+                userExtMap.put(userId,userExt);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(cacheNoHasList)){
+            Map<String, String> userExtMapStr1 = new HashMap<>();
+            Map<Long, UserExt> userExtMap1 = WebPluginUtils.getUserMapByIds(cacheNoHasList);
+            userExtMap1.keySet().forEach(k->{
+                UserExt userExt = userExtMap.get(k);
+                String userExtStr = JSON.toJSONString(userExt);
+                userExtMapStr1.put(String.valueOf(k),userExtStr);
+            });
+            userExtMap.putAll(userExtMap1);
+            RedisUtil.hmset(redisTemplate, TAKIN_USER_INFO_SHADOW, userExtMapStr1);
+            redisTemplate.expire(TAKIN_USER_INFO_SHADOW, 24, TimeUnit.HOURS);
+        }
+        return userExtMap;
     }
 
     @Override

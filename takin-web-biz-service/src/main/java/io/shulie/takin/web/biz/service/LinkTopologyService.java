@@ -1087,64 +1087,67 @@ public class LinkTopologyService extends CommonService {
         AtomicLong nextNumber = new AtomicLong();
 
         return applicationEntrancesTopology.getNodes().stream().map(node -> {
-            // other
-            if (NodeTypeGroupEnum.OTHER.getType().equals(node.getNodeTypeGroup())) {
+            try {
+                // other
+                if (NodeTypeGroupEnum.OTHER.getType().equals(node.getNodeTypeGroup())) {
+                    if (isVirtualNode(node)) {
+                        TopologyVirtualNodeResponse nodeResponse = new TopologyVirtualNodeResponse();
+                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                        setVirtualResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
+                                appNodeMap);
+                        return nodeResponse;
+                    } else if (isOuterService(node)) {
+                        TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
+                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                        setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
+                        return nodeResponse;
+                    } else if (isUnknownNode(node)) {
+                        TopologyUnknownNodeResponse nodeResponse = new TopologyUnknownNodeResponse();
+                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                        setUnknownResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
+                                appNodeMap);
+                        return nodeResponse;
+                    } else {
+                        TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
+                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                        setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
+                        return nodeResponse;
+                    }
 
-                if (isVirtualNode(node)) {
-                    TopologyVirtualNodeResponse nodeResponse = new TopologyVirtualNodeResponse();
+                    // 能区分类型的
+                } else if (NodeTypeGroupEnum.APP.getType().equals(node.getNodeTypeGroup())) {
+                    TopologyAppNodeResponse nodeResponse = new TopologyAppNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setVirtualResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                        appNodeMap);
+                    setAppNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
                     return nodeResponse;
-                } else if (isOuterService(node)) {
-                    TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
+                } else if (NodeTypeGroupEnum.OSS.getType().equals(node.getNodeTypeGroup())) {
+                    TopologyOssNodeResponse nodeResponse = new TopologyOssNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
+                    setOssNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
                     return nodeResponse;
-                } else if (isUnknownNode(node)) {
-                    TopologyUnknownNodeResponse nodeResponse = new TopologyUnknownNodeResponse();
+                } else if (NodeTypeGroupEnum.CACHE.getType().equals(node.getNodeTypeGroup())) {
+                    TopologyCacheNodeResponse nodeResponse = new TopologyCacheNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setUnknownResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                        appNodeMap);
+                    setCacheNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
                     return nodeResponse;
-                } else {
-                    TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
+                } else if (NodeTypeGroupEnum.DB.getType().equals(node.getNodeTypeGroup())) {
+                    TopologyDbNodeResponse nodeResponse = new TopologyDbNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
+                    setDbNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                    return nodeResponse;
+                } else if (NodeTypeGroupEnum.MQ.getType().equals(node.getNodeTypeGroup())) {
+                    TopologyMqNodeResponse nodeResponse = new TopologyMqNodeResponse();
+                    setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                    setMqNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                    return nodeResponse;
+                } else if (NodeTypeGroupEnum.SEARCH.getType().equals(node.getNodeTypeGroup())) {
+                    TopologySearchNodeResponse nodeResponse = new TopologySearchNodeResponse();
+                    setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                    setSearchNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
                     return nodeResponse;
                 }
-
-                // 能区分类型的
-            } else if (NodeTypeGroupEnum.APP.getType().equals(node.getNodeTypeGroup())) {
-                TopologyAppNodeResponse nodeResponse = new TopologyAppNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setAppNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
-                return nodeResponse;
-            } else if (NodeTypeGroupEnum.OSS.getType().equals(node.getNodeTypeGroup())) {
-                TopologyOssNodeResponse nodeResponse = new TopologyOssNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setOssNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                return nodeResponse;
-            } else if (NodeTypeGroupEnum.CACHE.getType().equals(node.getNodeTypeGroup())) {
-                TopologyCacheNodeResponse nodeResponse = new TopologyCacheNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setCacheNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                return nodeResponse;
-            } else if (NodeTypeGroupEnum.DB.getType().equals(node.getNodeTypeGroup())) {
-                TopologyDbNodeResponse nodeResponse = new TopologyDbNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setDbNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                return nodeResponse;
-            } else if (NodeTypeGroupEnum.MQ.getType().equals(node.getNodeTypeGroup())) {
-                TopologyMqNodeResponse nodeResponse = new TopologyMqNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setMqNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                return nodeResponse;
-            } else if (NodeTypeGroupEnum.SEARCH.getType().equals(node.getNodeTypeGroup())) {
-                TopologySearchNodeResponse nodeResponse = new TopologySearchNodeResponse();
-                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                setSearchNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                return nodeResponse;
+            }catch (Exception e){
+                log.error("查询链路图节点转换异常",e);
             }
             return null;
         })

@@ -394,9 +394,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
 
 
             String shaDowFileExtedn = detail.getShaDowFileExtedn();
-            JSONObject jsonObject = JSON.parseObject(shaDowFileExtedn);
-            String shadowConfig = jsonObject.getString("shadowConfig");
-            SingleServerConfiguration test = JSONObject.parseObject(shadowConfig, SingleServerConfiguration.class);
+            SingleServerConfiguration test = JSONObject.parseObject(shaDowFileExtedn, SingleServerConfiguration.class);
             Map<String, String> modelMap = redisTemplateParser.convertModel();
             if (Objects.isNull(bus)) {
                 if (Objects.nonNull(modelMap)) {

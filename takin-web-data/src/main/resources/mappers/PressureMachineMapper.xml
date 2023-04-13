@@ -20,16 +20,16 @@
     <result column="transmitted_out" jdbcType="BIGINT" property="transmittedOut" />
     <result column="transmitted_out_usage" jdbcType="DECIMAL" property="transmittedOutUsage" />
     <result column="transmitted_usage" jdbcType="DECIMAL" property="transmittedUsage" />
-    <result column="scene_id" jdbcType="BIGINT" property="sceneId" />
+    <result column="scene_names" jdbcType="BIGINT" property="sceneNames" />
     <result column="status" jdbcType="INTEGER" property="status" />
-    <result column="is_delete" jdbcType="BOOLEAN" property="isDelete" />
+    <result column="is_deleted" jdbcType="BOOLEAN" property="isDeleted" />
     <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
     <result column="gmt_update" jdbcType="TIMESTAMP" property="gmtUpdate" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, `name`, ip, flag, cpu, memory, `disk`, cpu_usage, cpu_load, memory_used, disk_io_wait, 
-    transmitted_in, transmitted_in_usage, transmitted_out, transmitted_out_usage, transmitted_usage, 
-    scene_id, `status`, is_delete, gmt_create, gmt_update
+    transmitted_in, transmitted_in_usage, transmitted_out, transmitted_out_usage, transmitted_usage,
+    scene_names, `status`, is_deleted, gmt_create, gmt_update
   </sql>
 </mapper>

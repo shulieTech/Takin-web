@@ -12,7 +12,7 @@
         <result column="parent_id" jdbcType="BIGINT" property="parentId"/>
         <result column="has_children" jdbcType="INTEGER" property="hasChildren"/>
         <result column="line_num" jdbcType="INTEGER" property="lineNum"/>
-        <result column="avg_time" jdbcType="DECIMAL" property="avgTime"/>
+        <result column="avg_cost" jdbcType="DECIMAL" property="avgCost"/>
         <result column="status" jdbcType="INTEGER" property="status"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
@@ -21,6 +21,6 @@
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         id, trace_manage_id, trace_deploy_object, sample_id, `level`, parent_id, has_children,
-        line_num, avg_time, `status`, create_time, update_time, feature
+        line_num, avg_cost, `status`, create_time, update_time, feature
     </sql>
 </mapper>

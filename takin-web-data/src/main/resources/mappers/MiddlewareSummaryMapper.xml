@@ -16,13 +16,12 @@
         <result column="ag" jdbcType="VARCHAR" property="ag"/>
         <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
         <result column="gmt_update" jdbcType="TIMESTAMP" property="gmtUpdate"/>
-        <result column="is_deleted" jdbcType="TINYINT" property="isDeleted"/>
         <result column="commit" jdbcType="VARCHAR" property="commit"/>
         <result column="status" jdbcType="TINYINT" property="status"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         id, `name`, `type`, total_num, supported_num, unknown_num, not_supported_num, artifact_id,
-        group_id, ag, gmt_create, gmt_update, is_deleted, `commit`, `status`
+        group_id, ag, gmt_create, gmt_update, `commit`, `status`
     </sql>
 </mapper>

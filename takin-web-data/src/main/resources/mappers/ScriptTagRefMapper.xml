@@ -5,13 +5,13 @@
         <!--@mbg.generated-->
         <!--@Table t_script_tag_ref-->
         <id column="id" jdbcType="BIGINT" property="id"/>
-        <result column="script_deploy_id" jdbcType="BIGINT" property="scriptDeployId"/>
+        <result column="script_id" jdbcType="BIGINT" property="scriptId"/>
         <result column="tag_id" jdbcType="BIGINT" property="tagId"/>
         <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
         <result column="gmt_update" jdbcType="TIMESTAMP" property="gmtUpdate"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
-        id, script_deploy_id, tag_id, gmt_create, gmt_update
+        id, script_id, tag_id, gmt_create, gmt_update
     </sql>
 </mapper>

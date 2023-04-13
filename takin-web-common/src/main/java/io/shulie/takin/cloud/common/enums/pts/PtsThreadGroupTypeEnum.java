@@ -6,18 +6,21 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 public enum PtsThreadGroupTypeEnum {
 
-    SETUP("setUp", "setUp线程组"),
-    NORMAL("normal", "普通线程组"),
-    TEARDOWN("tearDown", "tearDown线程组"),
+    SETUP("setUp", "setUp线程组", 1),
+    NORMAL("normal", "普通线程组",2),
+    TEARDOWN("tearDown", "tearDown线程组",9),
     ;
 
     private String type;
 
     private String desc;
 
-    PtsThreadGroupTypeEnum(String type, String desc) {
+    private Integer sortNum;
+
+    PtsThreadGroupTypeEnum(String type, String desc, Integer sortNum) {
         this.type = type;
         this.desc = desc;
+        this.sortNum = sortNum;
     }
 
     public static PtsThreadGroupTypeEnum getByType(String type) {

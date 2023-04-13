@@ -602,8 +602,7 @@ public class PtsJmxBuildUtil {
         }
         for (ScriptData scriptData : datas) {
             if(StringUtils.isBlank(scriptData.getPath())
-                    || StringUtils.isBlank(scriptData.getFormat())
-                    || scriptData.getIgnoreFirstLine() == null) {
+                    || StringUtils.isBlank(scriptData.getFormat())) {
                 continue;
             }
             Element data = element.addElement("CSVDataSet");

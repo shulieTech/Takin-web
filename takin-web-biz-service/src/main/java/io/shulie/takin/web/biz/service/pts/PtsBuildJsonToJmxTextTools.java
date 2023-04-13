@@ -44,11 +44,9 @@ public class PtsBuildJsonToJmxTextTools {
         PtsJmxBuildUtil.buildHttpHeader(testPlan, convertHeader(globalHeader.getHeaders()));
         //全局HTTP请求
         PtsGlobalHttpRequest globalHttp = sceneRequest.getGlobalHttp();
-        //填写的有值，但非http https，默认http
-        if(StringUtils.isNotBlank(globalHttp.getProtocol()) && !StringUtils.equalsAny(globalHttp.getProtocol(), "http", "https")) {
-            globalHttp.setProtocol("http");
+        if(StringUtils.isNotBlank(globalHttp.getDomain())) {
+            PtsJmxBuildUtil.buildHttpDefault(testPlan, JSONObject.parseObject(JSON.toJSONString(globalHttp)));
         }
-        PtsJmxBuildUtil.buildHttpDefault(testPlan, JSONObject.parseObject(JSON.toJSONString(globalHttp)));
         //计数器
         List<PtsCounterRequest> counters = sceneRequest.getCounters();
         if(CollectionUtils.isNotEmpty(counters)) {

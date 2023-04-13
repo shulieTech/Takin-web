@@ -145,11 +145,11 @@ public class PtsProcessController {
                 for (PtsCsvRequest csvRequest : csvList) {
                     csvRequest.setFileName(StringUtils.trimToEmpty(csvRequest.getFileName()));
                     if (StringUtils.contains(csvRequest.getParams(), "，")) {
-                        return ResponseResult.fail("0", "保存失败：请使用西文逗号来分割CSV数据的变量名", "");
+                        return ResponseResult.fail("保存失败：请使用西文逗号来分割CSV数据的变量名", "");
                     }
                     if (!StringUtils.endsWith(csvRequest.getFileName(), ".txt") &&
                             !StringUtils.endsWith(csvRequest.getFileName(), ".csv")) {
-                        return ResponseResult.fail("0", "保存失败：CSV数据的文件名必须以.txt或.csv结尾", "");
+                        return ResponseResult.fail( "保存失败：CSV数据的文件名必须以.txt或.csv结尾", "");
                     }
                 }
             }
@@ -157,39 +157,78 @@ public class PtsProcessController {
              * 线程组setUp，tearDown类型最多1个
              */
             if (CollectionUtils.isEmpty(request.getLinks())) {
-                return ResponseResult.fail("0", "保存失败：链路至少出现1次", "");
+                return ResponseResult.fail( "保存失败：链路至少出现1次", "");
             }
             List<PtsLinkRequest> setUpList = request.getLinks().stream().filter(data -> data.getLinkType().equals(PtsThreadGroupTypeEnum.SETUP.getType())).collect(Collectors.toList());
             if (setUpList.size() > 1) {
-                return ResponseResult.fail("0", "保存失败：setUp链路最多出现1次", "");
+                return ResponseResult.fail( "保存失败：setUp链路最多出现1次", "");
             }
             List<PtsLinkRequest> tearDownList = request.getLinks().stream().filter(data -> data.getLinkType().equals(PtsThreadGroupTypeEnum.TEARDOWN.getType())).collect(Collectors.toList());
             if (tearDownList.size() > 1) {
-                return ResponseResult.fail("0", "保存失败：tearDown链路最多出现1次", "");
+                return ResponseResult.fail( "保存失败：tearDown链路最多出现1次", "");
             }
             List<PtsLinkRequest> nullLinkList = request.getLinks().stream().filter(data -> StringUtils.isBlank(data.getLinkName())).collect(Collectors.toList());
             if (nullLinkList.size() > 0) {
-                return ResponseResult.fail("0", "保存失败：链路名称不能为空", "");
+                return ResponseResult.fail( "保存失败：链路名称不能为空", "");
             }
             List<PtsApiRequest> apiList = new ArrayList<>();
             request.getLinks().forEach(data -> apiList.addAll(data.getApis()));
             if (CollectionUtils.isEmpty(apiList)) {
-                return ResponseResult.fail("0", "保存失败：API接口至少出现1次", "");
+                return ResponseResult.fail( "保存失败：API接口至少出现1次", "");
             }
             List<PtsApiRequest> nullApiList = apiList.stream().filter(data -> StringUtils.isBlank(data.getApiName())).collect(Collectors.toList());
             if (nullApiList.size() > 0) {
-                return ResponseResult.fail("0", "保存失败：API接口名称不能为空", "");
+                return ResponseResult.fail( "保存失败：API接口名称不能为空", "");
             }
             /**
-             * HTTP请求校验，HTTP-URL
+             * HTTP请求校验，HTTP-URL有内容，校验格式
+             * HTTP请求校验，HTTP-URL无内容，看是否有全局默认http请求
              */
+            PtsGlobalHttpRequest globalHttp = request.getGlobalHttp();
+            //填写的有值，但非http https，默认http
+            if(StringUtils.isNotBlank(globalHttp.getProtocol()) && !StringUtils.equalsAny(globalHttp.getProtocol(), "http", "https")) {
+                globalHttp.setProtocol("http");
+            }
+            //如果有域名，无协议，默认http协议
+            if(StringUtils.isNotBlank(globalHttp.getDomain()) && StringUtils.isBlank(globalHttp.getProtocol())) {
+                globalHttp.setProtocol("http");
+            }
             for (PtsApiRequest apiRequest : apiList) {
                 apiRequest.getBase().setRequestUrl(StringUtils.replace(apiRequest.getBase().getRequestUrl(), " ", ""));
-                if (apiRequest.getApiType().equals(SamplerTypeEnum.HTTP.getType())
-                        && (StringUtils.isNotBlank(apiRequest.getBase().getRequestUrl())
-                        && !apiRequest.getBase().getRequestUrl().startsWith("http://")
-                        && !apiRequest.getBase().getRequestUrl().startsWith("https://"))) {
-                    return ResponseResult.fail("0", "保存失败：URL格式不正确,接口名称=" + apiRequest.getApiName(), "");
+                if (apiRequest.getApiType().equals(SamplerTypeEnum.HTTP.getType())) {
+                    if(StringUtils.isNotBlank(apiRequest.getBase().getRequestUrl())
+                            && !apiRequest.getBase().getRequestUrl().startsWith("http://")
+                            && !apiRequest.getBase().getRequestUrl().startsWith("https://")) {
+                        return ResponseResult.fail( "保存失败：URL格式不正确,接口名称=" + apiRequest.getApiName(), "");
+                    }
+
+                    if(StringUtils.isBlank(apiRequest.getBase().getRequestUrl())) {
+                        //取默认的
+                       if(StringUtils.isBlank(globalHttp.getDomain())) {
+                           return ResponseResult.fail( "保存失败：URL不能为空,接口名称=" + apiRequest.getApiName(), "");
+                       } else {
+                           StringBuffer requestUrl = new StringBuffer();
+                           requestUrl.append(globalHttp.getProtocol());
+                           requestUrl.append("://");
+                           requestUrl.append(globalHttp.getDomain());
+                           if(StringUtils.isNotBlank(globalHttp.getPort())) {
+                               requestUrl.append(":");
+                               requestUrl.append(globalHttp.getPort());
+                           }
+                           if(StringUtils.isNotBlank(globalHttp.getPath())) {
+                                if(StringUtils.startsWith(globalHttp.getPath(), "/")) {
+                                    requestUrl.append(globalHttp.getPath());
+                                } else {
+                                    requestUrl.append("/");
+                                    requestUrl.append(globalHttp.getPath());
+                                }
+                           } else {
+                               requestUrl.append("/");
+                           }
+                           apiRequest.getBase().setRequestUrl(requestUrl.toString());
+                       }
+                    }
+
                 }
             }
 
@@ -222,6 +261,17 @@ public class PtsProcessController {
         for(PtsLinkRequest linkRequest : sceneResponse.getLinks()) {
             dealLinks(linkRequest, javaConfig);
         }
+        //判断线程组，setUp，normal，tearDown
+        sceneResponse.getLinks().sort((o1, o2) -> {
+            int sortNum1 = PtsThreadGroupTypeEnum.getByType(o1.getLinkType()).getSortNum();
+            int sortNum2 = PtsThreadGroupTypeEnum.getByType(o2.getLinkType()).getSortNum();
+            if(sortNum1 < sortNum2) {
+                return -1;
+            } else if(sortNum1 > sortNum2) {
+                return 1;
+            }
+            return 0;
+        });
         return ResponseResult.success(sceneResponse);
     }
 

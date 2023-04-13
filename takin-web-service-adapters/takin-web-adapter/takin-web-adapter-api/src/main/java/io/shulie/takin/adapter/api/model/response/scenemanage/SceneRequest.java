@@ -105,6 +105,23 @@ public class SceneRequest extends ContextExt {
         private Double sr;
         @ApiModelProperty(value = "目标SA(%)")
         private Double sa;
+
+        public static Goal buildNewGoal(Goal origGoal) {
+            Goal newGoal = (origGoal == null ? new Goal() : origGoal);
+            if(newGoal.getTps() == null) {
+                newGoal.setTps(100);
+            }
+            if(newGoal.getRt() == null) {
+                newGoal.setRt(100);
+            }
+            if(newGoal.getSr() == null) {
+                newGoal.setSr(80d);
+            }
+            if(newGoal.getSa() == null) {
+                newGoal.setSa(80d);
+            }
+            return newGoal;
+        }
     }
 
     /**

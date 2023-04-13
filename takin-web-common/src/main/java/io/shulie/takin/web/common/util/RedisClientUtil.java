@@ -105,6 +105,7 @@ public class RedisClientUtil {
     }
 
     public boolean lockExpire(String key, String value, long time, TimeUnit unit) {
+        log.info("RedisClientUtil#lockExpire,key={}", key);
         return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(getLockPrefix(key), value, time, unit));
     }
 

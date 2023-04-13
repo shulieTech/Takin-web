@@ -22,11 +22,11 @@ public class PtsApiRequest implements Serializable {
     @NotBlank(message = "API名称不能为空")
     private String apiName;
 
-//    @ApiModelProperty(value = "关联业务活动id")
-//    private Long businessActivityId;
+    @ApiModelProperty(value = "是否启用：true-是 false-否")
+    private Boolean enabled = true;
 
     @ApiModelProperty(value = "API类型：HTTP-默认 JAVA")
-    private String apiType;
+    private String apiType = "HTTP";
 
     @ApiModelProperty(value = "基本请求信息", required = true)
     @NotNull(message = "基本请求信息不能为空")
@@ -52,4 +52,7 @@ public class PtsApiRequest implements Serializable {
 
     @ApiModelProperty(value = "Beanshell前置处理器")
     private PtsApiBeanShellPreRequest beanShellPre = new PtsApiBeanShellPreRequest();
+
+    @ApiModelProperty(value = "Beanshell后置处理器")
+    private PtsApiBeanShellPreRequest beanShellPost = new PtsApiBeanShellPreRequest();
 }

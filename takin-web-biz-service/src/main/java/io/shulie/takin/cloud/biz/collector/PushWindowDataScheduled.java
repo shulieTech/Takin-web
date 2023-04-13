@@ -691,6 +691,10 @@ public class PushWindowDataScheduled extends AbstractIndicators {
                     finishPushData(r, podNum, timeWindow, endTime, nodes);
                 }
             } catch (Throwable t) {
+                if(t.getMessage().indexOf("场景记录不存在") > -1) {
+                    //压测过程中，把场景删除了
+                    log.error("压测过程中，把压测场景删除。。。。。sceneId={},reportId={}", sceneId, reportId);
+                }
                 log.error("pushData2 error!", t);
             } finally {
                 if (Objects.nonNull(finalAction)) {

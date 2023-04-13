@@ -23,6 +23,12 @@ public class PtsLinkRequest implements Serializable {
     @ApiModelProperty(value = "串联链路名称")
     private String linkName;
 
+    @ApiModelProperty(value = "是否启用：true-是 false-否")
+    private Boolean enabled = true;
+
+    @ApiModelProperty(value = "链路类型：setUp、normal、tearDown")
+    private String linkType = "normal";
+
     @ApiModelProperty(value = "API接口", required = true)
     @NotNull(message = "API接口不能为空")
     private List<PtsApiRequest> apis = new ArrayList<>();

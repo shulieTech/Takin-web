@@ -363,6 +363,9 @@ public abstract class AbstractIndicators {
             result.setResourceId(context.getResourceId());
             event.setExt(result);
             eventCenterTemplate.doEvents(event);
+            log.info("成功发送finished事件,resourceId={}", resourceId);
+        } else {
+            log.warn("未发送finished事件,resourceId={}", resourceId);
         }
     }
 

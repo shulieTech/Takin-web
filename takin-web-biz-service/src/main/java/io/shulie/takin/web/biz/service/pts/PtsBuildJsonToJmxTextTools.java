@@ -3,11 +3,10 @@ package io.shulie.takin.web.biz.service.pts;
 import cn.hutool.core.util.XmlUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import io.shulie.takin.cloud.common.enums.pts.PtsAssertConditionEnum;
-import io.shulie.takin.cloud.common.enums.pts.PtsAssertTypeEnum;
-import io.shulie.takin.cloud.common.enums.pts.PtsVarSourceEnum;
+import io.shulie.takin.cloud.common.enums.pts.*;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonAssert;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonProcessor;
+import io.shulie.takin.cloud.common.script.jmeter.ScriptKeyValueParam;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptResponseAssert;
 import io.shulie.takin.cloud.common.utils.PtsJmxBuildUtil;
 import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
@@ -25,7 +24,7 @@ import java.util.Map;
 public class PtsBuildJsonToJmxTextTools {
 
     public static void main(String[] args) throws Exception{
-        System.out.println(parseJmxString("{\"id\":\"997\",\"processName\":\"jmx-test-csv_2023-03-3019:28:04\",\"links\":[{\"linkName\":\"线程组\",\"apis\":[{\"apiName\":\"userRegister-error\",\"apiType\":\"HTTP\",\"base\":{\"allowForward\":true,\"requestMethod\":\"POST\",\"requestTimeout\":null,\"requestUrl\":\"http://192.168.1.222:28881/gateway/api/register\"},\"body\":{\"rawData\":\"{\\n    \\\\\\\"mobile\\\\\\\":\\\\\\\"15558172201\\\\\\\",\\n    \\\\\\\"password\\\\\\\":\\\\\\\"${password}\\\\\\\",\\n    \\\\\\\"nickName\\\\\\\":\\\\\\\"${userName}_${takin-domain}\\\\\\\",\\n    \\\\\\\"email\\\\\\\":\\\\\\\"10000000@qq.com\\\\\\\",\\n    \\\\\\\"birthDay\\\\\\\":\\\\\\\"2000-11-${id}\\\\\\\",\\n    \\\\\\\"provinceName\\\\\\\":\\\\\\\"浙江\\\\\\\",\\n    \\\\\\\"cityName\\\\\\\":\\\\\\\"杭州\\\\\\\"\\n }\"},\"checkAssert\":{\"asserts\":[]},\"header\":{\"headers\":[{\"key\":\"Content-Type\",\"value\":\"application/json\"}]},\"returnVar\":{\"vars\":[]}},{\"apiName\":\"userRegister-normal\",\"apiType\":\"HTTP\",\"base\":{\"allowForward\":true,\"requestMethod\":\"POST\",\"requestTimeout\":null,\"requestUrl\":\"http://192.168.1.222:28881/gateway/api/register\"},\"body\":{\"rawData\":\"{\\n    \\\\\\\"mobile\\\\\\\":\\\\\\\"15558172201\\\\\\\",\\n    \\\\\\\"password\\\\\\\":\\\\\\\"123456\\\\\\\",\\n    \\\\\\\"nickName\\\\\\\":\\\\\\\"${takin-domain}\\\\\\\",\\n    \\\\\\\"email\\\\\\\":\\\\\\\"10000000@qq.com\\\\\\\",\\n    \\\\\\\"birthDay\\\\\\\":\\\\\\\"2000-11-05\\\\\\\",\\n    \\\\\\\"provinceName\\\\\\\":\\\\\\\"浙江\\\\\\\",\\n    \\\\\\\"cityName\\\\\\\":\\\\\\\"杭州\\\\\\\"\\n }\"},\"checkAssert\":{\"asserts\":[]},\"header\":{\"headers\":[{\"key\":\"Content-Type\",\"value\":\"application/json\"}]},\"returnVar\":{\"vars\":[{\"testName\":\"正则表达式提取器\",\"varName\":\"code\",\"varSource\":\"Body:JSON\",\"parseExpress\":\"”code\\\\\\\":(.*)\",\"matchIndex\":1}]}},{\"apiName\":\"串联链路\",\"apiType\":\"JAVA\",\"base\":{\"requestUrl\":\"com.hzbank.RequestIB2\"},\"param\":{\"params\":[{\"paramCNDesc\":\"请求名称\",\"paramName\":\"requestLabel\",\"paramValue\":\"IB2请求\",\"paramType\":\"text\",\"require\":true,\"allowEdit\":false},{\"paramCNDesc\":\"IBP地址\",\"paramName\":\"ibmsAddress\",\"paramValue\":\"66.88.1.67\",\"paramType\":\"text\",\"require\":true,\"allowEdit\":false},{\"paramCNDesc\":\"IBP端口\",\"paramName\":\"ibmsPorg\",\"paramValue\":\"16001\",\"paramType\":\"text\",\"require\":true,\"allowEdit\":false},{\"paramCNDesc\":\"服务端节点\",\"paramName\":\"recvNode\",\"paramValue\":\"0000\",\"paramType\":\"text\",\"require\":true,\"allowEdit\":false},{\"paramCNDesc\":\"交易码\",\"paramName\":\"appCode\",\"paramValue\":\"TESTECHO\",\"paramType\":\"text\",\"require\":true,\"allowEdit\":false},{\"paramCNDesc\":\"报文内容\",\"paramName\":\"content\",\"paramValue\":\"\",\"paramType\":\"text\",\"require\":false,\"allowEdit\":false},{\"paramCNDesc\":\"本机IP\",\"paramName\":\"localhost\",\"paramValue\":\"选填(双网卡机器需填写)\",\"paramType\":\"text\",\"require\":false,\"allowEdit\":false},{\"paramCNDesc\":\"文件1\",\"paramName\":\"file1\",\"paramValue\":\"/data/nfs_dir/scriptfile/temp/f6a1c97e-47fd-429c-95e0-e6595aa7c7a0/[object Object].txt\",\"paramType\":\"file\",\"require\":false,\"allowEdit\":false},{\"paramCNDesc\":\"文件2\",\"paramName\":\"file2\",\"paramValue\":\"/data/nfs_dir/scriptfile/temp/19b53726-8e71-4136-a3a6-22ae655f197b/[object Object].txt\",\"paramType\":\"file\",\"require\":false,\"allowEdit\":false}]}}]}],\"dataSource\":{\"csvs\":[{\"fileName\":\"id.csv\",\"params\":\"id\",\"ingoreFirstLine\":true},{\"fileName\":\"user.csv\",\"params\":\"userName,password\",\"ingoreFirstLine\":true}]}}\n"));
+        System.out.println(parseJmxString("{\"id\":\"1006\",\"globalHttp\":{},\"counters\":[],\"processName\":\"我的下午验证\",\"links\":[{\"linkName\":\"线程组\",\"apis\":[{\"apiName\":\"takin-web-get\",\"apiType\":\"HTTP\",\"base\":{\"allowForward\":true,\"requestMethod\":\"GET\",\"requestTimeout\":null,\"requestUrl\":\"http://192.168.1.201:80/takin-web/api/serverConfig\"},\"body\":{},\"checkAssert\":{\"asserts\":[{\"checkPointType\":\"响应状态码\",\"checkObject\":\"状态码\",\"checkCondition\":\"等于\",\"checkContent\":\"200\"},{\"checkPointType\":\"响应Body\",\"checkObject\":\"整个body\",\"checkCondition\":\"包含\",\"checkContent\":\"domain\"},{\"checkPointType\":\"响应Body\",\"checkObject\":\"整个body\",\"checkCondition\":\"正则匹配\",\"checkContent\":\"\\\\\\\"loginType\\\\\\\":(.*?)\"},{\"checkPointType\":\"出参\",\"checkObject\":\"$.data.loginType\",\"checkCondition\":\"等于\",\"checkContent\":\"1\"}]},\"header\":{\"headers\":[{\"key\":\"env-code\",\"value\":\"test\"},{\"key\":\"id\",\"value\":\"${id1}\"},{\"key\":\"tenant-code\",\"value\":\"gc\"}]},\"returnVar\":{\"vars\":[]},\"timer\":{\"delay\":null},\"beanShellPre\":{\"script\":[null]},\"beanShellPost\":{\"script\":[null]}},{\"apiName\":\"Java请求1\",\"apiType\":\"JAVA\",\"base\":{\"requestUrl\":\"com.demo.test.JavaRequestTest\"},\"param\":{\"params\":[{\"paramCNDesc\":\"测试参数\",\"paramName\":\"test_aa\",\"paramValue\":\"aaa1\",\"paramType\":\"text\",\"require\":true,\"allowEdit\":false,\"sortNum\":1},{\"paramCNDesc\":\"我的参数\",\"paramName\":\"my_param\",\"paramValue\":\"java-request-test1_${count1}\",\"paramType\":\"file\",\"require\":false,\"allowEdit\":false,\"sortNum\":2}]},\"checkAssert\":{\"asserts\":[{\"checkPointType\":\"出参\",\"checkObject\":\"$.code\",\"checkCondition\":\"等于\",\"checkContent\":\"200\"}]}},{\"apiName\":\"user-register-post\",\"apiType\":\"HTTP\",\"base\":{\"allowForward\":true,\"requestMethod\":\"POST\",\"requestTimeout\":null,\"requestUrl\":\"http://192.168.1.222:28881/gateway/api/register\"},\"body\":{\"rawData\":\"{\\n    \\\\\\\"mobile\\\\\\\":\\\\\\\"15558172201\\\\\\\",\\n    \\\\\\\"password\\\\\\\":\\\\\\\"123456\\\\\\\",\\n    \\\\\\\"nickName\\\\\\\":\\\\\\\"${var1}\\\\\\\",\\n    \\\\\\\"email\\\\\\\":\\\\\\\"${var2}_${var3}@qq.com\\\\\\\",\\n    \\\\\\\"birthDay\\\\\\\":\\\\\\\"2000-11-05\\\\\\\",\\n    \\\\\\\"provinceName\\\\\\\":\\\\\\\"浙江\\\\\\\",\\n    \\\\\\\"cityName\\\\\\\":\\\\\\\"杭州\\\\\\\"\\n }\",\"contentType\":\"JSON\"},\"checkAssert\":{\"asserts\":[]},\"header\":{\"headers\":[{\"key\":\"Content-Type\",\"value\":\"application/json\"}]},\"returnVar\":{\"vars\":[{\"testName\":\"JSON提取器\",\"varName\":\"saveCode\",\"varSource\":\"Body:JSON|TEXT\",\"parseExpress\":\"$.data.code\",\"matchIndex\":null}]},\"timer\":{\"delay\":\"2000\"},\"beanShellPre\":{\"script\":[\"var name=js\"]},\"beanShellPost\":{\"script\":[\"var newName = zxzghr\"]}},{\"apiName\":\"Java请求2\",\"apiType\":\"JAVA\",\"base\":{\"requestUrl\":\"com.demo.test.JavaRequestTest\"},\"param\":{\"params\":[{\"paramCNDesc\":\"测试参数\",\"paramName\":\"test_aa\",\"paramValue\":\"aaa2\",\"paramType\":\"text\",\"require\":true,\"allowEdit\":false,\"sortNum\":1},{\"paramCNDesc\":\"我的参数\",\"paramName\":\"my_param\",\"paramValue\":\"java-request-test_${saveCode}_${count2)\",\"paramType\":\"file\",\"require\":false,\"allowEdit\":false,\"sortNum\":2}]},\"checkAssert\":{\"asserts\":[]}},{\"apiName\":\"qq\",\"apiType\":\"HTTP\",\"base\":{\"allowForward\":true,\"requestMethod\":\"GET\",\"requestTimeout\":3000,\"requestUrl\":\"http://www.qq.com/\"},\"body\":{},\"checkAssert\":{\"asserts\":[]},\"header\":{\"headers\":[]},\"returnVar\":{\"vars\":[]},\"timer\":{\"delay\":null},\"beanShellPre\":{\"script\":[null]},\"beanShellPost\":{\"script\":[null]}}]}],\"dataSource\":{\"csvs\":[{\"fileName\":\"user1.csv\",\"params\":\"id1,name1\",\"ingoreFirstLine\":false},{\"fileName\":\"user2.txt\",\"params\":\"id1,name2\",\"ingoreFirstLine\":true}]},\"globalHeader\":{\"headers\":[{\"key\":\"header3\",\"value\":\"value3\"},{\"key\":\"header2\",\"value\":\"value2\"},{\"key\":\"header1\",\"value\":\"value1\"}]},\"userVars\":[{\"key\":\"var2\",\"value\":\"value2\",\"desc\":\"变量2\"},{\"key\":\"var1\",\"value\":\"value11\",\"desc\":\"变脸1\"},{\"key\":\"var3\",\"value\":\"value3\",\"desc\":\"变脸3\"}]}\n"));
     }
 
     public static String parseJmxString(String jsonString) throws Exception {
@@ -35,6 +34,8 @@ public class PtsBuildJsonToJmxTextTools {
         org.dom4j.Element rootHashEle = PtsJmxBuildUtil.buildBase(document);
         //创建测试计划
         org.dom4j.Element testPlan = PtsJmxBuildUtil.buildTestPlan(rootHashEle, sceneRequest.getProcessName());
+        //用户自定义变量
+        PtsJmxBuildUtil.buildUserVars(testPlan, convertKeyValue2Param(sceneRequest.getUserVars()));
         //数据源
         PtsDataSourceRequest dataSource = sceneRequest.getDataSource();
         PtsJmxBuildUtil.buildCsvData(testPlan, convertCsvData(dataSource.getCsvs()));
@@ -43,6 +44,10 @@ public class PtsBuildJsonToJmxTextTools {
         PtsJmxBuildUtil.buildHttpHeader(testPlan, convertHeader(globalHeader.getHeaders()));
         //全局HTTP请求
         PtsGlobalHttpRequest globalHttp = sceneRequest.getGlobalHttp();
+        //填写的有值，但非http https，默认http
+        if(StringUtils.isNotBlank(globalHttp.getProtocol()) && !StringUtils.equalsAny(globalHttp.getProtocol(), "http", "https")) {
+            globalHttp.setProtocol("http");
+        }
         PtsJmxBuildUtil.buildHttpDefault(testPlan, JSONObject.parseObject(JSON.toJSONString(globalHttp)));
         //计数器
         List<PtsCounterRequest> counters = sceneRequest.getCounters();
@@ -57,8 +62,14 @@ public class PtsBuildJsonToJmxTextTools {
         List<PtsLinkRequest> links = sceneRequest.getLinks();
         if(CollectionUtils.isNotEmpty(links)) {
             for(PtsLinkRequest link : links) {
-                org.dom4j.Element threadGroupHashEle = PtsJmxBuildUtil.buildThreadGroup(testPlan, link.getLinkName());
+                if(link == null) {
+                    continue;
+                }
+                org.dom4j.Element threadGroupHashEle = PtsJmxBuildUtil.buildThreadGroup(testPlan, PtsThreadGroupTypeEnum.getByType(link.getLinkType()), link.getEnabled(), link.getLinkName());
                 for(PtsApiRequest apiRequest : link.getApis()) {
+                    if(apiRequest == null) {
+                        continue;
+                    }
                     if(StringUtils.isBlank(apiRequest.getApiType()) || SamplerTypeEnum.HTTP.getType().equals(apiRequest.getApiType())) {
                         if(StringUtils.isBlank(apiRequest.getBase().getRequestMethod()) || StringUtils.isBlank(apiRequest.getBase().getRequestUrl())) {
                             continue;
@@ -69,14 +80,16 @@ public class PtsBuildJsonToJmxTextTools {
                         paramMap.put("requestTimeout", apiRequest.getBase().getRequestTimeout() != null ? String.valueOf(apiRequest.getBase().getRequestTimeout()) : "");
                         paramMap.put("allowForward", apiRequest.getBase().getAllowForward().toString());
                         paramMap.put("keepAlive", apiRequest.getBase().getKeepAlive().toString());
+                        String contentType = apiRequest.getBody().getContentType();
+                        paramMap.put("doMultipartPost", StringUtils.equals(contentType, PtsContentTypeEnum.FORM.getType()) ? "true" : "false");
                         org.dom4j.Element sampler = PtsJmxBuildUtil.buildHttpSampler(threadGroupHashEle, apiRequest.getApiName(),
-                                url, apiRequest.getBase().getRequestMethod(),
+                                apiRequest.getEnabled(), url, apiRequest.getBase().getRequestMethod(),
                                 JSON.toJSONString(apiRequest.getBody().getForms()),
                                 apiRequest.getBody().getRawData(),
                                 paramMap);
-                        //POST请求，自动加Content-Type
-                        if(apiRequest.getBase().getRequestMethod().equals("POST")) {
-                            apiRequest.getHeader().getHeaders().add(new KeyValueRequest("Content-Type", "application/json"));
+                        //POST-JSON请求，自动加Content-Type
+                        if(StringUtils.equals(contentType, PtsContentTypeEnum.JSON.getType())) {
+                            apiRequest.getHeader().getHeaders().add(new KeyValueRequest("Content-Type", PtsContentTypeEnum.JSON.getValue()));
                         }
                         //创建定时器
                         PtsJmxBuildUtil.buildTimer(sampler, apiRequest.getTimer().getDelay());
@@ -90,12 +103,17 @@ public class PtsBuildJsonToJmxTextTools {
                         //提取器
                         PtsJmxBuildUtil.buildJsonPostProcessor(sampler, convertJsonProcessor(apiRequest.getReturnVar()));
                         PtsJmxBuildUtil.buildRegexExtractor(sampler, convertRegexExtractor(apiRequest.getReturnVar()));
+                        //BeanShellPost
+                        PtsJmxBuildUtil.buildApiBeanshellPost(sampler, apiRequest.getBeanShellPost().getScript());
                     } else if(SamplerTypeEnum.JAVA.getType().equals(apiRequest.getApiType())) {
                         //创建Java请求
                         if(StringUtils.isBlank(apiRequest.getBase().getRequestUrl())) {
                             continue;
                         }
-                        PtsJmxBuildUtil.buildJavaSampler(threadGroupHashEle, apiRequest.getApiName(), apiRequest.getBase().getRequestUrl(), convertJavaParam2Map(apiRequest.getParam().getParams()));
+                        org.dom4j.Element sampler = PtsJmxBuildUtil.buildJavaSampler(threadGroupHashEle, apiRequest.getApiName(), apiRequest.getEnabled(), apiRequest.getBase().getRequestUrl(), convertJavaParam2Map(apiRequest.getParam().getParams()));
+                        //断言
+                        PtsJmxBuildUtil.buildResponseAssert(sampler, convertResponseAssert(apiRequest.getCheckAssert()));
+                        PtsJmxBuildUtil.buildJsonAssert(sampler, convertJsonAssert(apiRequest.getCheckAssert()));
                     }
                 }
             }
@@ -110,17 +128,29 @@ public class PtsBuildJsonToJmxTextTools {
         if(CollectionUtils.isEmpty(requestList)) {
             return dataMap;
         }
-        requestList.forEach(data -> dataMap.put(data.getParamName(), data.getParamValue()));
+        requestList.forEach(data -> {
+            if(StringUtils.isNotBlank(data.getParamName())) {
+                dataMap.put(data.getParamName(), data.getParamValue());
+            }
+        });
         return dataMap;
     }
 
-    private static Map<String, String> convertKeyValue2Map(List<KeyValueRequest> requestList) {
-        Map<String, String> dataMap = new HashMap<>();
+    private static List<ScriptKeyValueParam> convertKeyValue2Param(List<VarsKeyValueRequest> requestList) {
+        List<ScriptKeyValueParam> dataList = new ArrayList<>();
         if(CollectionUtils.isEmpty(requestList)) {
-            return dataMap;
+            return dataList;
         }
-        requestList.forEach(data -> dataMap.put(data.getKey(), data.getValue()));
-        return dataMap;
+        requestList.forEach(data -> {
+            if(StringUtils.isNotBlank(data.getKey())) {
+                ScriptKeyValueParam param = new ScriptKeyValueParam();
+                param.setKey(data.getKey());
+                param.setValue(data.getValue());
+                param.setDesc(data.getDesc());
+                dataList.add(param);
+            }
+        });
+        return dataList;
     }
 
     private static List<ScriptResponseAssert> convertResponseAssert(PtsApiAssertRequest request) {
@@ -129,6 +159,11 @@ public class PtsBuildJsonToJmxTextTools {
             return asserts;
         }
         for(AssertRequest var : request.getAsserts()) {
+            if(StringUtils.isBlank(var.getCheckPointType())
+                    || StringUtils.isBlank(var.getCheckCondition())
+                    || StringUtils.isBlank(var.getCheckContent())) {
+                continue;
+            }
             PtsAssertTypeEnum typeEnum = PtsAssertTypeEnum.getByName(var.getCheckPointType());
             if(typeEnum == PtsAssertTypeEnum.RESPONSE_BODY || typeEnum == PtsAssertTypeEnum.RESPONSE_CODE) {
                 PtsAssertConditionEnum conditionEnum = PtsAssertConditionEnum.getByName(var.getCheckCondition());
@@ -148,6 +183,12 @@ public class PtsBuildJsonToJmxTextTools {
             return asserts;
         }
         for(AssertRequest var : request.getAsserts()) {
+            if(StringUtils.isBlank(var.getCheckPointType())
+                    || StringUtils.isBlank(var.getCheckObject())
+                    || StringUtils.isBlank(var.getCheckCondition())
+                    || StringUtils.isBlank(var.getCheckContent())) {
+                continue;
+            }
             if(var.getCheckPointType().equals(PtsAssertTypeEnum.PARAMS.getName())) {
                 ScriptJsonAssert jsonAssert = new ScriptJsonAssert();
                 jsonAssert.setJsonPath(var.getCheckObject());
@@ -165,7 +206,7 @@ public class PtsBuildJsonToJmxTextTools {
             return processors;
         }
         for(ReturnVarRequest var : request.getVars()) {
-            if(!checkRegex(var.getParseExpress())) {
+            if(!checkRegex(var.getParseExpress()) && StringUtils.isNotBlank(var.getVarName())) {
                 ScriptJsonProcessor processor = new ScriptJsonProcessor();
                 processor.setReferenceNames(var.getVarName());
                 processor.setJsonPathExprs(var.getParseExpress());
@@ -184,7 +225,9 @@ public class PtsBuildJsonToJmxTextTools {
             return processors;
         }
         for(ReturnVarRequest var : request.getVars()) {
-            if(checkRegex(var.getParseExpress())) {
+            if(checkRegex(var.getParseExpress())
+                    && StringUtils.isNotBlank(var.getVarName())
+                    && StringUtils.isNotBlank(var.getVarSource())) {
                 ScriptJsonProcessor processor = new ScriptJsonProcessor();
                 processor.setReferenceNames(var.getVarName());
                 processor.setJsonPathExprs(var.getParseExpress());
@@ -204,6 +247,9 @@ public class PtsBuildJsonToJmxTextTools {
             return scriptList;
         }
         for(PtsCsvRequest csvRequest : csvRequests) {
+            if(StringUtils.isBlank(csvRequest.getFileName())) {
+                continue;
+            }
             ScriptData scriptData = new ScriptData();
             scriptData.setName(csvRequest.getFileName());
             scriptData.setPath(csvRequest.getFileName());
@@ -220,33 +266,15 @@ public class PtsBuildJsonToJmxTextTools {
             return scriptHeaders;
         }
         for(KeyValueRequest header : headers) {
+            if(StringUtils.isBlank(header.getKey())) {
+                continue;
+            }
             ScriptHeader scriptHeader = new ScriptHeader();
             scriptHeader.setKey(header.getKey());
             scriptHeader.setValue(header.getValue());
             scriptHeaders.add(scriptHeader);
         }
         return scriptHeaders;
-    }
-
-    private static String convertCsvParams(List<PtsCsvLineRequest> lines) {
-        StringBuffer sb = new StringBuffer();
-        if(CollectionUtils.isEmpty(lines)) {
-            return sb.toString();
-        }
-        Map<Integer, String> lineMap = new HashMap<>();
-        int maxLine = 1;
-        for(PtsCsvLineRequest line : lines) {
-            lineMap.put(line.getLineNumber(), line.getParamsName());
-            maxLine = Math.max(maxLine, line.getLineNumber());
-        }
-        for(int i = 1; i <= maxLine; i++) {
-            if(lineMap.containsKey(i)) {
-                sb.append(lineMap.get(i));
-            }
-            sb.append(",");
-        }
-        sb.deleteCharAt(sb.lastIndexOf(","));
-        return sb.toString();
     }
 
     private static Boolean checkRegex(String expression) {

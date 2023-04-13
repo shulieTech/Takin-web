@@ -2,9 +2,7 @@ package io.shulie.takin.web.biz.service.pts;
 
 import com.alibaba.fastjson.JSON;
 import io.shulie.takin.cloud.common.constants.JmxConstant;
-import io.shulie.takin.cloud.common.enums.pts.PtsAssertConditionEnum;
-import io.shulie.takin.cloud.common.enums.pts.PtsAssertTypeEnum;
-import io.shulie.takin.cloud.common.enums.pts.PtsVarSourceEnum;
+import io.shulie.takin.cloud.common.enums.pts.*;
 import io.shulie.takin.cloud.common.utils.PtsJmxParseUtil;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
@@ -12,7 +10,9 @@ import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.web.biz.pojo.request.pts.*;
 import io.shulie.takin.web.biz.pojo.response.pts.PtsSceneResponse;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.K;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class PtsParseJmxToObjectTools {
 
     public static void main(String[] args) {
-        System.out.println(JSON.toJSONString(parseJmxFile("/Users/xiaoshu/Documents/jmx/Java请求IB2.jmx", false)));
+        System.out.println(JSON.toJSONString(parseJmxFile("/Users/xiaoshu/Desktop/untitled.jmx", false)));
     }
 
     public static void removeSamplerNodeChildren(List<ScriptNode> nodes) {
@@ -30,18 +30,15 @@ public class PtsParseJmxToObjectTools {
         Iterator<ScriptNode> iterator = nodes.iterator();
         while(iterator.hasNext()) {
             ScriptNode scriptNode = iterator.next();
-            if(scriptNode.getType() != NodeTypeEnum.TEST_PLAN
+            if(!scriptNode.getEnabled() || (
+                    scriptNode.getType() != NodeTypeEnum.TEST_PLAN
                     && scriptNode.getType() != NodeTypeEnum.THREAD_GROUP
                     && scriptNode.getType() != NodeTypeEnum.CONTROLLER
-                    && scriptNode.getType() != NodeTypeEnum.SAMPLER) {
+                    && scriptNode.getType() != NodeTypeEnum.SAMPLER)) {
                 iterator.remove();
             }
             removeSamplerNodeChildren(scriptNode.getChildren());
         }
-    }
-
-    public static PtsSceneResponse parseJmxFile(String fileFullPath) {
-       return parseJmxFile(fileFullPath, true);
     }
 
     public static PtsSceneResponse parseJmxFile(String fileFullPath, boolean removeExtra) {
@@ -75,15 +72,20 @@ public class PtsParseJmxToObjectTools {
         } else if(node.getType() == NodeTypeEnum.COUNTER) {
             //处理counter计数器
             fillPtsCounter(response, node);
+        } else if(node.getType() == NodeTypeEnum.ARGUMENTS) {
+            //处理自定义常量
+            fillUserVars(response, node);
         } else if(node.getType() == NodeTypeEnum.THREAD_GROUP) {
             PtsLinkRequest linkRequest = new PtsLinkRequest();
             linkRequest.setLinkName(node.getTestName());
+            linkRequest.setLinkType(parseLinkTypeByNodeName(node.getName()));
+            linkRequest.setEnabled(node.getEnabled());
             response.getLinks().add(linkRequest);
         } else if(node.getType() == NodeTypeEnum.HEADERMANAGER) {
             //处理全局请求头
             if(node.getParentType() != NodeTypeEnum.SAMPLER) {
                 PtsApiHeaderRequest globalHeader = response.getGlobalHeader();
-                node.getProps().forEach((key, value) -> globalHeader.getHeaders().add(new KeyValueRequest(key, value)));
+                fillRequestHeaderData(globalHeader.getHeaders(), node.getProps());
             }
         } else if(node.getType() == NodeTypeEnum.TIMER) {
             if(node.getParentType() != NodeTypeEnum.SAMPLER) {
@@ -100,11 +102,21 @@ public class PtsParseJmxToObjectTools {
             }
             //处理全局HTTP
             PtsGlobalHttpRequest globalHttp = response.getGlobalHttp();
-            globalHttp.setDomain(node.getProps().get("HTTPSampler.domain"));
-            globalHttp.setProtocol(node.getProps().get("HTTPSampler.protocol"));
-            globalHttp.setPort(node.getProps().get("HTTPSampler.port"));
-            globalHttp.setPath(node.getProps().get("HTTPSampler.path"));
-            globalHttp.setContentEncoding(node.getProps().get("HTTPSampler.contentEncoding"));
+            if(StringUtils.isBlank(globalHttp.getDomain())) {
+                globalHttp.setDomain(node.getProps().get("HTTPSampler.domain"));
+            }
+            if(StringUtils.isBlank(globalHttp.getProtocol())) {
+                globalHttp.setProtocol(node.getProps().get("HTTPSampler.protocol"));
+            }
+            if(StringUtils.isBlank(globalHttp.getPort())) {
+                globalHttp.setPort(node.getProps().get("HTTPSampler.port"));
+            }
+            if(StringUtils.isBlank(globalHttp.getPath())) {
+                globalHttp.setPath(node.getProps().get("HTTPSampler.path"));
+            }
+            if(StringUtils.isBlank(globalHttp.getContentEncoding())) {
+                globalHttp.setContentEncoding(node.getProps().get("HTTPSampler.contentEncoding"));
+            }
             response.setGlobalHttp(globalHttp);
         } else if(node.getType() == NodeTypeEnum.SAMPLER) {
             if(node.getParentType() != NodeTypeEnum.THREAD_GROUP) {
@@ -116,6 +128,7 @@ public class PtsParseJmxToObjectTools {
                 PtsApiRequest apiRequest = new PtsApiRequest();
                 apiRequest.setApiType(SamplerTypeEnum.HTTP.getType());
                 apiRequest.setApiName(node.getTestName());
+                apiRequest.setEnabled(node.getEnabled());
                 //处理base内容
                 apiRequest.getBase().setRequestUrl(concatRequestUrl(node.getProps()));
                 apiRequest.getBase().setRequestMethod(node.getProps().get(JmxConstant.httpSamplerMethod));
@@ -126,7 +139,7 @@ public class PtsParseJmxToObjectTools {
                 apiRequest.getBase().setAllowForward(Boolean.parseBoolean(node.getProps().get(JmxConstant.httpSamplerFollowRedirects)));
                 apiRequest.getBase().setKeepAlive(Boolean.parseBoolean(node.getProps().get(JmxConstant.httpSamplerUseKeepalive)));
                 //处理入参
-                fillRequestBodyData(apiRequest.getBody(), node.getProps());
+                fillRequestBodyData(apiRequest.getBody(), node.getProps().get(JmxConstant.httpSamplerdoMultipartPost), node.getProps());
                 if(CollectionUtils.isNotEmpty(node.getChildren())) {
                     //处理定时器
                     List<ScriptNode> timeList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.TIMER).collect(Collectors.toList());
@@ -145,7 +158,7 @@ public class PtsParseJmxToObjectTools {
                         if(headerList.size() > 1) {
                             response.getMessage().add(String.format("接口【】下定义了多个HeaderManager，只生效第一个", apiRequest.getApiName()));
                         }
-                        fillRequestHeaderData(apiRequest.getHeader(), headerList.get(0));
+                        fillRequestHeaderData(apiRequest.getHeader().getHeaders(), headerList.get(0).getProps());
                     }
                     //处理JSON提取器
                     List<ScriptNode> jsonProcessList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.POSTPROCESSOR || data.getType() == NodeTypeEnum.REGEXEXTRACTOR).collect(Collectors.toList());
@@ -153,6 +166,9 @@ public class PtsParseJmxToObjectTools {
                     //处理断言
                     List<ScriptNode> assertList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.ASSERTION).collect(Collectors.toList());
                     fillAssertionData(apiRequest.getCheckAssert(), assertList);
+                    //处理BeanShell后置处理器
+                    List<ScriptNode> beanshellPostList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.POSTPROCESSOR).collect(Collectors.toList());
+                    fillBeanShellPostData(apiRequest.getBeanShellPost(), beanshellPostList);
                 }
                 linkRequest.getApis().add(apiRequest);
             } else if (node.getSamplerType() == SamplerTypeEnum.JAVA) {
@@ -160,17 +176,60 @@ public class PtsParseJmxToObjectTools {
                 PtsApiRequest apiRequest = new PtsApiRequest();
                 apiRequest.setApiType(SamplerTypeEnum.JAVA.getType());
                 apiRequest.setApiName(node.getTestName());
+                apiRequest.setEnabled(node.getEnabled());
                 PtsApiBaseRequest baseRequest = new PtsApiBaseRequest();
                 baseRequest.setRequestUrl(node.getProps().get("classname"));
                 apiRequest.setBase(baseRequest);
                 fillJavaParamData(apiRequest.getParam(), node.getProps());
+                if(CollectionUtils.isNotEmpty(node.getChildren())) {
+                    //处理断言
+                    List<ScriptNode> assertList = node.getChildren().stream().filter(data -> data.getType() == NodeTypeEnum.ASSERTION).collect(Collectors.toList());
+                    fillAssertionData(apiRequest.getCheckAssert(), assertList);
+                }
                 linkRequest.getApis().add(apiRequest);
             }
         }
     }
 
+    private static String parseLinkTypeByNodeName(String nodeName) {
+        String linkType = PtsThreadGroupTypeEnum.NORMAL.getType();
+        if(nodeName.equals("SetupThreadGroup")) {
+            linkType = PtsThreadGroupTypeEnum.SETUP.getType();
+        } else if(nodeName.equals("PostThreadGroup")) {
+            linkType = PtsThreadGroupTypeEnum.TEARDOWN.getType();
+        }
+        return linkType;
+    }
+
     private static void fillTimerData(PtsApiTimerRequest timerRequest, ScriptNode scriptNode) {
         timerRequest.setDelay(scriptNode.getProps().get("ConstantTimer.delay"));
+    }
+
+    private static void fillUserVars(PtsSceneResponse response, ScriptNode scriptNode) {
+        List<VarsKeyValueRequest> dataList = new ArrayList<>();
+        Set<String> rewriteKey = new HashSet<>();
+        scriptNode.getProps().forEach((key, value) -> {
+            String[] args = value.split(JmxConstant.valueDescSpilt);
+            String realKey = key.substring(JmxConstant.argumentNamePrefix.length());
+            if(args.length > 1) {
+                dataList.add(new VarsKeyValueRequest(realKey, args[0], args[1]));
+                rewriteKey.add(realKey);
+            } else if (args.length > 0) {
+                dataList.add(new VarsKeyValueRequest(realKey, args[0], ""));
+                rewriteKey.add(realKey);
+            }
+        });
+        //用户变量，后出现的覆盖原来的
+        if(CollectionUtils.isNotEmpty(response.getUserVars()) && rewriteKey.size() > 0) {
+            Iterator<VarsKeyValueRequest> iterator = response.getUserVars().iterator();
+            while (iterator.hasNext()) {
+                VarsKeyValueRequest request = iterator.next();
+                if(rewriteKey.contains(request.getKey())) {
+                    iterator.remove();
+                }
+            }
+        }
+        response.getUserVars().addAll(dataList);
     }
 
     private static void fillPtsCounter(PtsSceneResponse response, ScriptNode scriptNode) {
@@ -229,9 +288,10 @@ public class PtsParseJmxToObjectTools {
         return params;
     }
 
-    private static void fillRequestBodyData(PtsApiBodyRequest bodyRequest, Map<String, String> propsMap) {
+    private static void fillRequestBodyData(PtsApiBodyRequest bodyRequest, String doMultipartPost, Map<String, String> propsMap) {
         if(propsMap.containsKey("Argument.value")) {
             bodyRequest.setRawData(propsMap.get("Argument.value"));
+            bodyRequest.setContentType(PtsContentTypeEnum.JSON.getType());
         } else {
             List<KeyValueRequest> forms = new ArrayList<>();
             Set<Map.Entry<String, String>> entries = propsMap.entrySet();
@@ -243,12 +303,27 @@ public class PtsParseJmxToObjectTools {
                     forms.add(form);
                 }
             }
+            if(StringUtils.equals(doMultipartPost, "true")) {
+                bodyRequest.setContentType(PtsContentTypeEnum.FORM.getType());
+            } else {
+                bodyRequest.setContentType(PtsContentTypeEnum.URL_ENCODE.getType());
+            }
             bodyRequest.setForms(forms);
         }
     }
 
-    private static void fillRequestHeaderData(PtsApiHeaderRequest headerRequest, ScriptNode scriptNode) {
-        scriptNode.getProps().forEach((key, value) -> headerRequest.getHeaders().add(new KeyValueRequest(key, value)));
+    private static void fillRequestHeaderData(List<KeyValueRequest> headers, Map<String, String> propsMap) {
+        //请求头，如果已存在，则忽略后续的
+        if(MapUtils.isEmpty(propsMap)) {
+            return;
+        }
+        Set<String> existSet = new HashSet<>();
+        headers.stream().forEach(data -> existSet.add(data.getKey()));
+        propsMap.forEach((key, value) -> {
+            if(!existSet.contains(key)) {
+                headers.add(new KeyValueRequest(key, value));
+            }
+        });
     }
 
     private static void fillJavaParamData(PtsApiParamRequest paramRequest, Map<String, String> propsMap) {
@@ -320,6 +395,18 @@ public class PtsParseJmxToObjectTools {
                     dataList.add(var);
                 }
             }
+        }
+    }
+
+    private static void fillBeanShellPostData(PtsApiBeanShellPreRequest beanShellPost, List<ScriptNode> postList) {
+        if(CollectionUtils.isEmpty(postList)) {
+            return;
+        }
+        for(ScriptNode scriptNode : postList) {
+            if(!scriptNode.getName().equals("BeanShellPostProcessor")) {
+                continue;
+            }
+            beanShellPost.getScript().add(scriptNode.getProps().get("script"));
         }
     }
 

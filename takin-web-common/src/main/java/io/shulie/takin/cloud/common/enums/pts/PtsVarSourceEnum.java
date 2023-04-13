@@ -6,7 +6,7 @@ package io.shulie.takin.cloud.common.enums.pts;
 public enum PtsVarSourceEnum {
 
     HEADERKV("Header:K/V","Header:K/V"),
-    BODY_JSON("Body:JSON","Body:JSON"),
+    BODY_JSON("Body:JSON|TEXT","Body:JSON|TEXT"),
     UNKNOW("未知","unknow");
 
 

@@ -175,7 +175,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                         return false;
                     }
                     return true;
-                }).collect(Collectors.toList()).get(0);
+                }).findFirst().orElse(null);
                 if (baseAppVo != null) {
                     ReportMachineUpdateParam tmp = new ReportMachineUpdateParam();
                     tmp.setReportId(baseAppVo.getReportId());

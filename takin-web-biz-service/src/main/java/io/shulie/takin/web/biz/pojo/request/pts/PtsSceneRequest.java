@@ -36,6 +36,9 @@ public class PtsSceneRequest implements Serializable {
     @ApiModelProperty(value = "全局默认HTTP")
     private PtsGlobalHttpRequest globalHttp = new PtsGlobalHttpRequest();
 
+    @ApiModelProperty(value = "用户定义变量")
+    private List<VarsKeyValueRequest> userVars = new ArrayList<>();
+
     @ApiModelProperty(value = "计数器")
     private List<PtsCounterRequest> counters = new ArrayList<>();
 

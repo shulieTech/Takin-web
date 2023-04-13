@@ -11,8 +11,10 @@ public class JmxConstant {
     public static final String httpSamplerResponseTimeout = "HTTPSampler.response_timeout";
     public static final String httpSamplerFollowRedirects = "HTTPSampler.follow_redirects";
     public static final String httpSamplerUseKeepalive = "HTTPSampler.use_keepalive";
-
+    public static final String httpSamplerdoMultipartPost = "HTTPSampler.DO_MULTIPART_POST";
 
     public static final String argumentNamePrefix = "Argument.name.";
+
+    public static final String valueDescSpilt = "value.@.desc";
 
 }

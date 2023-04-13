@@ -478,30 +478,26 @@ public class CloudSceneServiceImpl implements CloudSceneService {
         List<SceneBusinessActivityRef> list = new ArrayList<>();
         for (Content t : content) {
             SceneBusinessActivityRef sceneBusinessActivityRef = new SceneBusinessActivityRef();
-            Goal goal = goalMap.get(t.getPathMd5());
-            if (goal == null) {
-                throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_UPDATE_ERROR, "压测目标未能匹配:" + t.getPathMd5());
+            Goal goal = Goal.buildNewGoal(goalMap.get(t.getPathMd5()));
+            SceneBusinessActivityRefEntity activityRef = new SceneBusinessActivityRefEntity();
+            activityRef.setSceneId(sceneId);
+            activityRef.setBindRef(t.getPathMd5());
+            activityRef.setBusinessActivityName(t.getName());
+            activityRef.setBusinessActivityId(t.getBusinessActivityId());
+            // 处理应用主键集合 - 兼容空值
+            if (t.getApplicationId() == null) {
+                t.setApplicationId(new ArrayList<>(0));
             }
-            SceneBusinessActivityRefEntity activityRef = new SceneBusinessActivityRefEntity() {{
-                setSceneId(sceneId);
-                setBindRef(t.getPathMd5());
-                setBusinessActivityName(t.getName());
-                setBusinessActivityId(t.getBusinessActivityId());
-                // 处理应用主键集合 - 兼容空值
-                if (t.getApplicationId() == null) {
-                    t.setApplicationId(new ArrayList<>(0));
-                }
-                List<String> applicationIdList = t.getApplicationId().stream().filter(StrUtil::isNotBlank).collect(Collectors.toList());
-                setApplicationIds(String.join(",", applicationIdList));
-                setGoalValue(JSONObject.toJSONString(OldGoalModel.convert(goal), SerializerFeature.PrettyFormat));
-                // 其它字段默认值
-                LocalDateTime now = LocalDateTime.now();
-                setIsDeleted(0);
-                setCreateTime(now);
-                setUpdateTime(now);
-                setCreateName(null);
-                setUpdateName(null);
-            }};
+            List<String> applicationIdList = t.getApplicationId().stream().filter(StrUtil::isNotBlank).collect(Collectors.toList());
+            activityRef.setApplicationIds(String.join(",", applicationIdList));
+            activityRef.setGoalValue(JSONObject.toJSONString(OldGoalModel.convert(goal), SerializerFeature.PrettyFormat));
+            // 其它字段默认值
+            LocalDateTime now = LocalDateTime.now();
+            activityRef.setIsDeleted(0);
+            activityRef.setCreateTime(now);
+            activityRef.setUpdateTime(now);
+            activityRef.setCreateName(null);
+            activityRef.setUpdateName(null);
             BeanUtil.copyProperties(activityRef, sceneBusinessActivityRef);
             list.add(sceneBusinessActivityRef);
             log.info("业务活动{}关联了业务活动{}-{}。自增主键：{}.", sceneId, t.getBusinessActivityId(), t.getPathMd5(), activityRef.getId());

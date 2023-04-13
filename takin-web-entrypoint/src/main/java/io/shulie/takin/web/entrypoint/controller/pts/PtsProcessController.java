@@ -2,6 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.pts;
 
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
+import io.shulie.takin.cloud.common.enums.pts.PtsThreadGroupTypeEnum;
 import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
@@ -26,19 +27,20 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.functions.InvalidVariableException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -65,9 +67,15 @@ public class PtsProcessController {
     @Autowired
     private BaseConfigService baseConfigService;
 
+    @Resource
+    @Qualifier("redisTemplate")
+    private RedisTemplate redisTemplate;
+
     private static final String JMETER_FUNCTION = "JMETER_FUNCTION";
 
     private static final String JMETER_JAVA_REQUEST = "JMETER_JAVE_REQUEST";
+
+    private final String PTS_SAVE_KEY ="TAKIN:web:pts.processSave:%s";
 
     @ApiOperation("解析jmx文件")
     @PostMapping("/parse/jmx")
@@ -118,28 +126,95 @@ public class PtsProcessController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.CREATE
     )
-    public BusinessFlowDetailResponse saveProcess(@Valid @RequestBody PtsSceneRequest request) {
-        return ptsProcessService.saveProcess(request);
+    public ResponseResult<BusinessFlowDetailResponse> saveProcess(@Valid @RequestBody PtsSceneRequest request) {
+        Long requestId = request.getId();
+        String key = null;
+        if(requestId != null) {
+            key = String.format(PTS_SAVE_KEY, requestId);
+        }
+        try {
+            if(key != null) {
+                if(redisTemplate.hasKey(key)) {
+                    return ResponseResult.fail("保存失败：请勿重复提交", "");
+                }
+                redisTemplate.opsForValue().set(key, "1", 15, TimeUnit.SECONDS);
+            }
+            //预判断
+            List<PtsCsvRequest> csvList = request.getDataSource().getCsvs();
+            if (CollectionUtils.isNotEmpty(csvList)) {
+                for (PtsCsvRequest csvRequest : csvList) {
+                    csvRequest.setFileName(StringUtils.trimToEmpty(csvRequest.getFileName()));
+                    if (StringUtils.contains(csvRequest.getParams(), "，")) {
+                        return ResponseResult.fail("0", "保存失败：请使用西文逗号来分割CSV数据的变量名", "");
+                    }
+                    if (!StringUtils.endsWith(csvRequest.getFileName(), ".txt") &&
+                            !StringUtils.endsWith(csvRequest.getFileName(), ".csv")) {
+                        return ResponseResult.fail("0", "保存失败：CSV数据的文件名必须以.txt或.csv结尾", "");
+                    }
+                }
+            }
+            /**
+             * 线程组setUp，tearDown类型最多1个
+             */
+            if (CollectionUtils.isEmpty(request.getLinks())) {
+                return ResponseResult.fail("0", "保存失败：链路至少出现1次", "");
+            }
+            List<PtsLinkRequest> setUpList = request.getLinks().stream().filter(data -> data.getLinkType().equals(PtsThreadGroupTypeEnum.SETUP.getType())).collect(Collectors.toList());
+            if (setUpList.size() > 1) {
+                return ResponseResult.fail("0", "保存失败：setUp链路最多出现1次", "");
+            }
+            List<PtsLinkRequest> tearDownList = request.getLinks().stream().filter(data -> data.getLinkType().equals(PtsThreadGroupTypeEnum.TEARDOWN.getType())).collect(Collectors.toList());
+            if (tearDownList.size() > 1) {
+                return ResponseResult.fail("0", "保存失败：tearDown链路最多出现1次", "");
+            }
+            List<PtsLinkRequest> nullLinkList = request.getLinks().stream().filter(data -> StringUtils.isBlank(data.getLinkName())).collect(Collectors.toList());
+            if (nullLinkList.size() > 0) {
+                return ResponseResult.fail("0", "保存失败：链路名称不能为空", "");
+            }
+            List<PtsApiRequest> apiList = new ArrayList<>();
+            request.getLinks().forEach(data -> apiList.addAll(data.getApis()));
+            if (CollectionUtils.isEmpty(apiList)) {
+                return ResponseResult.fail("0", "保存失败：API接口至少出现1次", "");
+            }
+            List<PtsApiRequest> nullApiList = apiList.stream().filter(data -> StringUtils.isBlank(data.getApiName())).collect(Collectors.toList());
+            if (nullApiList.size() > 0) {
+                return ResponseResult.fail("0", "保存失败：API接口名称不能为空", "");
+            }
+            /**
+             * HTTP请求校验，HTTP-URL
+             */
+            for (PtsApiRequest apiRequest : apiList) {
+                apiRequest.getBase().setRequestUrl(StringUtils.replace(apiRequest.getBase().getRequestUrl(), " ", ""));
+                if (apiRequest.getApiType().equals(SamplerTypeEnum.HTTP.getType())
+                        && (StringUtils.isNotBlank(apiRequest.getBase().getRequestUrl())
+                        && !apiRequest.getBase().getRequestUrl().startsWith("http://")
+                        && !apiRequest.getBase().getRequestUrl().startsWith("https://"))) {
+                    return ResponseResult.fail("0", "保存失败：URL格式不正确,接口名称=" + apiRequest.getApiName(), "");
+                }
+            }
+
+            return ResponseResult.success(ptsProcessService.saveProcess(request));
+        } catch (Throwable e) {
+            return ResponseResult.fail("保存失败：" + e.getMessage(), "");
+        } finally {
+            if(key != null) {
+                //不能立即删除，保存时有异步操作，会引发问题-保存失败：创建部署脚本失败！请查看takin-web日志
+                redisTemplate.opsForValue().set(key, "1", 3, TimeUnit.SECONDS);
+            }
+        }
     }
 
-//    @ApiOperation("查询PTS业务活动列表")
-//    @GetMapping("/businessActivity/page/list")
-//    @AuthVerification(
-//        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
-//        needAuth = ActionTypeEnum.QUERY
-//    )
-//    public PagingList<ActivityListResponse> pageActivities(@Valid PtsActivityQueryRequest queryRequest) {
-//        ActivityQueryRequest request = new ActivityQueryRequest();
-//        return activityService.pageActivities(request);
-//    }
-//
     @ApiOperation("PTS业务流程详情")
     @GetMapping("/process/detail")
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
             needAuth = ActionTypeEnum.QUERY
     )
-    public PtsSceneResponse detailActivity(@RequestParam(name = "id") Long id) {
+    public ResponseResult detailActivity(@RequestParam(name = "id") Long id) {
+        String key = String.format(PTS_SAVE_KEY, id);
+        if(redisTemplate.hasKey(key)) {
+            return ResponseResult.fail("业务流程保存中...，请稍后再试", "");
+        }
         JmeterJavaRequestResponse javaConfig = getJavaRequestConfig("IB2");
         PtsSceneResponse sceneResponse = ptsProcessService.detailProcess(id);
         //处理Get请求，拼参数到url里
@@ -147,13 +222,13 @@ public class PtsProcessController {
         for(PtsLinkRequest linkRequest : sceneResponse.getLinks()) {
             dealLinks(linkRequest, javaConfig);
         }
-        return sceneResponse;
+        return ResponseResult.success(sceneResponse);
     }
 
     @ApiOperation("发起调试")
     @PostMapping("/process/debug")
     public ResponseResult debugScene(@Valid @RequestBody IdRequest request) {
-        return ResponseResult.success(ptsProcessService.debugProcess(request.getId()));
+        return ptsProcessService.debugProcess(request.getId());
     }
 
     @ApiOperation("API调试列表|明细")

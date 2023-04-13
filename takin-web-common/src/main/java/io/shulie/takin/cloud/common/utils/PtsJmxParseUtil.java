@@ -92,12 +92,12 @@ public class PtsJmxParseUtil {
     }
 
     public static ScriptNode buildNode(Element element, NodeTypeEnum parentType) {
-        if (isNotEnabled(element)) {
-            return null;
-        }
         String name = element.getName();
         NodeTypeEnum type = NodeTypeEnum.value(name);
         if (null == type) {
+            return null;
+        }
+        if (isPtsNotEnabled(element, type)) {
             return null;
         }
         String testName = element.attributeValue("testname");
@@ -107,10 +107,28 @@ public class PtsJmxParseUtil {
         node.setType(type);
         node.setParentType(parentType);
         node.setXpath(element.getUniquePath());
+        System.out.println(node.getXpath());
         node.setXpathMd5(Md5Util.md5(node.getXpath()));
         node.setMd5(Md5Util.md5(element.asXML()));
+        node.setEnabled(Boolean.parseBoolean(element.attributeValue("enabled")));
         buildProps(node, element);
         return node;
+    }
+
+    /**
+     * 返回禁用状态下线程组、取样器的数据
+     * @param element
+     * @param type
+     * @return
+     */
+    public static boolean isPtsNotEnabled(Element element, NodeTypeEnum type) {
+        if (null == element) {
+            return true;
+        }
+        if(type == NodeTypeEnum.THREAD_GROUP || type == NodeTypeEnum.SAMPLER) {
+            return false;
+        }
+        return !Boolean.parseBoolean(element.attributeValue("enabled"));
     }
 
     public static boolean isNotEnabled(Element element) {
@@ -609,8 +627,8 @@ public class PtsJmxParseUtil {
             node.setRequestPath(topic);
             node.setIdentification(String.format("%s|%s", topic, SamplerTypeEnum.KAFKA.getRpcTypeEnum().getValue()));
         } else {
-            node.setRequestPath(javaClass);
-            node.setIdentification(String.format("%s|%s", javaClass, SamplerTypeEnum.JAVA.getRpcTypeEnum().getValue()));
+            node.setRequestPath("POST|" + javaClass);
+            node.setIdentification(node.getRequestPath() + "|0");
         }
     }
 
@@ -704,8 +722,10 @@ public class PtsJmxParseUtil {
         for (Pair<String, String> p : result) {
             if ("Argument.name".equals(p.getKey())) {
                 key = JmxConstant.argumentNamePrefix + p.getValue();
-            }if ("Argument.value".equals(p.getKey())) {
+            } else if ("Argument.value".equals(p.getKey())) {
                 value = p.getValue();
+            } else if ("Argument.desc".equals(p.getKey())) {
+                value = value + JmxConstant.valueDescSpilt + p.getValue();
             }
         }
         if (StrUtil.isNotBlank(key)) {

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.common.util.FileUtils;
 import io.shulie.takin.adapter.api.entrypoint.file.CloudFileApi;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
@@ -13,17 +14,17 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailRespon
 import io.shulie.takin.web.biz.pojo.response.pts.*;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
-import io.shulie.takin.web.biz.utils.LinuxHelper;
 import io.shulie.takin.web.common.enums.scene.SceneTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.pts.PtsProcessDAO;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.saxon.str.StringTool;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,8 +33,9 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * @author junshi
@@ -67,11 +69,12 @@ public class PtsProcessServiceImpl implements PtsProcessService{
     @Resource
     private PtsDebugAsync ptsDebugAsync;
 
-    /**
-     * 缓存 业务里程id 对应 jmx的请求路径信息
-     */
-    private static final String PTS_KEY = "TAKIN.WEB.pts.process.%s";
+    @Value("${apache.jmeter.path:/data/apps/apache-jmeter-5.4.1}")
+    private String apacheJmeterPath;
 
+    private final String PTS_KEY ="TAKIN:web:pts.processDetail:%s";
+
+    private final String PTS_DEBUG_KEY ="TAKIN:web:pts.processDebug:%s";
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -106,11 +109,6 @@ public class PtsProcessServiceImpl implements PtsProcessService{
          * 自动匹配业务活动信息
          */
         sceneService.autoMatchActivity(detailResponse.getId());
-        /**
-         * 有新增|修改jmx信息，删除redis缓存数据
-         */
-        String key = String.format(PTS_KEY, detailResponse.getId());
-        redisTemplate.delete(key);
         return detailResponse;
     }
 
@@ -128,71 +126,91 @@ public class PtsProcessServiceImpl implements PtsProcessService{
     }
 
     @Override
-    public String debugProcess(Long id) {
+    public ResponseResult debugProcess(Long id) {
+        //调试中，
+        String key = String.format(PTS_DEBUG_KEY, id);
+        if(!redisTemplate.opsForValue().setIfAbsent(key, "1", 3, TimeUnit.MINUTES)) {
+            return ResponseResult.fail("发起调试失败：业务活动已在调试中", "");
+        }
         //调用jmeter命令，运行jmx脚本；
-        String uploadPath = getJmxPathById(id);
+        BusinessFlowDetailResponse businessFlowDetail = getJmxPathById(id);
+        String uploadPath = businessFlowDetail.getScriptFile().getUploadPath();
         String cmdDir = uploadPath.substring(0, uploadPath.lastIndexOf("/"));
         String fileName = uploadPath.substring(uploadPath.lastIndexOf("/") + 1);
-        String command = "cd " + cmdDir + " && rm -rf jmeter.log result.xml && jmeter -n -t " + fileName;
-        ptsDebugAsync.runJmeterCommand(command);
+        Boolean containsJar = false;
+        List<FileManageResponse> fileManageResponseList = businessFlowDetail.getFileManageResponseList();
+        if(CollectionUtils.isNotEmpty(fileManageResponseList)) {
+            if(CollectionUtils.isNotEmpty(fileManageResponseList.stream().filter(data -> data.getFileName().endsWith(".jar")).collect(Collectors.toList()))) {
+                containsJar = true;
+            }
+        }
+        StringBuffer command = new StringBuffer("cd " + cmdDir);
+        command.append(" && rm -rf jmeter.log result.xml");
+        if(containsJar) {
+            command.append(" && \\cp *.jar " + apacheJmeterPath +"/lib/ext/");
+        }
+        command.append(" && jmeter -n -t " + fileName);
+        ptsDebugAsync.runJmeterCommand(command.toString());
         log.info("PTS调试，执行启动jmeter命令={}", command);
-        return command;
+        return ResponseResult.success(command.toString());
     }
 
     @Override
     public PtsDebugResponse getDebugRecord(Long id) {
-        String uploadPath = getJmxPathById(id);
+        BusinessFlowDetailResponse businessFlowDetail = getJmxPathById(id);
+        String uploadPath = businessFlowDetail.getScriptFile().getUploadPath();
         PtsDebugResponse response = new PtsDebugResponse();
         //判断文件是否已存在
         String cmdDir = uploadPath.substring(0, uploadPath.lastIndexOf("/"));
-        File file = new File(cmdDir + "/result.xml");
-        if(!file.exists()) {
-            response.setHasResult(false);
-            return response;
+        File resultFile = new File(cmdDir + "/result.xml");
+        boolean hasResult = false;
+        long startTime = System.currentTimeMillis();
+        //最多查询3min
+        while(!hasResult && (System.currentTimeMillis() - startTime) < 3 * 60 * 1000) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+
+            }
+            File logFile = new File(cmdDir + "/jmeter.log");
+            if (logFile.exists()) {
+                //读取日志文件，如果出现结尾关键字 "Summariser: summary =]"  标识已结束
+                Map<String, String> readMap = FileUtils.readTextFileContentAndException(logFile);
+                String exception = readMap.get("exception");
+                if (StringUtils.isNotBlank(exception)) {
+                    response.setHasException(true);
+                    response.setExceptionMessage("调试存在异常：" + exception + "，点击【查看日志】看详情");
+                }
+                hasResult = Boolean.parseBoolean(readMap.get("hasSummary"));
+            }
         }
         response.setHasResult(true);
-        Long queryTimestamp = System.currentTimeMillis();
         List<PtsDebugRecordResponse> recordList = new ArrayList<>();
-        /**
-         * 存在有文件，但没内容的情况
-         * 多查询几次
-         */
-        File logFile = new File(cmdDir + "/jmeter.log");
-        while(!response.getHasException() && recordList.size() == 0 && System.currentTimeMillis() - queryTimestamp < 6000) {
-            try {
-                Thread.sleep(1500);
-            } catch (InterruptedException e) {
-                log.error("getDebugRecord InterruptedException={}", e.getMessage());
-            }
-            if(logFile.exists()) {
-              String exception = FileUtils.readTextFileContentAndException(logFile).get("exception");
-              if(StringUtils.isNotBlank(exception)) {
-                  response.setHasException(true);
-                  response.setExceptionMessage("调试异常："+exception+"，点击【查看日志】看详情");
-              }
-            }
-            List<PtsDebugRecordDetailResponse> detailList = PtsParseResultToObjectTools.parseResultFile(file);
-            for (PtsDebugRecordDetailResponse detail : detailList) {
-                PtsDebugRecordResponse record = new PtsDebugRecordResponse();
-                record.setApiName(StringUtils.isNotBlank(detail.getGeneral().getRequestUrl()) ? detail.getGeneral().getRequestUrl() : detail.getApiName());
-                record.setRequestTime(detail.getRequestTime());
-                record.setRequestCost(detail.getRequestCost() != null ? detail.getRequestCost() + "ms" : "-");
-                record.setResponseStatus(detail.getResponseStatus());
-                record.setResponseCode(detail.getGeneral().getResponseCode());
-                /**
-                 * 详情信息
-                 */
-                record.setDetail(detail);
-                recordList.add(record);
-            }
+        List<PtsDebugRecordDetailResponse> detailList = PtsParseResultToObjectTools.parseResultFile(resultFile, 0);
+        for (PtsDebugRecordDetailResponse detail : detailList) {
+            PtsDebugRecordResponse record = new PtsDebugRecordResponse();
+            record.setApiName(StringUtils.isNotBlank(detail.getGeneral().getRequestUrl()) ? detail.getGeneral().getRequestUrl() : detail.getApiName());
+            record.setRequestTime(detail.getRequestTime());
+            record.setRequestCost(detail.getRequestCost() != null ? detail.getRequestCost() + "ms" : "-");
+            record.setResponseStatus(detail.getResponseStatus());
+            record.setResponseCode(detail.getGeneral().getResponseCode());
+            record.setDetail(detail);
+            recordList.add(record);
         }
+        //如果解析result.xml有数据，标识无异常
+        if(CollectionUtils.isNotEmpty(detailList)) {
+            response.setHasException(false);
+        }
+        String key = String.format(PTS_DEBUG_KEY, id);
+        redisTemplate.opsForValue().set(key, "1", 3, TimeUnit.SECONDS);
         response.setRecords(recordList);
         return response;
     }
 
     @Override
     public String getDebugLog(Long id) {
-        String uploadPath = getJmxPathById(id);
+        BusinessFlowDetailResponse businessFlowDetail = getJmxPathById(id);
+        String uploadPath = businessFlowDetail.getScriptFile().getUploadPath();
         String cmdDir = uploadPath.substring(0, uploadPath.lastIndexOf("/"));
         File file = new File(cmdDir + "/jmeter.log");
         if(!file.exists()) {
@@ -200,29 +218,20 @@ public class PtsProcessServiceImpl implements PtsProcessService{
         }
         return com.pamirs.takin.common.util.FileUtils.readTextFileContentAndException(file).get("content");
     }
-
-//    private String calcProcessName(Long processId, String processName) {
-//        String name = StringUtils.replace(processName, " ", "");
-//        SceneQueryParam queryParam = new SceneQueryParam();
-//        queryParam.setSceneName(name);
-//        if(!ptsProcessDAO.existProcessQueryByName(processId, queryParam)) {
-//            return name;
-//        }
-//        return name + "_" + DateUtil.format(new Date(), "yyMMddHHmm");
-//    }
-
-    private String getJmxPathById(Long id) {
+    private BusinessFlowDetailResponse getJmxPathById(Long id) {
         String key = String.format(PTS_KEY, id);
         Object value = redisTemplate.opsForValue().get(key);
-        if(null != value) {
-            return (String) value;
+        BusinessFlowDetailResponse businessFlowDetail;
+        if(value != null) {
+            businessFlowDetail = JSON.parseObject((String) value, BusinessFlowDetailResponse.class);
+        } else {
+            businessFlowDetail = sceneService.getBusinessFlowDetail(id);
+            FileManageResponse scriptFile = businessFlowDetail.getScriptFile();
+            if (scriptFile == null) {
+                throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "没有业务流程id找到对应脚本！");
+            }
+            redisTemplate.opsForValue().set(key, JSON.toJSONString(businessFlowDetail), 10, TimeUnit.SECONDS);
         }
-        BusinessFlowDetailResponse businessFlowDetail = sceneService.getBusinessFlowDetail(id);
-        FileManageResponse scriptFile = businessFlowDetail.getScriptFile();
-        if(scriptFile == null) {
-            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "没有业务流程id找到对应脚本！");
-        }
-        redisTemplate.opsForValue().set(key, scriptFile.getUploadPath(), 10, TimeUnit.MINUTES);
-        return scriptFile.getUploadPath();
+        return businessFlowDetail;
     }
 }

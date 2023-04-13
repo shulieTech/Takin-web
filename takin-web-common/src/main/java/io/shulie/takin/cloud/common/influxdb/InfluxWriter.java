@@ -154,10 +154,12 @@ public class InfluxWriter {
         return true;
     }
 
-    @Async
     public void truncateMeasurement(String measurement) {
         if (StringUtils.isNotBlank(measurement)) {
+            long startTime = System.currentTimeMillis();
+            log.info("delete influxdb data starting dbName={}, tableName={}", database, measurement);
             influx.query(new Query(String.format("delete from %s where time > 0", measurement), database));
+            log.info("delete influxdb data success dbName={}, tableName={}, cost={}s", database, measurement, (System.currentTimeMillis() - startTime) / 1000);
         }
     }
 }

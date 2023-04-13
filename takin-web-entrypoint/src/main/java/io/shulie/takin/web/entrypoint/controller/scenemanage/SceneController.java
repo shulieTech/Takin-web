@@ -107,8 +107,10 @@ public class SceneController {
     @ModuleDef(moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE, subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE, logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_CREATE)
     @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<Long> create(@RequestBody @Valid NewSceneRequest request) {
+        if(request.getDataValidation().getTimeInterval() == null) {
+            request.getDataValidation().setTimeInterval(1);
+        }
         SceneRequest sceneRequest = buildSceneRequest(request);
-
         WebPluginUtils.fillCloudUserData(sceneRequest);
         Long sceneId = multipleSceneApi.create(sceneRequest);
         if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler())) {
@@ -143,6 +145,9 @@ public class SceneController {
     public ResponseResult<Boolean> update(@RequestBody @Valid NewSceneRequest request) {
         if (null == request.getBasicInfo().getSceneId()) {
             return ResponseResult.fail(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR.getErrorCode(), "压测场景ID不能为空");
+        }
+        if(request.getDataValidation().getTimeInterval() == null) {
+            request.getDataValidation().setTimeInterval(1);
         }
         SceneRequest sceneRequest = buildSceneRequest(request);
         WebPluginUtils.fillCloudUserData(sceneRequest);

@@ -159,7 +159,7 @@ public class CloudFileApiImpl implements CloudFileApi {
             boolean mkdirResult = targetDir.mkdirs();
             log.debug("io.shulie.takin.adapter.cloud.impl.file.CloudFileApiImpl.upload:{}", mkdirResult);
         }
-        String originalFilename = processName + ".jmx";
+        String originalFilename = filterJmxFileName(processName) + ".jmx";
         String targetFile = tempPath + SceneManageConstant.FILE_SPLIT + uploadId + SceneManageConstant.FILE_SPLIT + originalFilename;
         UploadResponse dto = new UploadResponse();
         try {
@@ -223,4 +223,8 @@ public class CloudFileApiImpl implements CloudFileApi {
         }
     }
 
+    private String filterJmxFileName(String originName) {
+        String name = originName.replaceAll("[^_\\-a-zA-Z0-9\\u4e00-\\u9fa5]", "");
+        return name;
+    }
 }

@@ -22,21 +22,31 @@ import java.util.List;
 public class PtsParseResultToObjectTools {
 
     public static void main(String[] args) {
-        System.out.println(JSON.toJSONString(parseResultFile(new File("/Users/xiaoshu/Desktop/result.xml"))));
+        System.out.println(JSON.toJSONString(parseResultFile(new File("/Users/xiaoshu/Documents/jmx/result.xml"), 0)));
     }
 
-    public static List<PtsDebugRecordDetailResponse> parseResultFile(File resultFile) {
+    public static List<PtsDebugRecordDetailResponse> parseResultFile(File resultFile, Integer retryTimes) {
         List<PtsDebugRecordDetailResponse> detailResponses = new ArrayList<>();
-        if (!resultFile.exists() || !resultFile.isFile()) {
-            return detailResponses;
+        while (retryTimes <= 3) {
+            try {
+                detailResponses.addAll(buildNodeTree(resultFile));
+                retryTimes = 4;
+            } catch (Exception e) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException ex) {
+
+                }
+                retryTimes++;
+            }
         }
-        return buildNodeTree(resultFile);
+        return detailResponses;
     }
 
     /**
      * 从jmx文件中提取结构树
      */
-    private static List<PtsDebugRecordDetailResponse> buildNodeTree(File file) {
+    private static List<PtsDebugRecordDetailResponse> buildNodeTree(File file) throws Exception {
         SAXReader saxReader = new SAXReader();
         try {
             Document document = saxReader.read(file);
@@ -46,10 +56,10 @@ public class PtsParseResultToObjectTools {
             }
             List<Element> elements = root.elements();
             return buildNodeTree(elements);
-        } catch (DocumentException e) {
+        } catch (Exception e) {
             log.error("PtsParseResultToObjectTools#buildNodeTree DocumentException, file=" + file.getAbsolutePath(), e);
+            throw new Exception(e.getMessage());
         }
-        return new ArrayList<>();
     }
 
     private static List<PtsDebugRecordDetailResponse> buildNodeTree(List<Element> elements) {

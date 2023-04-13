@@ -3,8 +3,10 @@ package io.shulie.takin.cloud.common.utils;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.IORuntimeException;
 import cn.hutool.core.text.CharSequenceUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import io.shulie.takin.cloud.common.enums.pts.PtsThreadGroupTypeEnum;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonAssert;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonProcessor;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptKeyValueParam;
@@ -106,12 +108,24 @@ public class PtsJmxBuildUtil {
         return element.addElement(HASH_TREE);
     }
 
-    public static Element buildThreadGroup(Element element, String threadGroupName) {
-        Element threadGroup = element.addElement("ThreadGroup");
-        threadGroup.addAttribute(GUI_CLASS, "ThreadGroupGui");
-        threadGroup.addAttribute(TEST_CLASS, "ThreadGroup");
+    public static Element buildThreadGroup(Element element, PtsThreadGroupTypeEnum threadGroupType, Boolean enabled, String threadGroupName) {
+        Element threadGroup;
+        if(threadGroupType == PtsThreadGroupTypeEnum.SETUP) {
+            threadGroup = element.addElement("SetupThreadGroup");
+            threadGroup.addAttribute(GUI_CLASS, "SetupThreadGroupGui");
+            threadGroup.addAttribute(TEST_CLASS, "SetupThreadGroup");
+        } else if (threadGroupType == PtsThreadGroupTypeEnum.TEARDOWN) {
+            threadGroup = element.addElement("PostThreadGroup");
+            threadGroup.addAttribute(GUI_CLASS, "PostThreadGroupGui");
+            threadGroup.addAttribute(TEST_CLASS, "PostThreadGroup");
+        } else {
+            threadGroup = element.addElement("ThreadGroup");
+            threadGroup.addAttribute(GUI_CLASS, "ThreadGroupGui");
+            threadGroup.addAttribute(TEST_CLASS, "ThreadGroup");
+        }
+
         threadGroup.addAttribute(TEST_NAME, threadGroupName);
-        threadGroup.addAttribute(ENABLED, Boolean.TRUE.toString());
+        threadGroup.addAttribute(ENABLED, enabled.toString());
 
         Element stringProp = threadGroup.addElement(STRING_PROP);
         stringProp.addAttribute(NAME, "ThreadGroup.on_sample_error");
@@ -200,23 +214,23 @@ public class PtsJmxBuildUtil {
 
         Element domain = header.addElement(STRING_PROP);
         domain.addAttribute(NAME, "HTTPSampler.domain");
-        domain.setText(dataMap.getString("domain"));
+        domain.setText(StrUtil.emptyIfNull(dataMap.getString("domain")));
 
         Element port = header.addElement(STRING_PROP);
         port.addAttribute(NAME, "HTTPSampler.port");
-        port.setText(dataMap.getString("port"));
+        port.setText(StrUtil.emptyIfNull(dataMap.getString("port")));
 
         Element protocol = header.addElement(STRING_PROP);
         protocol.addAttribute(NAME, "HTTPSampler.protocol");
-        protocol.setText(dataMap.getString("protocol"));
+        protocol.setText(StrUtil.emptyIfNull(dataMap.getString("protocol")));
 
         Element contentEncoding = header.addElement(STRING_PROP);
         contentEncoding.addAttribute(NAME, "HTTPSampler.contentEncoding");
-        contentEncoding.setText(dataMap.getString("contentEncoding"));
+        contentEncoding.setText(StrUtil.emptyIfNull(dataMap.getString("contentEncoding")));
 
         Element path = header.addElement(STRING_PROP);
         path.addAttribute(NAME, "HTTPSampler.path");
-        path.setText(dataMap.getString("path"));
+        path.setText(StrUtil.emptyIfNull(dataMap.getString("path")));
 
         Element concurrentPool = header.addElement(STRING_PROP);
         concurrentPool.addAttribute(NAME, "HTTPSampler.concurrentPool");
@@ -246,23 +260,23 @@ public class PtsJmxBuildUtil {
 
             Element start = header.addElement(STRING_PROP);
             start.addAttribute(NAME, "CounterConfig.start");
-            start.setText(jsonObject.getString("start"));
+            start.setText(StrUtil.emptyIfNull(jsonObject.getString("start")));
 
             Element end = header.addElement(STRING_PROP);
             end.addAttribute(NAME, "CounterConfig.end");
-            end.setText(jsonObject.getString("end"));
+            end.setText(StrUtil.emptyIfNull(jsonObject.getString("end")));
 
             Element incr = header.addElement(STRING_PROP);
             incr.addAttribute(NAME, "CounterConfig.incr");
-            incr.setText(jsonObject.getString("incr"));
+            incr.setText(StrUtil.emptyIfNull(jsonObject.getString("incr")));
 
             Element name = header.addElement(STRING_PROP);
             name.addAttribute(NAME, "CounterConfig.name");
-            name.setText(jsonObject.getString("name"));
+            name.setText(StrUtil.emptyIfNull(jsonObject.getString("name")));
 
             Element format = header.addElement(STRING_PROP);
             format.addAttribute(NAME, "CounterConfig.format");
-            format.setText(jsonObject.getString("format"));
+            format.setText(StrUtil.emptyIfNull(jsonObject.getString("format")));
 
             Element per_user = header.addElement(BOOL_PROP);
             per_user.addAttribute(NAME, "CounterConfig.per_user");
@@ -271,6 +285,45 @@ public class PtsJmxBuildUtil {
             element.addElement(HASH_TREE);
         }
         return element;
+    }
+
+    public static Element buildUserVars(Element element, List<ScriptKeyValueParam> keyValueParams) {
+        if (CollUtil.isEmpty(keyValueParams)) {
+            return element;
+        }
+        Element header = element.addElement("Arguments");
+        header.addAttribute(GUI_CLASS, "ArgumentsPanel");
+        header.addAttribute(TEST_CLASS, "Arguments");
+        header.addAttribute(TEST_NAME, "用户自定义常量");
+        header.addAttribute(ENABLED, Boolean.TRUE.toString());
+
+        Element collectionProp = header.addElement(COLLECTION_PROP);
+        collectionProp.addAttribute(NAME, "Arguments.arguments");
+
+        Set<String> headerName = new HashSet<>();
+        for (ScriptKeyValueParam scriptHeader : keyValueParams) {
+            String key = scriptHeader.getKey();
+            if(StringUtils.isBlank(key) || headerName.contains(key)) {
+                continue;
+            }
+            headerName.add(key);
+            Element elementProp = collectionProp.addElement(ELEMENT_PROP);
+            elementProp.addAttribute(NAME, key);
+            elementProp.addAttribute(ELEMENT_TYPE, "Argument");
+            Element stringPropKey = elementProp.addElement(STRING_PROP);
+            stringPropKey.addAttribute(NAME, "Argument.name");
+            stringPropKey.setText(key);
+            Element stringPropVal = elementProp.addElement(STRING_PROP);
+            stringPropVal.addAttribute(NAME, "Argument.value");
+            stringPropVal.setText(StrUtil.emptyIfNull(scriptHeader.getValue()));
+            Element stringPropDesc = elementProp.addElement(STRING_PROP);
+            stringPropDesc.addAttribute(NAME, "Argument.desc");
+            stringPropDesc.setText(StrUtil.emptyIfNull(scriptHeader.getDesc()));
+            Element stringPropMeta = elementProp.addElement(STRING_PROP);
+            stringPropMeta.addAttribute(NAME, "Argument.metadata");
+            stringPropMeta.setText("=");
+        }
+        return element.addElement(HASH_TREE);
     }
 
     public static Element buildHttpHeader(Element element, List<ScriptHeader> headers) {
@@ -302,7 +355,7 @@ public class PtsJmxBuildUtil {
 
             Element stringPropVal = elementProp.addElement(STRING_PROP);
             stringPropVal.addAttribute(NAME, "Header.value");
-            stringPropVal.setText(scriptHeader.getValue());
+            stringPropVal.setText(StrUtil.emptyIfNull(scriptHeader.getValue()));
         }
         return element.addElement(HASH_TREE);
     }
@@ -319,6 +372,41 @@ public class PtsJmxBuildUtil {
             header.addAttribute(GUI_CLASS, "TestBeanGUI");
             header.addAttribute(TEST_CLASS, "BeanShellPreProcessor");
             header.addAttribute(TEST_NAME, "BeanShell预处理程序");
+            header.addAttribute(ENABLED, Boolean.TRUE.toString());
+
+            Element filename = header.addElement(STRING_PROP);
+            filename.addAttribute(NAME, "filename");
+            filename.setText("");
+
+            Element parameters = header.addElement(STRING_PROP);
+            parameters.addAttribute(NAME, "parameters");
+            parameters.setText("");
+
+            Element resetInterpreter = header.addElement(BOOL_PROP);
+            resetInterpreter.addAttribute(NAME, "resetInterpreter");
+            resetInterpreter.setText("false");
+
+            Element script = header.addElement(STRING_PROP);
+            script.addAttribute(NAME, "script");
+            script.setText(scriptContent);
+
+            element.addElement(HASH_TREE);
+        }
+        return element;
+    }
+
+    public static Element buildApiBeanshellPost(Element element, List<String> scripts) {
+        if (CollUtil.isEmpty(scripts)) {
+            return element;
+        }
+        for(String scriptContent : scripts) {
+            if(StringUtils.isBlank(scriptContent)) {
+                continue;
+            }
+            Element header = element.addElement("BeanShellPostProcessor");
+            header.addAttribute(GUI_CLASS, "TestBeanGUI");
+            header.addAttribute(TEST_CLASS, "BeanShellPostProcessor");
+            header.addAttribute(TEST_NAME, "BeanShell后置处理程序");
             header.addAttribute(ENABLED, Boolean.TRUE.toString());
 
             Element filename = header.addElement(STRING_PROP);
@@ -566,15 +654,15 @@ public class PtsJmxBuildUtil {
         return element;
     }
 
-    public static Element buildHttpSampler(Element element, String apiName, URL queryUrl, String method, String getData, String postData, Map<String, String> paramMap) {
+    public static Element buildHttpSampler(Element element, String apiName, Boolean enabled, URL queryUrl, String method, String formData, String postData, Map<String, String> paramMap) {
         Element sampler = element.addElement("HTTPSamplerProxy");
         sampler.addAttribute(GUI_CLASS, "HttpTestSampleGui");
         sampler.addAttribute(TEST_CLASS, "HTTPSamplerProxy");
         sampler.addAttribute(TEST_NAME, StringUtils.isNotBlank(apiName) ? apiName : "HTTP请求");
-        sampler.addAttribute(ENABLED, Boolean.TRUE.toString());
+        sampler.addAttribute(ENABLED, enabled.toString());
 
-        if(StringUtils.isNotBlank(getData)) {
-            List<ScriptKeyValueParam> params = JSON.parseArray(getData, ScriptKeyValueParam.class);
+        if(StringUtils.isNotBlank(formData)) {
+            List<ScriptKeyValueParam> params = JSON.parseArray(formData, ScriptKeyValueParam.class);
             Element arguments = sampler.addElement(ELEMENT_PROP);
             arguments.addAttribute(NAME, "HTTPsampler.Arguments");
             arguments.addAttribute(ELEMENT_TYPE, ARGUMENTS);
@@ -586,6 +674,9 @@ public class PtsJmxBuildUtil {
             collection.addAttribute(NAME, "Arguments.arguments");
             if(CollectionUtils.isNotEmpty(params)) {
                 for(ScriptKeyValueParam param : params) {
+                    if(StringUtils.isBlank(param.getKey())) {
+                        continue;
+                    }
                     Element arg = collection.addElement(ELEMENT_PROP);
                     arg.addAttribute("name", param.getKey());
                     arg.addAttribute("elementType", "HTTPArgument");
@@ -594,7 +685,7 @@ public class PtsJmxBuildUtil {
                     alwaysEncodeKey.setText(Boolean.TRUE.toString());
                     Element valueKey = arg.addElement(STRING_PROP);
                     valueKey.addAttribute(NAME, "Argument.value");
-                    valueKey.setText(param.getValue());
+                    valueKey.setText(StrUtil.emptyIfNull(param.getValue()));
                     Element metaKey = arg.addElement(STRING_PROP);
                     metaKey.addAttribute(NAME, "Argument.metadata");
                     metaKey.setText("=");
@@ -639,7 +730,7 @@ public class PtsJmxBuildUtil {
 
         Element domain = sampler.addElement(STRING_PROP);
         domain.addAttribute(NAME, "HTTPSampler.domain");
-        domain.setText(queryUrl.getHost());
+        domain.setText(StrUtil.emptyIfNull(queryUrl.getHost()));
 
         Element port = sampler.addElement(STRING_PROP);
         port.addAttribute(NAME, "HTTPSampler.port");
@@ -647,7 +738,7 @@ public class PtsJmxBuildUtil {
 
         Element protocol = sampler.addElement(STRING_PROP);
         protocol.addAttribute(NAME, "HTTPSampler.protocol");
-        protocol.setText(queryUrl.getProtocol());
+        protocol.setText(StrUtil.emptyIfNull(queryUrl.getProtocol()));
 
         Element contentEncoding = sampler.addElement(STRING_PROP);
         contentEncoding.addAttribute(NAME, "HTTPSampler.contentEncoding");
@@ -659,7 +750,7 @@ public class PtsJmxBuildUtil {
         if (CharSequenceUtil.isNotBlank(queryUrl.getQuery())) {
             pathQuery.append("?").append(queryUrl.getQuery());
         }
-        path.setText(pathQuery.toString());
+        path.setText(StrUtil.emptyIfNull(pathQuery.toString()));
 
         Element methodE = sampler.addElement(STRING_PROP);
         methodE.addAttribute(NAME, "HTTPSampler.method");
@@ -679,7 +770,7 @@ public class PtsJmxBuildUtil {
 
         Element doMultipartPost = sampler.addElement(BOOL_PROP);
         doMultipartPost.addAttribute(NAME, "HTTPSampler.DO_MULTIPART_POST");
-        doMultipartPost.setText(Boolean.FALSE.toString());
+        doMultipartPost.setText(paramMap.get("doMultipartPost"));
 
         Element embeddedUrlRe = sampler.addElement(STRING_PROP);
         embeddedUrlRe.addAttribute(NAME, "HTTPSampler.embedded_url_re");
@@ -691,17 +782,17 @@ public class PtsJmxBuildUtil {
 
         Element responseTimeout = sampler.addElement(STRING_PROP);
         responseTimeout.addAttribute(NAME, "HTTPSampler.response_timeout");
-        responseTimeout.setText(paramMap.get("requestTimeout"));
+        responseTimeout.setText(StrUtil.emptyIfNull(paramMap.get("requestTimeout")));
 
         return element.addElement(HASH_TREE);
     }
 
-    public static Element buildJavaSampler(Element element, String apiName, String className, Map<String, String> propsMap) {
+    public static Element buildJavaSampler(Element element, String apiName, Boolean enabled, String className, Map<String, String> propsMap) {
         Element data = element.addElement("JavaSampler");
         data.addAttribute(GUI_CLASS, "JavaTestSamplerGui");
         data.addAttribute(TEST_CLASS, "JavaSampler");
         data.addAttribute(TEST_NAME, apiName);
-        data.addAttribute(ENABLED, Boolean.TRUE.toString());
+        data.addAttribute(ENABLED, enabled.toString());
 
         Element arg = data.addElement(ELEMENT_PROP);
         arg.addAttribute(NAME, "arguments");
@@ -725,7 +816,7 @@ public class PtsJmxBuildUtil {
 
                 Element argValue = param.addElement(STRING_PROP);
                 argValue.addAttribute(NAME, "Argument.value");
-                argValue.setText(value);
+                argValue.setText(StrUtil.emptyIfNull(value));
 
                 Element argMetadata = param.addElement(STRING_PROP);
                 argMetadata.addAttribute(NAME, "Argument.metadata");

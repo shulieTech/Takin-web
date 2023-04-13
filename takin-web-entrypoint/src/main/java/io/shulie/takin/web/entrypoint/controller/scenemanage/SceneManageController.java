@@ -1,5 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -80,6 +81,8 @@ public class SceneManageController {
         needAuth = ActionTypeEnum.CREATE
     )
     public WebResponse<Object> add(@RequestBody @Valid SceneManageWrapperVO sceneVO) throws TakinWebException {
+        //填充目标默认值、时间间隔
+        fillDefaultValue(sceneVO);
         sceneManageService.checkParam(sceneVO);
         sceneManageService.addScene(sceneVO);
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
@@ -99,6 +102,7 @@ public class SceneManageController {
         needAuth = ActionTypeEnum.UPDATE
     )
     public WebResponse<String> update(@RequestBody @Valid SceneManageWrapperVO sceneVO) {
+        fillDefaultValue(sceneVO);
         sceneManageService.checkParam(sceneVO);
         // cloud 获得场景详情
         ResponseResult<SceneManageWrapperResp> oldData = sceneManageService.detailScene(sceneVO.getId());
@@ -390,5 +394,18 @@ public class SceneManageController {
     @GetMapping("/machine")
     public WebResponse<SceneMachineResponse> machineClusters(@RequestParam String id, @RequestParam Integer type) {
         return WebResponse.success(sceneManageService.machineClusters(id, type));
+    }
+
+    private void fillDefaultValue(SceneManageWrapperVO sceneVO) {
+        List<SceneBusinessActivityRefVO> businessActivityList = sceneVO.getBusinessActivityConfig();
+        if(CollectionUtils.isNotEmpty(businessActivityList)) {
+            for(SceneBusinessActivityRefVO businessActivity : businessActivityList) {
+                businessActivity.setTargetTPS(businessActivity.getTargetTPS() != null ? businessActivity.getTargetTPS() : 100);
+                businessActivity.setTargetRT(businessActivity.getTargetRT() != null ? businessActivity.getTargetRT() : 100);
+                businessActivity.setTargetSuccessRate(businessActivity.getTargetSuccessRate() != null ? businessActivity.getTargetSuccessRate() : new BigDecimal("80"));
+                businessActivity.setTargetSA(businessActivity.getTargetSA() != null ? businessActivity.getTargetSA() : new BigDecimal("80"));
+            }
+        }
+        sceneVO.setScheduleInterval(sceneVO.getScheduleInterval() != null ? sceneVO.getScheduleInterval() : 1);
     }
 }

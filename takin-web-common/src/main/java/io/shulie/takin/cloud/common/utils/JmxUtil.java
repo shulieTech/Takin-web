@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -36,6 +37,10 @@ import org.dom4j.io.SAXReader;
  */
 @Slf4j
 public class JmxUtil {
+
+    public static void main(String[] args) {
+        System.out.println(JSON.toJSONString(buildNodeTree("/Users/xiaoshu/Desktop/JavaRequestTest2.jmx")));
+    }
     /**
      * 属性基本元素名称列表
      */
@@ -307,7 +312,6 @@ public class JmxUtil {
                     //protocol+#+path+method, 即第一个#号前是protocol，最后一个#之后是method，中间的#可能是path自带
                     node.setSamplerType(SamplerTypeEnum.HTTP);
                     setHttpIdentification(node);
-
                 } else if ("JavaSampler".equals(name)) {
                     Map<String, String> props = buildProps(element);
                     //找到java请求默认值
@@ -483,7 +487,7 @@ public class JmxUtil {
         if ("com.gslab.pepper.sampler.PepperBoxKafkaSampler".equals(javaClass)) {
             return SamplerTypeEnum.KAFKA;
         }
-        return SamplerTypeEnum.UNKNOWN;
+        return SamplerTypeEnum.JAVA;
     }
 
     public static JSONObject buildJSON(Element element) {
@@ -761,7 +765,8 @@ public class JmxUtil {
             node.setRequestPath(topic);
             node.setIdentification(String.format("%s|%s", topic, SamplerTypeEnum.KAFKA.getRpcTypeEnum().getValue()));
         } else {
-            log.warn("没有成功解析脚本节点:{}", javaClass);
+            node.setRequestPath("POST|" + javaClass);
+            node.setIdentification(node.getRequestPath() + "|0");
         }
     }
 

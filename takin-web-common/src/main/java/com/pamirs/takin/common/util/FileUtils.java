@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
  */
 public class FileUtils {
     private static Logger logger = LoggerFactory.getLogger(FileUtils.class);
+    private static final String JMETER_EXCEPTION = "Exception:";
+    private static final String JMETER_SUMMARY= "Summariser: summary =";
 
     public static File createFileDE(String filePathName) {
         File file = new File(filePathName);
@@ -170,15 +172,19 @@ public class FileUtils {
         BufferedReader reader = null;
         StringBuilder stringBuilder = new StringBuilder();
         String exception = "";
+        Boolean hasSummary = false;
         try {
             reader = new BufferedReader(new FileReader(file));
             String lineString = null;
             while ((lineString = reader.readLine()) != null) {
                 stringBuilder.append(lineString);
                 stringBuilder.append("\r\n");
-                int pos = lineString.indexOf("Exception:");
+                int pos = lineString.indexOf(JMETER_EXCEPTION);
                 if(pos > -1 && exception.length() == 0) {
                     exception = lineString;
+                }
+                if(lineString.contains(JMETER_SUMMARY)) {
+                    hasSummary = true;
                 }
             }
         } catch (Exception e) {
@@ -193,8 +199,9 @@ public class FileUtils {
             }
         }
         Map<String, String> dataMap = new HashMap<>();
-        dataMap.put("content",stringBuilder.toString());
+        dataMap.put("content", stringBuilder.toString());
         dataMap.put("exception", exception);
+        dataMap.put("hasSummary", hasSummary.toString());
         return dataMap;
     }
 

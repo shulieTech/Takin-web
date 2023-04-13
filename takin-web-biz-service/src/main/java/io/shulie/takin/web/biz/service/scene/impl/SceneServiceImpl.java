@@ -122,9 +122,10 @@ public class SceneServiceImpl implements SceneService {
     private SceneMixApi sceneMixApi;
     @Resource
     private SceneManageService sceneManageService;
-
     @Value("${file.upload.tmp.path:/tmp/takin/}")
     private String tmpFilePath;
+    @Value("${allow.query.unMatched.businessFlow:false}")
+    private Boolean allowQueryUnMatchedBusinessFlow;
     @Resource
     private SceneLinkRelateDAO sceneLinkRelateDAO;
     @Resource
@@ -165,6 +166,7 @@ public class SceneServiceImpl implements SceneService {
         List<Long> keepIds = new ArrayList<>();
         List<SceneLinkRelateResult> relateList = sceneLinkRelateDao.selectBySceneId(sceneId);
         if(CollectionUtils.isNotEmpty(relateList)) {
+            //存在一样的entrance，但xpath不一样的情况
             Map<String, Map<String, SceneLinkRelateResult>> relateMap = new HashMap<>();
             for(SceneLinkRelateResult relate : relateList) {
                 Map<String, SceneLinkRelateResult> md5Map = relateMap.get(relate.getEntrance());
@@ -318,12 +320,6 @@ public class SceneServiceImpl implements SceneService {
             if (CollectionUtils.isEmpty(testPlan)) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
             }
-            /**
-             * 处理ScriptNode，如果name=JavaSampler,md5和xpathMd5 同testName
-             * fix bug hz-bank 实况没数据
-             * influx里metrics和pressure的transtions存的明文
-             */
-            dealScriptNodeMd5(testPlan);
             testPlanName = testPlan.get(0).getTestName();
         }
         String businessFlowName = null;
@@ -534,10 +530,10 @@ public class SceneServiceImpl implements SceneService {
         updateParam.setId(id);
         updateParam.setLinkRelateNum(matchNum);
         sceneDao.update(updateParam);
-        //匹配数量符合，修改压测场景
-        if (matchNum == nodeNumByType) {
-            syncSceneManege(sceneResult);
-        }
+        //匹配数量符合，修改压测场景 注释掉，人工去修改压测场景（跨事务，api接口由1个变成2个时，导致保存异常）
+//        if (matchNum == nodeNumByType) {
+//            syncSceneManege(sceneResult);
+//        }
         return result;
     }
 
@@ -568,13 +564,11 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void matchActivity(SceneLinkRelateRequest sceneLinkRelateRequest) {
         SceneResult sceneDetail = sceneDao.getSceneDetail(sceneLinkRelateRequest.getBusinessFlowId());
         if (sceneDetail == null) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, "匹配业务活动，未找到对应业务流程！");
         }
-
         if (BusinessTypeEnum.NORMAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
             //普通业务活动
             if (sceneLinkRelateRequest.getBusinessActivityId() == null) {
@@ -650,10 +644,10 @@ public class SceneServiceImpl implements SceneService {
             sceneDao.update(updateParam);
         }
 
-        //匹配数量符合，修改压测场景
-        if (sceneDetail.getTotalNodeNum() == linkRelateNum) {
-            syncSceneManege(sceneDetail);
-        }
+        //匹配数量符合，修改压测场景 注释掉，人工去修改压测场景（跨事务，api接口由1个变成2个时，导致保存异常）
+//        if (sceneDetail.getTotalNodeNum() == linkRelateNum) {
+//            syncSceneManege(sceneDetail);
+//        }
     }
 
     @Override
@@ -692,17 +686,19 @@ public class SceneServiceImpl implements SceneService {
     public List<SceneEntity> businessActivityFlowList() {
         ScenePageQueryParam queryParam = new ScenePageQueryParam();
         WebPluginUtils.fillQueryParam(queryParam);
-        LambdaQueryWrapper<SceneEntity> wrapper = Wrappers.lambdaQuery(SceneEntity.class)
-                // 只返回主键和名称
-                .select(SceneEntity::getId, SceneEntity::getSceneName)
-                // 只返回Jmeter上传的
-                .in(SceneEntity::getType, SceneTypeEnum.JMETER_UPLOAD_SCENE.getType(), SceneTypeEnum.PTS_UPLOAD_SCENE.getType())
-                // 未逻辑删除
-                .eq(SceneEntity::getIsDeleted, false)
-                // 节点匹配完成
-                .apply("total_node_num = link_relate_num")
-                // 倒序排列
-                .orderByDesc(SceneEntity::getId);
+        LambdaQueryWrapper<SceneEntity> wrapper = Wrappers.lambdaQuery();
+        // 只返回主键和名称
+        wrapper.select(SceneEntity::getId, SceneEntity::getSceneName);
+        // 只返回Jmeter+PTS上传的
+        wrapper.in(SceneEntity::getType, SceneTypeEnum.JMETER_UPLOAD_SCENE.getType(), SceneTypeEnum.PTS_UPLOAD_SCENE.getType());
+        // 未逻辑删除
+        wrapper.eq(SceneEntity::getIsDeleted, false);
+        if(!allowQueryUnMatchedBusinessFlow) {
+            // 节点匹配完成
+            wrapper.apply("total_node_num = link_relate_num");
+        }
+        // 倒序排列
+        wrapper.orderByDesc(SceneEntity::getId);
         if (CollectionUtils.isNotEmpty(queryParam.getUserIdList())) {
             wrapper.in(SceneEntity::getUserId, queryParam.getUserIdList());
         }
@@ -847,6 +843,7 @@ public class SceneServiceImpl implements SceneService {
         result.setScriptDeployId(sceneResult.getScriptDeployId());
         result.setTotalNodeNum(sceneResult.getTotalNodeNum());
         result.setLinkRelateNum(sceneResult.getLinkRelateNum());
+        result.setScriptType(sceneResult.getType());
     }
 
     private void dealScriptJmxNodes(List<SceneLinkRelateResult> sceneLinkRelateResults, List<ScriptJmxNode> scriptJmxNodes) {
@@ -887,11 +884,6 @@ public class SceneServiceImpl implements SceneService {
                     scriptJmxNode.setEntrace("|beanshell");
                     scriptJmxNode.setRequestPath("|beanshell");
                     scriptJmxNode.setIdentification("takin|beanshell");
-                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
-                }else if(scriptJmxNode.getName().equals("JavaSampler")){
-                    scriptJmxNode.setEntrace("|java");
-                    scriptJmxNode.setRequestPath("|java");
-                    scriptJmxNode.setIdentification("takin|java");
                     scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
                 }
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {

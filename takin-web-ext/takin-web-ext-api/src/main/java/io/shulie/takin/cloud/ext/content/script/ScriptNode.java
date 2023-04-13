@@ -60,6 +60,11 @@ public class ScriptNode extends AbstractEntry {
      * 请求路径
      */
     private String requestPath;
+
+    /**
+     * 是否启用
+     */
+    private Boolean enabled = true;
     /**
      * 子节点
      */

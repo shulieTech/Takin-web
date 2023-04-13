@@ -10,4 +10,6 @@ public class ScriptKeyValueParam implements Serializable {
     private String key;
 
     private String value;
+
+    private String desc;
 }

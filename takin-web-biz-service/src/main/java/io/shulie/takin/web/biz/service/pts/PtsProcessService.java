@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.pts;
 
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.pts.PtsSceneRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.pts.JmeterJavaRequestResponse;
@@ -18,7 +19,7 @@ public interface PtsProcessService {
 
     PtsSceneResponse detailProcess(Long id);
 
-    String debugProcess(Long id);
+    ResponseResult debugProcess(Long id);
 
     PtsDebugResponse getDebugRecord(Long id);
 

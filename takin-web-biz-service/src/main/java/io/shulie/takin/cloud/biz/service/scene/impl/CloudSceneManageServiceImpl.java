@@ -1296,7 +1296,9 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
             ref.setFileExtend(JSON.toJSONString(extend));
 
             ref.setIsDeleted(data.getIsDeleted());
-            ref.setUploadTime(DateUtil.parseDateTime(data.getUploadTime()));
+            if(data.getUploadTime() != null) {
+                ref.setUploadTime(DateUtil.parseDateTime(data.getUploadTime()));
+            }
             ref.setFileMd5(data.getFileMd5());
             scriptList.add(ref);
         });

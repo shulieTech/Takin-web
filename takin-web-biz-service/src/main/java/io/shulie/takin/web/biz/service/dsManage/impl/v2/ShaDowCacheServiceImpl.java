@@ -96,11 +96,12 @@ public class ShaDowCacheServiceImpl extends AbstractShaDowManageService {
         entity.setEnvCode(inputV2.getEnvCode());
 
         entity.setStatus(0);
+        entity.setColony(inputV2.getUrl());
+
         if (isCreate) {
             entity.setApplicationId(inputV2.getApplicationId());
             entity.setApplicationName(inputV2.getApplicationName());
             entity.setCacheName(inputV2.getConnectionPool());
-            entity.setColony(inputV2.getUrl());
             entity.setUserName(inputV2.getUsername());
             entity.setPwd("");
             entity.setType(inputV2.getCacheType());

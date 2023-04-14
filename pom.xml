@@ -435,6 +435,12 @@
                 <artifactId>transmittable-thread-local</artifactId>
                 <version>${transmittable-thread-local}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.esotericsoftware</groupId>
+                <artifactId>minlog</artifactId>
+                <version>1.3.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

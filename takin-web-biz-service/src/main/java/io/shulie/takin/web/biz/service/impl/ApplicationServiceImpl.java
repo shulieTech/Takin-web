@@ -2760,6 +2760,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS + ext.getTenantId() + "_" + ext.getEnvCode(), voStatus);
         }
         vo.setSwitchStutus(status);
+        agentConfigCacheManager.evictPressureSwitch();
         return Response.success(vo);
     }
 

@@ -133,7 +133,8 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_ecloud_package",
         "t_ecloud_user",
         "t_ecloud_tenant_package",
-        "t_ecloud_default_authority"
+        "t_ecloud_default_authority",
+        "t_ecloud_operate_machine_failed_record"
 
     };
 

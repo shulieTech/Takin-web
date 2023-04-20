@@ -17,4 +17,6 @@ public interface ReportBusinessActivityDetailDao {
     ReportBusinessActivityDetailEntity selectById(Long id);
 
     List<ReportBusinessActivityDetailEntity> selectDetailsByReportId(Long reportId);
+
+    ReportBusinessActivityDetailEntity selectDetailByReportIdAndActivityId(Long reportId, Long activityId);
 }

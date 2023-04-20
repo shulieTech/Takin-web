@@ -18,6 +18,7 @@ import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.web.biz.pojo.dto.scene.EngineMetricsDTO;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
+import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 
 import java.io.IOException;
@@ -47,10 +48,6 @@ import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
 import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDownLoadOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
@@ -185,6 +182,25 @@ public class ReportServiceImpl implements ReportService {
         fillExecuteMan(output);
         return output;
 
+    }
+
+    @Override
+    public List<SceneReportListOutput> getReportListBySceneId(Long sceneId) {
+        ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
+        req.setSceneId(sceneId);
+        List<ReportDetailResp> respList = cloudReportApi.detailListBySceneId(req);
+        List<SceneReportListOutput> outputList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(respList)) {
+            return outputList;
+        }
+        respList.stream().forEach(resp -> {
+            SceneReportListOutput out = new SceneReportListOutput();
+            out.setReportId(resp.getId());
+            out.setStartTime(resp.getStartTime());
+            out.setMaxConcurrent(resp.getConcurrent());
+            outputList.add(out);
+        });
+        return outputList;
     }
 
     private void fillExecuteMan(ReportDetailOutput output) {

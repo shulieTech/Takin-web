@@ -70,5 +70,13 @@ public class MachineDetailDTO implements Serializable {
         private BigDecimal[] io;
 
         private BigDecimal[] mbps;
+
+        private Long[] fullGcCount;
+
+        private Integer[] fullGcCost;
+
+        private Long[] youngGcCount;
+
+        private Integer[] youngGcCost;
     }
 }

@@ -375,6 +375,22 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
+    public List<ApplicationListResponse> getApplicationListByAppIds(List<Long> appIds) {
+        List<ApplicationDetailResult> resultList = applicationDAO.getApplicationByAppIds(appIds);
+        List<ApplicationListResponse> responseList = new ArrayList<>();
+        if(org.apache.commons.collections4.CollectionUtils.isEmpty(resultList)) {
+            return responseList;
+        }
+        resultList.stream().forEach(result -> {
+            ApplicationListResponse response = new ApplicationListResponse();
+            response.setApplicationId(result.getApplicationId());
+            response.setApplicationName(result.getApplicationName());
+            responseList.add(response);
+        });
+        return responseList;
+    }
+
+    @Override
     public Response<List<ApplicationVo>> getApplicationList(ApplicationQueryRequest queryParam) {
 
         PagingList<ApplicationDetailResult> pageInfo = confCenterService.queryApplicationList(queryParam);

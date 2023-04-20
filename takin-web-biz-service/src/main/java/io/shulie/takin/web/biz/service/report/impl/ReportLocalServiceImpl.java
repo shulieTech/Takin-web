@@ -2,12 +2,12 @@ package io.shulie.takin.web.biz.service.report.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
@@ -24,9 +24,23 @@ import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
+import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
+import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
+import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
+import io.shulie.takin.cloud.common.pojo.Pair;
+import io.shulie.takin.cloud.common.utils.TestTimeUtil;
+import io.shulie.takin.cloud.data.dao.report.ReportBusinessActivityDetailDao;
+import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
+import io.shulie.takin.web.biz.pojo.output.report.ReportCompareOutput;
+import io.shulie.takin.web.biz.pojo.output.report.ReportCompareRtOutput;
+import io.shulie.takin.web.biz.pojo.output.report.ReportCompareTargetOut;
+import io.shulie.takin.web.biz.pojo.output.report.ReportCompareTrendOut;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
+import io.shulie.takin.web.biz.service.report.ReportMessageService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
+import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
 import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
@@ -64,6 +78,29 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Autowired
     private ReportRealTimeService reportRealTimeService;
+
+    @Resource
+    private ReportBusinessActivityDetailDao reportBusinessActivityDetailDao;
+
+    @Resource
+    private ReportService reportService;
+
+    @Resource
+    private ReportMessageService reportMessageService;
+
+    private static List<Pair<Integer, Integer>> costList = new ArrayList<>();
+
+    static {
+        /**
+         * >=key <value
+         */
+        costList.add(new Pair<>(0, 1000));
+        costList.add(new Pair<>(1000, 2000));
+        costList.add(new Pair<>(2000, 3000));
+        costList.add(new Pair<>(3000, 4000));
+        costList.add(new Pair<>(4000, 5000));
+        costList.add(new Pair<>(5000, 100000));
+    }
 
     public static void main(String[] args) {
         String data1
@@ -243,6 +280,82 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return failedTotal + failedAssertTotal;
     }
 
+    @Override
+    public ReportCompareOutput getReportCompare(List<Long> reportIds, Long businessActivityId) {
+        ReportCompareOutput output = new ReportCompareOutput();
+        for(int i = 0; i < reportIds.size(); i++) {
+            Long reportId = reportIds.get(i);
+            ReportBusinessActivityDetailEntity detailEntity = reportBusinessActivityDetailDao.selectDetailByReportIdAndActivityId(reportId, businessActivityId);
+            if(detailEntity == null || detailEntity.getBindRef() == null || StringUtils.isBlank(detailEntity.getRtDistribute())) {
+                continue;
+            }
+            //列表数据 性能指标 rt数据
+            JSONObject jsonObject = JSON.parseObject(detailEntity.getRtDistribute());
+            String jsonStepString = jsonObject.getString("stepData");
+            output.setTargetData(JsonHelper.json2List(jsonStepString, ReportCompareTargetOut.class));
+            if(CollectionUtils.isNotEmpty(output.getTargetData())) {
+                output.getTargetData().stream().forEach(data -> {
+                    data.setReportId(reportId);
+                    data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
+                });
+            }
+            output.setRtData(JsonHelper.json2List(jsonStepString, ReportCompareRtOutput.class));
+            if(CollectionUtils.isNotEmpty(output.getRtData())) {
+                output.getRtData().stream().forEach(data -> {
+                    data.setReportId(reportId);
+                    data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
+                });
+            }
+            //趋势图数据 TPS RT
+            ReportTrendQueryReq trendQueryReq = new ReportTrendQueryReq();
+            trendQueryReq.setReportId(reportId);
+            trendQueryReq.setXpathMd5(detailEntity.getBindRef());
+            ReportTrendResp trendResp = reportService.queryReportTrend(trendQueryReq);
+            if(trendResp != null) {
+                ReportCompareTrendOut trendOut = output.getTrendData();
+                if(trendOut == null) {
+                    trendOut = new ReportCompareTrendOut();
+                    output.setTrendData(trendOut);
+                }
+                if(i == 0) {
+                    trendOut.setXTime(trendResp.getTime());
+                    trendOut.setConcurrent1(trendResp.getConcurrent());
+                    trendOut.setTps1(trendResp.getTps());
+                    trendOut.setRt1(trendResp.getRt());
+                    trendOut.setSuccessRate1(trendResp.getSuccessRate());
+                    trendOut.setSa1(trendResp.getSa());
+                } else {
+                    trendOut.setConcurrent2(trendResp.getConcurrent());
+                    trendOut.setTps2(trendResp.getTps());
+                    trendOut.setRt2(trendResp.getRt());
+                    trendOut.setSuccessRate2(trendResp.getSuccessRate());
+                    trendOut.setSa2(trendResp.getSa());
+                }
+            }
+            //按耗时取请求量
+            for(Pair<Integer, Integer> costPair : costList) {
+                ReportCostTrendQueryReq costReq = new ReportCostTrendQueryReq();
+                costReq.setReportId(reportId);
+                costReq.setXpathMd5(detailEntity.getBindRef());
+                costReq.setMinCost(costPair.getKey());
+                costReq.setMaxCost(costPair.getValue());
+                Integer cost = reportMessageService.getRequestCountByCost(costReq);
+                ReportCompareTrendOut trendOut = output.getTrendData();
+                if(trendOut == null) {
+                    trendOut = new ReportCompareTrendOut();
+                    output.setTrendData(trendOut);
+                }
+                if(i == 0) {
+                    trendOut.getXCost().add(costPair.getKey()+"-"+costPair.getValue()+"ms");
+                    trendOut.getCount1().add(String.valueOf(cost));
+                } else {
+                    trendOut.getCount2().add(String.valueOf(cost));
+                }
+            }
+        }
+        return output;
+    }
+
     private ReportCountDTO convert2ReportCountDTO(ReportSummaryResult result) {
         ReportCountDTO dto = new ReportCountDTO();
         dto.setBottleneckInterfaceCount(result.getBottleneckInterfaceCount());
@@ -292,6 +405,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         paramList.forEach(data -> {
             RiskMacheineDTO dto = new RiskMacheineDTO();
             dto.setId(data.getId());
+            dto.setAppName(data.getApplicationName());
             dto.setMachineIp(data.getMachineIp());
             dto.setRiskContent(data.getRiskContent());
             dto.setAgentId(data.getAgentId());

@@ -41,10 +41,18 @@ public class LinkDataResult {
      */
     private Double tps = 0D;
 
+    private Double minTps = 0D;
+
+    private Double maxTps = 0D;
+
     /**
      * rt
      */
     private Double rt = 0D;
+
+    private Double minRt = 0D;
+
+    private Double maxRt = 0D;
 
     /**
      * 错误数

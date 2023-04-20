@@ -73,6 +73,8 @@ public class StatReportDTO {
      */
     private BigDecimal maxTps;
 
+    private BigDecimal minTps;
+
 
     private BigDecimal sumRt;
 

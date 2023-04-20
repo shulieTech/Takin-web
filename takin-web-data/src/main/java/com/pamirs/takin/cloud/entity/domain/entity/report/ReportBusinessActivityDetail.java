@@ -97,6 +97,8 @@ public class ReportBusinessActivityDetail {
      */
     private BigDecimal maxTps;
 
+    private BigDecimal minTps;
+
     /**
      * 最大rt
      */

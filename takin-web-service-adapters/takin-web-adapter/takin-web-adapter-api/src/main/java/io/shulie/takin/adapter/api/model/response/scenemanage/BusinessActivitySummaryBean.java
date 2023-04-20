@@ -60,5 +60,7 @@ public class BusinessActivitySummaryBean {
     @ApiModelProperty(value = "通过标识")
     private Integer passFlag;
 
+    private String features;
+
 }
 

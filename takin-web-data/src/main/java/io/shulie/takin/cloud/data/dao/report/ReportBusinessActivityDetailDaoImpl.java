@@ -50,4 +50,12 @@ public class ReportBusinessActivityDetailDaoImpl implements ReportBusinessActivi
         wrapper.eq(ReportBusinessActivityDetailEntity::getIsDeleted, 0);
         return mapper.selectList(wrapper);
     }
+
+    @Override
+    public ReportBusinessActivityDetailEntity selectDetailByReportIdAndActivityId(Long reportId, Long activityId) {
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
+        wrapper.eq(ReportBusinessActivityDetailEntity::getBusinessActivityId, activityId);
+        return mapper.selectOne(wrapper);
+    }
 }

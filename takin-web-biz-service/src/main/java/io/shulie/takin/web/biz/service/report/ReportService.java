@@ -15,6 +15,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
+import io.shulie.takin.web.biz.pojo.output.report.SceneReportListOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 
@@ -38,6 +39,8 @@ public interface ReportService {
      * @return 报告详情
      */
     ReportDetailOutput getReportByReportId(Long reportId);
+
+    List<SceneReportListOutput> getReportListBySceneId(Long sceneId);
 
     /**
      * 查询报告趋势

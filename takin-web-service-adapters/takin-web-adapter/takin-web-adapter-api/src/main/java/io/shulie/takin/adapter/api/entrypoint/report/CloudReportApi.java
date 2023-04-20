@@ -50,6 +50,8 @@ public interface CloudReportApi {
      */
     ReportDetailResp detail(ReportDetailByIdReq req);
 
+    List<ReportDetailResp> detailListBySceneId(ReportDetailBySceneIdReq req);
+
     /**
      * 报告趋势
      *

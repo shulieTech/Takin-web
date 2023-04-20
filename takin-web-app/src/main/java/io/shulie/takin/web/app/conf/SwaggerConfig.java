@@ -535,6 +535,20 @@ public class SwaggerConfig {
                 ;
     }
 
+    @Bean
+    public Docket apiLtReport() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("LT版-压测报告")
+                .select()
+                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+                .paths(getRegex("/api/vlt.*"))
+                .build()
+                .directModelSubstitute(LocalDate.class, String.class)
+                .useDefaultResponseMessages(false)
+                .apiInfo(apiInfo())
+                ;
+    }
+
     /**
      * api info
      *

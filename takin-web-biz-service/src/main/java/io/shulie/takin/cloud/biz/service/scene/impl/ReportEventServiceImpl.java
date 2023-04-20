@@ -69,6 +69,36 @@ public class ReportEventServiceImpl implements ReportEventService {
         return resultMap;
     }
 
+    @Override
+    public Map<String, Integer> queryAndCalcRtDistributeByTime(Long startTime, Long endTime, Long jobId, String bindRef) {
+        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("sa_percent", "percentData");
+        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+        enginePressureQuery.setTransaction(bindRef);
+        enginePressureQuery.setJobId(jobId);
+        enginePressureQuery.setStartTime(startTime);
+        enginePressureQuery.setEndTime(endTime);
+        List<Metrics> metricsList = this.listEnginePressure(enginePressureQuery, Metrics.class);
+        if (null == metricsList) {
+            return null;
+        }
+        List<String> percentDataList = metricsList.stream().map(Metrics::getPercentData).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(percentDataList)){
+            return null;
+        }
+        Map<Integer, RtDataOutput> percentMap = calcRtDistribution(resolvingPercentData(percentDataList));
+        if(Objects.isNull(percentMap)){
+            return null;
+        }
+
+        Map<String, Integer> resultMap = Maps.newLinkedHashMap();
+        INDEXS.forEach(percent -> {
+            resultMap.put("rt"+percent, percentMap.get(percent).getTime());
+        });
+        return resultMap;
+    }
+
     private <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
         try {
             if (query == null || query.getJobId() == null){

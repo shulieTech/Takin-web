@@ -1,10 +1,10 @@
 package com.pamirs.takin.entity.domain.dto.report;
 
-import java.io.Serializable;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * 风险机器列表
@@ -14,9 +14,7 @@ import lombok.Data;
  */
 @ApiModel
 @Data
-public class RiskMacheineDTO implements Serializable {
-
-    private static final long serialVersionUID = -821315409231651171L;
+public class RiskMachineLtDTO implements Serializable {
 
     @ApiModelProperty(value = "ID")
     private Long id;
@@ -24,13 +22,10 @@ public class RiskMacheineDTO implements Serializable {
     @ApiModelProperty(value = "应用名称")
     private String appName;
 
-    @ApiModelProperty(value = "机器IP")
-    private String machineIp;
-
-    @ApiModelProperty(value = "agentId")
+    @ApiModelProperty(value = "实例ID")
     private String agentId;
 
-    @ApiModelProperty(value = "风险")
+    @ApiModelProperty(value = "风险描述")
     private String riskContent;
 
 }

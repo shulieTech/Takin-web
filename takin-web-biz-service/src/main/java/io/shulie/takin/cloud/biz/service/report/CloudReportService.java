@@ -50,6 +50,8 @@ public interface CloudReportService {
      */
     ReportDetailOutput getReportByReportId(Long reportId);
 
+    List<ReportDetailOutput> getReportListBySceneId(Long sceneId);
+
     /**
      * 报告链路趋势
      *

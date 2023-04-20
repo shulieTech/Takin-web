@@ -10,6 +10,7 @@ import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
+import io.shulie.takin.web.biz.pojo.output.report.ReportCompareOutput;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 
 /**
@@ -33,4 +34,6 @@ public interface ReportLocalService {
     PageInfo<MachineDetailDTO> listMachineDetail(ReportLocalQueryParam queryParam);
 
     Long getTraceFailedCount(Long reportId);
+
+    ReportCompareOutput getReportCompare(List<Long> reportIds, Long businessActivityId);
 }

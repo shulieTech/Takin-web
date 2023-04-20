@@ -30,6 +30,7 @@ import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -169,7 +170,7 @@ public class ReportLocalController {
 
     @GetMapping("vlt/report/compare")
     @ApiOperation("LT版-压测报告比对")
-    public Response<ReportCompareOutput> getLtReportCompare(List<Long> reportIds, Long businessActivityId) {
+    public Response<ReportCompareOutput> getLtReportCompare(@RequestParam List<Long> reportIds, @RequestParam Long businessActivityId) {
         if(CollectionUtils.isEmpty(reportIds) || reportIds.size() != 2 || businessActivityId == null || businessActivityId == -1) {
             log.warn("压测报告比对告警，传入参数长度不正确");
             return Response.success();
@@ -179,7 +180,7 @@ public class ReportLocalController {
 
     @GetMapping("vlt/node/compare")
     @ApiOperation("LT版-节点比对")
-    public Response<NodeCompareTargetOut> getLtNodeCompare(Long[] reportIds) {
+    public Response<NodeCompareTargetOut> getLtNodeCompare(@RequestParam List<Long> reportIds, @RequestParam Long businessActivityId) {
         return Response.success(new NodeCompareTargetOut());
     }
 

@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
+import com.pamirs.takin.entity.domain.dto.report.ReportCostDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageStatusCodeDTO;
 import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
@@ -62,12 +63,12 @@ public class ReportMessageServiceImpl implements ReportMessageService {
         HttpMethod httpMethod = HttpMethod.GET;
         req.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         req.setEnvCode(WebPluginUtils.traceEnvCode());
-        AmdbResult<Integer> response = AmdbHelper.builder().httpMethod(httpMethod)
+        AmdbResult<ReportCostDTO> response = AmdbHelper.builder().httpMethod(httpMethod)
                 .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_COSTCOUNT_PATH)
                 .param(req)
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
                 .eventName("查询enginePressure数据")
-                .one(Integer.class);
-        return response.getData();
+                .one(ReportCostDTO.class);
+        return response.getData().getCount();
     }
 }

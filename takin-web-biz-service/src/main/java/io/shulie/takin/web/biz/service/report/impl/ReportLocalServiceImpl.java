@@ -27,16 +27,17 @@ import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
+import io.shulie.takin.adapter.api.model.response.scenemanage.BusinessActivitySummaryBean;
 import io.shulie.takin.cloud.common.pojo.Pair;
 import io.shulie.takin.cloud.common.utils.TestTimeUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportBusinessActivityDetailDao;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
-import io.shulie.takin.web.biz.pojo.output.report.ReportCompareOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportCompareRtOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportCompareTargetOut;
-import io.shulie.takin.web.biz.pojo.output.report.ReportCompareTrendOut;
+import io.shulie.takin.web.biz.pojo.output.report.*;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
+import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportMessageService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
@@ -88,19 +89,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Resource
     private ReportMessageService reportMessageService;
 
-    private static List<Pair<Integer, Integer>> costList = new ArrayList<>();
-
-    static {
-        /**
-         * >=key <value
-         */
-        costList.add(new Pair<>(0, 1000));
-        costList.add(new Pair<>(1000, 2000));
-        costList.add(new Pair<>(2000, 3000));
-        costList.add(new Pair<>(3000, 4000));
-        costList.add(new Pair<>(4000, 5000));
-        costList.add(new Pair<>(5000, 100000));
-    }
+    @Resource
+    private ActivityService activityService;
 
     public static void main(String[] args) {
         String data1
@@ -283,12 +273,27 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Override
     public ReportCompareOutput getReportCompare(List<Long> reportIds, Long businessActivityId) {
         ReportCompareOutput output = new ReportCompareOutput();
+        //查询业务活动serviceName和methodName
+        ActivityInfoQueryRequest activityReq = new ActivityInfoQueryRequest();
+        activityReq.setActivityId(businessActivityId);
+        ActivityResponse activityResp = activityService.getActivityById(activityReq);
+        if(activityResp == null) {
+            return output;
+        }
+        Map<Long, ReportDetailOutput> reportOutputMap = new HashMap<>();
+        Integer minRt = 0;
+        Integer maxRt = 0;
         for(int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
-            ReportBusinessActivityDetailEntity detailEntity = reportBusinessActivityDetailDao.selectDetailByReportIdAndActivityId(reportId, businessActivityId);
+            ReportDetailOutput reportOutput = reportService.getReportByReportId(reportId);
+            if(reportOutput == null) {
+                continue;
+            }
+            BusinessActivitySummaryBean detailEntity = reportOutput.getBusinessActivity().stream().filter(data -> data.getBusinessActivityId().longValue() == businessActivityId.longValue()).findFirst().orElse(null);
             if(detailEntity == null || detailEntity.getBindRef() == null || StringUtils.isBlank(detailEntity.getRtDistribute())) {
                 continue;
             }
+            reportOutputMap.put(reportId, reportOutput);
             //列表数据 性能指标 rt数据
             JSONObject jsonObject = JSON.parseObject(detailEntity.getRtDistribute());
             String jsonStepString = jsonObject.getString("stepData");
@@ -324,19 +329,40 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     trendOut.setRt1(trendResp.getRt());
                     trendOut.setSuccessRate1(trendResp.getSuccessRate());
                     trendOut.setSa1(trendResp.getSa());
+                    Pair<Integer, Integer> pair = getMinMaxRt(trendResp.getRt());
+                    if(pair != null) {
+                        minRt = Math.min(minRt, pair.getKey());
+                        maxRt = Math.max(maxRt, pair.getValue());
+                    }
                 } else {
                     trendOut.setConcurrent2(trendResp.getConcurrent());
                     trendOut.setTps2(trendResp.getTps());
                     trendOut.setRt2(trendResp.getRt());
                     trendOut.setSuccessRate2(trendResp.getSuccessRate());
                     trendOut.setSa2(trendResp.getSa());
+                    Pair<Integer, Integer> pair = getMinMaxRt(trendResp.getRt());
+                    if(pair != null) {
+                        minRt = Math.min(minRt, pair.getKey());
+                        maxRt = Math.max(maxRt, pair.getValue());
+                    }
                 }
             }
-            //按耗时取请求量
+        }
+        List<Pair<Integer, Integer>> costList = calcCostLevelByFive(minRt, maxRt);
+        //按耗时取请求量
+        for(int i = 0; i < reportIds.size(); i++) {
+            Long reportId = reportIds.get(i);
+            ReportDetailOutput reportOutput = reportOutputMap.get(reportId);
+            if(reportOutput == null || CollectionUtils.isEmpty(costList)) {
+                continue;
+            }
             for(Pair<Integer, Integer> costPair : costList) {
                 ReportCostTrendQueryReq costReq = new ReportCostTrendQueryReq();
-                costReq.setReportId(reportId);
-                costReq.setXpathMd5(detailEntity.getBindRef());
+                costReq.setStartTime(reportOutput.getStartTime());
+                costReq.setEndTime(DateUtil.formatDateTime(reportOutput.getEndTime()));
+                costReq.setJobId(reportOutput.getJobId().toString());
+                costReq.setServiceName(activityResp.getServiceName());
+                costReq.setRequestMethod(activityResp.getMethod());
                 costReq.setMinCost(costPair.getKey());
                 costReq.setMaxCost(costPair.getValue());
                 Integer cost = reportMessageService.getRequestCountByCost(costReq);
@@ -563,5 +589,42 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             return ZERO;
         }
         return num.divide(new BigDecimal(1024 * 1024), 0, RoundingMode.HALF_UP);
+    }
+
+    private Pair<Integer, Integer> getMinMaxRt(List<String> rtList) {
+        if(CollectionUtils.isEmpty(rtList)) {
+            return null;
+        }
+        Pair<Integer, Integer> pair = new Pair<>();
+        List<Integer> intList = new ArrayList<>();
+        for(String rt : rtList) {
+            intList.add(Integer.parseInt(rt));
+        }
+        Collections.sort(intList);
+        pair.setKey(intList.get(0));
+        pair.setValue(intList.get(intList.size() - 1));
+        return pair;
+    }
+
+    public List<Pair<Integer, Integer>> calcCostLevelByFive(Integer minRt, Integer maxRt) {
+        log.info("calcCostLevelByFive, minRT={}, maxRt={}", minRt, maxRt);
+        List<Pair<Integer, Integer>> pairList = new ArrayList<>();
+        if(minRt == maxRt) {
+            return pairList;
+        }
+        int step = Math.max(1, ((maxRt - minRt) / 5));
+        for(int i = 0; i < 5; i++) {
+            if(i == 4) {
+                pairList.add(new Pair<>(minRt, maxRt));
+            } else {
+                if (minRt + step >= maxRt) {
+                    pairList.add(new Pair<>(minRt, maxRt));
+                    break;
+                }
+                pairList.add(new Pair<>(minRt, minRt + step));
+                minRt += step;
+            }
+        }
+        return pairList;
     }
 }

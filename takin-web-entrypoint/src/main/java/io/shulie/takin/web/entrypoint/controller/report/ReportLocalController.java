@@ -171,7 +171,7 @@ public class ReportLocalController {
     @GetMapping("vlt/report/compare")
     @ApiOperation("LT版-压测报告比对")
     public Response<ReportCompareOutput> getLtReportCompare(@RequestParam List<Long> reportIds, @RequestParam Long businessActivityId) {
-        if(CollectionUtils.isEmpty(reportIds) || reportIds.size() != 2 || businessActivityId == null || businessActivityId == -1) {
+        if(CollectionUtils.isEmpty(reportIds) || businessActivityId == null || businessActivityId == -1) {
             log.warn("压测报告比对告警，传入参数长度不正确");
             return Response.success();
         }

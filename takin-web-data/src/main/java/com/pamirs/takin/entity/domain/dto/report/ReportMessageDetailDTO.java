@@ -20,12 +20,14 @@ public class ReportMessageDetailDTO implements Serializable {
     private String requestHeader;
 
     @ApiModelProperty("请求体")
-    private String requestBody;
+    private String request;
 
     @ApiModelProperty("响应头")
     private String responseHeader;
 
     @ApiModelProperty("响应体")
-    private String responseBody;
+    private String response;
+
+    private String startDate;
 
 }

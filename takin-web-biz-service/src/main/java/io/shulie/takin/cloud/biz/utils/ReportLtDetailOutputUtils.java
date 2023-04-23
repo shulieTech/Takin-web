@@ -62,8 +62,7 @@ public class ReportLtDetailOutputUtils {
                 JSONObject jsonObject = JSON.parseObject(bean.getFeatures());
                 if(jsonObject != null) {
                     String entrance = jsonObject.getString("entrance");
-                    Integer type = jsonObject.getInteger("type");
-                    ActivityUtil.EntranceJoinEntity entity = ActivityUtil.getEntranceJoinEntityByEntranceAndType(entrance, type);
+                    ActivityUtil.EntranceJoinEntity entity = ActivityUtil.covertEntranceV2(entrance);
                     activity.setServiceName(entity.getServiceName());
                     activity.setRequestMethod(entity.getMethodName());
                 }

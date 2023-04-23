@@ -34,6 +34,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.NumberUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -114,6 +115,7 @@ import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.*;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
+import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.*;
 import io.shulie.takin.web.data.param.application.*;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
@@ -296,6 +298,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Value("${takin.redis.error.expire:90}")
     private Integer errorExpireTime;
 
+    @Resource
+    private ApplicationMntMapper applicationMntMapper;
+
     @PostConstruct
     public void init() {
         isCheckDuplicateName = ConfigServerHelper.getBooleanValueByKey(
@@ -416,9 +421,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public Long getAccessErrorNum() {
-        ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
-        requestV2.setAccessStatus(3);
-        return this.pageApplication(requestV2).getTotal();
+        return applicationMntMapper.selectCount(new LambdaQueryWrapper<ApplicationMntEntity>()
+                .eq(ApplicationMntEntity::getAccessStatus, 3)
+                .eq(ApplicationMntEntity::getTenantId, WebPluginUtils.traceTenantCommonExt().getTenantId())
+                .eq(ApplicationMntEntity::getEnvCode, WebPluginUtils.traceTenantCommonExt().getEnvCode()));
     }
 
 //    @Override

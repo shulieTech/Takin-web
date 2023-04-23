@@ -42,6 +42,7 @@ public class ReportLtDetailOutputUtils {
         lt.setSa(output.getSa());
         lt.setMaxTps(output.getMaxTps());
         lt.setMaxRt(output.getMaxRt());
+        lt.setJobId(output.getJobId());
         //解析业务活动信息
         List<BusinessActivitySummaryBean> beanList = output.getBusinessActivity();
         Set<String> appIdSet = new HashSet<>();

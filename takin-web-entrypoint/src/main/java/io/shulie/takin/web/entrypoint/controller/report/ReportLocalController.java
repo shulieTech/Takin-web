@@ -24,6 +24,7 @@ import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -142,6 +143,13 @@ public class ReportLocalController {
             });
         }
         return Response.success(dataList);
+    }
+
+    @GetMapping("vlt/report/test/build/data")
+    @ApiOperation("LT版-主动生成报告数据")
+    public Response buildTestReportData(Long jobId, Long sceneId, Long reportId) {
+        reportService.buildReportTestData(jobId, sceneId, reportId, WebPluginUtils.traceTenantId());
+        return Response.success();
     }
 
     //@GetMapping("/report/businessActivity/summary/list")

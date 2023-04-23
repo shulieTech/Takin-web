@@ -750,6 +750,11 @@ public class ReportServiceImpl implements ReportService {
         return reportMapper.selectList(queryWrapper);
     }
 
+    @Override
+    public void buildReportTestData(Long jobId, Long sceneId, Long reportId, Long tenantId) {
+        cloudReportService.updateReportBusinessActivity(jobId, sceneId, reportId, tenantId);
+    }
+
     private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5) {
         if (scriptNodeSummaryBean.getXpathMd5().equals(xpathMd5)) {
             return scriptNodeSummaryBean;

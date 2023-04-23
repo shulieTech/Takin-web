@@ -113,7 +113,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Autowired
     private ActivityService activityService;
-    private static List<Pair<Integer, Integer>> costList = new ArrayList<>();
     @Resource
     private TReportBusinessActivityDetailMapper tReportBusinessActivityDetailMapper;
     @Resource
@@ -122,18 +121,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     private ReportMapper reportMapper;
     @Resource
     private ApplicationMntMapper applicationMntMapper;
-
-    static {
-        /**
-         * >=key <value
-         */
-        costList.add(new Pair<>(0, 1000));
-        costList.add(new Pair<>(1000, 2000));
-        costList.add(new Pair<>(2000, 3000));
-        costList.add(new Pair<>(3000, 4000));
-        costList.add(new Pair<>(4000, 5000));
-        costList.add(new Pair<>(5000, 100000));
-    }
 
     public static void main(String[] args) {
         String data1 = "{\"cpu\":[10,11,12],\"io\":[40,30,35],\"loading\":[75,55,70],\"memory\":[40,43,45],\"network\":[20,40," + "24],\"tps\":[100,110,120]}";
@@ -309,7 +296,95 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Override
     public ReportCompareOutput getReportCompare(List<Long> reportIds, Long businessActivityId) {
-        return null;
+        ReportCompareOutput output = new ReportCompareOutput();
+        //查询业务活动serviceName和methodName
+        ActivityResponse activityResp = activityService.getActivityServiceById(businessActivityId);
+        if(activityResp == null) {
+            return output;
+        }
+        Map<Long, ReportDetailOutput> reportOutputMap = new HashMap<>();
+        Integer minRt = 0;
+        Integer maxRt = 0;
+        for(int i = 0; i < reportIds.size(); i++) {
+            Long reportId = reportIds.get(i);
+            ReportDetailOutput reportOutput = reportService.getReportByReportId(reportId);
+            if(reportOutput == null) {
+                continue;
+            }
+            //柱状图数据
+            ReportCompareColumnarOut columnarOut = new ReportCompareColumnarOut();
+            columnarOut.setReportId(reportId);
+            columnarOut.setTps(reportOutput.getAvgTps());
+            columnarOut.setRt(reportOutput.getAvgRt());
+            columnarOut.setSuccessRate(reportOutput.getSuccessRate());
+            output.getColumnarData().add(columnarOut);
+            BusinessActivitySummaryBean detailEntity = reportOutput.getBusinessActivity().stream().filter(data -> data.getBusinessActivityId().longValue() == businessActivityId.longValue()).findFirst().orElse(null);
+            if(detailEntity == null || detailEntity.getBindRef() == null || StringUtils.isBlank(detailEntity.getRtDistribute())) {
+                continue;
+            }
+            reportOutputMap.put(reportId, reportOutput);
+            //列表数据 性能指标 rt数据
+            JSONObject jsonObject = JSON.parseObject(detailEntity.getRtDistribute());
+            String jsonStepString = jsonObject.getString("stepData");
+            output.setTargetData(JsonHelper.json2List(jsonStepString, ReportCompareTargetOut.class));
+            if(CollectionUtils.isNotEmpty(output.getTargetData())) {
+                output.getTargetData().stream().forEach(data -> {
+                    data.setReportId(reportId);
+                    data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
+                });
+            }
+            output.setRtData(JsonHelper.json2List(jsonStepString, ReportCompareRtOutput.class));
+            if(CollectionUtils.isNotEmpty(output.getRtData())) {
+                output.getRtData().stream().forEach(data -> {
+                    data.setReportId(reportId);
+                    data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
+                });
+            }
+            //趋势图数据 TPS RT
+            ReportTrendQueryReq trendQueryReq = new ReportTrendQueryReq();
+            trendQueryReq.setReportId(reportId);
+            trendQueryReq.setXpathMd5(detailEntity.getBindRef());
+            ReportTrendResp trendResp = reportService.queryReportTrend(trendQueryReq);
+            ReportCompareTrendOut trendOut = new ReportCompareTrendOut();
+            if(trendResp != null) {
+                trendOut.setReportId(reportId);
+                trendOut.setXTime(trendResp.getTime());
+                trendOut.setConcurrent(trendResp.getConcurrent());
+                trendOut.setTps(trendResp.getTps());
+                trendOut.setRt(trendResp.getRt());
+                trendOut.setSuccessRate(trendResp.getSuccessRate());
+                trendOut.setSa(trendResp.getSa());
+                Pair<Integer, Integer> pair = getMinMaxRt(trendResp.getRt());
+                if(pair != null) {
+                    minRt = Math.min(minRt, pair.getKey());
+                    maxRt = Math.max(maxRt, pair.getValue());
+                }
+            }
+            output.getTrendData().add(trendOut);
+        }
+        List<Pair<Integer, Integer>> costList = calcCostLevelByFive(minRt, maxRt);
+        //按耗时取请求量
+        for(int i = 0; i < reportIds.size(); i++) {
+            Long reportId = reportIds.get(i);
+            ReportDetailOutput reportOutput = reportOutputMap.get(reportId);
+            if(reportOutput == null || CollectionUtils.isEmpty(costList)) {
+                continue;
+            }
+            for(Pair<Integer, Integer> costPair : costList) {
+                ReportCostTrendQueryReq costReq = new ReportCostTrendQueryReq();
+                costReq.setStartTime(reportOutput.getStartTime());
+                costReq.setEndTime(DateUtil.formatDateTime(reportOutput.getEndTime()));
+                costReq.setJobId(reportOutput.getJobId().toString());
+                costReq.setServiceName(activityResp.getServiceName());
+                costReq.setRequestMethod(activityResp.getMethod());
+                costReq.setMinCost(costPair.getKey());
+                costReq.setMaxCost(costPair.getValue());
+                Integer cost = reportMessageService.getRequestCountByCost(costReq);
+                output.getTrendData().get(i).getXCost().add(costPair.getKey()+"-"+costPair.getValue()+"ms");
+                output.getTrendData().get(i).getCount().add(String.valueOf(cost));
+            }
+        }
+        return output;
     }
 
 

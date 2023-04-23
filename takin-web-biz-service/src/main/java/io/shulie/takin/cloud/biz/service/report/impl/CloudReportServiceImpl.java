@@ -1925,7 +1925,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             return;
         }
         dataList.forEach(data -> {
-            if(data.getType() == NodeTypeEnum.THREAD_GROUP.name()) {
+            if(data.getType().equals(NodeTypeEnum.THREAD_GROUP.name())) {
                 String key = data.getXpathMd5();
                 List<String> sampleList = new ArrayList<>();
                 calcHttp(data.getChildren(), sampleList);
@@ -1942,7 +1942,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             return;
         }
         dataList.forEach(data -> {
-            if(data.getType() == NodeTypeEnum.SAMPLER.name()) {
+            if(data.getType().equals(NodeTypeEnum.SAMPLER.name())) {
                 sampleList.add(data.getXpathMd5());
             }
             calcHttp(data.getChildren(), sampleList);

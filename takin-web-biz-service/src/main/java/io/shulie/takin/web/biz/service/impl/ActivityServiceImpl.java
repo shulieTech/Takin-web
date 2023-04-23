@@ -763,6 +763,21 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    public ActivityResponse getActivityServiceById(Long id) {
+        ActivityResult result = activityDAO.getActivityServiceById(id);
+        if(result == null) {
+            return null;
+        }
+        ActivityResponse response = new ActivityResponse();
+        response.setActivityId(id);
+        response.setEntranceName(result.getEntranceName());
+        response.setServiceName(result.getServiceName());
+        response.setMethod(result.getMethod());
+        response.setRpcType(result.getRpcType());
+        return response;
+    }
+
+    @Override
     public ActivityResponse getActivityByIdWithoutTopology(Long id) {
         ActivityResult result = activityDAO.getActivityById(id);
         if (result == null) {

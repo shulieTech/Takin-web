@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import io.shulie.takin.cloud.common.pojo.Pair;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 public class TestUtils {
@@ -56,5 +57,7 @@ public class TestUtils {
         System.out.println(JSON.toJSONString(calcCostLevelByFive(0, 2)));
         System.out.println(JSON.toJSONString(calcCostLevelByFive(0, 5)));
         System.out.println(JSON.toJSONString(calcCostLevelByFive(0, 8)));
+
+        System.out.println("Integer RT Value=" + new BigDecimal("6.71").intValue());
     }
 }

@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -14,7 +15,9 @@ public class ReportCompareOutput implements Serializable {
 
     private List<ReportCompareRtOutput> rtData;
 
-    private ReportCompareTrendOut trendData;
+    private List<ReportCompareColumnarOut> columnarData = new ArrayList<>();
+
+    private List<ReportCompareTrendOut> trendData = new ArrayList<>();
 
 
 }

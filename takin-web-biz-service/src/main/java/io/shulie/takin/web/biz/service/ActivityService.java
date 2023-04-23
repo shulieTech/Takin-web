@@ -72,6 +72,8 @@ public interface ActivityService {
      */
     ActivityResponse getActivityById(ActivityInfoQueryRequest activityInfoQueryRequest);
 
+    ActivityResponse getActivityServiceById(Long id);
+
     ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request);
 
     List<ReportActivityResponse> getActivityWithMetricsByIdForReports(List<ReportActivityInfoQueryRequest> activityInfoQueryRequests);

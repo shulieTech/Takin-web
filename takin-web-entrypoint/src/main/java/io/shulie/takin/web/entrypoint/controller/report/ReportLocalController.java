@@ -31,10 +31,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 本地压测报告数据
@@ -214,8 +211,6 @@ public class ReportLocalController {
     public Response<Object> getReportAppInstanceTrendMap() {
         //TODO
         return Response.success();
-    public Response<NodeCompareTargetOut> getLtNodeCompare(@RequestParam List<Long> reportIds, @RequestParam Long businessActivityId) {
-        return Response.success(new NodeCompareTargetOut());
     }
 
     @GetMapping("/report/application/list")

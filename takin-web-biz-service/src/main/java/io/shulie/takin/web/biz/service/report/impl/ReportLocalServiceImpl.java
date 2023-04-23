@@ -134,8 +134,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         costList.add(new Pair<>(4000, 5000));
         costList.add(new Pair<>(5000, 100000));
     }
-    @Resource
-    private ActivityService activityService;
 
     public static void main(String[] args) {
         String data1 = "{\"cpu\":[10,11,12],\"io\":[40,30,35],\"loading\":[75,55,70],\"memory\":[40,43,45],\"network\":[20,40," + "24],\"tps\":[100,110,120]}";
@@ -311,118 +309,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Override
     public ReportCompareOutput getReportCompare(List<Long> reportIds, Long businessActivityId) {
-        ReportCompareOutput output = new ReportCompareOutput();
-        for (int i = 0; i < reportIds.size(); i++) {
-        //查询业务活动serviceName和methodName
-        ActivityInfoQueryRequest activityReq = new ActivityInfoQueryRequest();
-        activityReq.setActivityId(businessActivityId);
-        ActivityResponse activityResp = activityService.getActivityById(activityReq);
-        if(activityResp == null) {
-            return output;
-        }
-        Map<Long, ReportDetailOutput> reportOutputMap = new HashMap<>();
-        Integer minRt = 0;
-        Integer maxRt = 0;
-        for(int i = 0; i < reportIds.size(); i++) {
-            Long reportId = reportIds.get(i);
-            ReportBusinessActivityDetailEntity detailEntity = reportBusinessActivityDetailDao.selectDetailByReportIdAndActivityId(reportId, businessActivityId);
-            if (detailEntity == null || detailEntity.getBindRef() == null || StringUtils.isBlank(detailEntity.getRtDistribute())) {
-            ReportDetailOutput reportOutput = reportService.getReportByReportId(reportId);
-            if(reportOutput == null) {
-                continue;
-            }
-            BusinessActivitySummaryBean detailEntity = reportOutput.getBusinessActivity().stream().filter(data -> data.getBusinessActivityId().longValue() == businessActivityId.longValue()).findFirst().orElse(null);
-            if(detailEntity == null || detailEntity.getBindRef() == null || StringUtils.isBlank(detailEntity.getRtDistribute())) {
-                continue;
-            }
-            reportOutputMap.put(reportId, reportOutput);
-            //列表数据 性能指标 rt数据
-            JSONObject jsonObject = JSON.parseObject(detailEntity.getRtDistribute());
-            String jsonStepString = jsonObject.getString("stepData");
-            output.setTargetData(JsonHelper.json2List(jsonStepString, ReportCompareTargetOut.class));
-            if(CollectionUtils.isNotEmpty(output.getTargetData())) {
-                output.getTargetData().stream().forEach(data -> {
-                    data.setReportId(reportId);
-                    data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
-                });
-            }
-            output.setRtData(JsonHelper.json2List(jsonStepString, ReportCompareRtOutput.class));
-            if(CollectionUtils.isNotEmpty(output.getRtData())) {
-                output.getRtData().stream().forEach(data -> {
-                    data.setReportId(reportId);
-                    data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
-                });
-            }
-            //趋势图数据 TPS RT
-            ReportTrendQueryReq trendQueryReq = new ReportTrendQueryReq();
-            trendQueryReq.setReportId(reportId);
-            trendQueryReq.setXpathMd5(detailEntity.getBindRef());
-            ReportTrendResp trendResp = reportService.queryReportTrend(trendQueryReq);
-            if(trendResp != null) {
-                ReportCompareTrendOut trendOut = output.getTrendData();
-                if(trendOut == null) {
-                    trendOut = new ReportCompareTrendOut();
-                    output.setTrendData(trendOut);
-                }
-                if(i == 0) {
-                    trendOut.setXTime(trendResp.getTime());
-                    trendOut.setConcurrent1(trendResp.getConcurrent());
-                    trendOut.setTps1(trendResp.getTps());
-                    trendOut.setRt1(trendResp.getRt());
-                    trendOut.setSuccessRate1(trendResp.getSuccessRate());
-                    trendOut.setSa1(trendResp.getSa());
-                    Pair<Integer, Integer> pair = getMinMaxRt(trendResp.getRt());
-                    if(pair != null) {
-                        minRt = Math.min(minRt, pair.getKey());
-                        maxRt = Math.max(maxRt, pair.getValue());
-                    }
-                } else {
-                    trendOut.setConcurrent2(trendResp.getConcurrent());
-                    trendOut.setTps2(trendResp.getTps());
-                    trendOut.setRt2(trendResp.getRt());
-                    trendOut.setSuccessRate2(trendResp.getSuccessRate());
-                    trendOut.setSa2(trendResp.getSa());
-                    Pair<Integer, Integer> pair = getMinMaxRt(trendResp.getRt());
-                    if(pair != null) {
-                        minRt = Math.min(minRt, pair.getKey());
-                        maxRt = Math.max(maxRt, pair.getValue());
-                    }
-                }
-            }
-        }
-        List<Pair<Integer, Integer>> costList = calcCostLevelByFive(minRt, maxRt);
-        //按耗时取请求量
-        for(int i = 0; i < reportIds.size(); i++) {
-            Long reportId = reportIds.get(i);
-            ReportDetailOutput reportOutput = reportOutputMap.get(reportId);
-            if(reportOutput == null || CollectionUtils.isEmpty(costList)) {
-                continue;
-            }
-            for(Pair<Integer, Integer> costPair : costList) {
-                ReportCostTrendQueryReq costReq = new ReportCostTrendQueryReq();
-                costReq.setStartTime(reportOutput.getStartTime());
-                costReq.setEndTime(DateUtil.formatDateTime(reportOutput.getEndTime()));
-                costReq.setJobId(reportOutput.getJobId().toString());
-                costReq.setServiceName(activityResp.getServiceName());
-                costReq.setRequestMethod(activityResp.getMethod());
-                costReq.setMinCost(costPair.getKey());
-                costReq.setMaxCost(costPair.getValue());
-                Integer cost = reportMessageService.getRequestCountByCost(costReq);
-                ReportCompareTrendOut trendOut = output.getTrendData();
-                if(trendOut == null) {
-                    trendOut = new ReportCompareTrendOut();
-                    output.setTrendData(trendOut);
-                }
-                if(i == 0) {
-                    trendOut.getXCost().add(costPair.getKey()+"-"+costPair.getValue()+"ms");
-                    trendOut.getCount1().add(String.valueOf(cost));
-                } else {
-                    trendOut.getCount2().add(String.valueOf(cost));
-                }
-            }
-        }
-        return output;
+        return null;
     }
+
 
     //压测报告节点rt比较
     @Override

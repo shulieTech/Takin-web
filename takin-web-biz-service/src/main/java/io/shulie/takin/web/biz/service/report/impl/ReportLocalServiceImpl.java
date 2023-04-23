@@ -536,7 +536,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
      */
     @Override
     public Response<ReportAppMapOut> getReportAppTrendMap(Long reportId) {
-
+        ReportEntity reportEntity = getReportEntity(reportId);
         return null;
     }
 

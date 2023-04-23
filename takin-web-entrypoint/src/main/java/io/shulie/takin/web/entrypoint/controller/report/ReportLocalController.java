@@ -12,11 +12,10 @@ import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.dto.report.*;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
+import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
-import io.shulie.takin.web.biz.pojo.output.report.NodeCompareTargetOut;
-import io.shulie.takin.web.biz.pojo.output.report.ReportCompareOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
@@ -200,18 +199,20 @@ public class ReportLocalController {
 
     @GetMapping("/vlt/report/application/performanceList")
     @ApiOperation("LT版-应用性能列表")
-    public Response<Object> getReortAppPerformanceList(long reportId) {
-        //TODO 应用维度的性能
-        return Response.success(this.reportLocalService.getReortAppPerformanceList(reportId));
+    public Response<List<ReportAppPerformanceOut>> getReortAppPerformanceList(long reportId) {
+        return this.reportLocalService.getReortAppPerformanceList(reportId);
+    }
+
+    @GetMapping("/vlt/report/application/instance/performanceList")
+    @ApiOperation("LT版-应用实例性能列表")
+    public Response<List<ReportAppInstancePerformanceOut>> getReortAppInstancePerformanceList(long reportId) {
+        return this.reportLocalService.getReortAppInstancePerformanceList(reportId);
     }
 
     @GetMapping("/vlt/report/application/trendMap")
     @ApiOperation("LT版-应用趋势图")
-    public Response<Object> getReportAppTrendMap(ReportTrendQueryReq reportTrendQuery) {
-        ResponseResult.success(reportService.queryReportTrend(reportTrendQuery));
-
-        //TODO 趋势图应用维度的性能
-        return Response.success();
+    public Response<ReportTrendResp> getReportAppTrendMap(ReportTrendQueryReq reportTrendQuery) {
+        return Response.success(reportService.queryReportTrend(reportTrendQuery));
     }
 
     @GetMapping("/vlt/report/application/instance/trendMap")

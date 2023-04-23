@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
@@ -8,8 +10,10 @@ import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.response.report.*;
 import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.common.utils.JsonPathUtil;
+import io.shulie.takin.cloud.data.mapper.mysql.ReportMapper;
 import io.shulie.takin.cloud.data.mapper.mysql.SceneManageMapper;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
+import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
@@ -115,6 +119,9 @@ public class ReportServiceImpl implements ReportService {
     private RedisClientUtil redisClientUtil;
     @Resource
     private CloudReportService cloudReportService;
+
+    @Resource
+    private ReportMapper reportMapper;
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -724,6 +731,23 @@ public class ReportServiceImpl implements ReportService {
         io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
         // 将链路拓扑信息更新到表中
         reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
+    }
+
+    /**
+     * 根据报告ids查询报告详情
+     *
+     * @param reportIds
+     * @return
+     */
+    @Override
+    public List<ReportEntity> getReportListByReportIds(List<Long> reportIds) {
+        if (CollectionUtils.isEmpty(reportIds)) {
+            return new ArrayList<>();
+        }
+        LambdaQueryWrapper<ReportEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(ReportEntity::getId, ReportEntity::getSceneName, ReportEntity::getSceneId, ReportEntity::getEndTime, ReportEntity::getStartTime);
+        queryWrapper.in(ReportEntity::getId, reportIds);
+        return reportMapper.selectList(queryWrapper);
     }
 
     private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5) {

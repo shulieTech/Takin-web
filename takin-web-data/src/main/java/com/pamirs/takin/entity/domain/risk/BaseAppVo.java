@@ -20,4 +20,6 @@ public class BaseAppVo {
     private BigDecimal memory;
     private BigDecimal disk;
     private BigDecimal mbps;
+    private BigDecimal gcCount;
+    private BigDecimal gcTime;
 }

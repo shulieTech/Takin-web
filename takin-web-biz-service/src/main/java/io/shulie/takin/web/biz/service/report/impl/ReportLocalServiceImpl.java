@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.report.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,10 +12,14 @@ import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
+import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneBusinessActivityRefMapper;
+import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
 import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
 import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
@@ -30,22 +35,33 @@ import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
 import io.shulie.takin.cloud.common.pojo.Pair;
 import io.shulie.takin.cloud.common.utils.TestTimeUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportBusinessActivityDetailDao;
+import io.shulie.takin.cloud.data.mapper.mysql.ReportBusinessActivityDetailMapper;
+import io.shulie.takin.cloud.data.mapper.mysql.ReportMapper;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
+import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
+import io.shulie.takin.cloud.data.model.mysql.SceneBusinessActivityRefEntity;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
-import io.shulie.takin.web.biz.pojo.output.report.ReportCompareOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportCompareRtOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportCompareTargetOut;
-import io.shulie.takin.web.biz.pojo.output.report.ReportCompareTrendOut;
+import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
+import io.shulie.takin.web.biz.pojo.output.report.*;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ReportActivityInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
+import io.shulie.takin.web.biz.pojo.response.activity.ReportActivityResponse;
+import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportMessageService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
 import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
+import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
+import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.param.report.ReportApplicationSummaryQueryParam;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 import io.shulie.takin.web.data.result.report.ReportApplicationSummaryResult;
@@ -54,7 +70,9 @@ import io.shulie.takin.web.data.result.report.ReportMachineResult;
 import io.shulie.takin.web.data.result.report.ReportSummaryResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -88,7 +106,17 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Resource
     private ReportMessageService reportMessageService;
 
+    @Autowired
+    private ActivityService activityService;
     private static List<Pair<Integer, Integer>> costList = new ArrayList<>();
+    @Resource
+    private TReportBusinessActivityDetailMapper tReportBusinessActivityDetailMapper;
+    @Resource
+    private TSceneBusinessActivityRefMapper tSceneBusinessActivityRefMapper;
+    @Resource
+    private ReportMapper reportMapper;
+    @Resource
+    private ApplicationMntMapper applicationMntMapper;
 
     static {
         /**
@@ -103,12 +131,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     }
 
     public static void main(String[] args) {
-        String data1
-                = "{\"cpu\":[10,11,12],\"io\":[40,30,35],\"loading\":[75,55,70],\"memory\":[40,43,45],\"network\":[20,40,"
-                + "24],\"tps\":[100,110,120]}";
-        String data2
-                = "{\"cpu\":[30,31,32],\"io\":[42,32,37],\"loading\":[77,57,72],\"memory\":[42,45,47],\"network\":[22,42,"
-                + "26],\"tps\":[110,120,130]}";
+        String data1 = "{\"cpu\":[10,11,12],\"io\":[40,30,35],\"loading\":[75,55,70],\"memory\":[40,43,45],\"network\":[20,40," + "24],\"tps\":[100,110,120]}";
+        String data2 = "{\"cpu\":[30,31,32],\"io\":[42,32,37],\"loading\":[77,57,72],\"memory\":[42,45,47],\"network\":[22,42," + "26],\"tps\":[110,120,130]}";
         MachineDetailDTO dto = new MachineDetailDTO();
         ReportLocalServiceImpl reportLocal = new ReportLocalServiceImpl();
         reportLocal.parseTpsConfig(dto, Arrays.asList(data1, data2));
@@ -145,8 +169,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (CollectionUtils.isEmpty(dataList)) {
             return new RiskApplicationCountDTO();
         }
-        List<ReportApplicationSummaryResult> resultList = dataList.stream().filter(
-                data -> data.getMachineRiskCount() != null && data.getMachineRiskCount() > 0).sorted((o1, o2) -> {
+        List<ReportApplicationSummaryResult> resultList = dataList.stream().filter(data -> data.getMachineRiskCount() != null && data.getMachineRiskCount() > 0).sorted((o1, o2) -> {
             if (o1.getMachineRiskCount() > o2.getMachineRiskCount()) {
                 return -1;
             } else if (o1.getMachineRiskCount() < o2.getMachineRiskCount()) {
@@ -194,8 +217,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 return new MachineDetailDTO();
             }
             MachineDetailDTO dto = new MachineDetailDTO();
-            parseTpsConfig(dto, dataList.stream().filter(data -> data.getMachineTpsTargetConfig() != null)
-                    .map(ReportMachineResult::getMachineTpsTargetConfig).collect(Collectors.toList()));
+            parseTpsConfig(dto, dataList.stream().filter(data -> data.getMachineTpsTargetConfig() != null).map(ReportMachineResult::getMachineTpsTargetConfig).collect(Collectors.toList()));
             return dto;
         } else {
             ReportMachineResult data = reportMachineDAO.selectOneByParam(queryParam);
@@ -283,24 +305,24 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Override
     public ReportCompareOutput getReportCompare(List<Long> reportIds, Long businessActivityId) {
         ReportCompareOutput output = new ReportCompareOutput();
-        for(int i = 0; i < reportIds.size(); i++) {
+        for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
             ReportBusinessActivityDetailEntity detailEntity = reportBusinessActivityDetailDao.selectDetailByReportIdAndActivityId(reportId, businessActivityId);
-            if(detailEntity == null || detailEntity.getBindRef() == null || StringUtils.isBlank(detailEntity.getRtDistribute())) {
+            if (detailEntity == null || detailEntity.getBindRef() == null || StringUtils.isBlank(detailEntity.getRtDistribute())) {
                 continue;
             }
             //列表数据 性能指标 rt数据
             JSONObject jsonObject = JSON.parseObject(detailEntity.getRtDistribute());
             String jsonStepString = jsonObject.getString("stepData");
             output.setTargetData(JsonHelper.json2List(jsonStepString, ReportCompareTargetOut.class));
-            if(CollectionUtils.isNotEmpty(output.getTargetData())) {
+            if (CollectionUtils.isNotEmpty(output.getTargetData())) {
                 output.getTargetData().stream().forEach(data -> {
                     data.setReportId(reportId);
                     data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
                 });
             }
             output.setRtData(JsonHelper.json2List(jsonStepString, ReportCompareRtOutput.class));
-            if(CollectionUtils.isNotEmpty(output.getRtData())) {
+            if (CollectionUtils.isNotEmpty(output.getRtData())) {
                 output.getRtData().stream().forEach(data -> {
                     data.setReportId(reportId);
                     data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
@@ -311,13 +333,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             trendQueryReq.setReportId(reportId);
             trendQueryReq.setXpathMd5(detailEntity.getBindRef());
             ReportTrendResp trendResp = reportService.queryReportTrend(trendQueryReq);
-            if(trendResp != null) {
+            if (trendResp != null) {
                 ReportCompareTrendOut trendOut = output.getTrendData();
-                if(trendOut == null) {
+                if (trendOut == null) {
                     trendOut = new ReportCompareTrendOut();
                     output.setTrendData(trendOut);
                 }
-                if(i == 0) {
+                if (i == 0) {
                     trendOut.setXTime(trendResp.getTime());
                     trendOut.setConcurrent1(trendResp.getConcurrent());
                     trendOut.setTps1(trendResp.getTps());
@@ -333,7 +355,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 }
             }
             //按耗时取请求量
-            for(Pair<Integer, Integer> costPair : costList) {
+            for (Pair<Integer, Integer> costPair : costList) {
                 ReportCostTrendQueryReq costReq = new ReportCostTrendQueryReq();
                 costReq.setReportId(reportId);
                 costReq.setXpathMd5(detailEntity.getBindRef());
@@ -341,12 +363,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 costReq.setMaxCost(costPair.getValue());
                 Integer cost = reportMessageService.getRequestCountByCost(costReq);
                 ReportCompareTrendOut trendOut = output.getTrendData();
-                if(trendOut == null) {
+                if (trendOut == null) {
                     trendOut = new ReportCompareTrendOut();
                     output.setTrendData(trendOut);
                 }
-                if(i == 0) {
-                    trendOut.getXCost().add(costPair.getKey()+"-"+costPair.getValue()+"ms");
+                if (i == 0) {
+                    trendOut.getXCost().add(costPair.getKey() + "-" + costPair.getValue() + "ms");
                     trendOut.getCount1().add(String.valueOf(cost));
                 } else {
                     trendOut.getCount2().add(String.valueOf(cost));
@@ -354,6 +376,192 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
         }
         return output;
+    }
+
+    //压测报告节点rt比较
+    @Override
+    public Response<NodeCompareTargetOut> getLtNodeCompare(NodeCompareTargetInput nodeCompareTargetInput) {
+        //获取报告信息
+        List<ReportEntity> reportEntityList = this.reportService.getReportListByReportIds(nodeCompareTargetInput.getReportIds());
+        if (CollectionUtils.isEmpty(reportEntityList)) {
+            return Response.fail("报告不存在");
+        }
+        //根据业务活动id获取节点信息
+        List<ReportActivityInfoQueryRequest> activityInfoQueryRequests = reportEntityList.stream().map(reportEntity -> genActivityInfo(nodeCompareTargetInput.getActivityId(), reportEntity)).collect(Collectors.toList());
+        //根据业务活动id，报告id获取压测时候节点的信息
+        List<ReportActivityResponse> activityResponseList = this.activityService.getActivityWithMetricsByIdForReports(activityInfoQueryRequests);
+
+        //统计转换压测时候节点的信息
+        if (CollectionUtils.isEmpty(activityResponseList)) {
+            return Response.success(new NodeCompareTargetOut());
+        }
+        NodeCompareTargetOut nodeCompareTargetOut = new NodeCompareTargetOut();
+        nodeCompareTargetOut.setNodes(activityResponseList.get(0).getTopology().getNodes());
+        nodeCompareTargetOut.setActivityId(nodeCompareTargetInput.getActivityId());
+        nodeCompareTargetOut.setActivityName(activityResponseList.get(0).getActivityName());
+        nodeCompareTargetOut.setActivityType(activityResponseList.get(0).getBusinessType());
+        Map<Long, List<NodeCompareTargetOut.NodeInfo>> map = genNodeCompareTargetOut(activityResponseList);
+        nodeCompareTargetOut.setNodeInfosMap(map);
+        return Response.success(nodeCompareTargetOut);
+    }
+
+    /**
+     * 获取报告应用性能列表
+     *
+     * @return
+     */
+    @Override
+    public Response<List<ReportAppPerformanceOut>> getReortAppPerformanceList(Long reportId) {
+        ReportEntity reportEntity = getReportEntity(reportId);
+        if (reportEntity == null) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+        List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
+
+        if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+        List<ReportActivityInfoQueryRequest> activityInfoQueryRequests = sceneBusinessActivityRefEntities.stream().map(sceneBusinessActivityRef -> genActivityInfo(sceneBusinessActivityRef.getBusinessActivityId(), reportEntity)).collect(Collectors.toList());
+
+        List<ReportActivityResponse> activityResponseList = this.activityService.getActivityWithMetricsByIdForReports(activityInfoQueryRequests);
+
+        if (CollectionUtils.isEmpty(activityResponseList)) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+
+        ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
+        List<ReportAppPerformanceOut> list = activityResponseList.get(0).getTopology().getNodes().stream().map(node -> {
+            ReportAppPerformanceOut reportAppPerformanceOut = new ReportAppPerformanceOut();
+            reportAppPerformanceOut.setAppName(node.getLabel());
+            reportAppPerformanceOut.setTotalRequest(node.getServiceAllTotalCount() != null ? BigDecimal.valueOf(node.getServiceAllTotalCount()) : new BigDecimal(0));
+            reportAppPerformanceOut.setAvgTps(node.getServiceAllTotalTps() != null ? BigDecimal.valueOf(node.getServiceAllTotalTps()) : new BigDecimal(0));
+            reportAppPerformanceOut.setAvgRt(node.getServiceRt() != null ? BigDecimal.valueOf(node.getServiceRt()) : new BigDecimal(0));
+            reportAppPerformanceOut.setMaxRt(node.getServiceMaxRt() != null ? BigDecimal.valueOf(node.getServiceMaxRt()) : new BigDecimal(0));
+            reportAppPerformanceOut.setMinRt(node.getServiceMinRt() != null ? BigDecimal.valueOf(node.getServiceMinRt()) : new BigDecimal(0));
+            reportAppPerformanceOut.setSuccessRate(node.getServiceAllSuccessRate() != null ? BigDecimal.valueOf(node.getServiceAllSuccessRate()) : new BigDecimal(0));
+            reportAppPerformanceOut.setSa(reportDetailOutput.getSa());
+            reportAppPerformanceOut.setStartTime(reportEntity.getStartTime());
+            return reportAppPerformanceOut;
+        }).collect(Collectors.toList());
+        return Response.success(list);
+    }
+
+    /**
+     * 获取报告应用实例性能列表
+     *
+     * @param reportId
+     * @return
+     */
+    @Override
+    public Response<List<ReportAppInstancePerformanceOut>> getReortAppInstancePerformanceList(Long reportId) {
+        ReportEntity reportEntity = getReportEntity(reportId);
+        if (reportEntity == null) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+        List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
+
+        if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+        List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
+
+        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).eq(ApplicationMntEntity::getApplicationId, appIds));
+
+        if (CollectionUtils.isEmpty(applicationMntEntities)) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+        List<MachineDetailDTO> machineDetailDTOList = new ArrayList<>();
+        for (ApplicationMntEntity applicationMntEntity : applicationMntEntities) {
+            ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
+            queryParam.setReportId(reportId);
+            queryParam.setApplicationName(applicationMntEntity.getApplicationName());
+            queryParam.setCurrent(0);
+            queryParam.setCurrentPage(9999);
+            PageInfo<MachineDetailDTO> machineDetailDTOPageInfo = listMachineDetail(queryParam);
+            if (CollectionUtils.isEmpty(machineDetailDTOPageInfo.getList())) {
+                continue;
+            }
+            for (MachineDetailDTO machineDetailDTO : machineDetailDTOPageInfo.getList()) {
+                MachineDetailDTO machineDetail = getMachineDetail(reportId, machineDetailDTO.getApplicationName(), machineDetailDTO.getMachineIp());
+                if (Objects.isNull(machineDetail)) {
+                    continue;
+                }
+                machineDetailDTOList.add(machineDetail);
+            }
+        }
+        List<ReportAppInstancePerformanceOut> reportAppInstancePerformanceOuts = machineDetailDTOList.stream().filter(Objects::nonNull).map(machine -> {
+            ReportAppInstancePerformanceOut reportAppInstancePerformanceOut = new ReportAppInstancePerformanceOut();
+            reportAppInstancePerformanceOut.setAppName(machine.getApplicationName());
+            reportAppInstancePerformanceOut.setInstanceName(machine.getMachineIp());
+            reportAppInstancePerformanceOut.setAvgCpuUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getCpu())));
+            reportAppInstancePerformanceOut.setAvgMemUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMemory())));
+            reportAppInstancePerformanceOut.setAvgDiskIoWaitRate(getAvg(Arrays.asList(machine.getTpsTarget().getIo())));
+            reportAppInstancePerformanceOut.setAvgNetUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMbps())));
+            reportAppInstancePerformanceOut.setGcCount(Arrays.stream(machine.getTpsTarget().getGcCount()).reduce(BigDecimal::add).orElse(BigDecimal.ZERO).intValue());
+            reportAppInstancePerformanceOut.setGcCost(Arrays.stream(machine.getTpsTarget().getGcCost()).reduce(BigDecimal::add).orElse(BigDecimal.ZERO));
+            reportAppInstancePerformanceOut.setAvgTps(getAvg(Arrays.stream(machine.getTpsTarget().getTps()).map(BigDecimal::valueOf).collect(Collectors.toList())));
+            return reportAppInstancePerformanceOut;
+        }).collect(Collectors.toList());
+        return Response.success(reportAppInstancePerformanceOuts);
+    }
+
+    private BigDecimal getAvg(List<BigDecimal> num) {
+        BigDecimal total = BigDecimal.valueOf(num.size());
+        BigDecimal count = num.stream().reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+        if (count.compareTo(new BigDecimal(0)) == 0) {
+            return new BigDecimal(0);
+        }
+        return total.divide(count, 4, RoundingMode.HALF_UP);
+    }
+
+    private List<SceneBusinessActivityRefEntity> getSceneBusinessActivityRefEntities(Long sceneId) {
+        return tSceneBusinessActivityRefMapper.selectList(new LambdaQueryWrapper<SceneBusinessActivityRefEntity>()
+                .eq(SceneBusinessActivityRefEntity::getSceneId, sceneId).select(SceneBusinessActivityRefEntity::getBusinessActivityId));
+    }
+
+    /**
+     * 获取报告应用性能趋势图
+     *
+     * @return
+     */
+    @Override
+    public Response<ReportAppMapOut> getReportAppTrendMap(Long reportId) {
+
+        return null;
+    }
+
+    private ReportEntity getReportEntity(long reportId) {
+        return reportMapper.selectOne(new LambdaQueryWrapper<ReportEntity>()
+                .eq(ReportEntity::getId, reportId).eq(ReportEntity::getIsDeleted, 0)
+                .select(ReportEntity::getId, ReportEntity::getSceneName, ReportEntity::getSceneId, ReportEntity::getEndTime, ReportEntity::getStartTime));
+    }
+
+    private static Map<Long, List<NodeCompareTargetOut.NodeInfo>> genNodeCompareTargetOut(List<ReportActivityResponse> activityResponseList) {
+        List<NodeCompareTargetOut.NodeInfo> list = new ArrayList<>();
+        for (ReportActivityResponse reportActivityResponse : activityResponseList) {
+            List<NodeCompareTargetOut.NodeInfo> tmpList = reportActivityResponse.getTopology().getNodes().stream().map(node -> {
+                NodeCompareTargetOut.NodeInfo nodeInfo = new NodeCompareTargetOut.NodeInfo();
+                nodeInfo.setAppName(node.getLabel());
+                nodeInfo.setReportRt(node.getServiceRt());
+                nodeInfo.setReportId(reportActivityResponse.getReportId());
+                return nodeInfo;
+            }).collect(Collectors.toList());
+            list.addAll(tmpList);
+        }
+        if (CollectionUtils.isEmpty(list)) {
+            return new HashMap<>();
+        }
+        return list.stream().collect(Collectors.groupingBy(NodeCompareTargetOut.NodeInfo::getReportId));
+    }
+
+    private static ReportActivityInfoQueryRequest genActivityInfo(long activityId, ReportEntity reportEntity) {
+        ReportActivityInfoQueryRequest request = new ReportActivityInfoQueryRequest();
+        request.setActivityId(activityId);
+        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
+        request.setStartTime(reportEntity.getStartTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        request.setEndTime(reportEntity.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        request.setReportId(reportEntity.getId());
+        return request;
     }
 
     private ReportCountDTO convert2ReportCountDTO(ReportSummaryResult result) {
@@ -383,8 +591,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return dataList;
     }
 
-    private RiskApplicationCountDTO convert2RiskApplicationCountDTO(List<ReportApplicationSummaryResult> paramList,
-                                                                    int riskMachineCount) {
+    private RiskApplicationCountDTO convert2RiskApplicationCountDTO(List<ReportApplicationSummaryResult> paramList, int riskMachineCount) {
         RiskApplicationCountDTO dto = new RiskApplicationCountDTO();
         List<ApplicationDTO> apps = Lists.newArrayList();
         for (ReportApplicationSummaryResult param : paramList) {
@@ -467,6 +674,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             dto.setMemorySize(jsonObject.getBigDecimal(ReportConfigConstant.BASE_MEMORY_KEY));
             dto.setDiskSize(jsonObject.getBigDecimal(ReportConfigConstant.BASE_DISK_KEY));
             dto.setMbps(convertByte2Mb(jsonObject.getBigDecimal(ReportConfigConstant.BASE_MBPS_KEY)));
+            dto.setGcCost(jsonObject.getBigDecimal(ReportConfigConstant.CHART_GC_COST));
+            dto.setGcCount(jsonObject.getBigDecimal(ReportConfigConstant.CHART_GC_COUNT));
         } catch (Exception e) {
             log.error("Parse BaseConfig Error: config={}, error={}", baseConfig, e.getMessage());
         }
@@ -489,6 +698,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             BigDecimal[] memory = new BigDecimal[time.length];
             BigDecimal[] io = new BigDecimal[time.length];
             BigDecimal[] network = new BigDecimal[time.length];
+            BigDecimal[] gcCost = new BigDecimal[time.length];
+            BigDecimal[] gcCount = new BigDecimal[time.length];
             for (String config : configs) {
                 if (StringUtils.isBlank(config)) {
                     continue;
@@ -505,6 +716,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     memory[i] = (memory[i] != null ? memory[i] : ZERO).add(array.getMemory()[i]);
                     io[i] = (io[i] != null ? io[i] : ZERO).add(array.getIo()[i]);
                     network[i] = (network[i] != null ? network[i] : ZERO).add(array.getNetwork()[i]);
+                    gcCost[i] = (gcCost[i] != null ? gcCost[i] : ZERO).add(array.getGcCost()[i]);
+                    gcCount[i] = (gcCount[i] != null ? gcCount[i] : ZERO).add(array.getGcCount()[i]);
                 }
                 count++;
             }
@@ -515,6 +728,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 memory[i] = avg(memory[i], count);
                 io[i] = avg(io[i], count);
                 network[i] = avg(network[i], count);
+                gcCost[i] = avg(gcCost[i], count);
+                gcCount[i] = avg(gcCount[i], count);
             }
             MachineDetailDTO.MachineTPSTargetDTO tpsTargetDTO = new MachineDetailDTO().new MachineTPSTargetDTO();
             tpsTargetDTO.setTime(time);
@@ -524,7 +739,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             tpsTargetDTO.setMemory(memory);
             tpsTargetDTO.setIo(io);
             tpsTargetDTO.setMbps(network);
-
+            tpsTargetDTO.setGcCost(gcCost);
+            tpsTargetDTO.setGcCount(gcCount);
             dto.setTpsTarget(tpsTargetDTO);
         } catch (Exception e) {
             log.error("Parse PtsConfig Error:, error={}", e.getMessage());
@@ -542,7 +758,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 continue;
             }
 
-            if(min == null || min.length > array.getTime().length) {
+            if (min == null || min.length > array.getTime().length) {
                 min = array.getTime();
             }
         }

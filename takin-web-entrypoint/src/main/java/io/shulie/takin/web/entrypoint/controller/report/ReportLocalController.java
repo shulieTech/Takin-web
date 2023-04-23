@@ -11,6 +11,9 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.dto.report.*;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
+import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
 import io.shulie.takin.web.biz.pojo.output.report.NodeCompareTargetOut;
 import io.shulie.takin.web.biz.pojo.output.report.ReportCompareOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
@@ -29,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -62,7 +66,7 @@ public class ReportLocalController {
     @GetMapping("/report/bottleneckInterface/list")
     @ApiOperation("瓶颈接口")
     public Response<List<BottleneckInterfaceDTO>> getBottleneckInterfaceList(Long reportId, Integer current,
-        Integer pageSize) {
+                                                                             Integer pageSize) {
         ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
         queryParam.setReportId(reportId);
         initPageParam(queryParam, current, pageSize);
@@ -78,7 +82,7 @@ public class ReportLocalController {
         initPageParam(queryParam, current, pageSize);
         PageInfo<BottleneckInterfaceDTO> pageInfo = reportLocalService.listBottleneckInterface(queryParam);
         List<BottleneckInterfaceLtDTO> dataList = new ArrayList<>();
-        if(pageInfo != null && CollectionUtils.isNotEmpty(pageInfo.getList())) {
+        if (pageInfo != null && CollectionUtils.isNotEmpty(pageInfo.getList())) {
             pageInfo.getList().stream().forEach(data -> {
                 BottleneckInterfaceLtDTO lt = new BottleneckInterfaceLtDTO();
                 lt.setRank(data.getRank());
@@ -102,7 +106,7 @@ public class ReportLocalController {
     @GetMapping("/report/risk/machine/list")
     @ApiOperation("风险机器右侧列表")
     public Response<List<RiskMacheineDTO>> getRiskMachine(Long reportId, String applicationName, Integer current,
-        Integer pageSize) {
+                                                          Integer pageSize) {
         ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
         queryParam.setReportId(reportId);
         queryParam.setApplicationName(applicationName);
@@ -119,7 +123,7 @@ public class ReportLocalController {
         initPageParam(queryParam, current, pageSize);
         PageInfo<RiskMacheineDTO> pageInfo = reportLocalService.listRiskMachine(queryParam);
         List<RiskMachineLtDTO> dataList = new ArrayList<>();
-        if(pageInfo != null && CollectionUtils.isNotEmpty(pageInfo.getList())) {
+        if (pageInfo != null && CollectionUtils.isNotEmpty(pageInfo.getList())) {
             pageInfo.getList().stream().forEach(data -> {
                 RiskMachineLtDTO lt = new RiskMachineLtDTO();
                 lt.setId(data.getId());
@@ -131,9 +135,9 @@ public class ReportLocalController {
             //根据应用名称，实例排序
             dataList.stream().sorted((o1, o2) -> {
                 int value1 = o1.getAppName().compareTo(o2.getAppName());
-                if(value1 < 0) {
+                if (value1 < 0) {
                     return -1;
-                } else if(value1 > 0) {
+                } else if (value1 > 0) {
                     return 1;
                 } else {
                     return o1.getAgentId().compareTo(o2.getAgentId());
@@ -170,17 +174,46 @@ public class ReportLocalController {
     @GetMapping("vlt/report/compare")
     @ApiOperation("LT版-压测报告比对")
     public Response<ReportCompareOutput> getLtReportCompare(List<Long> reportIds, Long businessActivityId) {
-        if(CollectionUtils.isEmpty(reportIds) || reportIds.size() != 2 || businessActivityId == null || businessActivityId == -1) {
+        if (CollectionUtils.isEmpty(reportIds) || reportIds.size() != 2 || businessActivityId == null || businessActivityId == -1) {
             log.warn("压测报告比对告警，传入参数长度不正确");
             return Response.success();
         }
         return Response.success(reportLocalService.getReportCompare(reportIds, businessActivityId));
     }
 
-    @GetMapping("vlt/node/compare")
+    @GetMapping("/vlt/report/compare/activityInfo/{activityId")
+    @ApiOperation("LT版-业务活动trace节点信息")
+    public Response<String> getActivityInfoForLtNodeCompare(@PathVariable("activityId") Long activityId) {
+        return Response.success();
+    }
+
+    @GetMapping("/vlt/report/node/compare")
     @ApiOperation("LT版-节点比对")
-    public Response<NodeCompareTargetOut> getLtNodeCompare(Long[] reportIds) {
-        return Response.success(new NodeCompareTargetOut());
+    public Response<NodeCompareTargetOut> getLtNodeCompare(NodeCompareTargetInput nodeCompareTargetInput) {
+        return this.reportLocalService.getLtNodeCompare(nodeCompareTargetInput);
+    }
+
+    @GetMapping("/vlt/report/application/performanceList")
+    @ApiOperation("LT版-应用性能列表")
+    public Response<Object> getReortAppPerformanceList(long reportId) {
+        //TODO 应用维度的性能
+        return Response.success(this.reportLocalService.getReortAppPerformanceList(reportId));
+    }
+
+    @GetMapping("/vlt/report/application/trendMap")
+    @ApiOperation("LT版-应用趋势图")
+    public Response<Object> getReportAppTrendMap(ReportTrendQueryReq reportTrendQuery) {
+        ResponseResult.success(reportService.queryReportTrend(reportTrendQuery));
+
+        //TODO 趋势图应用维度的性能
+        return Response.success();
+    }
+
+    @GetMapping("/vlt/report/application/instance/trendMap")
+    @ApiOperation("LT版-应用实例趋势图")
+    public Response<Object> getReportAppInstanceTrendMap() {
+        //TODO
+        return Response.success();
     }
 
     @GetMapping("/report/application/list")
@@ -204,7 +237,7 @@ public class ReportLocalController {
     @GetMapping("/report/machine/list")
     @ApiOperation("容量水位应用机器列表")
     public Response<List<MachineDetailDTO>> getMachineList(Long reportId, String applicationName, Integer current,
-        Integer pageSize) {
+                                                           Integer pageSize) {
         ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
         initPageParam(queryParam, current, pageSize);
         queryParam.setReportId(reportId);
@@ -245,14 +278,14 @@ public class ReportLocalController {
         PageInfo<BottleneckInterfaceDTO> pageInfo = reportLocalService.listBottleneckInterface(queryParam);
         if (pageInfo != null && CollectionUtils.isNotEmpty(pageInfo.getList())) {
             bottleneckSet.addAll(
-                pageInfo.getList().stream().map(BottleneckInterfaceDTO::getInterfaceName).collect(Collectors.toSet()));
+                    pageInfo.getList().stream().map(BottleneckInterfaceDTO::getInterfaceName).collect(Collectors.toSet()));
         }
         fillBottleneckFlag(lists, bottleneckSet);
 
         pradarLink.setDetails(lists);
         if (CollectionUtils.isNotEmpty(lists)) {
             BigDecimal totalRt = lists.stream().map(data -> BigDecimal.valueOf(data.getAvgRt())).reduce(BigDecimal.ZERO,
-                BigDecimal::add);
+                    BigDecimal::add);
             pradarLink.setTotalRT(totalRt.intValue());
         }
         return Response.success(pradarLink);

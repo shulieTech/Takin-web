@@ -49,6 +49,12 @@ public class MachineDetailDTO implements Serializable {
     @ApiModelProperty(value = "进程名称")
     private String processName;
 
+    @ApiModelProperty(value="gc耗时")
+    private BigDecimal gcCost;
+
+    @ApiModelProperty(value="gc次数")
+    private BigDecimal gcCount;
+
     private MachineTPSTargetDTO tpsTarget;
 
     @ApiModel
@@ -70,6 +76,10 @@ public class MachineDetailDTO implements Serializable {
         private BigDecimal[] io;
 
         private BigDecimal[] mbps;
+
+        private BigDecimal[] gcCost;
+
+        private BigDecimal[] gcCount;
 
         private Long[] fullGcCount;
 

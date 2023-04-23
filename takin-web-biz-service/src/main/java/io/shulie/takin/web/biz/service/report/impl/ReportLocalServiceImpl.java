@@ -623,7 +623,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (start >= end || interval == 0) {
             return Collections.EMPTY_LIST;
         }
-        double intervalNum = BigDecimal.valueOf(end).subtract(BigDecimal.valueOf(interval)).divide(BigDecimal.valueOf(interval)).doubleValue();
+        double intervalNum = BigDecimal.valueOf(end).subtract(BigDecimal.valueOf(start)).divide(BigDecimal.valueOf(interval)).doubleValue();
         List<String> list = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             int startNum = (int) (start + i * intervalNum);
@@ -632,7 +632,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         return list;
     }
-
 
     private ReportEntity getReportEntity(long reportId) {
         return reportMapper.selectOne(new LambdaQueryWrapper<ReportEntity>().eq(ReportEntity::getId, reportId).eq(ReportEntity::getIsDeleted, 0).select(ReportEntity::getId, ReportEntity::getSceneName, ReportEntity::getSceneId, ReportEntity::getEndTime, ReportEntity::getStartTime));

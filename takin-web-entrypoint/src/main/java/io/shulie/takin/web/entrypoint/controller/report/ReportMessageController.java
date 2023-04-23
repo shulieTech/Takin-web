@@ -51,6 +51,7 @@ public class ReportMessageController {
                 ReportMessageStatusCodeDTO newDto = new ReportMessageStatusCodeDTO();
                 newDto.setStatusCode(codeEnum.getResult().getCode());
                 newDto.setStatusName(codeEnum.getResult().getDesc());
+                newCodeList.add(newDto);
             }
         }
         if(CollectionUtils.isEmpty(newCodeList)) {

@@ -317,6 +317,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 summaryBean.setTotalRequest(bean.getTotalRequest());
                 summaryBean.setTps(bean.getTps());
                 summaryBean.setFeatures(bean.getFeatures());
+                summaryBean.setRtDistribute(bean.getRtDistribute());
+                summaryBean.setDistribute(bean.getDistribute());
                 result.add(summaryBean);
             }
             if (CollectionUtils.isNotEmpty(bean.getChildren())) {
@@ -614,6 +616,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     bean.setActivityId(detail.getBusinessActivityId());
                     bean.setSa(new DataBean(detail.getSa(), detail.getTargetSa()));
                     bean.setFeatures(detail.getFeatures());
+                    bean.setRtDistribute(detail.getRtDistribute());
                     return bean;
                 }).collect(Collectors.toList());
     }
@@ -1672,6 +1675,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             resultMap.put("totalRequest", detail.getRequest());
             resultMap.put("successRate", new DataBean(detail.getSuccessRate(), detail.getTargetSuccessRate()));
             resultMap.put("avgConcurrenceNum", detail.getAvgConcurrenceNum());
+            resultMap.put("rtDistribute", detail.getRtDistribute());
             resultMap.put("distribute", getDistributes(detail.getRtDistribute()));
             if (detail.getBusinessActivityId() > -1 && StringUtils.isNotBlank(detail.getApplicationIds())) {
                 resultMap.put("applicationIds", detail.getApplicationIds());
@@ -1690,8 +1694,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private List<DistributeBean> getDistributes(String distributes) {
         List<DistributeBean> result;
         if (StringUtils.isNoneBlank(distributes)) {
-            Map<String, String> distributeMap = JsonHelper.string2Obj(distributes,
-                    new TypeReference<Map<String, String>>() {
+            Map<String, Object> distributeMap = JsonHelper.string2Obj(distributes,
+                    new TypeReference<Map<String, Object>>() {
                     });
             List<DistributeBean> distributeBeans = Lists.newArrayList();
             distributeMap.forEach((key, value) -> {

@@ -57,6 +57,8 @@ public class BusinessActivitySummaryBean {
     @ApiModelProperty(value = "分布")
     private List<DistributeBean> distribute;
 
+    private String rtDistribute;
+
     @ApiModelProperty(value = "通过标识")
     private Integer passFlag;
 

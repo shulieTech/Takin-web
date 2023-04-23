@@ -1,5 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.report;
 
+import com.pamirs.takin.common.enums.ResponseResultEnum;
 import com.pamirs.takin.common.enums.ResultCodeEnum;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageStatusCodeDTO;
@@ -51,6 +52,12 @@ public class ReportMessageController {
                 newDto.setStatusCode(codeEnum.getResult().getCode());
                 newDto.setStatusName(codeEnum.getResult().getDesc());
             }
+        }
+        if(CollectionUtils.isEmpty(newCodeList)) {
+            ReportMessageStatusCodeDTO defaultDTO = new ReportMessageStatusCodeDTO();
+            defaultDTO.setStatusCode(ResponseResultEnum.RESP_SUCCESS.getCode());
+            defaultDTO.setStatusName(ResponseResultEnum.RESP_SUCCESS.getDesc());
+            newCodeList.add(defaultDTO);
         }
         return Response.success(newCodeList);
     }

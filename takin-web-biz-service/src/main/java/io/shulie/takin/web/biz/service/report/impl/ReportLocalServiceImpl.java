@@ -19,7 +19,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
 import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneBusinessActivityRefMapper;
-import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
 import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
 import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
@@ -36,23 +35,19 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.BusinessActivitySu
 import io.shulie.takin.cloud.common.pojo.Pair;
 import io.shulie.takin.cloud.common.utils.TestTimeUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportBusinessActivityDetailDao;
-import io.shulie.takin.cloud.data.mapper.mysql.ReportBusinessActivityDetailMapper;
 import io.shulie.takin.cloud.data.mapper.mysql.ReportMapper;
-import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneBusinessActivityRefEntity;
 import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.amdb.api.TraceClient;
+import io.shulie.takin.web.amdb.bean.query.trace.TraceMetricsRequest;
+import io.shulie.takin.web.amdb.bean.result.trace.TraceMetrics;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
 import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
 import io.shulie.takin.web.biz.pojo.output.report.*;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ReportActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ReportActivityResponse;
-import io.shulie.takin.web.biz.service.ActivityService;
-import io.shulie.takin.web.biz.pojo.output.report.*;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportMessageService;
@@ -73,11 +68,12 @@ import io.shulie.takin.web.data.result.report.ReportApplicationSummaryResult;
 import io.shulie.takin.web.data.result.report.ReportBottleneckInterfaceResult;
 import io.shulie.takin.web.data.result.report.ReportMachineResult;
 import io.shulie.takin.web.data.result.report.ReportSummaryResult;
+import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -122,14 +118,17 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Resource
     private ApplicationMntMapper applicationMntMapper;
 
-    public static void main(String[] args) {
-        String data1 = "{\"cpu\":[10,11,12],\"io\":[40,30,35],\"loading\":[75,55,70],\"memory\":[40,43,45],\"network\":[20,40," + "24],\"tps\":[100,110,120]}";
-        String data2 = "{\"cpu\":[30,31,32],\"io\":[42,32,37],\"loading\":[77,57,72],\"memory\":[42,45,47],\"network\":[22,42," + "26],\"tps\":[110,120,130]}";
-        MachineDetailDTO dto = new MachineDetailDTO();
-        ReportLocalServiceImpl reportLocal = new ReportLocalServiceImpl();
-        reportLocal.parseTpsConfig(dto, Arrays.asList(data1, data2));
-        System.out.println(dto);
-    }
+    @Autowired
+    private TraceClient traceClient;
+
+//    public static void main(String[] args) {
+//        String data1 = "{\"cpu\":[10,11,12],\"io\":[40,30,35],\"loading\":[75,55,70],\"memory\":[40,43,45],\"network\":[20,40," + "24],\"tps\":[100,110,120]}";
+//        String data2 = "{\"cpu\":[30,31,32],\"io\":[42,32,37],\"loading\":[77,57,72],\"memory\":[42,45,47],\"network\":[22,42," + "26],\"tps\":[110,120,130]}";
+//        MachineDetailDTO dto = new MachineDetailDTO();
+//        ReportLocalServiceImpl reportLocal = new ReportLocalServiceImpl();
+//        reportLocal.parseTpsConfig(dto, Arrays.asList(data1, data2));
+//        System.out.println(dto);
+//    }
 
     @Override
     public ReportCountDTO getReportCount(Long reportId) {
@@ -299,16 +298,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         ReportCompareOutput output = new ReportCompareOutput();
         //查询业务活动serviceName和methodName
         ActivityResponse activityResp = activityService.getActivityServiceById(businessActivityId);
-        if(activityResp == null) {
+        if (activityResp == null) {
             return output;
         }
         Map<Long, ReportDetailOutput> reportOutputMap = new HashMap<>();
         Integer minRt = 0;
         Integer maxRt = 0;
-        for(int i = 0; i < reportIds.size(); i++) {
+        for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
             ReportDetailOutput reportOutput = reportService.getReportByReportId(reportId);
-            if(reportOutput == null) {
+            if (reportOutput == null) {
                 continue;
             }
             //柱状图数据
@@ -319,7 +318,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             columnarOut.setSuccessRate(reportOutput.getSuccessRate());
             output.getColumnarData().add(columnarOut);
             BusinessActivitySummaryBean detailEntity = reportOutput.getBusinessActivity().stream().filter(data -> data.getBusinessActivityId().longValue() == businessActivityId.longValue()).findFirst().orElse(null);
-            if(detailEntity == null || detailEntity.getBindRef() == null || StringUtils.isBlank(detailEntity.getRtDistribute())) {
+            if (detailEntity == null || detailEntity.getBindRef() == null || StringUtils.isBlank(detailEntity.getRtDistribute())) {
                 continue;
             }
             reportOutputMap.put(reportId, reportOutput);
@@ -327,14 +326,14 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             JSONObject jsonObject = JSON.parseObject(detailEntity.getRtDistribute());
             String jsonStepString = jsonObject.getString("stepData");
             output.setTargetData(JsonHelper.json2List(jsonStepString, ReportCompareTargetOut.class));
-            if(CollectionUtils.isNotEmpty(output.getTargetData())) {
+            if (CollectionUtils.isNotEmpty(output.getTargetData())) {
                 output.getTargetData().stream().forEach(data -> {
                     data.setReportId(reportId);
                     data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
                 });
             }
             output.setRtData(JsonHelper.json2List(jsonStepString, ReportCompareRtOutput.class));
-            if(CollectionUtils.isNotEmpty(output.getRtData())) {
+            if (CollectionUtils.isNotEmpty(output.getRtData())) {
                 output.getRtData().stream().forEach(data -> {
                     data.setReportId(reportId);
                     data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
@@ -346,7 +345,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             trendQueryReq.setXpathMd5(detailEntity.getBindRef());
             ReportTrendResp trendResp = reportService.queryReportTrend(trendQueryReq);
             ReportCompareTrendOut trendOut = new ReportCompareTrendOut();
-            if(trendResp != null) {
+            if (trendResp != null) {
                 trendOut.setReportId(reportId);
                 trendOut.setXTime(trendResp.getTime());
                 trendOut.setConcurrent(trendResp.getConcurrent());
@@ -355,7 +354,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 trendOut.setSuccessRate(trendResp.getSuccessRate());
                 trendOut.setSa(trendResp.getSa());
                 Pair<Integer, Integer> pair = getMinMaxRt(trendResp.getRt());
-                if(pair != null) {
+                if (pair != null) {
                     minRt = Math.min(minRt, pair.getKey());
                     maxRt = Math.max(maxRt, pair.getValue());
                 }
@@ -364,13 +363,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         List<Pair<Integer, Integer>> costList = calcCostLevelByFive(minRt, maxRt);
         //按耗时取请求量
-        for(int i = 0; i < reportIds.size(); i++) {
+        for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
             ReportDetailOutput reportOutput = reportOutputMap.get(reportId);
-            if(reportOutput == null || CollectionUtils.isEmpty(costList)) {
+            if (reportOutput == null || CollectionUtils.isEmpty(costList)) {
                 continue;
             }
-            for(Pair<Integer, Integer> costPair : costList) {
+            for (Pair<Integer, Integer> costPair : costList) {
                 ReportCostTrendQueryReq costReq = new ReportCostTrendQueryReq();
                 costReq.setStartTime(reportOutput.getStartTime());
                 costReq.setEndTime(DateUtil.formatDateTime(reportOutput.getEndTime()));
@@ -380,7 +379,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 costReq.setMinCost(costPair.getKey());
                 costReq.setMaxCost(costPair.getValue());
                 Integer cost = reportMessageService.getRequestCountByCost(costReq);
-                output.getTrendData().get(i).getXCost().add(costPair.getKey()+"-"+costPair.getValue()+"ms");
+                output.getTrendData().get(i).getXCost().add(costPair.getKey() + "-" + costPair.getValue() + "ms");
                 output.getTrendData().get(i).getCount().add(String.valueOf(cost));
             }
         }
@@ -525,8 +524,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     }
 
     private List<SceneBusinessActivityRefEntity> getSceneBusinessActivityRefEntities(Long sceneId) {
-        return tSceneBusinessActivityRefMapper.selectList(new LambdaQueryWrapper<SceneBusinessActivityRefEntity>()
-                .eq(SceneBusinessActivityRefEntity::getSceneId, sceneId).select(SceneBusinessActivityRefEntity::getBusinessActivityId));
+        return tSceneBusinessActivityRefMapper.selectList(new LambdaQueryWrapper<SceneBusinessActivityRefEntity>().eq(SceneBusinessActivityRefEntity::getSceneId, sceneId).select(SceneBusinessActivityRefEntity::getBusinessActivityId));
     }
 
     /**
@@ -535,15 +533,109 @@ public class ReportLocalServiceImpl implements ReportLocalService {
      * @return
      */
     @Override
-    public Response<ReportAppMapOut> getReportAppTrendMap(Long reportId) {
+    public Response<List<ReportAppMapOut>> getReportAppTrendMap(Long reportId) {
+        TenantCommonExt tenantCommonExt = WebPluginUtils.traceTenantCommonExt();
+        UserExt userExt = WebPluginUtils.traceUser();
         ReportEntity reportEntity = getReportEntity(reportId);
-        return null;
+        if (reportEntity == null) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+        List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
+
+        if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+        List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
+
+        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).eq(ApplicationMntEntity::getApplicationId, appIds));
+        List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
+        TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
+        traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
+        traceMetricsRequest.setEndTime(reportEntity.getEndTime().getTime());
+        traceMetricsRequest.setClusterTest(1);
+        traceMetricsRequest.setQuerySource("tro");
+        traceMetricsRequest.setUserId(String.valueOf(userExt.getId()));
+        traceMetricsRequest.setUserName(userExt.getName());
+        traceMetricsRequest.setTenantAppKey(tenantCommonExt.getTenantAppKey());
+        traceMetricsRequest.setEnvCode(tenantCommonExt.getEnvCode());
+        traceMetricsRequest.setAppNames(appNames);
+        List<TraceMetrics> metricsList = traceClient.getSqlStatements(traceMetricsRequest);
+        if (CollectionUtils.isEmpty(metricsList)) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+
+        Map<String, List<TraceMetrics>> map = metricsList.stream().collect(Collectors.groupingBy(TraceMetrics::getAppName));
+        //根据map分别计算tps趋势图、成功率趋势图、rt趋势图
+        List<ReportAppMapOut> reportAppMapOuts = new ArrayList<>(map.size());
+        map.forEach((k, v) -> {
+            if (CollectionUtils.isEmpty(v)) {
+                return;
+            }
+            List<Double> tps = new ArrayList<>(v.size());
+            List<Double> rt = new ArrayList<>(v.size());
+            List<Double> successRate = new ArrayList<>(v.size());
+            List<Integer> totalRequest = new ArrayList<>(v.size());
+            v.stream().sorted(Comparator.comparing(TraceMetrics::getTime)).forEach(traceMetrics -> {
+                tps.add(BigDecimal.valueOf(traceMetrics.getAvgTps()).doubleValue());
+                rt.add(BigDecimal.valueOf(traceMetrics.getAvgRt()).doubleValue());
+                totalRequest.add(traceMetrics.getTotal());
+                double suRate = BigDecimal.valueOf(traceMetrics.getSuccessCount()).divide(BigDecimal.valueOf(traceMetrics.getTotal()), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).doubleValue();
+                successRate.add(suRate);
+            });
+
+            //计算最大值
+            Integer max = v.stream().map(TraceMetrics::getAvgRt).max(Double::compare).get();
+            //计算最小值
+            Integer min = v.stream().map(TraceMetrics::getAvgRt).min(Integer::compare).get();
+            List<String> intervalList = getInterval(min, max, 5);
+            LinkedHashMap<String, Integer> timeAndRequestMap = new LinkedHashMap<>();
+
+            for (String inter : intervalList) {
+                String str[] = inter.split("-");
+                Integer count = v.stream()
+                        .filter(traceMetrics -> traceMetrics.getAvgRt() >= Integer.valueOf(str[0]) && traceMetrics.getAvgRt() < Integer.valueOf(str[1]))
+                        .map(TraceMetrics::getTotal)
+                        .reduce(Integer::sum)
+                        .orElse(0);
+                timeAndRequestMap.put(inter, count);
+            }
+            ReportAppMapOut reportAppMapOut = new ReportAppMapOut();
+            reportAppMapOut.setAppName(k);
+            reportAppMapOut.setTps(tps.toArray(new Double[0]));
+            reportAppMapOut.setRt(rt.toArray(new Double[0]));
+            reportAppMapOut.setSuccessRate(successRate.toArray(new Double[0]));
+            reportAppMapOut.setTotalRequest(totalRequest.toArray(new Integer[0]));
+            timeAndRequestMap.put("0", 0);
+            reportAppMapOut.setTimeAndRequestMap(timeAndRequestMap);
+            reportAppMapOuts.add(reportAppMapOut);
+        });
+        return Response.success(reportAppMapOuts);
+    }
+    /**
+     * 从rt的最大值和最小值中取出5个区间
+     *
+     * @param start    最小值
+     * @param end      最大值
+     * @param interval 区间间隔
+     * @return
+     */
+    private static List<String> getInterval(int start, int end, int interval) {
+        if (start >= end || interval == 0) {
+            return Collections.EMPTY_LIST;
+        }
+        double intervalNum = BigDecimal.valueOf(end).subtract(BigDecimal.valueOf(interval)).divide(BigDecimal.valueOf(interval)).doubleValue();
+        List<String> list = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            int startNum = (int) (start + i * intervalNum);
+            int endNum = (int) (start + (i + 1) * intervalNum);
+            list.add(startNum + "-" + endNum);
+        }
+        return list;
     }
 
+
     private ReportEntity getReportEntity(long reportId) {
-        return reportMapper.selectOne(new LambdaQueryWrapper<ReportEntity>()
-                .eq(ReportEntity::getId, reportId).eq(ReportEntity::getIsDeleted, 0)
-                .select(ReportEntity::getId, ReportEntity::getSceneName, ReportEntity::getSceneId, ReportEntity::getEndTime, ReportEntity::getStartTime));
+        return reportMapper.selectOne(new LambdaQueryWrapper<ReportEntity>().eq(ReportEntity::getId, reportId).eq(ReportEntity::getIsDeleted, 0).select(ReportEntity::getId, ReportEntity::getSceneName, ReportEntity::getSceneId, ReportEntity::getEndTime, ReportEntity::getStartTime));
     }
 
     private static Map<Long, List<NodeCompareTargetOut.NodeInfo>> genNodeCompareTargetOut(List<ReportActivityResponse> activityResponseList) {
@@ -601,8 +693,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return dataList;
     }
 
-    private RiskApplicationCountDTO convert2RiskApplicationCountDTO(List<ReportApplicationSummaryResult> paramList,
-                                                                    int riskMachineCount) {
+    private RiskApplicationCountDTO convert2RiskApplicationCountDTO(List<ReportApplicationSummaryResult> paramList, int riskMachineCount) {
         RiskApplicationCountDTO dto = new RiskApplicationCountDTO();
         List<ApplicationDTO> apps = Lists.newArrayList();
         for (ReportApplicationSummaryResult param : paramList) {
@@ -793,12 +884,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     }
 
     private Pair<Integer, Integer> getMinMaxRt(List<String> rtList) {
-        if(CollectionUtils.isEmpty(rtList)) {
+        if (CollectionUtils.isEmpty(rtList)) {
             return null;
         }
         Pair<Integer, Integer> pair = new Pair<>();
         List<Integer> intList = new ArrayList<>();
-        for(String rt : rtList) {
+        for (String rt : rtList) {
             intList.add(new BigDecimal(rt).intValue());
         }
         Collections.sort(intList);
@@ -810,12 +901,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     public List<Pair<Integer, Integer>> calcCostLevelByFive(Integer minRt, Integer maxRt) {
         log.info("calcCostLevelByFive, minRT={}, maxRt={}", minRt, maxRt);
         List<Pair<Integer, Integer>> pairList = new ArrayList<>();
-        if(minRt == maxRt) {
+        if (minRt == maxRt) {
             return pairList;
         }
         int step = Math.max(1, ((maxRt - minRt) / 5));
-        for(int i = 0; i < 5; i++) {
-            if(i == 4) {
+        for (int i = 0; i < 5; i++) {
+            if (i == 4) {
                 pairList.add(new Pair<>(minRt, maxRt));
             } else {
                 if (minRt + step >= maxRt) {

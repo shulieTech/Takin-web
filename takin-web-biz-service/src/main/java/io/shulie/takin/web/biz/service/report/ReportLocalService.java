@@ -69,6 +69,6 @@ public interface ReportLocalService {
      *
      * @return
      */
-    Response<ReportAppMapOut> getReportAppTrendMap(Long reportId);
+    Response<List<ReportAppMapOut>> getReportAppTrendMap(Long reportId);
 
 }

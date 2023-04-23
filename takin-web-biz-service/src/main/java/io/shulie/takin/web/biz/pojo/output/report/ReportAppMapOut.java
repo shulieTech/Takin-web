@@ -26,6 +26,6 @@ public class ReportAppMapOut {
     private Double successRate[];
 
     @ApiModelProperty(value = "请求数数组")
-    private Double totalRequest[];
+    private Integer totalRequest[];
 
 }

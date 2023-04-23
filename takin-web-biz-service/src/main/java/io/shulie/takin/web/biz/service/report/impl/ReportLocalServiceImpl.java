@@ -799,11 +799,11 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         Pair<Integer, Integer> pair = new Pair<>();
         List<Integer> intList = new ArrayList<>();
         for(String rt : rtList) {
-            intList.add(Integer.parseInt(rt));
+            intList.add(new BigDecimal(rt).intValue());
         }
         Collections.sort(intList);
         pair.setKey(intList.get(0));
-        pair.setValue(intList.get(intList.size() - 1));
+        pair.setValue(intList.get(intList.size() - 1) + 1);
         return pair;
     }
 

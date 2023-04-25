@@ -445,6 +445,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     topologyNodeTree.setId(node.getId());
                     topologyNodeTree.setLabel(node.getLabel());
                     topologyNodeTree.setService1Rt(node.getServiceRt());
+                    topologyNodeTree.setService(activityResponse.getServiceName());
+                    topologyNodeTree.setMethodName(activityResponse.getMethod());
                     if (CollectionUtils.isEmpty(node.getUpAppNames())) {
                         map.put(node.getLabel(), topologyNodeTree);
                     }

@@ -54,6 +54,11 @@ public class BaseServerDaoImpl implements BaseServerDao {
         fieldAndAlias.put("max(disk)", "disk");
         fieldAndAlias.put("max(cpu_cores)", "cpu_cores");
         fieldAndAlias.put("avg(net_bandwidth)", "net_bandwidth");
+        //新增计算gc次数和耗时的指标
+        fieldAndAlias.put("sum(young_gc_count)", "young_gc_count");
+        fieldAndAlias.put("sum(full_gc_count)", "full_gc_count");
+        fieldAndAlias.put("sum(young_gc_time)", "young_gc_time");
+        fieldAndAlias.put("sum(full_gc_time)", "full_gc_time");
         query.setFieldAndAlias(fieldAndAlias);
         query.setStartTime(param.getStartTime());
         query.setEndTime(param.getEndTime());

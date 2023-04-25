@@ -198,13 +198,11 @@ public class LinkTopologyService extends CommonService {
     /**
      * @param startTimeUseInInFluxDB                  拓扑图的 开始时间
      * @param endTimeUseInInFluxDB                    拓扑图的 结束时间
-     * @param allTotalCountStartDateTimeUseInInFluxDB 拓扑图的 线上总调用量指标的 开始时间
      */
     public void fillMetrics(ActivityInfoQueryRequest request,
         ApplicationEntranceTopologyResponse topologyResponse,
         LocalDateTime startTimeUseInInFluxDB,
-        LocalDateTime endTimeUseInInFluxDB,
-        LocalDateTime allTotalCountStartDateTimeUseInInFluxDB) {
+        LocalDateTime endTimeUseInInFluxDB) {
 
         Boolean metricsType = null;
         // 压测流量(true)，业务流量(false)，混合流量(null)
@@ -216,9 +214,6 @@ public class LinkTopologyService extends CommonService {
 
         // startTime
         long startMilliUseInInFluxDB = startTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
-        long allTotalCountStartMilliUseInInFluxDB = allTotalCountStartDateTimeUseInInFluxDB.toInstant(
-            ZoneOffset.of("+0")).toEpochMilli();
-
         // endTime
         long endMilliUseInInFluxDB = endTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
 
@@ -235,9 +230,13 @@ public class LinkTopologyService extends CommonService {
         List<AbstractTopologyNodeResponse> allNodes = topologyResponse.getNodes();
 
         // 找到 root 节点
-        final AbstractTopologyNodeResponse rootNode = allNodes.stream()
-            .filter(AbstractTopologyNodeResponse::getRoot)
-            .findFirst().get();
+        final AbstractTopologyNodeResponse rootNode = allNodes.stream().filter(AbstractTopologyNodeResponse::getRoot)
+                .findFirst()
+                .orElse(null);
+
+        if (Objects.isNull(rootNode)) {
+            return;
+        }
 
         // 仅在 临时业务活动时，圈定一个入口范围
         String response1 = "";
@@ -453,6 +452,8 @@ public class LinkTopologyService extends CommonService {
         node.setServiceAllSuccessRate(appProviderContainer.getServiceAllSuccessRate());
         node.setServiceAllTotalTps(appProviderContainer.getServiceAllTotalTps());
         node.setServiceRt(appProviderContainer.getServiceRt());
+        node.setServiceMaxRt(appProviderContainer.getServiceAllMaxRt());
+        node.setServiceMinRt(appProviderContainer.getServiceAllMinRt());
     }
 
     private AppProvider avgComputer(AppProvider appProviderContainer, List<AppProvider> appProviderList) {
@@ -594,7 +595,8 @@ public class LinkTopologyService extends CommonService {
             appProviderFromDb.setAllSuccessRateBottleneckType(rateBottleneckType);
             appProviderFromDb.setAllTotalRtBottleneckType(rateBottleneckType);
             appProviderFromDb.setAllSqlTotalRtBottleneckType(rateBottleneckType);
-
+            appProviderFromDb.setServiceAllMinRt(appProvider.getServiceAllMinRt());
+            appProviderFromDb.setServiceAllMaxRt(appProvider.getServiceAllMaxRt());
             appProvider.getContainRealAppProvider().add(appProviderFromDb);
         }
     }
@@ -663,6 +665,8 @@ public class LinkTopologyService extends CommonService {
         Integer allMaxRt = (Integer)jsonObject.get("allMaxRt");
         traceMetricsResult.setAllMaxRt(allMaxRt.doubleValue());
 
+        Integer allMinRt = (Integer)jsonObject.get("allMinRt");
+        traceMetricsResult.setAllMinRt(allMinRt.doubleValue());
         traceMetricsResultList.add(traceMetricsResult);
     }
 
@@ -1150,9 +1154,7 @@ public class LinkTopologyService extends CommonService {
                 log.error("查询链路图节点转换异常",e);
             }
             return null;
-        })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     private void setUnknownResponse(TopologyUnknownNodeResponse nodeResponse, LinkNodeDTO node,

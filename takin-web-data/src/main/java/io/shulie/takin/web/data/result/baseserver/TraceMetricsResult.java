@@ -52,6 +52,9 @@ public class TraceMetricsResult {
     @Column(name = "allMaxRt")
     private Double allMaxRt;
 
+    @Column(name = "allMinRt")
+    private Double allMinRt;
+
     @Column(name = "totalTps")
     private Double totalTps;
     /** 别名 */

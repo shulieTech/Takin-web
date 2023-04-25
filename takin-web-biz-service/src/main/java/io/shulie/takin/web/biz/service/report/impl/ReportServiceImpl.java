@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
@@ -8,8 +10,10 @@ import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.response.report.*;
 import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.common.utils.JsonPathUtil;
+import io.shulie.takin.cloud.data.mapper.mysql.ReportMapper;
 import io.shulie.takin.cloud.data.mapper.mysql.SceneManageMapper;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
+import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
@@ -18,6 +22,7 @@ import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.web.biz.pojo.dto.scene.EngineMetricsDTO;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
+import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 
 import java.io.IOException;
@@ -47,10 +52,6 @@ import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
 import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDownLoadOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
@@ -119,6 +120,9 @@ public class ReportServiceImpl implements ReportService {
     @Resource
     private CloudReportService cloudReportService;
 
+    @Resource
+    private ReportMapper reportMapper;
+
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
         // 前端查询条件 传用户
@@ -185,6 +189,25 @@ public class ReportServiceImpl implements ReportService {
         fillExecuteMan(output);
         return output;
 
+    }
+
+    @Override
+    public List<SceneReportListOutput> getReportListBySceneId(Long sceneId) {
+        ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
+        req.setSceneId(sceneId);
+        List<ReportDetailResp> respList = cloudReportApi.detailListBySceneId(req);
+        List<SceneReportListOutput> outputList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(respList)) {
+            return outputList;
+        }
+        respList.stream().forEach(resp -> {
+            SceneReportListOutput out = new SceneReportListOutput();
+            out.setReportId(resp.getId());
+            out.setStartTime(resp.getStartTime());
+            out.setMaxConcurrent(resp.getConcurrent());
+            outputList.add(out);
+        });
+        return outputList;
     }
 
     private void fillExecuteMan(ReportDetailOutput output) {
@@ -708,6 +731,28 @@ public class ReportServiceImpl implements ReportService {
         io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
         // 将链路拓扑信息更新到表中
         reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
+    }
+
+    /**
+     * 根据报告ids查询报告详情
+     *
+     * @param reportIds
+     * @return
+     */
+    @Override
+    public List<ReportEntity> getReportListByReportIds(List<Long> reportIds) {
+        if (CollectionUtils.isEmpty(reportIds)) {
+            return new ArrayList<>();
+        }
+        LambdaQueryWrapper<ReportEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(ReportEntity::getId, ReportEntity::getSceneName, ReportEntity::getSceneId, ReportEntity::getEndTime, ReportEntity::getStartTime);
+        queryWrapper.in(ReportEntity::getId, reportIds);
+        return reportMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public void buildReportTestData(Long jobId, Long sceneId, Long reportId, Long tenantId) {
+        cloudReportService.updateReportBusinessActivity(jobId, sceneId, reportId, tenantId);
     }
 
     private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5) {

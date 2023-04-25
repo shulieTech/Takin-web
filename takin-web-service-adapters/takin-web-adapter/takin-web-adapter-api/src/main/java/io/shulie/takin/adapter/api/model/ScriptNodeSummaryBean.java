@@ -71,6 +71,8 @@ public class ScriptNodeSummaryBean {
     @ApiModelProperty(value = "分布")
     private List<DistributeBean> distribute;
 
+    private String rtDistribute;
+
     @ApiModelProperty(value = "通过标识")
     private Integer passFlag;
 
@@ -82,6 +84,6 @@ public class ScriptNodeSummaryBean {
 
     private List<ScriptNodeSummaryBean> children;
 
-
+    private String features;
 
 }

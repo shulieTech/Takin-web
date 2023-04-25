@@ -27,4 +27,8 @@ public class TpsTargetArray {
     private BigDecimal[] io;
 
     private BigDecimal[] network;
+
+    private BigDecimal[] gcCost;
+
+    private BigDecimal[] gcCount;
 }

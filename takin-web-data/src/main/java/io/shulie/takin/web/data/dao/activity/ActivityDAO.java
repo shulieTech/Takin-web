@@ -49,6 +49,8 @@ public interface ActivityDAO {
      */
     ActivityResult getActivityById(Long activityId);
 
+    ActivityResult getActivityServiceById(Long activityId);
+
     /**
      * 创建正常业务活动，因为涉及老版兼容问题，这里独立 新版本业务活动createActivityNew
      *

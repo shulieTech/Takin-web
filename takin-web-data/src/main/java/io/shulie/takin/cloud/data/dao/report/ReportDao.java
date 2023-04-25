@@ -36,6 +36,8 @@ public interface ReportDao {
      */
     ReportResult selectById(Long id);
 
+    List<ReportResult> selectBySceneId(Long sceneId);
+
     /**
      * 获取当前场景最新一条报告
      *

@@ -11,9 +11,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.dto.report.*;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
-import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
-import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
-import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
 import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
@@ -169,12 +166,6 @@ public class ReportLocalController {
         return Response.success(new ArrayList<>());
     }
 
-    @GetMapping("vlt/report/machine/agent/trend")
-    @ApiOperation("LT版-应用实例趋势图")
-    public Response<List<MachineDetailDTO>> getLtMachineDetail(Long reportId, String applicationName) {
-        return Response.success(new ArrayList<>());
-    }
-
     @GetMapping("vlt/report/compare")
     @ApiOperation("LT版-压测报告比对")
     public Response<ReportCompareOutput> getLtReportCompare(@RequestParam List<Long> reportIds, @RequestParam Long businessActivityId) {
@@ -217,8 +208,8 @@ public class ReportLocalController {
 
     @GetMapping("/vlt/report/application/instance/trendMap")
     @ApiOperation("LT版-应用实例趋势图")
-    public Response<Object> getReportAppInstanceTrendMap(long reportId) {
-        return Response.success(this.reportLocalService.getReortAppInstancePerformanceList(reportId));
+    public Response<List<MachineDetailDTO>> getReportAppInstanceTrendMap(@RequestParam("reportId") long reportId) {
+        return reportLocalService.getReportAppInstanceTrendMap(reportId);
     }
 
     @GetMapping("/report/application/list")

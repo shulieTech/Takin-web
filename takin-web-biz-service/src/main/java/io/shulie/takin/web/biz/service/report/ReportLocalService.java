@@ -7,10 +7,8 @@ import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
 import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
 import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
-import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
 import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.common.common.Response;
@@ -70,5 +68,12 @@ public interface ReportLocalService {
      * @return
      */
     Response<List<ReportAppMapOut>> getReportAppTrendMap(Long reportId);
+
+    /**
+     * 获取报告应用性能趋势图
+     *
+     * @return
+     */
+    Response<List<MachineDetailDTO>> getReportAppInstanceTrendMap(Long reportId);
 
 }

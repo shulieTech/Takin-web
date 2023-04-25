@@ -28,6 +28,7 @@ import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
+import com.pamirs.takin.entity.domain.vo.TopologyNode;
 import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
@@ -38,9 +39,13 @@ import io.shulie.takin.cloud.data.dao.report.ReportBusinessActivityDetailDao;
 import io.shulie.takin.cloud.data.mapper.mysql.ReportMapper;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneBusinessActivityRefEntity;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.api.TraceClient;
+import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceMetricsRequest;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.TraceMetrics;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
 import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
@@ -48,6 +53,7 @@ import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.pojo.request.activity.ReportActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ReportActivityResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportMessageService;
@@ -73,6 +79,7 @@ import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -120,6 +127,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Autowired
     private TraceClient traceClient;
+
+    @Autowired
+    private ApplicationClient applicationClient;
 
 //    public static void main(String[] args) {
 //        String data1 = "{\"cpu\":[10,11,12],\"io\":[40,30,35],\"loading\":[75,55,70],\"memory\":[40,43,45],\"network\":[20,40," + "24],\"tps\":[100,110,120]}";
@@ -398,20 +408,90 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         //根据业务活动id获取节点信息
         List<ReportActivityInfoQueryRequest> activityInfoQueryRequests = reportEntityList.stream().map(reportEntity -> genActivityInfo(nodeCompareTargetInput.getActivityId(), reportEntity)).collect(Collectors.toList());
         //根据业务活动id，报告id获取压测时候节点的信息
-        List<ReportActivityResponse> activityResponseList = this.activityService.getActivityWithMetricsByIdForReports(activityInfoQueryRequests);
+        if (CollectionUtils.isEmpty(activityInfoQueryRequests)) {
+            return Response.success(new NodeCompareTargetOut());
+        }
 
+        List<ReportActivityResponse> activityResponseList = this.activityService.getActivityWithMetricsByIdForReports(activityInfoQueryRequests);
         //统计转换压测时候节点的信息
         if (CollectionUtils.isEmpty(activityResponseList)) {
             return Response.success(new NodeCompareTargetOut());
         }
         NodeCompareTargetOut nodeCompareTargetOut = new NodeCompareTargetOut();
-        nodeCompareTargetOut.setNodes(activityResponseList.get(0).getTopology().getNodes());
-        nodeCompareTargetOut.setActivityId(nodeCompareTargetInput.getActivityId());
-        nodeCompareTargetOut.setActivityName(activityResponseList.get(0).getActivityName());
-        nodeCompareTargetOut.setActivityType(activityResponseList.get(0).getBusinessType());
-        Map<Long, List<NodeCompareTargetOut.NodeInfo>> map = genNodeCompareTargetOut(activityResponseList);
-        nodeCompareTargetOut.setNodeInfosMap(map);
+        nodeCompareTargetOut.setReportIds(nodeCompareTargetInput.getReportIds());
+        NodeCompareTargetOut.TopologyNode root = new NodeCompareTargetOut.TopologyNode();
+        ReportActivityResponse response = activityResponseList.get(0);
+        root.setId(response.getLinkId());
+        root.setMethodName(response.getMethod());
+        root.setService(response.getServiceName());
+        root.setLabel(response.getApplicationName());
+        Map<String,NodeCompareTargetOut.TopologyNode> topologyNode = genNodeCompareTargetOut(activityResponseList);
+        nodeCompareTargetOut.setNode(genNodeTree(root,topologyNode));
         return Response.success(nodeCompareTargetOut);
+    }
+
+    private static Map<String, NodeCompareTargetOut.TopologyNode> genNodeCompareTargetOut(List<ReportActivityResponse> activityResponseList) {
+        NodeCompareTargetOut.TopologyNode topologyNode = new NodeCompareTargetOut.TopologyNode();
+        List<Map<String, NodeCompareTargetOut.TopologyNode>> list = new ArrayList<>();
+        for (ReportActivityResponse activityResponse : activityResponseList) {
+            topologyNode.setId(activityResponse.getLinkId());
+            topologyNode.setMethodName(activityResponse.getMethod());
+            topologyNode.setService(activityResponse.getServiceName());
+            topologyNode.setLabel(activityResponse.getApplicationName());
+            Map<String, NodeCompareTargetOut.TopologyNode> map = new HashMap<>();
+            if (activityResponse.getTopology() != null && CollectionUtils.isNotEmpty(activityResponse.getTopology().getNodes())) {
+                for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponse.getTopology().getNodes()) {
+                    NodeCompareTargetOut.TopologyNode topologyNodeTree = new NodeCompareTargetOut.TopologyNode();
+                    topologyNodeTree.setId(node.getId());
+                    topologyNodeTree.setLabel(node.getLabel());
+                    topologyNodeTree.setService1Rt(node.getServiceRt());
+                    if (CollectionUtils.isEmpty(node.getUpAppNames())) {
+                        map.put(node.getLabel(), topologyNodeTree);
+                    }
+                    for (String upAppName : node.getUpAppNames()) {
+                        map.put(node.getLabel() + "&&&&&&" + upAppName, topologyNodeTree);
+                    }
+                }
+            }
+            list.add(map);
+        }
+        //合并数据
+        Set<String> keys1 = list.get(0).keySet();
+        Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap1 = list.get(0);
+        Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap2 = list.get(1);
+        Map<String, NodeCompareTargetOut.TopologyNode> newNodeMap = new HashMap<>();
+        for (String s : keys1) {
+            NodeCompareTargetOut.TopologyNode topologyNode1 = topologyNodeMap1.get(s);
+            NodeCompareTargetOut.TopologyNode topologyNode2 = topologyNodeMap2.get(s);
+            if (topologyNode1 == null || topologyNode2 == null) {
+                continue;
+            }
+            topologyNode1.setService2Rt(topologyNode2.getService1Rt());
+            newNodeMap.put(s, topologyNode1);
+        }
+        return newNodeMap;
+    }
+
+    private static NodeCompareTargetOut.TopologyNode genNodeTree(NodeCompareTargetOut.TopologyNode root, Map<String, NodeCompareTargetOut.TopologyNode> map) {
+        Iterator<String> iterator = map.keySet().iterator();
+        while (iterator.hasNext()) {
+            String key = iterator.next();
+            String[] split = key.split("&&&&&&");
+            if (split.length != 2) {
+                continue;
+            }
+            if (root.getLabel().equals(split[1])) {
+                if (CollectionUtils.isEmpty(root.getNodes())) {
+                    List<NodeCompareTargetOut.TopologyNode> list = new ArrayList<>();
+                    list.add(map.get(key));
+                    root.setNodes(list);
+                } else {
+                    root.getNodes().add(map.get(key));
+                }
+                genNodeTree(map.get(key), map);
+            }
+        }
+        return root;
     }
 
     /**
@@ -431,7 +511,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             return Response.success(Collections.EMPTY_LIST);
         }
         List<ReportActivityInfoQueryRequest> activityInfoQueryRequests = sceneBusinessActivityRefEntities.stream().map(sceneBusinessActivityRef -> genActivityInfo(sceneBusinessActivityRef.getBusinessActivityId(), reportEntity)).collect(Collectors.toList());
-
+        if (CollectionUtils.isEmpty(activityInfoQueryRequests)) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
         List<ReportActivityResponse> activityResponseList = this.activityService.getActivityWithMetricsByIdForReports(activityInfoQueryRequests);
 
         if (CollectionUtils.isEmpty(activityResponseList)) {
@@ -592,11 +674,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
             for (String inter : intervalList) {
                 String str[] = inter.split("-");
-                Integer count = v.stream()
-                        .filter(traceMetrics -> traceMetrics.getAvgRt() >= Integer.valueOf(str[0]) && traceMetrics.getAvgRt() < Integer.valueOf(str[1]))
-                        .map(TraceMetrics::getTotal)
-                        .reduce(Integer::sum)
-                        .orElse(0);
+                Integer count = v.stream().filter(traceMetrics -> traceMetrics.getAvgRt() >= Integer.valueOf(str[0]) && traceMetrics.getAvgRt() < Integer.valueOf(str[1])).map(TraceMetrics::getTotal).reduce(Integer::sum).orElse(0);
                 timeAndRequestMap.put(inter, count);
             }
             ReportAppMapOut reportAppMapOut = new ReportAppMapOut();
@@ -611,6 +689,48 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         });
         return Response.success(reportAppMapOuts);
     }
+
+    /**
+     * 获取报告应用实例性能趋势图
+     *
+     * @param reportId
+     * @return
+     */
+    @Override
+    public Response<List<MachineDetailDTO>> getReportAppInstanceTrendMap(Long reportId) {
+        ReportEntity reportEntity = getReportEntity(reportId);
+        if (reportEntity == null) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+        List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
+
+        if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+        List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
+
+        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).eq(ApplicationMntEntity::getApplicationId, appIds));
+        List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(appNames)) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
+        ApplicationNodeQueryDTO applicationQueryDTO = new ApplicationNodeQueryDTO();
+        applicationQueryDTO.setAppNames(String.join(",", appNames));
+        applicationQueryDTO.setCurrentPage(0);
+        applicationQueryDTO.setPageSize(9999);
+        PagingList<ApplicationNodeDTO> applicationNodePage = applicationClient.pageApplicationNodes(applicationQueryDTO);
+
+        List<String> machineList = applicationNodePage.getList().stream().map(ApplicationNodeDTO::getIpAddress).collect(Collectors.toList());
+
+        List<MachineDetailDTO> list = new ArrayList<>();
+        appNames.forEach(appName -> {
+            for (String s : machineList) {
+                list.add(getMachineDetail(reportId, appName, s));
+            }
+        });
+        return Response.success(list);
+    }
+
     /**
      * 从rt的最大值和最小值中取出5个区间
      *
@@ -635,24 +755,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     private ReportEntity getReportEntity(long reportId) {
         return reportMapper.selectOne(new LambdaQueryWrapper<ReportEntity>().eq(ReportEntity::getId, reportId).eq(ReportEntity::getIsDeleted, 0).select(ReportEntity::getId, ReportEntity::getSceneName, ReportEntity::getSceneId, ReportEntity::getEndTime, ReportEntity::getStartTime));
-    }
-
-    private static Map<Long, List<NodeCompareTargetOut.NodeInfo>> genNodeCompareTargetOut(List<ReportActivityResponse> activityResponseList) {
-        List<NodeCompareTargetOut.NodeInfo> list = new ArrayList<>();
-        for (ReportActivityResponse reportActivityResponse : activityResponseList) {
-            List<NodeCompareTargetOut.NodeInfo> tmpList = reportActivityResponse.getTopology().getNodes().stream().map(node -> {
-                NodeCompareTargetOut.NodeInfo nodeInfo = new NodeCompareTargetOut.NodeInfo();
-                nodeInfo.setAppName(node.getLabel());
-                nodeInfo.setReportRt(node.getServiceRt());
-                nodeInfo.setReportId(reportActivityResponse.getReportId());
-                return nodeInfo;
-            }).collect(Collectors.toList());
-            list.addAll(tmpList);
-        }
-        if (CollectionUtils.isEmpty(list)) {
-            return new HashMap<>();
-        }
-        return list.stream().collect(Collectors.groupingBy(NodeCompareTargetOut.NodeInfo::getReportId));
     }
 
     private static ReportActivityInfoQueryRequest genActivityInfo(long activityId, ReportEntity reportEntity) {

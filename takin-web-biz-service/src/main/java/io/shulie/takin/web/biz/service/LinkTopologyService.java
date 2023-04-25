@@ -230,7 +230,13 @@ public class LinkTopologyService extends CommonService {
         List<AbstractTopologyNodeResponse> allNodes = topologyResponse.getNodes();
 
         // 找到 root 节点
-        final AbstractTopologyNodeResponse rootNode = allNodes.stream().filter(AbstractTopologyNodeResponse::getRoot).findFirst().get();
+        final AbstractTopologyNodeResponse rootNode = allNodes.stream().filter(AbstractTopologyNodeResponse::getRoot)
+                .findFirst()
+                .orElse(null);
+
+        if (Objects.isNull(rootNode)) {
+            return;
+        }
 
         // 仅在 临时业务活动时，圈定一个入口范围
         String response1 = "";

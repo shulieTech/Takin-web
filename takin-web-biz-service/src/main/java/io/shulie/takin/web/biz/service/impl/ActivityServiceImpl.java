@@ -668,7 +668,14 @@ public class ActivityServiceImpl implements ActivityService {
         for (ReportActivityInfoQueryRequest reportActivityInfoQueryRequest : activityInfoQueryRequests) {
             ActivityInfoQueryRequest activityInfoQueryRequest = new ActivityInfoQueryRequest();
             BeanUtil.copyProperties(reportActivityInfoQueryRequest, activityInfoQueryRequest);
+            ActivityResult result = activityDAO.getActivityById(activityInfoQueryRequest.getActivityId());
+            if (result.getBusinessType().equals(BusinessTypeEnum.VIRTUAL_BUSINESS.getType())) {
+                continue;
+            }
             ActivityResponse activity = getActivityById(activityInfoQueryRequest);
+            if (activity.getTopology() == null) {
+                continue;
+            }
             linkTopologyService.fillMetrics(activityInfoQueryRequest, activity.getTopology(), activityInfoQueryRequest.getStartTime(), activityInfoQueryRequest.getEndTime());
             ReportActivityResponse reportActivityResponse = new ReportActivityResponse();
             BeanUtil.copyProperties(activity, reportActivityResponse);

@@ -11,6 +11,9 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.dto.report.*;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
 import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
@@ -53,12 +56,20 @@ public class ReportLocalController {
 
     @GetMapping("/report/count")
     @ApiOperation("报告汇总数据")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<ReportCountDTO> getReportCount(Long reportId) {
         return Response.success(reportLocalService.getReportCount(reportId));
     }
 
     @GetMapping("/report/bottleneckInterface/list")
     @ApiOperation("瓶颈接口")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<List<BottleneckInterfaceDTO>> getBottleneckInterfaceList(Long reportId, Integer current,
                                                                              Integer pageSize) {
         ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
@@ -69,6 +80,10 @@ public class ReportLocalController {
 
     @GetMapping("vlt/report/bottleneckInterface/list")
     @ApiOperation("LT版-瓶颈接口")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<List<BottleneckInterfaceLtDTO>> getLtBottleneckInterfaceList(Long reportId, Integer current,
                                                                                  Integer pageSize) {
         ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
@@ -93,12 +108,20 @@ public class ReportLocalController {
 
     @GetMapping("/report/risk/application")
     @ApiOperation("风险机器左侧应用")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<RiskApplicationCountDTO> getRiskApplicationCount(Long reportId) {
         return Response.success(reportLocalService.listRiskApplication(reportId));
     }
 
     @GetMapping("/report/risk/machine/list")
     @ApiOperation("风险机器右侧列表")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<List<RiskMacheineDTO>> getRiskMachine(Long reportId, String applicationName, Integer current,
                                                           Integer pageSize) {
         ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
@@ -110,6 +133,10 @@ public class ReportLocalController {
 
     @GetMapping("vlt/report/risk/machine/list")
     @ApiOperation("LT版-风险容器")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<List<RiskMachineLtDTO>> getRiskMachineList(Long reportId, Integer current,
                                                                Integer pageSize) {
         ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
@@ -143,6 +170,10 @@ public class ReportLocalController {
 
     @GetMapping("vlt/report/test/build/data")
     @ApiOperation("LT版-主动生成报告数据")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response buildTestReportData(Long jobId, Long sceneId, Long reportId) {
         reportService.buildReportTestData(jobId, sceneId, reportId, WebPluginUtils.traceTenantId());
         return Response.success();
@@ -156,18 +187,30 @@ public class ReportLocalController {
 
     @GetMapping("/report/machine/detail")
     @ApiOperation("性能详情")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<MachineDetailDTO> getMachineDetail(Long reportId, String applicationName, String machineIp) {
         return Response.success(reportLocalService.getMachineDetail(reportId, applicationName, machineIp));
     }
 
     @GetMapping("vlt/report/machine/list")
     @ApiOperation("LT版-应用性能")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<List<ReportApplicationTargetDTO>> getLtMachineList(Long reportId) {
         return Response.success(new ArrayList<>());
     }
 
     @GetMapping("vlt/report/compare")
     @ApiOperation("LT版-压测报告比对")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<ReportCompareOutput> getLtReportCompare(@RequestParam List<Long> reportIds, @RequestParam Long businessActivityId) {
         if (CollectionUtils.isEmpty(reportIds) || businessActivityId == null || businessActivityId == -1) {
             log.warn("压测报告比对告警，传入参数长度不正确");
@@ -178,30 +221,50 @@ public class ReportLocalController {
 
     @GetMapping("/vlt/report/compare/activityInfo/{activityId")
     @ApiOperation("LT版-业务活动trace节点信息")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<String> getActivityInfoForLtNodeCompare(@PathVariable("activityId") Long activityId) {
         return Response.success();
     }
 
     @GetMapping("/vlt/report/node/compare")
     @ApiOperation("LT版-节点比对")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<NodeCompareTargetOut> getLtNodeCompare(NodeCompareTargetInput nodeCompareTargetInput) {
         return this.reportLocalService.getLtNodeCompare(nodeCompareTargetInput);
     }
 
     @GetMapping("/vlt/report/application/performanceList")
     @ApiOperation("LT版-应用性能列表")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<List<ReportAppPerformanceOut>> getReortAppPerformanceList(long reportId) {
         return this.reportLocalService.getReortAppPerformanceList(reportId);
     }
 
     @GetMapping("/vlt/report/application/instance/performanceList")
     @ApiOperation("LT版-应用实例性能列表")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<List<ReportAppInstancePerformanceOut>> getReortAppInstancePerformanceList(long reportId) {
         return this.reportLocalService.getReortAppInstancePerformanceList(reportId);
     }
 
     @GetMapping("/vlt/report/application/trendMap")
     @ApiOperation("LT版-应用趋势图")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<List<ReportAppMapOut>> getReportAppTrendMap(long reportId) {
         return reportLocalService.getReportAppTrendMap(reportId);
     }
@@ -214,6 +277,10 @@ public class ReportLocalController {
 
     @GetMapping("/report/application/list")
     @ApiOperation("容量水位应用列表")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<List<ApplicationDTO>> getApplicationList(Long reportId, String applicationName) {
         if (StringUtils.isBlank(applicationName)) {
             applicationName = null;
@@ -223,6 +290,10 @@ public class ReportLocalController {
 
     @GetMapping("/report/application/trace/failedCount")
     @ApiOperation("请求流量明细失败次数")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public Response<Long> getTraceFailedCount(Long reportId) {
         if (reportId == null) {
             return Response.fail("报告id为空");

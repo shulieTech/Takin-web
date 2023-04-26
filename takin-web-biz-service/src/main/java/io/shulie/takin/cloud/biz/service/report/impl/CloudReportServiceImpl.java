@@ -168,6 +168,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     public static final String COMPARE = "<=";
 
+    private static final BigDecimal ZERO = new BigDecimal("0");
+
     @Override
     public PageInfo<CloudReportDTO> listReport(ReportQueryReq param) {
 
@@ -1327,8 +1329,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                         stepMap.put("totalRequest", data.getTotalRequest());
                         stepMap.put("concurrent", data.getAvgConcurrenceNum());
                         stepMap.put("avgTps", data.getTps());
-                        stepMap.put("minTps", data.getMaxTps());
-                        stepMap.put("maxTps", data.getMinTps());
+                        stepMap.put("minTps", data.getMinTps());
+                        stepMap.put("maxTps", data.getMaxTps());
                         stepMap.put("avgRt", data.getAvgRt());
                         stepMap.put("minRt", data.getMinRt());
                         stepMap.put("maxRt", data.getMaxRt());
@@ -1403,26 +1405,33 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      * @return -
      */
     private boolean isPass(ReportBusinessActivityDetail detail) {
-        if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(
-                detail.getSuccessRate()) > 0) {
+        if (detail.getTargetSuccessRate() != null
+                && detail.getTargetSuccessRate().compareTo(ZERO) > 0
+                && detail.getTargetSuccessRate().compareTo(detail.getSuccessRate()) > 0) {
             log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
                 detail.getReportId(), detail.getBusinessActivityId(),
                 "成功率", detail.getTargetSuccessRate(), detail.getSuccessRate());
             return false;
         }
-        if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
+        if (detail.getTargetSa() != null
+                && detail.getTargetSa().compareTo(ZERO) > 0
+                && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
             log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
                 detail.getReportId(), detail.getBusinessActivityId(),
                 "SA", detail.getTargetSa(), detail.getSa());
             return false;
         }
-        if (isTargetBiggerThanZero(detail.getTargetRt()) && detail.getTargetRt().compareTo(detail.getRt()) < 0) {
+        if (detail.getTargetRt() != null
+                && detail.getTargetRt().compareTo(ZERO) > 0
+                && detail.getTargetRt().compareTo(detail.getRt()) < 0) {
             log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
                 detail.getReportId(), detail.getBusinessActivityId(),
                 "RT", detail.getTargetRt(), detail.getRt());
             return false;
         }
-        if (isTargetBiggerThanZero(detail.getTargetTps()) && detail.getTargetTps().compareTo(detail.getTps()) > 0){
+        if (detail.getTargetTps() != null
+                && detail.getTargetTps().compareTo(ZERO) > 0
+                && detail.getTargetTps().compareTo(detail.getTps()) > 0){
             log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
                 detail.getReportId(), detail.getBusinessActivityId(),
                 "TPS", detail.getTargetTps(), detail.getTps());
@@ -1431,16 +1440,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         return true;
     }
 
-    /**
-     * 发现问题，目标为-1的情况，做下兼容
-     * @param target
-     * @return
-     */
-    private boolean isTargetBiggerThanZero(BigDecimal target) {
-        if (Objects.nonNull(target)) {
-            return target.compareTo(new BigDecimal("-1.001")) > 0;
-        }
-        return false;
+    public static void main(String[] args) {
+        System.out.println(new BigDecimal("-1").compareTo(new BigDecimal("-1.001")) > 0);
     }
 
     /**
@@ -1845,7 +1846,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 + "round(mean(active_threads))  as avgConcurrenceNum"
                 + " from "
                 + InfluxUtil.getMeasurement(jobId, sceneId, reportId, customerId)
-                + " where transaction = '" + transaction + "' where time >= " + startTime * 1000000 + " and time < " + endTime * 1000000;
+                + " where transaction = '" + transaction + "' and time >= " + startTime * 1000000 + " and time < " + endTime * 1000000;
 
         return influxWriter.querySingle(influxDbSql, StatReportDTO.class);
     }

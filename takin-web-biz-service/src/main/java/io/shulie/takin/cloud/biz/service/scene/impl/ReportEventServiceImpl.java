@@ -85,7 +85,7 @@ public class ReportEventServiceImpl implements ReportEventService {
     private List<Metrics> queryMetricsList(Long startTime, Long endTime, Long jobId, Long sceneId, Long reportId, Long customerId, String transaction) {
         String influxDbSql = "select sa_percent as percentData from "
                 + InfluxUtil.getMeasurement(jobId, sceneId, reportId, customerId)
-                + " where transaction = '" + transaction + "' where time >= " + startTime * 1000000 + " and time < " + endTime * 1000000;
+                + " where transaction = '" + transaction + "' and time >= " + startTime * 1000000 + " and time < " + endTime * 1000000;
         return influxWriter.query(influxDbSql, Metrics.class);
     }
 

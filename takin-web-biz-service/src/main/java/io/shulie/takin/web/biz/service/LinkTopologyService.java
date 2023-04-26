@@ -204,6 +204,101 @@ public class LinkTopologyService extends CommonService {
     /**
      * @param startTimeUseInInFluxDB                  拓扑图的 开始时间
      * @param endTimeUseInInFluxDB                    拓扑图的 结束时间
+     */
+    public void fillMetrics(ActivityInfoQueryRequest request,
+                            ApplicationEntranceTopologyResponse topologyResponse,
+                            LocalDateTime startTimeUseInInFluxDB,
+                            LocalDateTime endTimeUseInInFluxDB) {
+
+        Boolean metricsType = null;
+        // 压测流量(true)，业务流量(false)，混合流量(null)
+        if (FlowTypeEnum.PRESSURE_MEASUREMENT.equals(request.getFlowTypeEnum())) {
+            metricsType = true;
+        } else if (FlowTypeEnum.BUSINESS.equals(request.getFlowTypeEnum())) {
+            metricsType = false;
+        }
+
+        // startTime
+        long startMilliUseInInFluxDB = startTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+        // endTime
+        long endMilliUseInInFluxDB = endTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+
+        /*
+        填充 Node
+            总Tps / 总Rt
+        */
+
+        // 查询 该业务活动 的所有开关状态
+        List<ActivityNodeState> dbActivityNodeServiceState = activityService.getActivityNodeServiceState(
+                request.getActivityId());
+
+        List<ApplicationEntranceTopologyEdgeResponse> reduceEdges = topologyResponse.getEdges();
+        List<AbstractTopologyNodeResponse> allNodes = topologyResponse.getNodes();
+
+        // 找到 root 节点
+        final AbstractTopologyNodeResponse rootNode = allNodes.stream().filter(AbstractTopologyNodeResponse::getRoot)
+                .findFirst()
+                .orElse(null);
+
+        if (Objects.isNull(rootNode)) {
+            return;
+        }
+
+        // 仅在 临时业务活动时，圈定一个入口范围
+        String response1 = "";
+        response1 = getString(request, rootNode, response1, reduceEdges, allNodes);
+
+        // 批量查询瓶颈配置
+        Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap = this.getBatchExceptionConfig(allNodes);
+
+        // 批量查询指标数据
+        Map<String, JSONObject> metricsMap = Maps.newHashMap();
+        if (!request.isTempActivity()) {
+            metricsMap = queryBatchMetricsFromAMDB(startMilliUseInInFluxDB, endMilliUseInInFluxDB,
+                    metricsType, this.getAllEagleIds(allNodes));
+        }
+
+        for (AbstractTopologyNodeResponse node : allNodes) {
+            // 填充 节点服务的 总调用量 / 总成功率 / 总Tps / 总Rt
+            TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
+            if (appnode.getProviderService() != null) {
+                List<AppProviderInfo> appProviderInfos =
+                        fillAppNodeServiceSuccessRateAndRt(
+                                request, appnode, startTimeUseInInFluxDB, bottleneckConfigMap,
+                                dbActivityNodeServiceState, response1, metricsMap);
+
+                // 设置 拓扑图中节点上显示哪一个服务性能指标
+                setTopologyNodeServiceMetrics(node, appProviderInfos);
+            }
+        }
+
+        // 设置业务活动层级的瓶颈
+        setTopologyLevelBottleneck(topologyResponse);
+
+        /*
+        填充 Edge
+            总调用量 / 主干
+        */
+        for (ApplicationEntranceTopologyEdgeResponse edge : reduceEdges) {
+            edge.setAllTotalCount(getAllServiceAllTotalCount(allNodes, edge));
+
+            edge.setMain(false);
+        }
+
+        /*
+        确定 主干
+        */
+        if (rootNode == null) {
+            log.info("no entrance node");
+            return;
+        }
+        int loopCounter = 0;
+        setMainEdge(reduceEdges, rootNode.getId(), loopCounter);
+    }
+
+    /**
+     * @param startTimeUseInInFluxDB                  拓扑图的 开始时间
+     * @param endTimeUseInInFluxDB                    拓扑图的 结束时间
      * @param allTotalCountStartDateTimeUseInInFluxDB 拓扑图的 线上总调用量指标的 开始时间
      */
     public void fillMetrics(ActivityInfoQueryRequest request,

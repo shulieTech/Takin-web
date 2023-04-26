@@ -37,6 +37,7 @@ import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.NumberUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -151,12 +152,8 @@ import io.shulie.takin.web.data.dao.application.ShadowMqConsumerDAO;
 import io.shulie.takin.web.data.dao.application.WhiteListDAO;
 import io.shulie.takin.web.data.dao.application.WhitelistEffectiveAppDao;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
-import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
-import io.shulie.takin.web.data.model.mysql.ApplicationDsManageEntity;
-import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
-import io.shulie.takin.web.data.model.mysql.LinkGuardEntity;
-import io.shulie.takin.web.data.model.mysql.ShadowJobConfigEntity;
-import io.shulie.takin.web.data.model.mysql.ShadowMqConsumerEntity;
+import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
+import io.shulie.takin.web.data.model.mysql.*;
 import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
 import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
@@ -345,6 +342,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Resource
     private ApplicationInfoSync applicationInfoSync;
 
+    @Resource
+    private ApplicationMntMapper applicationMntMapper;
+
     @PostConstruct
     public void init() {
         isCheckDuplicateName = ConfigServerHelper.getBooleanValueByKey(
@@ -424,6 +424,22 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
+    public List<ApplicationListResponse> getApplicationListByAppIds(List<Long> appIds) {
+        List<ApplicationDetailResult> resultList = applicationDAO.getApplicationByAppIds(appIds);
+        List<ApplicationListResponse> responseList = new ArrayList<>();
+        if(org.apache.commons.collections4.CollectionUtils.isEmpty(resultList)) {
+            return responseList;
+        }
+        resultList.stream().forEach(result -> {
+            ApplicationListResponse response = new ApplicationListResponse();
+            response.setApplicationId(result.getApplicationId());
+            response.setApplicationName(result.getApplicationName());
+            responseList.add(response);
+        });
+        return responseList;
+    }
+
+    @Override
     public Response<List<ApplicationVo>> getApplicationList(ApplicationQueryRequest queryParam) {
 
         PagingList<ApplicationDetailResult> pageInfo = confCenterService.queryApplicationList(queryParam);
@@ -449,9 +465,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public Long getAccessErrorNum() {
-        ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
-        requestV2.setAccessStatus(3);
-        return this.pageApplication(requestV2).getTotal();
+        return applicationMntMapper.selectCount(new LambdaQueryWrapper<ApplicationMntEntity>()
+                .eq(ApplicationMntEntity::getAccessStatus, 3)
+                .eq(ApplicationMntEntity::getTenantId, WebPluginUtils.traceTenantCommonExt().getTenantId())
+                .eq(ApplicationMntEntity::getEnvCode, WebPluginUtils.traceTenantCommonExt().getEnvCode()));
     }
 
 //    @Override

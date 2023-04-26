@@ -148,6 +148,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     vo.setAppName(appName);
                     vo.setReportId(reportId);
                     vo.setAgentIp(base.getTagAgentId());
+                    vo.setGcCount(BigDecimal.valueOf(base.getFullGcCount()).add(BigDecimal.valueOf(base.getYoungGcCount())));
+                    vo.setGcTime(BigDecimal.valueOf(base.getFullGcTime()).add(BigDecimal.valueOf(base.getYoungGcTime())));
                     return vo;
                 }).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(tmpList)) {

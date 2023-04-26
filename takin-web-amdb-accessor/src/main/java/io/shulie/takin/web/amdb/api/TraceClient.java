@@ -8,7 +8,9 @@ import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.DataCalibrationDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.trace.TraceMetricsRequest;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
+import io.shulie.takin.web.amdb.bean.result.trace.TraceMetrics;
 
 import java.util.List;
 
@@ -63,4 +65,7 @@ public interface TraceClient {
     PagingList<TTrackClickhouseModel> listTraceLog(TraceLogQueryDTO query);
 
     String dataCalibration(DataCalibrationDTO dataCalibration);
+
+    List<TraceMetrics> getSqlStatements(TraceMetricsRequest traceMetricsRequest);
+
 }

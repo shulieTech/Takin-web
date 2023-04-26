@@ -36,6 +36,8 @@ public interface ReportDao {
      */
     ReportResult selectById(Long id);
 
+    List<ReportResult> selectBySceneId(Long sceneId);
+
     /**
      * 获取当前场景最新一条报告
      *
@@ -143,4 +145,13 @@ public interface ReportDao {
     List<ReportEntity> queryReportBySceneIds(List<Long> sceneIds);
 
     List<ReportBusinessActivityDetailEntity> getActivityByReportIds(List<Long> reportIds) ;
+
+    /**
+     * 根据场景Id,xpathMd5获取报告业务活动详情
+     * @param sceneId 场景id
+     * @param xpathMd5 脚本md5路径
+     * @param reportId 报告id
+     * @return ReportBusinessActivityDetailEntity
+     */
+    ReportBusinessActivityDetailEntity getReportBusinessActivityDetail(Long sceneId,String xpathMd5,Long reportId);
 }

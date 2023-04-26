@@ -4,8 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
-import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
@@ -17,12 +17,15 @@ import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.request.report.*;
 import io.shulie.takin.adapter.api.model.response.report.*;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
-import io.shulie.takin.cloud.common.constants.ReportConstants;
+import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
 import io.shulie.takin.cloud.common.utils.JsonPathUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
+import io.shulie.takin.cloud.data.mapper.mysql.ReportMapper;
 import io.shulie.takin.cloud.data.mapper.mysql.SceneManageMapper;
+import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
+import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
@@ -31,18 +34,19 @@ import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDownLoadOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
+import io.shulie.takin.web.biz.pojo.output.report.*;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
+import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.utils.PDFUtil;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
@@ -53,7 +57,6 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.influxdb.impl.TimeUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,7 +65,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -101,6 +103,15 @@ public class ReportServiceImpl implements ReportService {
 
     @Resource
     private RedisClientUtil redisClientUtil;
+
+    @Resource
+    private ActivityService activityService;
+
+    @Resource
+    private CloudReportService cloudReportService;
+
+    @Resource
+    private ReportMapper reportMapper;
 
     private static final String PRESSURE_MODE = "\"mode\":";
 
@@ -168,6 +179,25 @@ public class ReportServiceImpl implements ReportService {
         output.setPressureMode(parseReportPressureMode(detailResponse.getPtConfig()));
         return output;
 
+    }
+
+    @Override
+    public List<SceneReportListOutput> getReportListBySceneId(Long sceneId) {
+        ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
+        req.setSceneId(sceneId);
+        List<ReportDetailResp> respList = cloudReportApi.detailListBySceneId(req);
+        List<SceneReportListOutput> outputList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(respList)) {
+            return outputList;
+        }
+        respList.stream().forEach(resp -> {
+            SceneReportListOutput out = new SceneReportListOutput();
+            out.setReportId(resp.getId());
+            out.setStartTime(resp.getStartTime());
+            out.setMaxConcurrent(resp.getConcurrent());
+            outputList.add(out);
+        });
+        return outputList;
     }
 
     private String parseReportPressureMode(String ptConfig) {
@@ -360,6 +390,43 @@ public class ReportServiceImpl implements ReportService {
         } finally {
             distributedLock.unLock(lockKey);
         }
+    }
+
+    @Override
+    public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse> getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq) {
+        // 首先通过xpathMdt获取到业务活动id
+        ReportBusinessActivityDetailEntity detail = reportDao.getReportBusinessActivityDetail(reportLinkDiagramReq.getSceneId(), reportLinkDiagramReq.getXpathMd5(), reportLinkDiagramReq.getReportId());
+        if (detail == null) {
+            return ResponseResult.fail("400", "场景下不存在业务活动", "请检查后重试或联系管理员处理!");
+        }
+        io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = null;
+        if (reportLinkDiagramReq.getReportId() == null) {
+            // 实况查询
+            activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
+
+        } else {
+            String reportJson = detail.getReportJson();
+            if (reportJson != null && StringUtils.isNotBlank(reportJson.trim())) {
+                activityResponse = JSON.parseObject(reportJson, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
+            }
+        }
+        return ResponseResult.success(activityResponse);
+    }
+
+    /**
+     * @param activityId           业务活动Id
+     * @param reportLinkDiagramReq 查询条件
+     */
+    @Override
+    public io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse queryLinkDiagram(Long activityId, ReportLinkDiagramReq reportLinkDiagramReq) {
+        // 直接调用查询业务活动的拓扑图方法即可
+        ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
+        request.setActivityId(activityId);
+        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
+        request.setStartTime(reportLinkDiagramReq.getStartTime());
+        request.setEndTime(reportLinkDiagramReq.getEndTime());
+        request.setTempActivity(false);
+        return activityService.getActivityWithMetricsById(request);
     }
 
     @Override
@@ -610,6 +677,22 @@ public class ReportServiceImpl implements ReportService {
         }
         return reportTrend;
 
+    }
+
+    @Override
+    public List<ReportEntity> getReportListByReportIds(List<Long> reportIds) {
+        if (CollectionUtils.isEmpty(reportIds)) {
+            return new ArrayList<>();
+        }
+        LambdaQueryWrapper<ReportEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(ReportEntity::getId, ReportEntity::getSceneName, ReportEntity::getSceneId, ReportEntity::getEndTime, ReportEntity::getStartTime);
+        queryWrapper.in(ReportEntity::getId, reportIds);
+        return reportMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public void buildReportTestData(Long jobId, Long sceneId, Long reportId, Long tenantId) {
+        cloudReportService.updateReportBusinessActivity(jobId, sceneId, reportId, tenantId);
     }
 
     private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5){

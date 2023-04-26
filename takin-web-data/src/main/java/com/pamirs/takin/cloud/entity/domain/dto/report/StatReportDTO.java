@@ -74,6 +74,8 @@ public class StatReportDTO {
      */
     private BigDecimal maxTps;
 
+    private BigDecimal minTps;
+
     /**
      * 查询记录数
      */

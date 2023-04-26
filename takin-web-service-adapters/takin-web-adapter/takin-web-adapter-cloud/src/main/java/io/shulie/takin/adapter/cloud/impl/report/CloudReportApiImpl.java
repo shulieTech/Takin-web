@@ -98,6 +98,23 @@ public class CloudReportApiImpl implements CloudReportApi {
     }
 
     @Override
+    public List<ReportDetailResp> detailListBySceneId(ReportDetailBySceneIdReq req) {
+        List<ReportDetailOutput> outputList = cloudReportService.getReportListBySceneId(req.getSceneId());
+        List<ReportDetailResp> respList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(outputList)) {
+            return respList;
+        }
+        outputList.stream().forEach(output -> {
+            ReportDetailResp resp = new ReportDetailResp();
+            resp.setId(output.getId());
+            resp.setStartTime(output.getStartTime());
+            resp.setConcurrent(output.getConcurrent());
+            respList.add(resp);
+        });
+        return respList;
+    }
+
+    @Override
     public ReportTrendResp trend(ReportTrendQueryReq req) {
         try {
             String key = JSON.toJSONString(req);

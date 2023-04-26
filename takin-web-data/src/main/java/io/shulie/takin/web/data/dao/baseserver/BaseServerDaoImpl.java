@@ -57,8 +57,11 @@ public class BaseServerDaoImpl implements BaseServerDao {
     @Override
     public Collection<BaseServerResult> queryBaseServer(BaseServerParam param) {
         long startTime = System.currentTimeMillis();
-        String baseSql = "select max(memory) as memory,max(disk) as disk,max(cpu_cores) as cpu_cores ," +
-                "mean(net_bandwidth) as net_bandwidth from app_base_data where tag_app_name = '" + param.getApplicationName()
+        String baseSql = "select max(memory) as memory,max(disk) as disk," +
+                "max(cpu_cores) as cpu_cores,mean(net_bandwidth) as net_bandwidth," +
+                "sum(young_gc_count) as young_gc_count,sum(full_gc_count) as full_gc_count," +
+                "sum(young_gc_time) as young_gc_time, sum(full_gc_time) as full_gc_time " +
+                "from app_base_data where tag_app_name = '" + param.getApplicationName()
                 + "' and time > " + param.getStartTime() + " and time <= " + param.getEndTime() +
                 // 增加租户
                 " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +

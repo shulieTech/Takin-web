@@ -16,4 +16,7 @@ public class ReportConfigConstant {
     public static final String CHART_MEMORY_KEY = "memory";
     public static final String CHART_IO_KEY = "io";
     public static final String CHART_NETWORK_KEY = "network";
+
+    public static final String CHART_GC_COUNT = "gcCount";
+    public static final String CHART_GC_COST = "gcCost";
 }

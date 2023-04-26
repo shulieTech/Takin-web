@@ -1,6 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.report;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -8,16 +9,13 @@ import java.util.stream.Collectors;
 import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
-import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
-import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportPradarLinkDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
+import com.pamirs.takin.entity.domain.dto.report.*;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
+import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
@@ -25,15 +23,15 @@ import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 本地压测报告数据
@@ -44,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "场景报告模块", value = "场景报告")
+@Slf4j
 public class ReportLocalController {
 
     @Autowired
@@ -71,6 +70,34 @@ public class ReportLocalController {
         return Response.success(reportLocalService.listBottleneckInterface(queryParam));
     }
 
+    @GetMapping("vlt/report/bottleneckInterface/list")
+    @ApiOperation("LT版-瓶颈接口")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response<List<BottleneckInterfaceLtDTO>> getLtBottleneckInterfaceList(Long reportId, Integer current,
+                                                                                 Integer pageSize) {
+        ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
+        queryParam.setReportId(reportId);
+        initPageParam(queryParam, current, pageSize);
+        PageInfo<BottleneckInterfaceDTO> pageInfo = reportLocalService.listBottleneckInterface(queryParam);
+        List<BottleneckInterfaceLtDTO> dataList = new ArrayList<>();
+        if (pageInfo != null && CollectionUtils.isNotEmpty(pageInfo.getList())) {
+            pageInfo.getList().stream().forEach(data -> {
+                BottleneckInterfaceLtDTO lt = new BottleneckInterfaceLtDTO();
+                lt.setRank(data.getRank());
+                lt.setApplicationName(data.getApplicationName());
+                lt.setInterfaceName(data.getInterfaceName());
+                lt.setAvgTps(data.getTps());
+                lt.setAvgRt(data.getRt());
+                lt.setSuccessRate(data.getSuccessRate());
+                dataList.add(lt);
+            });
+        }
+        return Response.success(dataList);
+    }
+
     @GetMapping("/report/risk/application")
     @ApiOperation("风险机器左侧应用")
     public Response<RiskApplicationCountDTO> getRiskApplicationCount(Long reportId) {
@@ -88,6 +115,54 @@ public class ReportLocalController {
         return Response.success(reportLocalService.listRiskMachine(queryParam));
     }
 
+    @GetMapping("vlt/report/risk/machine/list")
+    @ApiOperation("LT版-风险容器")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response<List<RiskMachineLtDTO>> getRiskMachineList(Long reportId, Integer current,
+                                                               Integer pageSize) {
+        ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
+        queryParam.setReportId(reportId);
+        initPageParam(queryParam, current, pageSize);
+        PageInfo<RiskMacheineDTO> pageInfo = reportLocalService.listRiskMachine(queryParam);
+        List<RiskMachineLtDTO> dataList = new ArrayList<>();
+        if (pageInfo != null && CollectionUtils.isNotEmpty(pageInfo.getList())) {
+            pageInfo.getList().stream().forEach(data -> {
+                RiskMachineLtDTO lt = new RiskMachineLtDTO();
+                lt.setId(data.getId());
+                lt.setAppName(data.getAppName());
+                lt.setAgentId(data.getAgentId());
+                lt.setRiskContent(data.getRiskContent());
+                dataList.add(lt);
+            });
+            //根据应用名称，实例排序
+            dataList.stream().sorted((o1, o2) -> {
+                int value1 = o1.getAppName().compareTo(o2.getAppName());
+                if (value1 < 0) {
+                    return -1;
+                } else if (value1 > 0) {
+                    return 1;
+                } else {
+                    return o1.getAgentId().compareTo(o2.getAgentId());
+                }
+            });
+        }
+        return Response.success(dataList);
+    }
+
+    @GetMapping("vlt/report/test/build/data")
+    @ApiOperation("LT版-主动生成报告数据")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response buildTestReportData(Long jobId, Long sceneId, Long reportId) {
+        reportService.buildReportTestData(jobId, sceneId, reportId, WebPluginUtils.traceTenantId());
+        return Response.success();
+    }
+
     //@GetMapping("/report/businessActivity/summary/list")
     //@ApiOperation("压测明细")
     //public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
@@ -98,6 +173,86 @@ public class ReportLocalController {
     @ApiOperation("性能详情")
     public Response<MachineDetailDTO> getMachineDetail(Long reportId, String applicationName, String machineIp) {
         return Response.success(reportLocalService.getMachineDetail(reportId, applicationName, machineIp));
+    }
+
+    @GetMapping("vlt/report/machine/list")
+    @ApiOperation("LT版-应用性能")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response<List<ReportApplicationTargetDTO>> getLtMachineList(Long reportId) {
+        return Response.success(new ArrayList<>());
+    }
+
+    @GetMapping("vlt/report/compare")
+    @ApiOperation("LT版-压测报告比对")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response<ReportCompareOutput> getLtReportCompare(@RequestParam List<Long> reportIds, @RequestParam Long businessActivityId) {
+        if (CollectionUtils.isEmpty(reportIds) || businessActivityId == null || businessActivityId == -1) {
+            log.warn("压测报告比对告警，传入参数长度不正确");
+            return Response.success();
+        }
+        return Response.success(reportLocalService.getReportCompare(reportIds, businessActivityId));
+    }
+
+    @GetMapping("/vlt/report/compare/activityInfo/{activityId")
+    @ApiOperation("LT版-业务活动trace节点信息")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response<String> getActivityInfoForLtNodeCompare(@PathVariable("activityId") Long activityId) {
+        return Response.success();
+    }
+
+    @GetMapping("/vlt/report/node/compare")
+    @ApiOperation("LT版-节点比对")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response<NodeCompareTargetOut> getLtNodeCompare(NodeCompareTargetInput nodeCompareTargetInput) {
+        return this.reportLocalService.getLtNodeCompare(nodeCompareTargetInput);
+    }
+
+    @GetMapping("/vlt/report/application/performanceList")
+    @ApiOperation("LT版-应用性能列表")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response<List<ReportAppPerformanceOut>> getReortAppPerformanceList(long reportId) {
+        return this.reportLocalService.getReortAppPerformanceList(reportId);
+    }
+
+    @GetMapping("/vlt/report/application/instance/performanceList")
+    @ApiOperation("LT版-应用实例性能列表")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response<List<ReportAppInstancePerformanceOut>> getReortAppInstancePerformanceList(long reportId) {
+        return this.reportLocalService.getReortAppInstancePerformanceList(reportId);
+    }
+
+    @GetMapping("/vlt/report/application/trendMap")
+    @ApiOperation("LT版-应用趋势图")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response<List<ReportAppMapOut>> getReportAppTrendMap(long reportId) {
+        return reportLocalService.getReportAppTrendMap(reportId);
+    }
+
+    @GetMapping("/vlt/report/application/instance/trendMap")
+    @ApiOperation("LT版-应用实例趋势图")
+    public Response<List<MachineDetailDTO>> getReportAppInstanceTrendMap(@RequestParam("reportId") long reportId) {
+        return reportLocalService.getReportAppInstanceTrendMap(reportId);
     }
 
     @GetMapping("/report/application/list")

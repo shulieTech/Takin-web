@@ -1,9 +1,6 @@
 package io.shulie.takin.cloud.data.dao.report;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -103,6 +100,25 @@ public class ReportDaoImpl implements ReportDao {
         );
         if (entityList.size() != 1) {return null;}
         return BeanUtil.copyProperties(entityList.get(0), ReportResult.class);
+    }
+
+    @Override
+    public List<ReportResult> selectBySceneId(Long sceneId) {
+        List<ReportEntity> entityList = reportMapper.selectList(
+                Wrappers.lambdaQuery(ReportEntity.class)
+                        .eq(ReportEntity::getSceneId, sceneId)
+                        .eq(ReportEntity::getStatus, 2)
+                        .isNotNull(ReportEntity::getEndTime)
+        );
+        List<ReportResult> resultList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(entityList)) {
+            return resultList;
+        }
+        entityList.stream().forEach(entity -> {
+            ReportResult result = BeanUtil.copyProperties(entity, ReportResult.class);
+            resultList.add(result);
+        });
+        return resultList;
     }
 
     /**
@@ -300,5 +316,16 @@ public class ReportDaoImpl implements ReportDao {
         LambdaQueryWrapper<ReportBusinessActivityDetailEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(ReportBusinessActivityDetailEntity::getReportId, reportIds);
         return detailMapper.selectList(wrapper);
+    }
+
+    @Override
+    public ReportBusinessActivityDetailEntity getReportBusinessActivityDetail(Long sceneId, String xpathMd5,Long reportId) {
+
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, sceneId);
+        queryWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5);
+        queryWrapper.eq(null != reportId,ReportBusinessActivityDetailEntity::getReportId, reportId);
+        queryWrapper.last(" limit 1");
+        return detailMapper.selectOne(queryWrapper);
     }
 }

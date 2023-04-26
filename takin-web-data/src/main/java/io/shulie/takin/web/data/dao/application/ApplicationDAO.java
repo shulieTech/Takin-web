@@ -48,6 +48,8 @@ public interface ApplicationDAO {
 
     List<ApplicationDetailResult> getApplications(List<String> appNames);
 
+    List<ApplicationDetailResult> getApplicationByAppIds(List<Long> appIds);
+
     /**
      * 去amdb, 根据应用名称列表查询
      *

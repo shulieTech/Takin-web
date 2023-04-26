@@ -27,6 +27,7 @@ import io.shulie.takin.adapter.api.model.request.report.ScriptNodeTreeQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
 import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
 import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 
 /**
  * @author 数列科技
@@ -48,6 +49,8 @@ public interface CloudReportService {
      * @return -
      */
     ReportDetailOutput getReportByReportId(Long reportId);
+
+    List<ReportDetailOutput> getReportListBySceneId(Long sceneId);
 
     /**
      * 报告链路趋势
@@ -265,4 +268,6 @@ public interface CloudReportService {
     List<ReportActivityResp> getActivities(List<Long> sceneIds);
 
 	ReportDetailOutput getByResourceId(String resourceId);
+
+    <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass);
 }

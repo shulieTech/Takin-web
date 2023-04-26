@@ -31,12 +31,14 @@
         <result column="dept_id" jdbcType="BIGINT" property="deptId"/>
         <result column="user_id" jdbcType="BIGINT" property="userId"/>
         <result column="script_id" jdbcType="BIGINT" property="scriptId"/>
+        <result column="pt_config" jdbcType="VARCHAR" property="ptConfig"/>
+        <result column="script_node_tree" jdbcType="VARCHAR" property="scriptNodeTree"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         id, scene_id, scene_name, start_time, end_time, `status`,`type`, conclusion, total_request,pressure_type,avg_concurrent,
         tps,avg_tps, avg_rt, concurrent, success_rate, sa, operate_id,features, is_deleted, gmt_create,
-        gmt_update,customer_id,amount,dept_id,user_id,script_id
+        gmt_update,customer_id,amount,dept_id,user_id,script_id,pt_config,script_node_tree
     </sql>
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
         <!--@mbg.generated-->

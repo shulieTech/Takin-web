@@ -47,6 +47,8 @@ public interface ApplicationService {
 
     List<ApplicationListResponse> getApplicationList(String appNames);
 
+    List<ApplicationListResponse> getApplicationListByAppIds(List<Long> appIds);
+
     /**
      * 获取应用列表
      *

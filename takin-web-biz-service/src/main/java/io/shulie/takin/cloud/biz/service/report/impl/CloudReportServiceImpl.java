@@ -26,7 +26,6 @@ import com.pamirs.takin.cloud.entity.domain.entity.report.Report;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.WarnDetail;
 import com.pamirs.takin.entity.domain.dto.report.PressureTestTimeDTO;
-import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.common.DistributeBean;
@@ -96,26 +95,16 @@ import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
-import io.shulie.takin.web.amdb.bean.common.AmdbResult;
-import io.shulie.takin.web.amdb.util.AmdbHelper;
-import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
-import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.utils.ParsePressureTimeByModeUtils;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.influxdb.impl.TimeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -178,11 +167,6 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private String pressureEngineLogPath;
 
     public static final String COMPARE = "<=";
-
-    @Autowired
-    private AmdbClientProperties properties;
-
-    private static final String AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH = "/amdb/db/api/enginePressure/queryListMap";
 
     @Override
     public PageInfo<CloudReportDTO> listReport(ReportQueryReq param) {
@@ -1827,27 +1811,6 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         return ReportConverter.INSTANCE.ofReportDetail(report);
     }
 
-    public <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
-        try {
-            if (query == null || query.getJobId() == null){
-                return new ArrayList<>();
-            }
-            query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
-            query.setEnvCode(WebPluginUtils.traceEnvCode());
-
-            HttpMethod httpMethod = HttpMethod.POST;
-            AmdbResult<List<T>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
-                    .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
-                    .param(query)
-                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                    .eventName("查询enginePressure数据")
-                    .list(tClass);
-            return amdbResponse.getData();
-        } catch (Exception e) {
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
-        }
-    }
-
     // 此处判断状态已cloud的，amdb的压测流量明细不关心
     private void dealCalibrationStatus(ReportDetailOutput detail) {
         Integer status = detail.getCalibrationStatus();
@@ -1865,33 +1828,26 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         detail.setCalibration(calibration);
     }
 
-    public StatReportDTO statReportByTimes(Long startTime, Long endTime, Long jobId, Long sceneId, Long reportId, Long customerId, String transaction) {
-        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
-        Map<String, String> fieldAndAlias = new HashMap<>();
-        fieldAndAlias.put("sum(count)", "totalRequest");
-        fieldAndAlias.put("sum(fail_count)", "failRequest");
-        fieldAndAlias.put("avg(avg_tps)", "tps");
-        fieldAndAlias.put("sum(sum_rt)", "sumRt");
-        fieldAndAlias.put("sum(sa_count)", "saCount");
-        fieldAndAlias.put("min(avg_tps)", "minTps");
-        fieldAndAlias.put("max(avg_tps)", "maxTps");
-        fieldAndAlias.put("min(min_rt)", "minRt");
-        fieldAndAlias.put("max(max_rt)", "maxRt");
-        fieldAndAlias.put("count(avg_rt)", "recordCount");
-        fieldAndAlias.put("max(active_threads)", "maxConcurrenceNum");
-        fieldAndAlias.put("avg(active_threads)", "avgConcurrenceNum");
-        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
-        enginePressureQuery.setTransaction(transaction);
-        enginePressureQuery.setJobId(jobId);
-        enginePressureQuery.setStartTime(startTime);
-        enginePressureQuery.setEndTime(endTime);
-        List<StatReportDTO> statReportDTOList = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
-        if (CollectionUtils.isNotEmpty(statReportDTOList)) {
-            statReportDTOList.forEach(statReportDTO -> {
-                statReportDTO.setTempRequestCount(statReportDTO.getTotalRequest());
-            });
-        }
-        return CollectionUtils.isNotEmpty(statReportDTOList) ? statReportDTOList.get(0) : null;
+    private StatReportDTO statReportByTimes(Long startTime, Long endTime, Long jobId, Long sceneId, Long reportId, Long customerId, String transaction) {
+        String influxDbSql = "select "
+                + "sum(count)                   as totalRequest,"
+                + "sum(count)                   as tempRequestCount,"
+                + "sum(fail_count)              as failRequest,"
+                + "mean(avg_tps)                as tps ,"
+                + "sum(sum_rt)/sum(count)       as avgRt,"
+                + "sum(sa_count)                as saCount,"
+                + "min(avg_tps)                 as minTps,"
+                + "max(avg_tps)                 as maxTps,"
+                + "min(min_rt)                  as minRt,"
+                + "max(max_rt)                  as maxRt,"
+                + "count(avg_rt)                as recordCount,"
+                + "max(active_threads)          as maxConcurrenceNum,"
+                + "round(mean(active_threads))  as avgConcurrenceNum"
+                + " from "
+                + InfluxUtil.getMeasurement(jobId, sceneId, reportId, customerId)
+                + " where transaction = '" + transaction + "' where time >= " + startTime * 1000000 + " and time < " + endTime * 1000000;
+
+        return influxWriter.querySingle(influxDbSql, StatReportDTO.class);
     }
 
     private void calcHttpAndThreadGroupRef(List<ScriptNodeSummaryBean> dataList, Map<String, String> dataMap) {

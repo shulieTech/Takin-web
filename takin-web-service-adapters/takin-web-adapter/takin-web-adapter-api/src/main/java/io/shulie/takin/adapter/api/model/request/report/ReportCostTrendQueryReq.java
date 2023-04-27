@@ -16,15 +16,17 @@ public class ReportCostTrendQueryReq extends ContextExt {
 
     private Integer maxCost;
 
-    private String startTime;
+    private Long startTime;
 
-    private String endTime;
+    private Long endTime;
 
-    private String jobId;
+    private Long jobId;
 
     private String serviceName;
 
     private String requestMethod;
+
+    private String transaction;
 
     /**
      * 租户标识

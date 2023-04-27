@@ -1,11 +1,15 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
+import cn.hutool.core.date.DateUtil;
+import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportCostDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageStatusCodeDTO;
 import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportMessageCodeReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportMessageDetailReq;
+import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
+import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.biz.service.report.ReportMessageService;
@@ -23,6 +27,9 @@ public class ReportMessageServiceImpl implements ReportMessageService {
 
     @Autowired
     private AmdbClientProperties properties;
+
+    @Autowired
+    private InfluxWriter influxWriter;
 
     private static final String AMDB_ENGINE_PRESSURE_QUERY_CODE_LIST_PATH = "/amdb/db/api/tracePressure/queryStatusCode";
 
@@ -59,16 +66,14 @@ public class ReportMessageServiceImpl implements ReportMessageService {
     }
 
     @Override
-    public Integer getRequestCountByCost(ReportCostTrendQueryReq req) {
-        HttpMethod httpMethod = HttpMethod.GET;
-        req.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
-        req.setEnvCode(WebPluginUtils.traceEnvCode());
-        AmdbResult<ReportCostDTO> response = AmdbHelper.builder().httpMethod(httpMethod)
-                .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_COSTCOUNT_PATH)
-                .param(req)
-                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                .eventName("查询enginePressure数据")
-                .one(ReportCostDTO.class);
-        return response.getData().getCount();
+    public Long getRequestCountByCost(ReportCostTrendQueryReq req) {
+        String influxDbSql = "select "
+                + "sum(count) as count"
+                + " from "
+                + InfluxUtil.getMeasurement(req.getJobId(), null, null, null)
+                + " where transaction = '" + req.getTransaction()
+                + "' and avg_rt >= " + req.getMinCost() + " and avg_rt < " + req.getMaxCost();
+        ReportCostDTO costDTO = influxWriter.querySingle(influxDbSql, ReportCostDTO.class);
+        return costDTO.getCount();
     }
 }

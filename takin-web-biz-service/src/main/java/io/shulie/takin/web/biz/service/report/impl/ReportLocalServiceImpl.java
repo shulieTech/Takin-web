@@ -314,6 +314,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         Map<Long, ReportDetailOutput> reportOutputMap = new HashMap<>();
         Integer minRt = 0;
         Integer maxRt = 0;
+        String bindRef = null;
         for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
             ReportDetailOutput reportOutput = reportService.getReportByReportId(reportId);
@@ -332,6 +333,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 continue;
             }
             reportOutputMap.put(reportId, reportOutput);
+            bindRef = detailEntity.getBindRef();
             //列表数据 性能指标 rt数据
             JSONObject jsonObject = JSON.parseObject(detailEntity.getRtDistribute());
             String jsonStepString = jsonObject.getString("stepData");
@@ -381,16 +383,17 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
             for (Pair<Integer, Integer> costPair : costList) {
                 ReportCostTrendQueryReq costReq = new ReportCostTrendQueryReq();
-                costReq.setStartTime(reportOutput.getStartTime());
-                costReq.setEndTime(DateUtil.formatDateTime(reportOutput.getEndTime()));
-                costReq.setJobId(reportOutput.getJobId().toString());
+                costReq.setStartTime(DateUtil.parseDateTime(reportOutput.getStartTime()).getTime());
+                costReq.setEndTime(reportOutput.getEndTime().getTime());
+                costReq.setJobId(reportOutput.getJobId());
                 costReq.setServiceName(activityResp.getServiceName());
                 costReq.setRequestMethod(activityResp.getMethod());
                 costReq.setMinCost(costPair.getKey());
                 costReq.setMaxCost(costPair.getValue());
-                Integer cost = reportMessageService.getRequestCountByCost(costReq);
+                costReq.setTransaction(bindRef);
+                Long costCount = reportMessageService.getRequestCountByCost(costReq);
                 output.getTrendData().get(i).getXCost().add(costPair.getKey() + "-" + costPair.getValue() + "ms");
-                output.getTrendData().get(i).getCount().add(String.valueOf(cost));
+                output.getTrendData().get(i).getCount().add(String.valueOf(costCount));
             }
         }
         return output;

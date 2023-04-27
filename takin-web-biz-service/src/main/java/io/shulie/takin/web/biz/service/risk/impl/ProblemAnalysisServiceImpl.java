@@ -148,8 +148,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     vo.setAppName(appName);
                     vo.setReportId(reportId);
                     vo.setAgentIp(base.getTagAgentId());
-                    vo.setGcCount(BigDecimal.valueOf(base.getFullGcCount()).add(BigDecimal.valueOf(base.getYoungGcCount())));
-                    vo.setGcTime(BigDecimal.valueOf(base.getFullGcTime()).add(BigDecimal.valueOf(base.getYoungGcTime())));
+                    vo.setGcCount(addTwoDoubleNumber(base.getFullGcCount(), base.getYoungGcCount()));
+                    vo.setGcTime(addTwoDoubleNumber(base.getFullGcTime(), base.getYoungGcTime()));
                     return vo;
                 }).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(tmpList)) {
@@ -949,5 +949,11 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 
     private String fetchMachine(ReportMachineResult vo) {
         return vo.getReportId() + vo.getMachineIp() + vo.getApplicationName();
+    }
+
+    private BigDecimal addTwoDoubleNumber(Double d1, Double d2) {
+        BigDecimal b1 = d1 != null && !Double.isNaN(d1) ? BigDecimal.valueOf(d1) : BigDecimal.ZERO;
+        BigDecimal b2 = d2 != null && !Double.isNaN(d2) ? BigDecimal.valueOf(d2) : BigDecimal.ZERO;
+        return b1.add(b2);
     }
 }

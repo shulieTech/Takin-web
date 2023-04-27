@@ -1,31 +1,15 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneBusinessActivityRefMapper;
-import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
-import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
-import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
+import com.pamirs.takin.entity.domain.dto.report.*;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
@@ -79,6 +63,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -962,8 +953,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     memory[i] = (memory[i] != null ? memory[i] : ZERO).add(array.getMemory()[i]);
                     io[i] = (io[i] != null ? io[i] : ZERO).add(array.getIo()[i]);
                     network[i] = (network[i] != null ? network[i] : ZERO).add(array.getNetwork()[i]);
-                    gcCost[i] = (gcCost[i] != null ? gcCost[i] : ZERO).add(array.getGcCost()[i]);
-                    gcCount[i] = (gcCount[i] != null ? gcCount[i] : ZERO).add(array.getGcCount()[i]);
+                    gcCost[i] = (gcCost[i] != null ? gcCost[i] : ZERO).add(array.getGcCost() != null ? array.getGcCost()[i] : ZERO);
+                    gcCount[i] = (gcCount[i] != null ? gcCount[i] : ZERO).add(array.getGcCount() != null ? array.getGcCount()[i] : ZERO);
                 }
                 count++;
             }

@@ -1852,7 +1852,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 + "round(mean(active_threads))  as avgConcurrenceNum"
                 + " from "
                 + InfluxUtil.getMeasurement(jobId, sceneId, reportId, customerId)
-                + " where transaction = '" + transaction + "' and time >= " + startTime * 1000000 + " and time < " + endTime * 1000000;
+                + " where transaction = '" + transaction + "' and time >= " + startTime * 1000000 + " and time <= " + endTime * 1000000;
 
         return influxWriter.querySingle(influxDbSql, StatReportDTO.class);
     }

@@ -74,6 +74,6 @@ public class ReportMessageServiceImpl implements ReportMessageService {
                 + " where transaction = '" + req.getTransaction()
                 + "' and avg_rt >= " + req.getMinCost() + " and avg_rt < " + req.getMaxCost();
         ReportCostDTO costDTO = influxWriter.querySingle(influxDbSql, ReportCostDTO.class);
-        return costDTO.getCount();
+        return (costDTO != null && costDTO.getCount() != null) ? costDTO.getCount() : 0L;
     }
 }

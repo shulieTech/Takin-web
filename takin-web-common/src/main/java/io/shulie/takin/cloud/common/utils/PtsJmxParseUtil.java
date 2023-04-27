@@ -627,7 +627,7 @@ public class PtsJmxParseUtil {
             node.setRequestPath(topic);
             node.setIdentification(String.format("%s|%s", topic, SamplerTypeEnum.KAFKA.getRpcTypeEnum().getValue()));
         } else {
-            node.setRequestPath("POST|" + javaClass);
+            node.setRequestPath("POST|JavaRequest");
             node.setIdentification(node.getRequestPath() + "|0");
         }
     }

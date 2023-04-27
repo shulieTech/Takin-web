@@ -314,6 +314,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         Map<Long, ReportDetailOutput> reportOutputMap = new HashMap<>();
         Integer minRt = 0;
         Integer maxRt = 0;
+        String bindRef = null;
         for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
             ReportDetailOutput reportOutput = reportService.getReportByReportId(reportId);
@@ -332,6 +333,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 continue;
             }
             reportOutputMap.put(reportId, reportOutput);
+            bindRef = detailEntity.getBindRef();
             //列表数据 性能指标 rt数据
             JSONObject jsonObject = JSON.parseObject(detailEntity.getRtDistribute());
             String jsonStepString = jsonObject.getString("stepData");
@@ -381,16 +383,17 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
             for (Pair<Integer, Integer> costPair : costList) {
                 ReportCostTrendQueryReq costReq = new ReportCostTrendQueryReq();
-                costReq.setStartTime(reportOutput.getStartTime());
-                costReq.setEndTime(DateUtil.formatDateTime(reportOutput.getEndTime()));
-                costReq.setJobId(reportOutput.getJobId().toString());
+                costReq.setStartTime(DateUtil.parseDateTime(reportOutput.getStartTime()).getTime());
+                costReq.setEndTime(reportOutput.getEndTime().getTime());
+                costReq.setJobId(reportOutput.getJobId());
                 costReq.setServiceName(activityResp.getServiceName());
                 costReq.setRequestMethod(activityResp.getMethod());
                 costReq.setMinCost(costPair.getKey());
                 costReq.setMaxCost(costPair.getValue());
-                Integer cost = reportMessageService.getRequestCountByCost(costReq);
+                costReq.setTransaction(bindRef);
+                Long costCount = reportMessageService.getRequestCountByCost(costReq);
                 output.getTrendData().get(i).getXCost().add(costPair.getKey() + "-" + costPair.getValue() + "ms");
-                output.getTrendData().get(i).getCount().add(String.valueOf(cost));
+                output.getTrendData().get(i).getCount().add(String.valueOf(costCount));
             }
         }
         return output;
@@ -921,8 +924,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     memory[i] = (memory[i] != null ? memory[i] : ZERO).add(array.getMemory()[i]);
                     io[i] = (io[i] != null ? io[i] : ZERO).add(array.getIo()[i]);
                     network[i] = (network[i] != null ? network[i] : ZERO).add(array.getNetwork()[i]);
-                    gcCost[i] = (gcCost[i] != null ? gcCost[i] : ZERO).add(array.getGcCost()[i]);
-                    gcCount[i] = (gcCount[i] != null ? gcCount[i] : ZERO).add(array.getGcCount()[i]);
+                    gcCost[i] = (gcCost[i] != null ? gcCost[i] : ZERO).add(array.getGcCost() != null ? array.getGcCost()[i] : ZERO);
+                    gcCount[i] = (gcCount[i] != null ? gcCount[i] : ZERO).add(array.getGcCount() != null ? array.getGcCount()[i] : ZERO);
                 }
                 count++;
             }

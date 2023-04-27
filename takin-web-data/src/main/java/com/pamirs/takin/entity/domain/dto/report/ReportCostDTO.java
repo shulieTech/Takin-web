@@ -7,5 +7,5 @@ import java.io.Serializable;
 @Data
 public class ReportCostDTO implements Serializable {
 
-    public Integer count;
+    public Long count;
 }

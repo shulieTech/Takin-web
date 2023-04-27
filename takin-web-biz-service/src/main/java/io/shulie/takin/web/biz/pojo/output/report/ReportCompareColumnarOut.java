@@ -19,4 +19,17 @@ public class ReportCompareColumnarOut implements Serializable {
     private BigDecimal successRate;
 
     private Long reportId;
+
+    public BigDecimal getTps() {
+        return tps != null ? tps.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getRt() {
+        return rt != null ? rt.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getSuccessRate() {
+        return successRate != null ? successRate.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
 }

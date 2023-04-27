@@ -1424,23 +1424,29 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 for(int i = 0; i < timeList.size(); i++) {
                     //统计某个业务活动的数据
                     long startTime = timeList.get(i).getStartTime().getTime();
+                    long calcStartTime = startTime;
                     //查询>= <=，所以这里要+1
                     if(i > 0) {
-                        startTime = startTime + 1L;
+                        calcStartTime = startTime + 1L;
+                    } else {
+                        calcStartTime = startTime - 5 * 60 * 1000L;
                     }
                     long endTime = timeList.get(i).getEndTime().getTime();
-
+                    long calcEndime = endTime;
+                    if(i == timeList.size() - 1) {
+                        calcEndime = endTime + 30 * 60 * 1000L;
+                    }
                     Map<String, Object> stepMap = new HashMap<>();
-                    StatReportDTO data = statReportByTimes(startTime, endTime, jobId, sceneId, reportId, tenantId, reportBusinessActivityDetail.getBindRef());
-                    Map<String, Integer> rtMap = reportEventService.queryAndCalcRtDistributeByTime(startTime, endTime, jobId, reportBusinessActivityDetail.getBindRef());
+                    StatReportDTO data = statReportByTimes(calcStartTime, calcEndime, jobId, sceneId, reportId, tenantId, reportBusinessActivityDetail.getBindRef());
+                    Map<String, Integer> rtMap = reportEventService.queryAndCalcRtDistributeByTime(calcStartTime, calcEndime, jobId, reportBusinessActivityDetail.getBindRef());
                     stepMap.put("startTime", DateUtil.formatDateTime(DateUtil.date(startTime)));
                     stepMap.put("endTime", DateUtil.formatDateTime(DateUtil.date(endTime)));
                     if(data != null) {
                         stepMap.put("totalRequest", data.getTotalRequest());
                         stepMap.put("concurrent", data.getAvgConcurrenceNum());
                         stepMap.put("avgTps", data.getTps());
-                        stepMap.put("minTps", data.getMaxTps());
-                        stepMap.put("maxTps", data.getMinTps());
+                        stepMap.put("minTps", data.getMinTps());
+                        stepMap.put("maxTps", data.getMaxTps());
                         stepMap.put("avgRt", data.getAvgRt());
                         stepMap.put("minRt", data.getMinRt());
                         stepMap.put("maxRt", data.getMaxRt());

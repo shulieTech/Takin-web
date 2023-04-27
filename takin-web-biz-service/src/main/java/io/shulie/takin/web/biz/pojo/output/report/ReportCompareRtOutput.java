@@ -37,4 +37,35 @@ public class ReportCompareRtOutput implements Serializable {
     @ApiModelProperty(value = "压测结束时间")
     private String endTime;
 
+    public BigDecimal getAvgRt() {
+        return avgRt != null ? avgRt.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getMaxRt() {
+        return maxRt != null ? maxRt.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getMinRt() {
+        return minRt != null ? minRt.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getRt50() {
+        return rt50 != null ? rt50.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getRt75() {
+        return rt75 != null ? rt75.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getRt90() {
+        return rt90 != null ? rt90.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getRt95() {
+        return rt95 != null ? rt95.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getRt99() {
+        return rt99 != null ? rt99.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
 }

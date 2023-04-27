@@ -43,4 +43,27 @@ public class ReportCompareTargetOut implements Serializable {
 
     @ApiModelProperty(value = "压测结束时间")
     private String endTime;
+
+    public BigDecimal getAvgTps() {
+        if(avgTps != null) {
+            return avgTps.setScale(2, BigDecimal.ROUND_HALF_UP);
+        }
+        return null;
+    }
+
+    public BigDecimal getMaxTps() {
+        return maxTps != null ? maxTps.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getMinTps() {
+        return minTps != null ? minTps.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getSuccessRate() {
+        return successRate != null ? successRate.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getSa() {
+        return sa != null ? sa.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
 }

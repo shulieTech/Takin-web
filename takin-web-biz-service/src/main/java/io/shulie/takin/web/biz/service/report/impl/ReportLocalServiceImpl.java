@@ -368,7 +368,11 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 trendOut.setSa(trendResp.getSa());
                 Pair<Integer, Integer> pair = getMinMaxRt(trendResp.getRt());
                 if (pair != null) {
-                    minRt = Math.min(minRt, pair.getKey());
+                    if (minRt == 0) {
+                        minRt = pair.getKey();
+                    } else {
+                        minRt = Math.min(minRt, pair.getKey());
+                    }
                     maxRt = Math.max(maxRt, pair.getValue());
                 }
             }

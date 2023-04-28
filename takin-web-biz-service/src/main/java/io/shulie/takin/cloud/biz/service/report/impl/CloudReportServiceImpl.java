@@ -1324,7 +1324,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     long endTime = timeList.get(i).getEndTime().getTime();
                     long calcEndime = endTime;
                     if(i == timeList.size() - 1) {
-                        calcEndime = endTime + 30 * 60 * 1000L;
+                        calcEndime = endTime + 5 * 60 * 1000L;
                     }
                     Map<String, Object> stepMap = new HashMap<>();
                     StatReportDTO data = statReportByTimes(calcStartTime, calcEndime, jobId, sceneId, reportId, tenantId, reportBusinessActivityDetail.getBindRef());

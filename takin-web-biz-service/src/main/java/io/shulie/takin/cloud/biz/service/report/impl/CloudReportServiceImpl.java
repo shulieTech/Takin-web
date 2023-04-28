@@ -99,6 +99,7 @@ import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.utils.ParsePressureTimeByModeUtils;
+import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
@@ -1429,12 +1430,12 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     if(i > 0) {
                         calcStartTime = startTime + 1L;
                     } else {
-                        calcStartTime = startTime - 5 * 60 * 1000L;
+                        calcStartTime = ReportTimeUtils.beforeStartTime(startTime);
                     }
                     long endTime = timeList.get(i).getEndTime().getTime();
                     long calcEndime = endTime;
                     if(i == timeList.size() - 1) {
-                        calcEndime = endTime + 30 * 60 * 1000L;
+                        calcEndime = ReportTimeUtils.afterEndTime(endTime);
                     }
                     Map<String, Object> stepMap = new HashMap<>();
                     StatReportDTO data = statReportByTimes(calcStartTime, calcEndime, jobId, sceneId, reportId, tenantId, reportBusinessActivityDetail.getBindRef());

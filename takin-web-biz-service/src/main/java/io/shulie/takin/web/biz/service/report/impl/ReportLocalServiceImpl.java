@@ -59,6 +59,7 @@ import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportMessageService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
@@ -383,8 +384,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
             for (Pair<Integer, Integer> costPair : costList) {
                 ReportCostTrendQueryReq costReq = new ReportCostTrendQueryReq();
-                costReq.setStartTime(DateUtil.parseDateTime(reportOutput.getStartTime()).getTime());
-                costReq.setEndTime(reportOutput.getEndTime().getTime());
+                costReq.setStartTime(ReportTimeUtils.beforeStartTime(DateUtil.parseDateTime(reportOutput.getStartTime()).getTime()));
+                costReq.setEndTime(ReportTimeUtils.afterEndTime(reportOutput.getEndTime().getTime()));
                 costReq.setJobId(reportOutput.getJobId());
                 costReq.setServiceName(activityResp.getServiceName());
                 costReq.setRequestMethod(activityResp.getMethod());

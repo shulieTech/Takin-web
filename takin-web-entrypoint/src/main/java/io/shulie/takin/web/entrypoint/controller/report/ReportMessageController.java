@@ -4,8 +4,10 @@ import com.pamirs.takin.common.enums.ResponseResultEnum;
 import com.pamirs.takin.common.enums.ResultCodeEnum;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageStatusCodeDTO;
+import com.pamirs.takin.entity.domain.dto.report.ReportProblemCheckDTO;
 import io.shulie.takin.adapter.api.model.request.report.ReportMessageCodeReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportMessageDetailReq;
+import io.shulie.takin.adapter.api.model.request.report.ReportProblemListReq;
 import io.shulie.takin.web.biz.service.report.ReportMessageService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
@@ -75,5 +77,11 @@ public class ReportMessageController {
         }
         req.setResultCode(StringUtils.join(resultCode, ","));
         return Response.success(reportMessageService.getOneTraceDetail(req));
+    }
+
+    @GetMapping("vlt/report/problemCheck/list")
+    @ApiOperation("LT版-问题诊断")
+    public Response<List<ReportProblemCheckDTO>> getProblemCheckList(ReportProblemListReq req) {
+        return Response.success(reportMessageService.getProblemCheckList(req));
     }
 }

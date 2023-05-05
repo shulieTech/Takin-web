@@ -3,15 +3,7 @@ package io.shulie.takin.web.biz.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -458,33 +450,36 @@ public class LinkTopologyService extends CommonService {
 
     private AppProvider avgComputer(AppProvider appProviderContainer, List<AppProvider> appProviderList) {
         appProviderList.stream()
-            // 如果服务打开，则更新值
-            .filter(a -> {
-                if (a.getSwitchState() == null) { return true; } else { return a.getSwitchState(); }
-            })
-            .forEach(appProvider -> {
-                appProviderContainer.setServiceAllTotalCount(
-                    bigDecimalAdd(appProviderContainer.getServiceAllTotalCount(), appProvider.getServiceAllTotalCount())
-                );
-                appProviderContainer.setAllSuccessCount(
-                    bigDecimalAdd(appProviderContainer.getAllSuccessCount(), appProvider.getAllSuccessCount())
-                );
-                appProviderContainer.setServiceAllTotalTps(
-                    bigDecimalAdd(appProviderContainer.getServiceAllTotalTps(), appProvider.getServiceAllTotalTps())
-                );
-                appProviderContainer.setAllTotalRt(
-                    bigDecimalAdd(appProviderContainer.getAllTotalRt(), appProvider.getAllTotalRt())
-                );
-                appProviderContainer.setServiceAllMaxRt(
-                    Math.max(appProviderContainer.getServiceAllMaxRt(), appProvider.getServiceAllMaxRt())
-                );
-            });
+                // 如果服务打开，则更新值
+                .filter(a -> {
+                    if (a.getSwitchState() == null) {
+                        return true;
+                    } else {
+                        return a.getSwitchState();
+                    }
+                })
+                .forEach(appProvider -> {
+                    appProviderContainer.setServiceAllTotalCount(
+                            bigDecimalAdd(Optional.ofNullable(appProviderContainer.getServiceAllTotalCount()).orElse(0.0), Optional.ofNullable(appProvider.getServiceAllTotalCount()).orElse(0.0))
+                    );
+                    appProviderContainer.setAllSuccessCount(
+                            bigDecimalAdd(Optional.ofNullable(appProviderContainer.getAllSuccessCount()).orElse(0.0), Optional.ofNullable(appProvider.getAllSuccessCount()).orElse(0.0))
+                    );
+                    appProviderContainer.setServiceAllTotalTps(
+                            bigDecimalAdd(Optional.ofNullable(appProviderContainer.getServiceAllTotalTps()).orElse(0.0), Optional.ofNullable(appProvider.getServiceAllTotalTps()).orElse(0.0))
+                    );
+                    appProviderContainer.setAllTotalRt(
+                            bigDecimalAdd(Optional.ofNullable(appProviderContainer.getAllTotalRt()).orElse(0.0), Optional.ofNullable(appProvider.getAllTotalRt()).orElse(0.0))
+                    );
+                    appProviderContainer.setServiceAllMaxRt(
+                            Math.max(Optional.ofNullable(appProviderContainer.getServiceAllMaxRt()).orElse(0.0), Optional.ofNullable(appProvider.getServiceAllMaxRt()).orElse(0.0)));
+                });
 
         appProviderContainer.setServiceAllSuccessRate(
-            bigDecimalDivide(appProviderContainer.getAllSuccessCount(), appProviderContainer.getServiceAllTotalCount())
+                bigDecimalDivide(appProviderContainer.getAllSuccessCount(), appProviderContainer.getServiceAllTotalCount())
         );
         appProviderContainer.setServiceRt(
-            bigDecimalDivide(appProviderContainer.getAllTotalRt(), appProviderContainer.getServiceAllTotalCount())
+                bigDecimalDivide(appProviderContainer.getAllTotalRt(), appProviderContainer.getServiceAllTotalCount())
         );
 
         return appProviderContainer;

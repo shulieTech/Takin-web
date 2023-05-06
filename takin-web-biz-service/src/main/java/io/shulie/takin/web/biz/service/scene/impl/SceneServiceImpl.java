@@ -328,7 +328,8 @@ public class SceneServiceImpl implements SceneService {
             businessFlowParseRequest.setId(createParam.getId());
             businessFlowName = createParam.getSceneName();
         } else {
-            SceneResult sceneResult = updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null, data, businessFlowParseRequest.getPluginList());
+            Integer source = businessFlowParseRequest.getSource() != null ? businessFlowParseRequest.getSource() : SceneTypeEnum.JMETER_UPLOAD_SCENE.getType();
+            SceneResult sceneResult = updateBusinessFlow(businessFlowParseRequest.getId(), source, businessFlowParseRequest.getScriptFile(), null, data, businessFlowParseRequest.getPluginList());
             businessFlowName = sceneResult.getSceneName();
         }
 
@@ -450,7 +451,7 @@ public class SceneServiceImpl implements SceneService {
 
     @Override
     public BusinessFlowDetailResponse uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest) {
-        updateBusinessFlow(businessFlowDataFileRequest.getId(), null, businessFlowDataFileRequest, null, businessFlowDataFileRequest.getPluginList());
+        updateBusinessFlow(businessFlowDataFileRequest.getId(), null, null, businessFlowDataFileRequest, null, businessFlowDataFileRequest.getPluginList());
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
         result.setId(businessFlowDataFileRequest.getId());
         return result;
@@ -751,7 +752,7 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public SceneResult updateBusinessFlow(Long businessFlowId, FileManageUpdateRequest scriptFile,
+    public SceneResult updateBusinessFlow(Long businessFlowId, Integer source, FileManageUpdateRequest scriptFile,
                                           BusinessFlowDataFileRequest businessFlowDataFileRequest, List<ScriptNode> data,
                                           List<PluginConfigCreateRequest> pluginList) {
         SceneResult sceneResult = sceneDao.getSceneDetail(businessFlowId);
@@ -826,6 +827,9 @@ public class SceneServiceImpl implements SceneService {
         //更新业务流程
         sceneUpdateParam.setScriptDeployId(scriptDeployId);
         sceneUpdateParam.setId(businessFlowId);
+        if(source != null) {
+            sceneUpdateParam.setType(source);
+        }
         sceneDao.update(sceneUpdateParam);
         //脚本节点有改动，重新自动匹配
         if (CollectionUtils.isNotEmpty(data)) {

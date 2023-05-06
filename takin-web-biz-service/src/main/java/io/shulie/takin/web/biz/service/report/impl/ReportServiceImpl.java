@@ -38,6 +38,7 @@ import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
@@ -411,6 +412,16 @@ public class ReportServiceImpl implements ReportService {
             }
         }
         return ResponseResult.success(activityResponse);
+    }
+
+    @Override
+    public io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse getLinkDiagram2(ReportLinkDiagramReq2 reportLinkDiagramReq) {
+        // 直接调用查询业务活动的拓扑图方法即可
+        ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
+        request.setActivityId(reportLinkDiagramReq.getActivityId());
+        request.setFlowTypeEnum(FlowTypeEnum.BLEND);
+        request.setTempActivity(false);
+        return activityService.getActivityWithMetricsById(request);
     }
 
     /**

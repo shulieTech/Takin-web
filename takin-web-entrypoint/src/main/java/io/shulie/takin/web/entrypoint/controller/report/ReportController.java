@@ -15,6 +15,7 @@ import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.report.ReportJtlDownloadResponse;
 import io.shulie.takin.web.biz.service.ApplicationService;
@@ -258,7 +259,7 @@ public class ReportController {
 
     @GetMapping("vlt/report/getLinkDiagram")
     @ApiOperation("LT版-业务活动链路图")
-    public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse> getLtLinkDiagram(@Validated ReportLinkDiagramReq reportLinkDiagramReq){
-        return reportService.getLinkDiagram(reportLinkDiagramReq);
+    public io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse getLtLinkDiagram(@Validated ReportLinkDiagramReq2 linkDiagramReq){
+        return reportService.getLinkDiagram2(linkDiagramReq);
     }
 }

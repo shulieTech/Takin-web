@@ -18,6 +18,7 @@ import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
 import io.shulie.takin.web.biz.pojo.output.report.SceneReportListOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 
 /**
@@ -174,6 +175,9 @@ public interface ReportService {
      * @param reportLinkDiagramReq 请求参数
      */
     ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse>  getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
+
+    io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse  getLinkDiagram2(ReportLinkDiagramReq2 reportLinkDiagramReq);
+
 
     io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse queryLinkDiagram(Long activityId, ReportLinkDiagramReq reportLinkDiagramReq);
 

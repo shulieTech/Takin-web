@@ -11,9 +11,9 @@ import java.util.List;
 @ApiModel("压测报告比对")
 public class ReportCompareOutput implements Serializable {
 
-    private List<ReportCompareTargetOut> targetData;
+    private List<ReportCompareTargetOut> targetData = new ArrayList<>();
 
-    private List<ReportCompareRtOutput> rtData;
+    private List<ReportCompareRtOutput> rtData = new ArrayList<>();
 
     private List<ReportCompareColumnarOut> columnarData = new ArrayList<>();
 

@@ -328,19 +328,21 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             //列表数据 性能指标 rt数据
             JSONObject jsonObject = JSON.parseObject(detailEntity.getRtDistribute());
             String jsonStepString = jsonObject.getString("stepData");
-            output.setTargetData(JsonHelper.json2List(jsonStepString, ReportCompareTargetOut.class));
-            if (CollectionUtils.isNotEmpty(output.getTargetData())) {
-                output.getTargetData().stream().forEach(data -> {
+            List<ReportCompareTargetOut> targetList = JsonHelper.json2List(jsonStepString, ReportCompareTargetOut.class);
+            if (CollectionUtils.isNotEmpty(targetList)) {
+                targetList.stream().forEach(data -> {
                     data.setReportId(reportId);
                     data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
                 });
+                output.getTargetData().addAll(targetList);
             }
-            output.setRtData(JsonHelper.json2List(jsonStepString, ReportCompareRtOutput.class));
-            if (CollectionUtils.isNotEmpty(output.getRtData())) {
-                output.getRtData().stream().forEach(data -> {
+            List<ReportCompareRtOutput> rtList = JsonHelper.json2List(jsonStepString, ReportCompareRtOutput.class);
+            if (CollectionUtils.isNotEmpty(rtList)) {
+                rtList.stream().forEach(data -> {
                     data.setReportId(reportId);
                     data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
                 });
+                output.getRtData().addAll(rtList);
             }
             //趋势图数据 TPS RT
             ReportTrendQueryReq trendQueryReq = new ReportTrendQueryReq();

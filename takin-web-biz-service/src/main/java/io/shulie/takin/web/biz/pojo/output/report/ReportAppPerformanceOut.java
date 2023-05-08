@@ -33,6 +33,6 @@ public class ReportAppPerformanceOut {
     private BigDecimal sa;
 
     @ApiModelProperty(value = "压测时间")
-    private Date startTime;
+    private String startTime;
 
 }

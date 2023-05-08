@@ -523,17 +523,17 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
 
         ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
-        List<ReportAppPerformanceOut> list = activityResponseList.get(0).getTopology().getNodes().stream().map(node -> {
+        List<ReportAppPerformanceOut> list = activityResponseList.get(0).getTopology().getNodes().stream().filter(data -> data.getNodeType() == ApplicationEntranceTopologyResponse.NodeTypeResponseEnum.APP).map(node -> {
             ReportAppPerformanceOut reportAppPerformanceOut = new ReportAppPerformanceOut();
             reportAppPerformanceOut.setAppName(node.getLabel());
-            reportAppPerformanceOut.setTotalRequest(node.getServiceAllTotalCount() != null ? BigDecimal.valueOf(node.getServiceAllTotalCount()) : new BigDecimal(0));
-            reportAppPerformanceOut.setAvgTps(node.getServiceAllTotalTps() != null ? BigDecimal.valueOf(node.getServiceAllTotalTps()) : new BigDecimal(0));
-            reportAppPerformanceOut.setAvgRt(node.getServiceRt() != null ? BigDecimal.valueOf(node.getServiceRt()) : new BigDecimal(0));
-            reportAppPerformanceOut.setMaxRt(node.getServiceMaxRt() != null ? BigDecimal.valueOf(node.getServiceMaxRt()) : new BigDecimal(0));
-            reportAppPerformanceOut.setMinRt(node.getServiceMinRt() != null ? BigDecimal.valueOf(node.getServiceMinRt()) : new BigDecimal(0));
-            reportAppPerformanceOut.setSuccessRate(node.getServiceAllSuccessRate() != null ? BigDecimal.valueOf(node.getServiceAllSuccessRate()) : new BigDecimal(0));
+            reportAppPerformanceOut.setTotalRequest(node.getServiceAllTotalCount() != null ? formatBigDecimal(node.getServiceAllTotalCount()) : new BigDecimal(0));
+            reportAppPerformanceOut.setAvgTps(node.getServiceAllTotalTps() != null ? formatBigDecimal(node.getServiceAllTotalTps()) : new BigDecimal(0));
+            reportAppPerformanceOut.setAvgRt(node.getServiceRt() != null ? formatBigDecimal(node.getServiceRt()) : new BigDecimal(0));
+            reportAppPerformanceOut.setMaxRt(node.getServiceMaxRt() != null ? formatBigDecimal(node.getServiceMaxRt()) : new BigDecimal(0));
+            reportAppPerformanceOut.setMinRt(node.getServiceMinRt() != null ? formatBigDecimal(node.getServiceMinRt()) : new BigDecimal(0));
+            reportAppPerformanceOut.setSuccessRate(formatBigDecimalPercent(node.getServiceAllSuccessRate() != null ? formatBigDecimal(node.getServiceAllSuccessRate()) : new BigDecimal(0)));
             reportAppPerformanceOut.setSa(reportDetailOutput.getSa());
-            reportAppPerformanceOut.setStartTime(reportEntity.getStartTime());
+            reportAppPerformanceOut.setStartTime(DateUtil.formatDateTime(reportEntity.getStartTime()));
             return reportAppPerformanceOut;
         }).collect(Collectors.toList());
         return Response.success(list);
@@ -556,9 +556,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
             return Response.success(Collections.EMPTY_LIST);
         }
-        List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
+        List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).distinct().collect(Collectors.toList());
 
-        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).eq(ApplicationMntEntity::getApplicationId, appIds));
+        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).in(ApplicationMntEntity::getApplicationId, appIds));
 
         if (CollectionUtils.isEmpty(applicationMntEntities)) {
             return Response.success(Collections.EMPTY_LIST);
@@ -569,7 +569,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             queryParam.setReportId(reportId);
             queryParam.setApplicationName(applicationMntEntity.getApplicationName());
             queryParam.setCurrent(0);
-            queryParam.setCurrentPage(9999);
+            queryParam.setPageSize(9999);
             PageInfo<MachineDetailDTO> machineDetailDTOPageInfo = listMachineDetail(queryParam);
             if (CollectionUtils.isEmpty(machineDetailDTOPageInfo.getList())) {
                 continue;
@@ -585,13 +585,21 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         List<ReportAppInstancePerformanceOut> reportAppInstancePerformanceOuts = machineDetailDTOList.stream().filter(Objects::nonNull).map(machine -> {
             ReportAppInstancePerformanceOut reportAppInstancePerformanceOut = new ReportAppInstancePerformanceOut();
             reportAppInstancePerformanceOut.setAppName(machine.getApplicationName());
-            reportAppInstancePerformanceOut.setInstanceName(machine.getMachineIp());
+            reportAppInstancePerformanceOut.setInstanceName(machine.getAgentId());
             reportAppInstancePerformanceOut.setAvgCpuUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getCpu())));
             reportAppInstancePerformanceOut.setAvgMemUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMemory())));
             reportAppInstancePerformanceOut.setAvgDiskIoWaitRate(getAvg(Arrays.asList(machine.getTpsTarget().getIo())));
             reportAppInstancePerformanceOut.setAvgNetUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMbps())));
-            reportAppInstancePerformanceOut.setGcCount(Arrays.stream(machine.getTpsTarget().getGcCount()).reduce(BigDecimal::add).orElse(BigDecimal.ZERO).intValue());
-            reportAppInstancePerformanceOut.setGcCost(Arrays.stream(machine.getTpsTarget().getGcCost()).reduce(BigDecimal::add).orElse(BigDecimal.ZERO));
+            if(machine.getTpsTarget().getGcCount() != null && machine.getTpsTarget().getGcCount().length > 0){
+                reportAppInstancePerformanceOut.setGcCount(Arrays.stream(machine.getTpsTarget().getGcCount()).reduce(BigDecimal::add).orElse(BigDecimal.ZERO).intValue());
+            } else {
+                reportAppInstancePerformanceOut.setGcCount(0);
+            }
+            if(machine.getTpsTarget().getGcCost() != null && machine.getTpsTarget().getGcCost().length > 0){
+                reportAppInstancePerformanceOut.setGcCost(Arrays.stream(machine.getTpsTarget().getGcCost()).reduce(BigDecimal::add).orElse(BigDecimal.ZERO));
+            } else {
+                reportAppInstancePerformanceOut.setGcCost(BigDecimal.ZERO);
+            }
             reportAppInstancePerformanceOut.setAvgTps(getAvg(Arrays.stream(machine.getTpsTarget().getTps()).map(BigDecimal::valueOf).collect(Collectors.toList())));
             return reportAppInstancePerformanceOut;
         }).collect(Collectors.toList());
@@ -601,14 +609,14 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     private BigDecimal getAvg(List<BigDecimal> num) {
         BigDecimal total = BigDecimal.valueOf(num.size());
         BigDecimal count = num.stream().reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
-        if (count.compareTo(new BigDecimal(0)) == 0) {
+        if (num.size() == 0) {
             return new BigDecimal(0);
         }
-        return total.divide(count, 4, RoundingMode.HALF_UP);
+        return count.divide(total, 2, RoundingMode.HALF_UP);
     }
 
     private List<SceneBusinessActivityRefEntity> getSceneBusinessActivityRefEntities(Long sceneId) {
-        return tSceneBusinessActivityRefMapper.selectList(new LambdaQueryWrapper<SceneBusinessActivityRefEntity>().eq(SceneBusinessActivityRefEntity::getSceneId, sceneId).select(SceneBusinessActivityRefEntity::getBusinessActivityId));
+        return tSceneBusinessActivityRefMapper.selectList(new LambdaQueryWrapper<SceneBusinessActivityRefEntity>().eq(SceneBusinessActivityRefEntity::getSceneId, sceneId).select(SceneBusinessActivityRefEntity::getBusinessActivityId, SceneBusinessActivityRefEntity::getApplicationIds));
     }
 
     /**
@@ -700,37 +708,18 @@ public class ReportLocalServiceImpl implements ReportLocalService {
      */
     @Override
     public Response<List<MachineDetailDTO>> getReportAppInstanceTrendMap(Long reportId) {
-        ReportEntity reportEntity = getReportEntity(reportId);
-        if (reportEntity == null) {
+        ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
+        queryParam.setReportId(reportId);
+        List<ReportMachineResult> dataList = reportMachineDAO.selectListByParam(queryParam);
+        if (CollectionUtils.isEmpty(dataList)) {
             return Response.success(Collections.EMPTY_LIST);
         }
-        List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
-
-        if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
-            return Response.success(Collections.EMPTY_LIST);
+        List<MachineDetailDTO> machineDetailDTOList = new ArrayList<>();
+        for(ReportMachineResult result : dataList) {
+            machineDetailDTOList.add(convert2MachineDetailDTO(result));
         }
-        List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
-
-        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).eq(ApplicationMntEntity::getApplicationId, appIds));
-        List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(appNames)) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-        ApplicationNodeQueryDTO applicationQueryDTO = new ApplicationNodeQueryDTO();
-        applicationQueryDTO.setAppNames(String.join(",", appNames));
-        applicationQueryDTO.setCurrentPage(0);
-        applicationQueryDTO.setPageSize(9999);
-        PagingList<ApplicationNodeDTO> applicationNodePage = applicationClient.pageApplicationNodes(applicationQueryDTO);
-
-        List<String> machineList = applicationNodePage.getList().stream().map(ApplicationNodeDTO::getIpAddress).collect(Collectors.toList());
-
-        List<MachineDetailDTO> list = new ArrayList<>();
-        appNames.forEach(appName -> {
-            for (String s : machineList) {
-                list.add(getMachineDetail(reportId, appName, s));
-            }
-        });
-        return Response.success(list);
+        machineDetailDTOList.sort(Comparator.comparing(MachineDetailDTO::getApplicationName).thenComparing(MachineDetailDTO::getProcessName));
+        return Response.success(machineDetailDTOList);
     }
 
     /**
@@ -762,7 +751,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     private static ReportActivityInfoQueryRequest genActivityInfo(long activityId, ReportEntity reportEntity) {
         ReportActivityInfoQueryRequest request = new ReportActivityInfoQueryRequest();
         request.setActivityId(activityId);
-        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
+        //request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
         request.setStartTime(reportEntity.getStartTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
         request.setEndTime(reportEntity.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
         request.setReportId(reportEntity.getId());
@@ -1022,5 +1011,19 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             return ZERO;
         }
         return num.divide(new BigDecimal(1024 * 1024), 0, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal formatBigDecimalPercent(BigDecimal num) {
+        if (num == null) {
+            return ZERO;
+        }
+        return num.multiply(new BigDecimal(100)).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal formatBigDecimal(Double num) {
+        if (num == null || num.isNaN()) {
+            return ZERO;
+        }
+        return new BigDecimal(num).setScale(2, RoundingMode.HALF_UP);
     }
 }

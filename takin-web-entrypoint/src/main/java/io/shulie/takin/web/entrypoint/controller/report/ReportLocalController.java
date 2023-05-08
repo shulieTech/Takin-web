@@ -3,6 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.report;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -196,6 +197,7 @@ public class ReportLocalController {
             log.warn("压测报告比对告警，传入参数长度不正确");
             return Response.success();
         }
+        reportIds = reportIds.stream().filter(Objects::nonNull).collect(Collectors.toList());
         return Response.success(reportLocalService.getReportCompare(reportIds, businessActivityId));
     }
 
@@ -216,6 +218,12 @@ public class ReportLocalController {
             needAuth = ActionTypeEnum.QUERY
     )
     public Response<NodeCompareTargetOut> getLtNodeCompare(NodeCompareTargetInput nodeCompareTargetInput) {
+        if(CollectionUtils.isEmpty(nodeCompareTargetInput.getReportIds())) {
+            return Response.fail("报告ID不能为空");
+        }
+        if(nodeCompareTargetInput.getReportIds().stream().filter(Objects::nonNull).collect(Collectors.toList()).size() == 1) {
+            return Response.fail("请选择要对比的压测报告");
+        }
         return this.reportLocalService.getLtNodeCompare(nodeCompareTargetInput);
     }
 

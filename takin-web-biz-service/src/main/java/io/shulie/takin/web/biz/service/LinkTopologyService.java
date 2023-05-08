@@ -219,9 +219,9 @@ public class LinkTopologyService extends CommonService {
         }
 
         // startTime
-        long startMilliUseInInFluxDB = startTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+        long startMilliUseInInFluxDB = startTimeUseInInFluxDB.toInstant(ZoneOffset.of("+8")).toEpochMilli();
         // endTime
-        long endMilliUseInInFluxDB = endTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+        long endMilliUseInInFluxDB = endTimeUseInInFluxDB.toInstant(ZoneOffset.of("+8")).toEpochMilli();
 
         /*
         填充 Node
@@ -556,6 +556,8 @@ public class LinkTopologyService extends CommonService {
         node.setServiceAllSuccessRate(appProviderContainer.getServiceAllSuccessRate());
         node.setServiceAllTotalTps(appProviderContainer.getServiceAllTotalTps());
         node.setServiceRt(appProviderContainer.getServiceRt());
+        node.setServiceMaxRt(appProviderContainer.getServiceAllMaxRt());
+        node.setServiceMinRt(appProviderContainer.getServiceAllMinRt());
     }
 
     private AppProvider avgComputer(AppProvider appProviderContainer, List<AppProvider> appProviderList) {
@@ -584,6 +586,13 @@ public class LinkTopologyService extends CommonService {
                     appProviderContainer.setServiceAllMaxRt(
                             Math.max(appProviderContainer.getServiceAllMaxRt(), appProvider.getServiceAllMaxRt())
                     );
+                    if(appProviderContainer.getServiceAllMinRt() < 0.000001d) {
+                        appProviderContainer.setServiceAllMinRt(appProvider.getServiceAllMinRt());
+                    } else {
+                        appProviderContainer.setServiceAllMinRt(
+                                Math.min(appProviderContainer.getServiceAllMinRt(), appProvider.getServiceAllMinRt())
+                        );
+                    }
                 });
 
         appProviderContainer.setServiceAllSuccessRate(
@@ -770,6 +779,9 @@ public class LinkTopologyService extends CommonService {
         Integer allMaxRt = (Integer) jsonObject.get("allMaxRt");
         traceMetricsResult.setAllMaxRt(allMaxRt.doubleValue());
 
+        BigDecimal allMinRt = (BigDecimal) jsonObject.get("allMinRt");
+        traceMetricsResult.setAllMinRt(allMinRt.doubleValue());
+
         traceMetricsResultList.add(traceMetricsResult);
     }
 
@@ -846,6 +858,7 @@ public class LinkTopologyService extends CommonService {
         appProvider.setAllTotalRt(appProviderContainer.getAllTotalRt());
         appProvider.setServiceAvgRt(appProviderContainer.getServiceRt());
         appProvider.setServiceAllMaxRt(appProviderContainer.getServiceAllMaxRt());
+        appProvider.setServiceAllMinRt(appProviderContainer.getServiceAllMinRt());
         // 4) 前端显示 RT
         appProvider.setServiceRt(appProvider.getServiceAvgRt());
     }
@@ -1031,6 +1044,7 @@ public class LinkTopologyService extends CommonService {
         appProvider.setServiceAvgRt(INIT); // 平均Rt
         appProvider.setAllTotalRt(INIT); // 总调用Rt
         appProvider.setServiceAllMaxRt(INIT); // maxRt
+        appProvider.setServiceAllMinRt(INIT); // minRt
 
         if (allTotalTpsAndRtCountResults.size() != 0) {
             TraceMetricsResult traceMetricsResult = allTotalTpsAndRtCountResults.get(0);
@@ -1062,6 +1076,7 @@ public class LinkTopologyService extends CommonService {
             // 最大 Rt    MAX(maxRt)
             double allMaxRt = traceMetricsResult.getAllMaxRt();
             appProvider.setServiceAllMaxRt(allMaxRt);
+            appProvider.setServiceAllMinRt(traceMetricsResult.getAllMinRt());
         }
         return appProvider;
     }

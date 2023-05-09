@@ -277,6 +277,12 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
             DictionaryCache.getObjectByParam(HTTP_METHOD_TYPE, Integer.parseInt(vo.getMethod())).getLabel());
         createParam.setApi(vo.getApi());
         createParam.setApplicationName(vo.getApplicationName());
+        ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByTenantIdAndName(vo.getApplicationName());
+        if (applicationDetailResult == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.AGENT_REGISTER_API,
+                    String.format("应用不存在, 应用名称: %s", vo.getApplicationName()));
+        }
+        createParam.setApplicationId(applicationDetailResult.getApplicationId());
         createParam.setIsDeleted((byte)0);
         createParam.setUpdateTime(new Date());
         createParam.setCreateTime(new Date());

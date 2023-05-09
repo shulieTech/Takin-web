@@ -79,6 +79,17 @@ public class BaseServerResult {
     @Column(name = "memory")
     private Double memory;
 
+    @Column(name = "young_gc_count")
+    private Double youngGcCount;
+
+    @Column(name = "young_gc_time")
+    private Double youngGcTime;
+
+    @Column(name = "full_gc_count")
+    private Double fullGcCount;
+    @Column(name = "full_gc_time")
+    private Double fullGcTime;
+
     /**
      * 应用ip
      */
@@ -98,17 +109,6 @@ public class BaseServerResult {
     private String tagAgentId;
 
     private Double tps;
-
-    @JsonProperty("young_gc_count")
-    private Double youngGcCount;
-
-    @JsonProperty("young_gc_time")
-    private Double youngGcTime;
-
-    @JsonProperty("full_gc_count")
-    private Double fullGcCount;
-    @JsonProperty("full_gc_time")
-    private Double fullGcTime;
 
     /**
      * 获取毫秒的时间

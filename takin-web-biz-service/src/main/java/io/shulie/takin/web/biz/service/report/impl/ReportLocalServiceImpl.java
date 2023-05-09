@@ -591,12 +591,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             reportAppInstancePerformanceOut.setAvgDiskIoWaitRate(getAvg(Arrays.asList(machine.getTpsTarget().getIo())));
             reportAppInstancePerformanceOut.setAvgNetUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMbps())));
             if(machine.getTpsTarget().getGcCount() != null && machine.getTpsTarget().getGcCount().length > 0){
-                reportAppInstancePerformanceOut.setGcCount(Arrays.stream(machine.getTpsTarget().getGcCount()).reduce(BigDecimal::add).orElse(BigDecimal.ZERO).intValue());
+                reportAppInstancePerformanceOut.setGcCount(getSum(Arrays.asList(machine.getTpsTarget().getGcCount())));
             } else {
-                reportAppInstancePerformanceOut.setGcCount(0);
+                reportAppInstancePerformanceOut.setGcCount(BigDecimal.ZERO);
             }
             if(machine.getTpsTarget().getGcCost() != null && machine.getTpsTarget().getGcCost().length > 0){
-                reportAppInstancePerformanceOut.setGcCost(Arrays.stream(machine.getTpsTarget().getGcCost()).reduce(BigDecimal::add).orElse(BigDecimal.ZERO));
+                reportAppInstancePerformanceOut.setGcCost(getSum(Arrays.asList(machine.getTpsTarget().getGcCost())));
             } else {
                 reportAppInstancePerformanceOut.setGcCost(BigDecimal.ZERO);
             }
@@ -607,12 +607,19 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     }
 
     private BigDecimal getAvg(List<BigDecimal> num) {
-        BigDecimal total = BigDecimal.valueOf(num.size());
-        BigDecimal count = num.stream().reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
-        if (num.size() == 0) {
+        if (num == null || num.size() == 0) {
             return new BigDecimal(0);
         }
+        BigDecimal total = BigDecimal.valueOf(num.size());
+        BigDecimal count = num.stream().reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
         return count.divide(total, 2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal getSum(List<BigDecimal> num) {
+        if (num == null || num.size() == 0) {
+            return new BigDecimal(0);
+        }
+        return num.stream().filter(Objects::nonNull).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
     }
 
     private List<SceneBusinessActivityRefEntity> getSceneBusinessActivityRefEntities(Long sceneId) {
@@ -906,8 +913,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             dto.setMemorySize(jsonObject.getBigDecimal(ReportConfigConstant.BASE_MEMORY_KEY));
             dto.setDiskSize(jsonObject.getBigDecimal(ReportConfigConstant.BASE_DISK_KEY));
             dto.setMbps(convertByte2Mb(jsonObject.getBigDecimal(ReportConfigConstant.BASE_MBPS_KEY)));
-            dto.setGcCost(jsonObject.getBigDecimal(ReportConfigConstant.CHART_GC_COST));
-            dto.setGcCount(jsonObject.getBigDecimal(ReportConfigConstant.CHART_GC_COUNT));
         } catch (Exception e) {
             log.error("Parse BaseConfig Error: config={}, error={}", baseConfig, e.getMessage());
         }

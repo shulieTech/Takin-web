@@ -1,4 +1,4 @@
-FROM alpine:3.17.2
+FROM alpine:3.17.3
 COPY arthas-bin.zip /opt/arthas-bin.zip
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
     && apk update \

@@ -9,6 +9,7 @@ import com.pamirs.attach.plugin.dynamic.one.Type;
 import com.pamirs.attach.plugin.dynamic.one.template.Template;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DataSource;
+import io.shulie.takin.cloud.common.utils.AesUtil;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationBizTableDTO;
 import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
@@ -131,9 +132,28 @@ public class DbTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setApplicationId(String.valueOf(convert.getApplicationId()));
         shadowDetailResponse.setMiddlewareType(Type.MiddleWareType.LINK_POOL.value());
         shadowDetailResponse.setDsType(convert.getDsType() == 100 ? DsTypeEnum.SHADOW_REDIS_SERVER.getCode() : convert.getDsType());
-        shadowDetailResponse.setUrl(convert.getUrl());
+        String url = convert.getUrl();
+        // 如果协议为mongodb，且字符中包含'@'、':'就认为url中携带了密码，则进行AES加密返回
+        int indexOf = url.lastIndexOf(":");
+        if(StringUtils.isNotBlank(url) && url.startsWith("mongodb") && url.contains("@") && indexOf != 7){
+            // 截取密码
+            int indexOf1 = url.indexOf("@");
+            // 获取url中的密码
+            String pwd = url.substring(indexOf+1,indexOf1);
+            // 获取密码前面的字符串
+            String prefix = url.substring(0, indexOf+1);
+            // 获取密码后面的字符串
+            String suffix = url.substring(indexOf1, url.length());
+            url = prefix + "${"+ AesUtil.encoder(pwd) +"}" + suffix;
+            
+        }
+        shadowDetailResponse.setUrl(url);
         shadowDetailResponse.setUsername(StringUtils.isBlank(convert.getUserName()) ? "-" : convert.getUserName());
-        shadowDetailResponse.setPassword(convert.getPwd());
+        String password = convert.getPwd();
+        // 数据源密码返回时，将业务密码进行AES加密返回
+        password = StringUtils.isBlank(password) ? password : "${" +AesUtil.encoder(password)+ "}";
+        shadowDetailResponse.setPassword(password);
+         
         shadowDetailResponse.setIsManual(convert.getSource());
         String shaDowFileExtedn = convert.getShaDowFileExtedn();
         if (StringUtils.isBlank(shaDowFileExtedn)
@@ -183,6 +203,8 @@ public class DbTemplateParser extends AbstractTemplateParser {
 
         Map<String, Object> pwdMap = Maps.newHashMap();
         String shadowPwdStr = extObj.getString("shadowPwd");
+        // 在返回影子数据源配置时,将密码进行AES加密
+        shadowPwdStr = StringUtils.isBlank(shadowPwdStr) ? shadowUserNameStr : "${" +AesUtil.encoder(shadowPwdStr)+ "}";
         if (StringUtils.isBlank(shadowPwdStr)) {
             pwdMap.put("tag", "1");
         }else if(extFlag == null){

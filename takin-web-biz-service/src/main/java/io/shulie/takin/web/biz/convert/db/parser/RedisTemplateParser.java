@@ -6,6 +6,7 @@ import com.pamirs.attach.plugin.dynamic.one.template.Info;
 import com.pamirs.attach.plugin.dynamic.one.template.RedisTemplate;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
+import io.shulie.takin.cloud.common.utils.AesUtil;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
@@ -15,6 +16,7 @@ import io.shulie.takin.web.data.model.mysql.ApplicationDsCacheManageEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +63,10 @@ public class RedisTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setMiddlewareType(Type.MiddleWareType.CACHE.value());
         shadowDetailResponse.setDsType(convert.getDsType());
         shadowDetailResponse.setUrl(convert.getColony());
-        shadowDetailResponse.setPassword(convert.getPwd());
+        String password = convert.getPwd();
+        // 数据源密码返回时，将业务密码进行AES加密返回
+        password = StringUtils.isBlank(password) ? password : "${" + AesUtil.encoder(password)+ "}";
+        shadowDetailResponse.setPassword(password);
         shadowDetailResponse.setUsername(convert.getUserName());
         shadowDetailResponse.setConnectionPool(convert.getCacheName());
         shadowDetailResponse.setShadowInfo(convert.getShaDowFileExtedn());

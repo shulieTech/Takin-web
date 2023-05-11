@@ -672,7 +672,7 @@ public class LinkTopologyService extends CommonService {
         Integer allMaxRt = (Integer)jsonObject.get("allMaxRt");
         traceMetricsResult.setAllMaxRt(allMaxRt.doubleValue());
 
-        BigDecimal allMinRt = (BigDecimal)jsonObject.get("allMinRt");
+        BigDecimal allMinRt = jsonObject.getBigDecimal("allMinRt");
         traceMetricsResult.setAllMinRt(allMinRt.doubleValue());
         traceMetricsResultList.add(traceMetricsResult);
     }

@@ -182,6 +182,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     public static final String COMPARE = "<=";
 
+    private static final BigDecimal ZERO = new BigDecimal("0");
+
     @Override
     public PageInfo<CloudReportDTO> listReport(ReportQueryReq param) {
 
@@ -630,12 +632,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      */
     private Map<String, List<BigDecimal>> getSummaryConcurrentStageThreadNum(Long reportId) {
         ReportOutput reportOutput = cloudReportService.selectById(reportId);
-        Long sceneId = reportOutput.getSceneId();
-        SceneManageEntity manageEntity = sceneManageMapper.selectById(sceneId);
-        if (manageEntity == null || manageEntity.getPtConfig() == null) {
-            return Collections.emptyMap();
-        }
-        PtConfigExt ext = JSON.parseObject(manageEntity.getPtConfig(), PtConfigExt.class);
+        PtConfigExt ext = JSON.parseObject(reportOutput.getPtConfig(), PtConfigExt.class);
         Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
         if (configMap == null || configMap.isEmpty()) {
             return Collections.emptyMap();
@@ -1522,23 +1519,39 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      * @return -
      */
     private boolean isPass(ReportBusinessActivityDetail detail) {
-        if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(
-                detail.getSuccessRate()) > 0) {
+        if (detail.getTargetSuccessRate() != null
+                && detail.getTargetSuccessRate().compareTo(ZERO) > 0
+                && detail.getTargetSuccessRate().compareTo(detail.getSuccessRate()) > 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "成功率", detail.getTargetSuccessRate(), detail.getSuccessRate());
             return false;
-        } else if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
-            return false;
-        } else if (isTargetBiggerThanZero(detail.getTargetRt()) && detail.getTargetRt().compareTo(detail.getRt()) < 0) {
-            return false;
-        } else {
-            return !isTargetBiggerThanZero(detail.getTargetTps()) || detail.getTargetTps().compareTo(detail.getTps()) <= 0;
         }
-    }
-
-    private boolean isTargetBiggerThanZero(BigDecimal target) {
-        if (Objects.nonNull(target)) {
-            return target.compareTo(new BigDecimal(0)) > 0;
+        if (detail.getTargetSa() != null
+                && detail.getTargetSa().compareTo(ZERO) > 0
+                && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "SA", detail.getTargetSa(), detail.getSa());
+            return false;
         }
-        return false;
+        if (detail.getTargetRt() != null
+                && detail.getTargetRt().compareTo(ZERO) > 0
+                && detail.getTargetRt().compareTo(detail.getRt()) < 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "RT", detail.getTargetRt(), detail.getRt());
+            return false;
+        }
+        if (detail.getTargetTps() != null
+                && detail.getTargetTps().compareTo(ZERO) > 0
+                && detail.getTargetTps().compareTo(detail.getTps()) > 0){
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "TPS", detail.getTargetTps(), detail.getTps());
+            return false;
+        }
+        return true;
     }
 
     /**

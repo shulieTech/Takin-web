@@ -24,4 +24,12 @@ public class TpsTarget {
     private BigDecimal io;
 
     private BigDecimal network;
+
+    private BigDecimal youngGcCount;
+
+    private BigDecimal youngGcTime;
+
+    private BigDecimal fullGcCount;
+
+    private BigDecimal fullGcTime;
 }

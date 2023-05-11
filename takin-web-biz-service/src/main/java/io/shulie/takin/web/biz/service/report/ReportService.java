@@ -18,6 +18,7 @@ import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
 import io.shulie.takin.web.biz.pojo.output.report.SceneReportListOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 
 /**
@@ -183,6 +184,7 @@ public interface ReportService {
      */
     ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse>  getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
 
+    io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse  getLinkDiagram2(ReportLinkDiagramReq2 reportLinkDiagramReq);
 
     /**
      * 查询阶梯递增模式下指定线程数的明细

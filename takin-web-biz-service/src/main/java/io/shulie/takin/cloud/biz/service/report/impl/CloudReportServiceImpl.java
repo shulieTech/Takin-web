@@ -619,12 +619,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      */
     private Map<String, List<BigDecimal>> getSummaryConcurrentStageThreadNum(Long reportId) {
         ReportOutput reportOutput = cloudReportService.selectById(reportId);
-        Long sceneId = reportOutput.getSceneId();
-        SceneManageEntity manageEntity = sceneManageMapper.selectById(sceneId);
-        if(manageEntity == null || manageEntity.getPtConfig() == null){
-            return Collections.emptyMap();
-        }
-        PtConfigExt ext = JSON.parseObject(manageEntity.getPtConfig(), PtConfigExt.class);
+        PtConfigExt ext = JSON.parseObject(reportOutput.getPtConfig(), PtConfigExt.class);
         Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
         if (configMap == null || configMap.isEmpty()) {
             return Collections.emptyMap();

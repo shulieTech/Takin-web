@@ -59,7 +59,7 @@ CREATE TABLE default.t_trace (
 ENGINE = ReplicatedMergeTree('/clickhouse/tables/cluster-1/t_trace/{shard}', '{replica}')
 PARTITION BY toYYYYMMDD(startDate)
 ORDER BY (appName,startDate,parsedServiceName,parsedMethod,rpcType) 
-TTL startDate + toIntervalDay(3) 
+TTL startDate + toIntervalDay(3)
 SETTINGS index_granularity = 8192;
 
 

@@ -936,7 +936,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     public <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
         try {
-            if (query == null || query.getJobId() == null){
+            if (query == null || query.getJobId() == null) {
                 return new ArrayList<>();
             }
             query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
@@ -1284,13 +1284,18 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         enginePressureQuery.setFieldAndAlias(fieldAndAlias);
         enginePressureQuery.setTransaction(transaction);
         enginePressureQuery.setJobId(jobId);
-        List<StatReportDTO> statReportDTOList = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
-        if (CollectionUtils.isNotEmpty(statReportDTOList)) {
-            statReportDTOList.forEach(statReportDTO -> {
-                statReportDTO.setTempRequestCount(statReportDTO.getTotalRequest());
-            });
+        try {
+            List<StatReportDTO> statReportDTOList = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
+            if (CollectionUtils.isNotEmpty(statReportDTOList)) {
+                statReportDTOList.forEach(statReportDTO -> {
+                    statReportDTO.setTempRequestCount(statReportDTO.getTotalRequest());
+                });
+            }
+            return CollectionUtils.isNotEmpty(statReportDTOList) ? statReportDTOList.get(0) : null;
+        } catch (Exception e) {
+            log.warn("生成报告查询数据出现异常", e);
+            return null;
         }
-        return CollectionUtils.isNotEmpty(statReportDTOList) ? statReportDTOList.get(0) : null;
     }
 
     /**

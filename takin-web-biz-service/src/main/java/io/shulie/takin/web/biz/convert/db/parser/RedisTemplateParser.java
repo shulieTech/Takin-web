@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.convert.db.parser;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.pamirs.attach.plugin.dynamic.one.Converter;
 import com.pamirs.attach.plugin.dynamic.one.Type;
 import com.pamirs.attach.plugin.dynamic.one.template.Info;
@@ -19,14 +21,10 @@ import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sun.security.krb5.internal.PAData;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -63,13 +61,24 @@ public class RedisTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setMiddlewareType(Type.MiddleWareType.CACHE.value());
         shadowDetailResponse.setDsType(convert.getDsType());
         shadowDetailResponse.setUrl(convert.getColony());
-        String password = convert.getPwd();
-        // 数据源密码返回时，将业务密码进行AES加密返回
-        password = StringUtils.isBlank(password) ? password : "${" + AesUtil.encoder(password)+ "}";
-        shadowDetailResponse.setPassword(password);
+        shadowDetailResponse.setPassword(convert.getPwd());
         shadowDetailResponse.setUsername(convert.getUserName());
         shadowDetailResponse.setConnectionPool(convert.getCacheName());
-        shadowDetailResponse.setShadowInfo(convert.getShaDowFileExtedn());
+        String shaDowFileExtedn = convert.getShaDowFileExtedn();
+        // 将redis中的密码进行密文处理
+        JSONObject extObj = Optional.ofNullable(JSON.parseObject(shaDowFileExtedn)).orElse(new JSONObject());
+        String config = extObj.getString("shadowConfig");
+        if(StringUtils.isNotBlank(config)){
+            JSONObject extObj1 = Optional.ofNullable(JSON.parseObject(config)).orElse(new JSONObject());
+            String password = extObj1.getString("password");
+            if(StringUtils.isNotBlank(password)){
+                extObj1.put("password","${"+AesUtil.encoder(password)+"}");
+                extObj.put("shadowConfig",JSON.toJSONString(extObj1));
+                shaDowFileExtedn = JSON.toJSONString(extObj);
+            }
+           
+        }
+        shadowDetailResponse.setShadowInfo(shaDowFileExtedn);
         shadowDetailResponse.setCacheType(convert.getType());
         shadowDetailResponse.setIsManual(convert.getSource());
         return shadowDetailResponse;

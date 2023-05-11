@@ -475,6 +475,8 @@ public class DsServiceImpl implements DsService {
             if (r.getIsManual() != null && !r.getIsManual()) {
                 r.setCanRemove(false);
             }
+            // 将mongo业务url中的密码给加密返回
+            r.setUrl(AesUtil.encoderMongoUrl(r.getUrl()));
         });
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
@@ -740,14 +742,13 @@ public class DsServiceImpl implements DsService {
     private void buildNewDataSource(ApplicationDsCreateInputV2 createRequestV2) {
 
         // 此处为解密mongodb类型的业务url，影子url，和其他数据库影子密码的解密操作
-        String url = decoderStr(createRequestV2.getUrl());
-        String shaDowUrl = decoderStr(createRequestV2.getShaDowUrl());
-        String shaDowPassword = decoderStr(createRequestV2.getShaDowPassword());
+        String url = AesUtil.decoderStr(createRequestV2.getUrl());
+        String shaDowUrl = AesUtil.decoderStr(createRequestV2.getShaDowUrl());
         createRequestV2.setUrl(url);
         createRequestV2.setShaDowUrl(shaDowUrl);
-        createRequestV2.setShaDowPassword(shaDowPassword);
         String extInfo = createRequestV2.getExtInfo();
         JSONObject extObj = Optional.ofNullable(JSONObject.parseObject(extInfo)).orElse(new JSONObject());
+        
         String shadowUserNameStr = extObj.getString("shadowUserName");
         if (StringUtils.isNotBlank(shadowUserNameStr)) {
             // 判断是否为新版本
@@ -764,23 +765,42 @@ public class DsServiceImpl implements DsService {
                 extObj.put(EXT_FLAG, "true");
             }
         }
+        String shadowUrl = extObj.getString("shadowUrl");
+        if(StringUtils.isNotBlank(shadowUrl)){
+            extObj.put("shadowUrl",AesUtil.decoderStr(shadowUrl));
+        }
 
-        String shadowPwdStr = extObj.getString("shadowPwd");
-        if (StringUtils.isNotBlank(shadowPwdStr)) {
-            // 判断是否为新版本,JSON就是新版本
-            if (shadowPwdStr.startsWith("{") && shadowPwdStr.endsWith("}")) {
-                String context = "";
-                JSONObject dataObj = JSONObject.parseObject(shadowPwdStr);
-                String tag = dataObj.getString("tag");
-                // 打一个标记字段,是否处理为新版本，解析使用
-                extObj.put(EXT_FLAG, "true");
-                if ("2".equals(tag) || "3".equals(tag)) {
-                    context = dataObj.getString("context");
-                    if("3".equals(tag)){
-                        extObj.put(EXT_FLAG, "3");
+        // 如果是redis就需要特殊处理一下
+        if("缓存".equals(createRequestV2.getMiddlewareType())){
+            String shadowConfig = extObj.getString("shadowConfig");
+            if(StringUtils.isNotBlank(shadowConfig)){
+                JSONObject extObj1 = Optional.ofNullable(JSONObject.parseObject(shadowConfig)).orElse(new JSONObject());
+                String password = extObj1.getString("password");
+                extObj1.put("password",AesUtil.decoderStr(password));
+                extObj.put("shadowConfig",JSON.toJSONString(extObj1));
+            }
+            
+        }else {
+            String shadowPwdStr = extObj.getString("shadowPwd");
+            if (StringUtils.isNotBlank(shadowPwdStr)) {
+                // 判断是否为新版本,JSON就是新版本
+                if (shadowPwdStr.startsWith("{") && shadowPwdStr.endsWith("}")) {
+                    String context = "";
+                    JSONObject dataObj = JSONObject.parseObject(shadowPwdStr);
+                    String tag = dataObj.getString("tag");
+                    // 打一个标记字段,是否处理为新版本，解析使用
+                    extObj.put(EXT_FLAG, "true");
+                    if ("2".equals(tag) || "3".equals(tag)) {
+                        context = dataObj.getString("context");
+                        if("3".equals(tag)){
+                            extObj.put(EXT_FLAG, "3");
+                        }
                     }
+                    extObj.put("shadowPwd", context);
+
+                }else {
+                    extObj.put("shadowPwd",AesUtil.decoderStr(shadowPwdStr));
                 }
-                extObj.put("shadowPwd", context);
 
             }
         }
@@ -788,31 +808,7 @@ public class DsServiceImpl implements DsService {
         createRequestV2.setExtInfo(JSON.toJSONString(extObj));
     }
 
-    /**
-     * 解密符合条件后的加密密码
-     * @param content 文本
-     * @return 解密后的文本
-     */
-    private  String decoderStr(String content){
-        if(StringUtils.isBlank(content)){
-            return content;
-        }
-        if(!content.contains("${") || !content.contains("}")){
-            return content;
-        }
-        int indexOf = content.indexOf("${");
-        int lastIndexOf = content.lastIndexOf("${");
-        int indexOf1 = content.indexOf("}");
-        int lastIndexOf1 = content.lastIndexOf("}");
-        if(indexOf != lastIndexOf || indexOf1 != lastIndexOf1){
-            throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_URL_CREATE_ERROR, "影子数据源或业务数据源加密规则填写错误,字符串中应当质只包含一对'${密文密码}'");
-
-        }
-        String pwd = content.substring(indexOf+2,indexOf1);
-        String prefix = content.substring(0,indexOf);
-        String suffix = content.substring(indexOf1+1,content.length());
-        return prefix+ AesUtil.decoder(pwd)+suffix;
-    }
+   
 
     /**
      * 校验影子url和业务url是否一致

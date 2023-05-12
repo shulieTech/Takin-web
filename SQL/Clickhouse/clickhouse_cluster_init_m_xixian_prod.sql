@@ -59,7 +59,7 @@ CREATE TABLE aiops_shard_m.t_trace (
 ENGINE = ReplicatedMergeTree('/clickhouse/tables/cluster-aiops/t_trace/{m_shard}', '{replica}')
 PARTITION BY toYYYYMMDD(startDate)
 ORDER BY (appName,startDate,parsedServiceName,parsedMethod,rpcType) 
-TTL startDate + toIntervalDay(3) 
+TTL startDate + toIntervalDay(3)
 SETTINGS index_granularity = 8192;
 
 

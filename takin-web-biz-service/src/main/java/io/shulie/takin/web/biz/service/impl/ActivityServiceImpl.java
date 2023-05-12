@@ -669,7 +669,7 @@ public class ActivityServiceImpl implements ActivityService {
             ActivityInfoQueryRequest activityInfoQueryRequest = new ActivityInfoQueryRequest();
             BeanUtil.copyProperties(reportActivityInfoQueryRequest, activityInfoQueryRequest);
             ActivityResult result = activityDAO.getActivityById(activityInfoQueryRequest.getActivityId());
-            if (result.getBusinessType().equals(BusinessTypeEnum.VIRTUAL_BUSINESS.getType())) {
+            if (result == null || result.getBusinessType().equals(BusinessTypeEnum.VIRTUAL_BUSINESS.getType())) {
                 continue;
             }
             ActivityResponse activity = getActivityById(activityInfoQueryRequest);

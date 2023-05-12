@@ -742,8 +742,8 @@ public class DsServiceImpl implements DsService {
     private void buildNewDataSource(ApplicationDsCreateInputV2 createRequestV2) {
 
         // 此处为解密mongodb类型的业务url，影子url，和其他数据库影子密码的解密操作
-        String url = AesUtil.decoderStr(createRequestV2.getUrl());
-        String shaDowUrl = AesUtil.decoderStr(createRequestV2.getShaDowUrl());
+        String url = AesUtil.decoderSheinStr(createRequestV2.getUrl());
+        String shaDowUrl = AesUtil.decoderSheinStr(createRequestV2.getShaDowUrl());
         createRequestV2.setUrl(url);
         createRequestV2.setShaDowUrl(shaDowUrl);
         String extInfo = createRequestV2.getExtInfo();
@@ -767,7 +767,7 @@ public class DsServiceImpl implements DsService {
         }
         String shadowUrl = extObj.getString("shadowUrl");
         if(StringUtils.isNotBlank(shadowUrl)){
-            extObj.put("shadowUrl",AesUtil.decoderStr(shadowUrl));
+            extObj.put("shadowUrl",AesUtil.decoderSheinStr(shadowUrl));
         }
 
         // 如果是redis就需要特殊处理一下
@@ -776,7 +776,7 @@ public class DsServiceImpl implements DsService {
             if(StringUtils.isNotBlank(shadowConfig)){
                 JSONObject extObj1 = Optional.ofNullable(JSONObject.parseObject(shadowConfig)).orElse(new JSONObject());
                 String password = extObj1.getString("password");
-                extObj1.put("password",AesUtil.decoderStr(password));
+                extObj1.put("password",AesUtil.decoderSheinStr(password));
                 extObj.put("shadowConfig",JSON.toJSONString(extObj1));
             }
             
@@ -799,7 +799,7 @@ public class DsServiceImpl implements DsService {
                     extObj.put("shadowPwd", context);
 
                 }else {
-                    extObj.put("shadowPwd",AesUtil.decoderStr(shadowPwdStr));
+                    extObj.put("shadowPwd",AesUtil.decoderSheinStr(shadowPwdStr));
                 }
 
             }

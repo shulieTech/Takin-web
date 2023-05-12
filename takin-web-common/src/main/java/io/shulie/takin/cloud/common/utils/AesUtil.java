@@ -57,7 +57,7 @@ public class AesUtil {
      * @param content 文本
      * @return 解密后的文本
      */
-    public static String decoderStr(String content){
+    public static String decoderSheinStr(String content){
         if(StringUtils.isBlank(content)){
             return content;
         }
@@ -87,17 +87,20 @@ public class AesUtil {
         if(StringUtils.isBlank(content)){
             return content;
         }
-        int indexOf = content.lastIndexOf(":");
-        if(StringUtils.isNotBlank(content) && content.startsWith("mongodb") && content.contains("@") && indexOf != 7){
+        if(StringUtils.isNotBlank(content) && content.startsWith("mongodb") && content.contains("@")){
             // 截取密码
             int indexOf1 = content.indexOf("@");
-            // 获取url中的密码
-            String pwd = content.substring(indexOf+1,indexOf1);
-            // 获取密码前面的字符串
-            String prefix = content.substring(0, indexOf+1);
-            // 获取密码后面的字符串
-            String suffix = content.substring(indexOf1, content.length());
-           return prefix + AesUtil.sheinEncoder(pwd) + suffix;
+            String substring = content.substring(0, indexOf1);
+            int indexOf2 = substring.lastIndexOf(":");
+            if(indexOf2 !=7){
+                // 获取url中的密码
+                String pwd = content.substring(indexOf2+1,indexOf1);
+                // 获取密码前面的字符串
+                String prefix = content.substring(0, indexOf2+1);
+                // 获取密码后面的字符串
+                String suffix = content.substring(indexOf1, content.length());
+                return prefix + AesUtil.sheinEncoder(pwd) + suffix;
+            }
         }
         return content;
     }

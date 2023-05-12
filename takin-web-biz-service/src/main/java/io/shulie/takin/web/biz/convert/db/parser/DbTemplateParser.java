@@ -137,7 +137,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setUsername(StringUtils.isBlank(convert.getUserName()) ? "-" : convert.getUserName());
         String password = convert.getPwd();
         // 数据源密码返回时，将业务密码进行AES加密返回
-        password = StringUtils.isBlank(password) ? password : "${" +AesUtil.encoder(password)+ "}";
+        password = StringUtils.isBlank(password) ? password : AesUtil.sheinEncoder(password);
         shadowDetailResponse.setPassword(password);
          
         shadowDetailResponse.setIsManual(convert.getSource());

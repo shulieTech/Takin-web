@@ -406,7 +406,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             return Response.fail("报告不存在");
         }
         //根据业务活动id获取节点信息
-        List<ReportActivityInfoQueryRequest> activityInfoQueryRequests = reportEntityList.stream().map(reportEntity -> genActivityInfo(nodeCompareTargetInput.getActivityId(), reportEntity)).collect(Collectors.toList());
+        List<ReportActivityInfoQueryRequest> activityInfoQueryRequests = reportEntityList.stream().filter(data -> data.getStartTime() != null && data.getEndTime() != null)
+                .map(reportEntity -> genActivityInfo(nodeCompareTargetInput.getActivityId(), reportEntity)).collect(Collectors.toList());
         //根据业务活动id，报告id获取压测时候节点的信息
         if (CollectionUtils.isEmpty(activityInfoQueryRequests)) {
             return Response.success(new NodeCompareTargetOut());
@@ -504,7 +505,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Override
     public Response<List<ReportAppPerformanceOut>> getReortAppPerformanceList(Long reportId) {
         ReportEntity reportEntity = getReportEntity(reportId);
-        if (reportEntity == null) {
+        if (reportEntity == null || reportEntity.getStartTime() == null || reportEntity.getEndTime() == null) {
             return Response.success(Collections.EMPTY_LIST);
         }
         List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());

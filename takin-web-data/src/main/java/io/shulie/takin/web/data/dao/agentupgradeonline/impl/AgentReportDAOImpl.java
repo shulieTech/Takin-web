@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 
 import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.web.data.dao.agentupgradeonline.AgentReportDAO;
 import io.shulie.takin.web.data.mapper.mysql.AgentReportMapper;
@@ -87,7 +88,12 @@ public class AgentReportDAOImpl extends ServiceImpl<AgentReportMapper, AgentRepo
     public void clearExpiredData() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         // 删除1分钟前的数据
-        agentReportMapper.selfDelete(simpleDateFormat.format(System.currentTimeMillis() - 60 * 1000));
+        QueryWrapper<AgentReportEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().lt(AgentReportEntity::getGmtUpdate, simpleDateFormat.format(System.currentTimeMillis() - 60 * 1000));
+        List<AgentReportEntity> agentReportEntities = agentReportMapper.selectList(queryWrapper);
+        List<Long> ids = agentReportEntities.stream().map(AgentReportEntity::getId).collect(Collectors.toList());
+        agentReportMapper.deleteBatchIds(ids);
+//        agentReportMapper.selfDelete(simpleDateFormat.format(System.currentTimeMillis() - 60 * 1000));
     }
 
     @Override

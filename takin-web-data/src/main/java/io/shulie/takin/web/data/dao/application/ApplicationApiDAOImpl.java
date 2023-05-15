@@ -45,6 +45,7 @@ public class ApplicationApiDAOImpl implements ApplicationApiDAO {
         entity.setTenantId(param.getTenantId());
         entity.setUserId(param.getUserId());
         entity.setIsAgentRegiste(param.getIsAgentRegiste());
+        entity.setApplicationId(param.getApplicationId());
         return apiManageMapper.insert(entity);
     }
 

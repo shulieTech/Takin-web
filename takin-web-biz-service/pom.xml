@@ -162,6 +162,10 @@
                     <artifactId>commons-io</artifactId>
                     <groupId>commons-io</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>annotation-indexer</artifactId>
+                    <groupId>org.jenkins-ci</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- rocket mq -->

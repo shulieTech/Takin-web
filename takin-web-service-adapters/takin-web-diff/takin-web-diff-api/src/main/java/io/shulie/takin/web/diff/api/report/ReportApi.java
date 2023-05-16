@@ -28,14 +28,6 @@ public interface ReportApi {
     ResponseResult<List<Long>> queryListRunningReport(CloudCommonInfoWrapperReq req);
 
     /**
-     * 根据报告id获取报告详情
-     *
-     * @param req -
-     * @return -
-     */
-    ResponseResult<ReportDetailResp> getReportByReportId(ReportDetailByIdReq req);
-
-    /**
      * 根据场景id获取报告详情
      *
      * @param req -
@@ -82,5 +74,8 @@ public interface ReportApi {
      * @return 下载地址
      */
     String getJtlDownLoadUrl(Long reportId);
+
+
+    ReportDetailResp getReportByReportId(ReportDetailByIdReq reportDetailByIdReq);
 
 }

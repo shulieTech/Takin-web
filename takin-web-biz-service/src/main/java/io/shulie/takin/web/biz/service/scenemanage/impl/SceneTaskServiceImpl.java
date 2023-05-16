@@ -90,6 +90,7 @@ import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.entity.UserExt;
@@ -158,7 +159,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private SceneExcludedApplicationDAO sceneExcludedApplicationDAO;
 
     @Resource
-    private CloudReportApi cloudReportApi;
+    private ReportApi reportApi;
 
     /**
      * 是否是预发环境
@@ -418,7 +419,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         final ReportDetailByIdReq idReq = new ReportDetailByIdReq();
         idReq.setReportId(reportId);
         WebPluginUtils.fillCloudUserData(idReq);
-        final ReportDetailResp report = cloudReportApi.getReportByReportId(idReq);
+        final ReportDetailResp report = reportApi.getReportByReportId(idReq);
         if (null != report && !report.getPressureType().equals(0)) {
             return response;
         }

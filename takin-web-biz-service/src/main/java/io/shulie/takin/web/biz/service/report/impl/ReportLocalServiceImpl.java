@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.report.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -764,7 +765,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         request.setActivityId(activityId);
         request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
         request.setStartTime(reportEntity.getStartTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-        request.setEndTime(reportEntity.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        request.setEndTime(reportEntity.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plus(5, ChronoUnit.MINUTES));
         request.setReportId(reportEntity.getId());
         return request;
     }

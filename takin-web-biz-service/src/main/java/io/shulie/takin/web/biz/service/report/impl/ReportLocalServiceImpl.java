@@ -559,7 +559,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
 
-        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).eq(ApplicationMntEntity::getApplicationId, appIds));
+        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).in(ApplicationMntEntity::getApplicationId, appIds));
 
         if (CollectionUtils.isEmpty(applicationMntEntities)) {
             return Response.success(Collections.EMPTY_LIST);
@@ -632,7 +632,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
 
-        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).eq(ApplicationMntEntity::getApplicationId, appIds));
+        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).in(ApplicationMntEntity::getApplicationId, appIds));
         List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
         TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
         traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());

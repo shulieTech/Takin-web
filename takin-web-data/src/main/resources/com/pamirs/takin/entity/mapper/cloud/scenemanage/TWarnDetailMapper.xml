@@ -148,7 +148,7 @@
     </update>
 
     <select id="summaryWarnByReportId" resultMap="WarnResultMap" resultType="java.lang.Long">
-        select count(*)       as total,
+        select count(*)  as total,
                max(warn_time) as lastWarnTime,
                business_activity_id,
                business_activity_name,
@@ -158,7 +158,7 @@
                sla_name
         from t_warn_detail
         where pt_id = #{reportId,jdbcType=BIGINT}
-        group by business_activity_id, sla_id
+        group by business_activity_id,business_activity_name, sla_id
     </select>
 
 

@@ -86,13 +86,13 @@ public class BaseServerResult {
     @JsonProperty("young_gc_count")
     private Double youngGcCount;
 
-    @JsonProperty("young_gc_time")
-    private Double youngGcTime;
+    @JsonProperty("young_gc_cost")
+    private Double youngGcCost;
 
     @JsonProperty("full_gc_count")
     private Double fullGcCount;
-    @JsonProperty("full_gc_time")
-    private Double fullGcTime;
+    @JsonProperty("full_gc_cost")
+    private Double fullGcCost;
 
     /**
      * 获取毫秒的时间

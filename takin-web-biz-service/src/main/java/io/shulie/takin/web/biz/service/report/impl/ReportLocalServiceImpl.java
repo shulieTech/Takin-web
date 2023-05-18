@@ -722,16 +722,26 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         applicationQueryDTO.setCurrentPage(0);
         applicationQueryDTO.setPageSize(9999);
         PagingList<ApplicationNodeDTO> applicationNodePage = applicationClient.pageApplicationNodes(applicationQueryDTO);
-
-        List<String> machineList = applicationNodePage.getList().stream().map(ApplicationNodeDTO::getIpAddress).collect(Collectors.toList());
-
+        if (CollectionUtils.isEmpty(applicationNodePage.getList())) {
+            return Response.success(Collections.EMPTY_LIST);
+        }
         List<MachineDetailDTO> list = new ArrayList<>();
-        appNames.forEach(appName -> {
-            for (String s : machineList) {
-                list.add(getMachineDetail(reportId, appName, s));
-            }
-        });
+        for (ApplicationNodeDTO applicationNodeDTO : applicationNodePage.getList()) {
+            list.add(getMachineDetailByAgentId(reportId, applicationNodeDTO.getAppName(), applicationNodeDTO.getAgentId()));
+        }
         return Response.success(list);
+    }
+
+    private MachineDetailDTO getMachineDetailByAgentId(Long reportId, String applicationName, String agentId) {
+        ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
+        queryParam.setReportId(reportId);
+        queryParam.setApplicationName(applicationName);
+        queryParam.setAgentId(agentId);
+        ReportMachineResult data = reportMachineDAO.selectOneByParam(queryParam);
+        if (data == null) {
+            return new MachineDetailDTO();
+        }
+        return convert2MachineDetailDTO(data);
     }
 
     /**

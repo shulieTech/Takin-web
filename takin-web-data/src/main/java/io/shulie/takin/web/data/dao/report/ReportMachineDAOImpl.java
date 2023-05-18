@@ -181,6 +181,9 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
         if(StringUtils.isNotBlank(queryParam.getMachineIp())) {
             queryWrapper.eq(ReportMachineEntity::getMachineIp, queryParam.getMachineIp());
         }
+        if (StringUtils.isNotBlank(queryParam.getAgentId())) {
+            queryWrapper.eq(ReportMachineEntity::getAgentId, queryParam.getAgentId());
+        }
         queryWrapper.orderByDesc(ReportMachineEntity::getRiskValue);
         return queryWrapper;
     }

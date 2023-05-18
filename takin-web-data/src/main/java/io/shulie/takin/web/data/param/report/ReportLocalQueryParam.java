@@ -34,4 +34,9 @@ public class ReportLocalQueryParam extends PagingDevice implements Serializable 
      * 是否风险机器
      */
     private Integer riskFlag;
+
+    /**
+     * agentId
+     */
+    private String agentId;
 }

@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -607,10 +608,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     }
 
     private List<MachineDetailDTO> listMachineDetailByReportId(ReportLocalQueryParam queryParam) {
-        LambdaQueryWrapper<ReportMachineEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(ReportMachineEntity::getReportId, queryParam.getReportId());
-        lambdaQueryWrapper.eq(ReportMachineEntity::getApplicationName, queryParam.getApplicationName());
-        List<ReportMachineEntity> dataList = reportMachineMapper.selectList(lambdaQueryWrapper);
+        QueryWrapper<ReportMachineEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("report_id", queryParam.getReportId()).eq("application_name", queryParam.getApplicationName());
+        List<ReportMachineEntity> dataList = reportMachineMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(dataList)) {
             return Lists.newArrayList();
         }
@@ -752,11 +752,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     }
 
     private MachineDetailDTO getMachineDetailByAgentId(Long reportId, String applicationName, String agentId) {
-        LambdaQueryWrapper<ReportMachineEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(ReportMachineEntity::getReportId, reportId);
-        lambdaQueryWrapper.eq(ReportMachineEntity::getApplicationName, applicationName);
-        lambdaQueryWrapper.eq(ReportMachineEntity::getAgentId, agentId);
-        ReportMachineEntity reportMachineEntity = reportMachineMapper.selectOne(lambdaQueryWrapper);
+        QueryWrapper<ReportMachineEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("report_id", reportId).eq("application_name", applicationName).eq("agent_id", agentId);
+        ReportMachineEntity reportMachineEntity = reportMachineMapper.selectOne(queryWrapper);
         if (reportMachineEntity == null) {
             return new MachineDetailDTO();
         }

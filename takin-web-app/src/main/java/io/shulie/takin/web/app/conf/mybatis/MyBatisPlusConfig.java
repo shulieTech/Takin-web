@@ -2,12 +2,14 @@ package io.shulie.takin.web.app.conf.mybatis;
 
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.plugin.Interceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -69,7 +71,6 @@ public class MyBatisPlusConfig {
         // 如果用了分页插件注意先 add TenantLineInnerInterceptor 再 add PaginationInnerInterceptor
         // 用了分页插件必须设置 MybatisConfiguration#useDeprecatedExecutor = false
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
-
         return interceptor;
     }
 
@@ -95,8 +96,5 @@ public class MyBatisPlusConfig {
 //    public MetaUpdateSignInterceptor updateSignInterceptor() {
 //        return new MetaUpdateSignInterceptor();
 //    }
-
-
-
 }
 

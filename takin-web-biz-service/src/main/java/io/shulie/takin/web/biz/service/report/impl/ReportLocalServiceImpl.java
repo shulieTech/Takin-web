@@ -611,8 +611,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         LambdaQueryWrapper<ReportMachineEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ReportMachineEntity::getReportId, queryParam.getReportId());
         lambdaQueryWrapper.eq(ReportMachineEntity::getApplicationName, queryParam.getApplicationName());
-        lambdaQueryWrapper.eq(ReportMachineEntity::getEnvCode,"test");
-        lambdaQueryWrapper.eq(ReportMachineEntity::getTenantId,1L);
         List<ReportMachineEntity> dataList = reportMachineMapper.selectList(lambdaQueryWrapper);
         if (CollectionUtils.isEmpty(dataList)) {
             return new PageInfo<>(Lists.newArrayList());
@@ -761,8 +759,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         lambdaQueryWrapper.eq(ReportMachineEntity::getReportId, reportId);
         lambdaQueryWrapper.eq(ReportMachineEntity::getApplicationName, applicationName);
         lambdaQueryWrapper.eq(ReportMachineEntity::getAgentId, agentId);
-        lambdaQueryWrapper.eq(ReportMachineEntity::getEnvCode,"test");
-        lambdaQueryWrapper.eq(ReportMachineEntity::getTenantId,1L);
         ReportMachineEntity reportMachineEntity = reportMachineMapper.selectOne(lambdaQueryWrapper);
         if (reportMachineEntity == null) {
             return new MachineDetailDTO();

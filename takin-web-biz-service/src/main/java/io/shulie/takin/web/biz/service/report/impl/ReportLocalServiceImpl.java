@@ -578,11 +578,11 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             queryParam.setApplicationName(applicationMntEntity.getApplicationName());
             queryParam.setCurrent(0);
             queryParam.setCurrentPage(9999);
-            PageInfo<MachineDetailDTO> machineDetailDTOPageInfo = listMachineDetailByReportId(queryParam);
-            if (CollectionUtils.isEmpty(machineDetailDTOPageInfo.getList())) {
+            List<MachineDetailDTO> machineDetailDTOPageInfo = listMachineDetailByReportId(queryParam);
+            if (CollectionUtils.isEmpty(machineDetailDTOPageInfo)) {
                 continue;
             }
-            for (MachineDetailDTO machineDetailDTO : machineDetailDTOPageInfo.getList()) {
+            for (MachineDetailDTO machineDetailDTO : machineDetailDTOPageInfo) {
                 MachineDetailDTO machineDetail = getMachineDetail(reportId, machineDetailDTO.getApplicationName(), machineDetailDTO.getMachineIp());
                 if (Objects.isNull(machineDetail)) {
                     continue;
@@ -606,19 +606,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return Response.success(reportAppInstancePerformanceOuts);
     }
 
-    private PageInfo<MachineDetailDTO> listMachineDetailByReportId(ReportLocalQueryParam queryParam) {
-        Page page = PageHelper.startPage(queryParam.getCurrentPage() + 1, queryParam.getPageSize());
+    private List<MachineDetailDTO> listMachineDetailByReportId(ReportLocalQueryParam queryParam) {
         LambdaQueryWrapper<ReportMachineEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ReportMachineEntity::getReportId, queryParam.getReportId());
         lambdaQueryWrapper.eq(ReportMachineEntity::getApplicationName, queryParam.getApplicationName());
         List<ReportMachineEntity> dataList = reportMachineMapper.selectList(lambdaQueryWrapper);
         if (CollectionUtils.isEmpty(dataList)) {
-            return new PageInfo<>(Lists.newArrayList());
+            return Lists.newArrayList();
         }
         List<MachineDetailDTO> resultList = convert2MachineDetailDTO(DataTransformUtil.list2list(dataList, ReportMachineResult.class));
-        PageInfo pageInfo = new PageInfo<>(resultList);
-        pageInfo.setTotal(page.getTotal());
-        return pageInfo;
+        return resultList;
     }
 
     private BigDecimal getAvg(List<BigDecimal> num) {

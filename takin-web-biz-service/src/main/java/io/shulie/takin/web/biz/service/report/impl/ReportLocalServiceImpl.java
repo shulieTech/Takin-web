@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -63,12 +64,15 @@ import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
 import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
+import io.shulie.takin.web.data.mapper.mysql.ReportMachineMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
+import io.shulie.takin.web.data.model.mysql.ReportMachineEntity;
 import io.shulie.takin.web.data.param.report.ReportApplicationSummaryQueryParam;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 import io.shulie.takin.web.data.result.report.ReportApplicationSummaryResult;
@@ -131,6 +135,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Autowired
     private ApplicationClient applicationClient;
+
+    @Resource
+    private ReportMachineMapper reportMachineMapper;
 
 //    public static void main(String[] args) {
 //        String data1 = "{\"cpu\":[10,11,12],\"io\":[40,30,35],\"loading\":[75,55,70],\"memory\":[40,43,45],\"network\":[20,40," + "24],\"tps\":[100,110,120]}";
@@ -426,8 +433,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         root.setMethodName(response.getMethod());
         root.setService(response.getServiceName());
         root.setLabel(response.getApplicationName());
-        Map<String,NodeCompareTargetOut.TopologyNode> topologyNode = genNodeCompareTargetOut(activityResponseList);
-        nodeCompareTargetOut.setNode(genNodeTree(root,topologyNode));
+        Map<String, NodeCompareTargetOut.TopologyNode> topologyNode = genNodeCompareTargetOut(activityResponseList);
+        nodeCompareTargetOut.setNode(genNodeTree(root, topologyNode));
         return Response.success(nodeCompareTargetOut);
     }
 
@@ -571,7 +578,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             queryParam.setApplicationName(applicationMntEntity.getApplicationName());
             queryParam.setCurrent(0);
             queryParam.setCurrentPage(9999);
-            PageInfo<MachineDetailDTO> machineDetailDTOPageInfo = listMachineDetail(queryParam);
+            PageInfo<MachineDetailDTO> machineDetailDTOPageInfo = listMachineDetailByReportId(queryParam);
             if (CollectionUtils.isEmpty(machineDetailDTOPageInfo.getList())) {
                 continue;
             }
@@ -597,6 +604,21 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             return reportAppInstancePerformanceOut;
         }).collect(Collectors.toList());
         return Response.success(reportAppInstancePerformanceOuts);
+    }
+
+    private PageInfo<MachineDetailDTO> listMachineDetailByReportId(ReportLocalQueryParam queryParam) {
+        Page page = PageHelper.startPage(queryParam.getCurrentPage() + 1, queryParam.getPageSize());
+        LambdaQueryWrapper<ReportMachineEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ReportMachineEntity::getReportId, queryParam.getReportId());
+        lambdaQueryWrapper.eq(ReportMachineEntity::getApplicationName, queryParam.getApplicationName());
+        List<ReportMachineEntity> dataList = reportMachineMapper.selectList(lambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(dataList)) {
+            return new PageInfo<>(Lists.newArrayList());
+        }
+        List<MachineDetailDTO> resultList = convert2MachineDetailDTO(DataTransformUtil.list2list(dataList, ReportMachineResult.class));
+        PageInfo pageInfo = new PageInfo<>(resultList);
+        pageInfo.setTotal(page.getTotal());
+        return pageInfo;
     }
 
     private BigDecimal getAvg(List<BigDecimal> num) {
@@ -733,14 +755,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     }
 
     private MachineDetailDTO getMachineDetailByAgentId(Long reportId, String applicationName, String agentId) {
-        ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
-        queryParam.setReportId(reportId);
-        queryParam.setApplicationName(applicationName);
-        queryParam.setAgentId(agentId);
-        ReportMachineResult data = reportMachineDAO.selectOneByParam(queryParam);
-        if (data == null) {
+        LambdaQueryWrapper<ReportMachineEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ReportMachineEntity::getReportId, reportId);
+        lambdaQueryWrapper.eq(ReportMachineEntity::getApplicationName, applicationName);
+        lambdaQueryWrapper.eq(ReportMachineEntity::getAgentId, agentId);
+
+        ReportMachineEntity reportMachineEntity = reportMachineMapper.selectOne(lambdaQueryWrapper);
+        if (reportMachineEntity == null) {
             return new MachineDetailDTO();
         }
+        ReportMachineResult data = BeanUtil.copyProperties(reportMachineEntity, ReportMachineResult.class);
         return convert2MachineDetailDTO(data);
     }
 

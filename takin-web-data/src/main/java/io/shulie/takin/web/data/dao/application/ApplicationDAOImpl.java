@@ -49,12 +49,7 @@ import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationParam;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
-import io.shulie.takin.web.data.result.application.ApplicationResult;
-import io.shulie.takin.web.data.result.application.InstanceInfoResult;
-import io.shulie.takin.web.data.result.application.LibraryResult;
+import io.shulie.takin.web.data.result.application.*;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
@@ -754,7 +749,7 @@ public class ApplicationDAOImpl
     }
 
     @Override
-    public Map getStatus(String name) {
+    public ApplicationInfo getStatus(String name) {
         return applicationMntMapper.getStatus(name);
     }
 

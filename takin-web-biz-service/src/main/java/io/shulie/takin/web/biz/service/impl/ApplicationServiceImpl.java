@@ -132,6 +132,7 @@ import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.dom4j.DocumentException;
 import org.springframework.beans.BeanUtils;
@@ -383,7 +384,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public List<ApplicationListResponse> getApplicationListByAppIds(List<Long> appIds) {
         List<ApplicationDetailResult> resultList = applicationDAO.getApplicationByAppIds(appIds);
         List<ApplicationListResponse> responseList = new ArrayList<>();
-        if(org.apache.commons.collections4.CollectionUtils.isEmpty(resultList)) {
+        if (org.apache.commons.collections4.CollectionUtils.isEmpty(resultList)) {
             return responseList;
         }
         resultList.stream().forEach(result -> {
@@ -840,47 +841,46 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList
-            , Set<Long> errorApplicationIdSet, Map<Long, String> errorInfo) {
-        if (CollectionUtils.isNotEmpty(applicationList)) {
-            for (ApplicationListResult app : applicationList) {
-                Map result = applicationDAO.getStatus(app.getApplicationName());
-                long n = (long) result.get("n");
-                if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
-                    String e = (String) result.get("e");
-                    //不知道异常和Ip就别展示出来误导了
-                    if (StringUtils.isBlank(e)) {
-                        String a = (String) result.get("a");
-                        if (StringUtils.isEmpty(a)) {
-                            if (!io.shulie.takin.utils.string.StringUtil
-                                    .isEmpty(errorInfo.get(app.getApplicationId()))) {
-                                //节点不一致
-                                applicationDAO.updateStatus(app.getApplicationId(), e);
-                            }
-                            continue;
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList, Set<Long> errorApplicationIdSet, Map<Long, String> errorInfo) {
+        if (CollectionUtils.isEmpty(applicationList)) {
+            return;
+        }
+        for (ApplicationListResult app : applicationList) {
+            ApplicationInfo result = applicationDAO.getStatus(app.getApplicationName());
+            long agentNum = result.getAgentNum();
+            if (result != null && (agentNum != 0 || (errorApplicationIdSet.contains(app.getApplicationId())))) {
+                String agentErrorInfo = result.getAgentErrorInfo();
+                //不知道异常和Ip就别展示出来误导了
+                if (StringUtils.isBlank(agentErrorInfo)) {
+                    String agentId = result.getAgentId();
+                    if (StringUtils.isEmpty(agentId)) {
+                        if (!io.shulie.takin.utils.string.StringUtil.isEmpty(errorInfo.get(app.getApplicationId()))) {
+                            //节点不一致
+                            applicationDAO.updateStatus(app.getApplicationId(), agentErrorInfo);
                         }
-                        e = "探针接入异常";
-                        if (StringUtils.isNotEmpty(a)) {
-                            e += "，agentId为" + a;
-                        }
+                        continue;
                     }
-                    applicationDAO.updateStatus(app.getApplicationId(), e);
-                    NodeUploadDataDTO param = new NodeUploadDataDTO();
-                    param.setApplicationName(app.getApplicationName());
-                    param.setAgentId((String) result.get("a"));
-                    param.setNodeKey(UUID.randomUUID().toString().replace("_", ""));
-                    param.setExceptionTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-                    HashMap map = new HashMap(1);
-                    ExceptionInfo exceptionInfo = new ExceptionInfo();
-                    exceptionInfo.setErrorCode("—");
-                    exceptionInfo.setMessage(e);
-                    exceptionInfo.setDetail(e);
-                    map.put("Agent异常:" + this.toString().hashCode(), JSON.toJSONString(exceptionInfo));
-                    param.setSwitchErrorMap(map);
-                    uploadAccessStatus(param);
-                } else {
-                    applicationDAO.updateStatus(app.getApplicationId());
+                    agentErrorInfo = "探针接入异常";
+                    if (StringUtils.isNotEmpty(agentId)) {
+                        agentErrorInfo += "，agentId为" + agentId;
+                    }
                 }
+                applicationDAO.updateStatus(app.getApplicationId(), agentErrorInfo);
+                NodeUploadDataDTO param = new NodeUploadDataDTO();
+                param.setApplicationName(app.getApplicationName());
+                param.setAgentId(result.getAgentId());
+                param.setNodeKey(UUID.randomUUID().toString().replace("_", ""));
+                param.setExceptionTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+                HashMap map = new HashMap(1);
+                ExceptionInfo exceptionInfo = new ExceptionInfo();
+                exceptionInfo.setErrorCode("—");
+                exceptionInfo.setMessage(agentErrorInfo);
+                exceptionInfo.setDetail(agentErrorInfo);
+                map.put("Agent异常:" + this.toString().hashCode(), JSON.toJSONString(exceptionInfo));
+                param.setSwitchErrorMap(map);
+                uploadAccessStatus(param);
+            } else {
+                applicationDAO.updateStatus(app.getApplicationId());
             }
         }
     }

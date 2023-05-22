@@ -26,6 +26,8 @@
         <result column="USER_ID" jdbcType="BIGINT" property="userId"/>
     </resultMap>
 
+
+
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         APPLICATION_ID, APPLICATION_NAME, APPLICATION_DESC, DDL_SCRIPT_PATH, CLEAN_SCRIPT_PATH,
@@ -464,10 +466,10 @@
         </if>
         ORDER BY a.id DESC
     </select>
-    <select id="getStatus" resultType="Map">
-        SELECT agent_error_info AS e,
-        COUNT(*) AS n,
-        agent_id AS a
+    <select id="getStatus" resultType="io.shulie.takin.web.data.result.application.ApplicationInfo">
+        SELECT agent_error_info AS agentErrorInfo,
+        COUNT(*) AS agentNum,
+        agent_id AS agentId
         FROM
         t_agent_report
         WHERE application_name = #{name} AND `status` = 4

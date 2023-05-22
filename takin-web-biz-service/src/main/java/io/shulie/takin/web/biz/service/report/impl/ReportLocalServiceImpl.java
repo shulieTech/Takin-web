@@ -418,21 +418,35 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (CollectionUtils.isEmpty(activityInfoQueryRequests)) {
             return Response.success(new NodeCompareTargetOut());
         }
+        // 首先获取到业务活动id
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> reportWrapper = new LambdaQueryWrapper<>();
+        reportWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, nodeCompareTargetInput.getReportIds());
+        reportWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, nodeCompareTargetInput.getSceneId());
+        reportWrapper.eq(ReportBusinessActivityDetailEntity::getBusinessActivityId, nodeCompareTargetInput.getActivityId());
+        List<ReportBusinessActivityDetailEntity> reportBusinessActivityDetailEntities = detailMapper.selectList(reportWrapper);
+        if (CollectionUtils.isEmpty(reportBusinessActivityDetailEntities)) {
+            return Response.success(new NodeCompareTargetOut());
+        }
 
-        List<ReportActivityResponse> activityResponseList = this.activityService.getActivityWithMetricsByIdForReports(activityInfoQueryRequests);
+        List<ReportActivityResponse> activityResponses = reportBusinessActivityDetailEntities.stream().map(reportBusinessActivityDetailEntity -> {
+            ActivityResponse activityResponse = JSON.parseObject(reportBusinessActivityDetailEntity.getReportJson(), ActivityResponse.class);
+            ReportActivityResponse response = BeanUtil.copyProperties(activityResponse, ReportActivityResponse.class);
+            return response;
+        }).collect(Collectors.toList());
+
         //统计转换压测时候节点的信息
-        if (CollectionUtils.isEmpty(activityResponseList)) {
+        if (CollectionUtils.isEmpty(activityResponses)) {
             return Response.success(new NodeCompareTargetOut());
         }
         NodeCompareTargetOut nodeCompareTargetOut = new NodeCompareTargetOut();
         nodeCompareTargetOut.setReportIds(nodeCompareTargetInput.getReportIds());
         NodeCompareTargetOut.TopologyNode root = new NodeCompareTargetOut.TopologyNode();
-        ReportActivityResponse response = activityResponseList.get(0);
+        ReportActivityResponse response = activityResponses.get(0);
         root.setId(response.getLinkId());
         root.setMethodName(response.getMethod());
         root.setService(response.getServiceName());
         root.setLabel(response.getApplicationName());
-        Map<String, NodeCompareTargetOut.TopologyNode> topologyNode = genNodeCompareTargetOut(activityResponseList);
+        Map<String, NodeCompareTargetOut.TopologyNode> topologyNode = genNodeCompareTargetOut(activityResponses);
         nodeCompareTargetOut.setNode(genNodeTree(root, topologyNode));
         return Response.success(nodeCompareTargetOut);
     }
@@ -538,6 +552,10 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         List<ReportAppPerformanceOut> list = new ArrayList<>();
         for (ActivityResponse activityResponse : activityResponses) {
             for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponse.getTopology().getNodes()) {
+                //非app节点就跳过去
+                if (!node.getNodeType().getType().equalsIgnoreCase("app")) {
+                    continue;
+                }
                 ReportAppPerformanceOut reportAppPerformanceOut = new ReportAppPerformanceOut();
                 reportAppPerformanceOut.setAppName(node.getLabel());
                 reportAppPerformanceOut.setTotalRequest(node.getServiceAllTotalCount() != null ? BigDecimal.valueOf(node.getServiceAllTotalCount()) : new BigDecimal(0));
@@ -545,7 +563,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 reportAppPerformanceOut.setAvgRt(node.getServiceRt() != null ? BigDecimal.valueOf(node.getServiceRt()) : new BigDecimal(0));
                 reportAppPerformanceOut.setMaxRt(node.getServiceMaxRt() != null ? BigDecimal.valueOf(node.getServiceMaxRt()) : new BigDecimal(0));
                 reportAppPerformanceOut.setMinRt(node.getServiceMinRt() != null ? BigDecimal.valueOf(node.getServiceMinRt()) : new BigDecimal(0));
-                reportAppPerformanceOut.setSuccessRate(node.getServiceAllSuccessRate() != null ? BigDecimal.valueOf(node.getServiceAllSuccessRate()) : new BigDecimal(0));
+                reportAppPerformanceOut.setSuccessRate(node.getServiceAllSuccessRate() != null ? BigDecimal.valueOf(node.getServiceAllSuccessRate() * 100) : new BigDecimal(0));
                 reportAppPerformanceOut.setSa(reportDetailOutput.getSa());
                 reportAppPerformanceOut.setStartTime(reportEntity.getStartTime());
                 list.add(reportAppPerformanceOut);

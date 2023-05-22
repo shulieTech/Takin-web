@@ -11,4 +11,6 @@ public class NodeCompareTargetInput {
     private List<Long> reportIds;
     @ApiModelProperty("节点id")
     private Long activityId;
+    @ApiModelProperty("场景id")
+    private Long sceneId;
 }

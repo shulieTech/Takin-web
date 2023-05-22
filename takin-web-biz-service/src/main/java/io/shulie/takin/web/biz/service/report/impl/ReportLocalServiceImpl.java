@@ -39,10 +39,14 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.BusinessActivitySu
 import io.shulie.takin.cloud.common.pojo.Pair;
 import io.shulie.takin.cloud.common.utils.TestTimeUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportBusinessActivityDetailDao;
+import io.shulie.takin.cloud.data.dao.report.ReportDao;
+import io.shulie.takin.cloud.data.mapper.mysql.ReportBusinessActivityDetailMapper;
 import io.shulie.takin.cloud.data.mapper.mysql.ReportMapper;
+import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneBusinessActivityRefEntity;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.api.TraceClient;
@@ -140,14 +144,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Resource
     private ReportMachineMapper reportMachineMapper;
 
-//    public static void main(String[] args) {
-//        String data1 = "{\"cpu\":[10,11,12],\"io\":[40,30,35],\"loading\":[75,55,70],\"memory\":[40,43,45],\"network\":[20,40," + "24],\"tps\":[100,110,120]}";
-//        String data2 = "{\"cpu\":[30,31,32],\"io\":[42,32,37],\"loading\":[77,57,72],\"memory\":[42,45,47],\"network\":[22,42," + "26],\"tps\":[110,120,130]}";
-//        MachineDetailDTO dto = new MachineDetailDTO();
-//        ReportLocalServiceImpl reportLocal = new ReportLocalServiceImpl();
-//        reportLocal.parseTpsConfig(dto, Arrays.asList(data1, data2));
-//        System.out.println(dto);
-//    }
+    @Resource
+    private ReportBusinessActivityDetailMapper detailMapper;
 
     @Override
     public ReportCountDTO getReportCount(Long reportId) {
@@ -521,30 +519,38 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
             return Response.success(Collections.EMPTY_LIST);
         }
-        List<ReportActivityInfoQueryRequest> activityInfoQueryRequests = sceneBusinessActivityRefEntities.stream().map(sceneBusinessActivityRef -> genActivityInfo(sceneBusinessActivityRef.getBusinessActivityId(), reportEntity)).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(activityInfoQueryRequests)) {
+        // 首先获取到业务活动id
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> reportWrapper = new LambdaQueryWrapper<>();
+        reportWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
+        reportWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, reportEntity.getSceneId());
+        reportWrapper.in(ReportBusinessActivityDetailEntity::getBusinessActivityId, sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).collect(Collectors.toList()));
+        List<ReportBusinessActivityDetailEntity> reportBusinessActivityDetailEntities = detailMapper.selectList(reportWrapper);
+        if (CollectionUtils.isEmpty(reportBusinessActivityDetailEntities)) {
             return Response.success(Collections.EMPTY_LIST);
         }
-        List<ReportActivityResponse> activityResponseList = this.activityService.getActivityWithMetricsByIdForReports(activityInfoQueryRequests);
 
-        if (CollectionUtils.isEmpty(activityResponseList)) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
+        List<ActivityResponse> activityResponses = reportBusinessActivityDetailEntities.stream().map(reportBusinessActivityDetailEntity -> {
+            ActivityResponse activityResponse = JSON.parseObject(reportBusinessActivityDetailEntity.getReportJson(), ActivityResponse.class);
+            return activityResponse;
+        }).collect(Collectors.toList());
 
         ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
-        List<ReportAppPerformanceOut> list = activityResponseList.get(0).getTopology().getNodes().stream().map(node -> {
-            ReportAppPerformanceOut reportAppPerformanceOut = new ReportAppPerformanceOut();
-            reportAppPerformanceOut.setAppName(node.getLabel());
-            reportAppPerformanceOut.setTotalRequest(node.getServiceAllTotalCount() != null ? BigDecimal.valueOf(node.getServiceAllTotalCount()) : new BigDecimal(0));
-            reportAppPerformanceOut.setAvgTps(node.getServiceAllTotalTps() != null ? BigDecimal.valueOf(node.getServiceAllTotalTps()) : new BigDecimal(0));
-            reportAppPerformanceOut.setAvgRt(node.getServiceRt() != null ? BigDecimal.valueOf(node.getServiceRt()) : new BigDecimal(0));
-            reportAppPerformanceOut.setMaxRt(node.getServiceMaxRt() != null ? BigDecimal.valueOf(node.getServiceMaxRt()) : new BigDecimal(0));
-            reportAppPerformanceOut.setMinRt(node.getServiceMinRt() != null ? BigDecimal.valueOf(node.getServiceMinRt()) : new BigDecimal(0));
-            reportAppPerformanceOut.setSuccessRate(node.getServiceAllSuccessRate() != null ? BigDecimal.valueOf(node.getServiceAllSuccessRate()) : new BigDecimal(0));
-            reportAppPerformanceOut.setSa(reportDetailOutput.getSa());
-            reportAppPerformanceOut.setStartTime(reportEntity.getStartTime());
-            return reportAppPerformanceOut;
-        }).collect(Collectors.toList());
+        List<ReportAppPerformanceOut> list = new ArrayList<>();
+        for (ActivityResponse activityResponse : activityResponses) {
+            for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponse.getTopology().getNodes()) {
+                ReportAppPerformanceOut reportAppPerformanceOut = new ReportAppPerformanceOut();
+                reportAppPerformanceOut.setAppName(node.getLabel());
+                reportAppPerformanceOut.setTotalRequest(node.getServiceAllTotalCount() != null ? BigDecimal.valueOf(node.getServiceAllTotalCount()) : new BigDecimal(0));
+                reportAppPerformanceOut.setAvgTps(node.getServiceAllTotalTps() != null ? BigDecimal.valueOf(node.getServiceAllTotalTps()) : new BigDecimal(0));
+                reportAppPerformanceOut.setAvgRt(node.getServiceRt() != null ? BigDecimal.valueOf(node.getServiceRt()) : new BigDecimal(0));
+                reportAppPerformanceOut.setMaxRt(node.getServiceMaxRt() != null ? BigDecimal.valueOf(node.getServiceMaxRt()) : new BigDecimal(0));
+                reportAppPerformanceOut.setMinRt(node.getServiceMinRt() != null ? BigDecimal.valueOf(node.getServiceMinRt()) : new BigDecimal(0));
+                reportAppPerformanceOut.setSuccessRate(node.getServiceAllSuccessRate() != null ? BigDecimal.valueOf(node.getServiceAllSuccessRate()) : new BigDecimal(0));
+                reportAppPerformanceOut.setSa(reportDetailOutput.getSa());
+                reportAppPerformanceOut.setStartTime(reportEntity.getStartTime());
+                list.add(reportAppPerformanceOut);
+            }
+        }
         return Response.success(list);
     }
 

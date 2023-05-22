@@ -595,6 +595,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             ReportAppInstancePerformanceOut reportAppInstancePerformanceOut = new ReportAppInstancePerformanceOut();
             reportAppInstancePerformanceOut.setAppName(machine.getApplicationName());
             reportAppInstancePerformanceOut.setInstanceName(machine.getMachineIp());
+            if (machine.getTpsTarget() == null) {
+                return reportAppInstancePerformanceOut;
+            }
             reportAppInstancePerformanceOut.setAvgCpuUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getCpu())));
             reportAppInstancePerformanceOut.setAvgMemUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMemory())));
             reportAppInstancePerformanceOut.setAvgDiskIoWaitRate(getAvg(Arrays.asList(machine.getTpsTarget().getIo())));

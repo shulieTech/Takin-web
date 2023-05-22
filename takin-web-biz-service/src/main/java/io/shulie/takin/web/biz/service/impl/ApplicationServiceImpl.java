@@ -847,8 +847,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
         for (ApplicationListResult app : applicationList) {
             ApplicationInfo result = applicationDAO.getStatus(app.getApplicationName());
-            long agentNum = result.getAgentNum();
-            if (result != null && (agentNum != 0 || (errorApplicationIdSet.contains(app.getApplicationId())))) {
+            if (result != null && (result.getAgentNum() != 0 || (errorApplicationIdSet.contains(app.getApplicationId())))) {
                 String agentErrorInfo = result.getAgentErrorInfo();
                 //不知道异常和Ip就别展示出来误导了
                 if (StringUtils.isBlank(agentErrorInfo)) {

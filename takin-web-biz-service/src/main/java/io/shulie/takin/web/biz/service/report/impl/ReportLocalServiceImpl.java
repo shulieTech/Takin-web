@@ -595,6 +595,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             ReportAppInstancePerformanceOut reportAppInstancePerformanceOut = new ReportAppInstancePerformanceOut();
             reportAppInstancePerformanceOut.setAppName(machine.getApplicationName());
             reportAppInstancePerformanceOut.setInstanceName(machine.getMachineIp());
+            reportAppInstancePerformanceOut.setGcCount(Optional.ofNullable(machine.getGcCount()).orElse(BigDecimal.ZERO).intValue());
+            reportAppInstancePerformanceOut.setGcCost(Optional.ofNullable(machine.getGcCost()).orElse(BigDecimal.ZERO));
             if (machine.getTpsTarget() == null) {
                 return reportAppInstancePerformanceOut;
             }
@@ -602,8 +604,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             reportAppInstancePerformanceOut.setAvgMemUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMemory())));
             reportAppInstancePerformanceOut.setAvgDiskIoWaitRate(getAvg(Arrays.asList(machine.getTpsTarget().getIo())));
             reportAppInstancePerformanceOut.setAvgNetUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMbps())));
-            reportAppInstancePerformanceOut.setGcCount(Optional.ofNullable(machine.getGcCount()).orElse(BigDecimal.ZERO).intValue());
-            reportAppInstancePerformanceOut.setGcCost(Optional.ofNullable(machine.getGcCost()).orElse(BigDecimal.ZERO));
             reportAppInstancePerformanceOut.setAvgTps(getAvg(Arrays.stream(machine.getTpsTarget().getTps()).map(BigDecimal::valueOf).collect(Collectors.toList())));
             return reportAppInstancePerformanceOut;
         }).collect(Collectors.toList());

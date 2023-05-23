@@ -648,7 +648,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     reportAppInstancePerformanceOut.setAvgNetUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMbps())));
                 }
                 if (machine.getTpsTarget().getTps() != null) {
-                    reportAppInstancePerformanceOut.setAvgTps(getAvg(Arrays.stream(machine.getTpsTarget().getTps()).map(BigDecimal::valueOf).collect(Collectors.toList())));
+                    reportAppInstancePerformanceOut.setAvgTps(getAvg(Arrays.stream(machine.getTpsTarget().getTps()).filter(a -> Objects.nonNull(a)).map(BigDecimal::valueOf).collect(Collectors.toList())));
                 }
                 return reportAppInstancePerformanceOut;
             }).collect(Collectors.toList());

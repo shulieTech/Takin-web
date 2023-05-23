@@ -676,7 +676,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (count.compareTo(new BigDecimal(0)) == 0) {
             return new BigDecimal(0);
         }
-        return total.divide(count, 4, RoundingMode.HALF_UP);
+        return total.divide(count, 4, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
     }
 
     private List<SceneBusinessActivityRefEntity> getSceneBusinessActivityRefEntities(Long sceneId) {
@@ -1021,9 +1021,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     }
                     if (array.getGcCost() != null) {
                         gcCost[i] = (gcCost[i] != null ? gcCost[i] : ZERO).add(array.getGcCost()[i]);
+                    }else {
+                        gcCost[i] = ZERO;
                     }
                     if (array.getGcCount() != null) {
                         gcCount[i] = (gcCount[i] != null ? gcCount[i] : ZERO).add(array.getGcCount()[i]);
+                    }else {
+                        gcCount[i] = ZERO;
                     }
                 }
                 count++;
@@ -1047,9 +1051,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 }
                 if (gcCost != null && gcCost[i] != null) {
                     gcCost[i] = avg(gcCost[i], count);
+                }else {
+                    gcCost[i] = ZERO;
                 }
                 if (gcCount != null && gcCount[i] != null) {
                     gcCount[i] = avg(gcCount[i], count);
+                }else {
+                    gcCount[i] = ZERO;
                 }
             }
             MachineDetailDTO.MachineTPSTargetDTO tpsTargetDTO = new MachineDetailDTO().new MachineTPSTargetDTO();

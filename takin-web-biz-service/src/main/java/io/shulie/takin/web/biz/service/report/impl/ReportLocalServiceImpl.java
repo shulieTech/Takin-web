@@ -420,7 +420,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         // 首先获取到业务活动id
         LambdaQueryWrapper<ReportBusinessActivityDetailEntity> reportWrapper = new LambdaQueryWrapper<>();
-        reportWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, nodeCompareTargetInput.getReportIds());
+        reportWrapper.in(ReportBusinessActivityDetailEntity::getReportId, nodeCompareTargetInput.getReportIds());
         reportWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, nodeCompareTargetInput.getSceneId());
         reportWrapper.eq(ReportBusinessActivityDetailEntity::getBusinessActivityId, nodeCompareTargetInput.getActivityId());
         List<ReportBusinessActivityDetailEntity> reportBusinessActivityDetailEntities = detailMapper.selectList(reportWrapper);

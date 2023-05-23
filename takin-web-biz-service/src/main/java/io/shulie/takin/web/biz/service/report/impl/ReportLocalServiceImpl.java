@@ -635,11 +635,21 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 if (machine.getTpsTarget() == null) {
                     return reportAppInstancePerformanceOut;
                 }
-                reportAppInstancePerformanceOut.setAvgCpuUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getCpu())));
-                reportAppInstancePerformanceOut.setAvgMemUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMemory())));
-                reportAppInstancePerformanceOut.setAvgDiskIoWaitRate(getAvg(Arrays.asList(machine.getTpsTarget().getIo())));
-                reportAppInstancePerformanceOut.setAvgNetUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMbps())));
-                reportAppInstancePerformanceOut.setAvgTps(getAvg(Arrays.stream(machine.getTpsTarget().getTps()).map(BigDecimal::valueOf).collect(Collectors.toList())));
+                if (machine.getTpsTarget().getCpu() != null) {
+                    reportAppInstancePerformanceOut.setAvgCpuUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getCpu())));
+                }
+                if (machine.getTpsTarget().getMemory() != null) {
+                    reportAppInstancePerformanceOut.setAvgMemUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMemory())));
+                }
+                if (machine.getTpsTarget().getIo() != null) {
+                    reportAppInstancePerformanceOut.setAvgDiskIoWaitRate(getAvg(Arrays.asList(machine.getTpsTarget().getIo())));
+                }
+                if (machine.getTpsTarget().getMbps() != null) {
+                    reportAppInstancePerformanceOut.setAvgNetUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMbps())));
+                }
+                if (machine.getTpsTarget().getTps() != null) {
+                    reportAppInstancePerformanceOut.setAvgTps(getAvg(Arrays.stream(machine.getTpsTarget().getTps()).map(BigDecimal::valueOf).collect(Collectors.toList())));
+                }
                 return reportAppInstancePerformanceOut;
             }).collect(Collectors.toList());
             return Response.success(reportAppInstancePerformanceOuts);

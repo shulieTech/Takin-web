@@ -407,48 +407,53 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     //压测报告节点rt比较
     @Override
     public Response<NodeCompareTargetOut> getLtNodeCompare(NodeCompareTargetInput nodeCompareTargetInput) {
-        //获取报告信息
-        List<ReportEntity> reportEntityList = this.reportService.getReportListByReportIds(nodeCompareTargetInput.getReportIds());
-        if (CollectionUtils.isEmpty(reportEntityList)) {
-            return Response.fail("报告不存在");
-        }
-        //根据业务活动id获取节点信息
-        List<ReportActivityInfoQueryRequest> activityInfoQueryRequests = reportEntityList.stream().map(reportEntity -> genActivityInfo(nodeCompareTargetInput.getActivityId(), reportEntity)).collect(Collectors.toList());
-        //根据业务活动id，报告id获取压测时候节点的信息
-        if (CollectionUtils.isEmpty(activityInfoQueryRequests)) {
-            return Response.success(new NodeCompareTargetOut());
-        }
-        // 首先获取到业务活动id
-        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> reportWrapper = new LambdaQueryWrapper<>();
-        reportWrapper.in(ReportBusinessActivityDetailEntity::getReportId, nodeCompareTargetInput.getReportIds());
-        reportWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, nodeCompareTargetInput.getSceneId());
-        reportWrapper.eq(ReportBusinessActivityDetailEntity::getBusinessActivityId, nodeCompareTargetInput.getActivityId());
-        List<ReportBusinessActivityDetailEntity> reportBusinessActivityDetailEntities = detailMapper.selectList(reportWrapper);
-        if (CollectionUtils.isEmpty(reportBusinessActivityDetailEntities)) {
-            return Response.success(new NodeCompareTargetOut());
-        }
+        try {
+            //获取报告信息
+            List<ReportEntity> reportEntityList = this.reportService.getReportListByReportIds(nodeCompareTargetInput.getReportIds());
+            if (CollectionUtils.isEmpty(reportEntityList)) {
+                return Response.fail("报告不存在");
+            }
+            //根据业务活动id获取节点信息
+            List<ReportActivityInfoQueryRequest> activityInfoQueryRequests = reportEntityList.stream().map(reportEntity -> genActivityInfo(nodeCompareTargetInput.getActivityId(), reportEntity)).collect(Collectors.toList());
+            //根据业务活动id，报告id获取压测时候节点的信息
+            if (CollectionUtils.isEmpty(activityInfoQueryRequests)) {
+                return Response.success(new NodeCompareTargetOut());
+            }
+            // 首先获取到业务活动id
+            LambdaQueryWrapper<ReportBusinessActivityDetailEntity> reportWrapper = new LambdaQueryWrapper<>();
+            reportWrapper.in(ReportBusinessActivityDetailEntity::getReportId, nodeCompareTargetInput.getReportIds());
+            reportWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, nodeCompareTargetInput.getSceneId());
+            reportWrapper.eq(ReportBusinessActivityDetailEntity::getBusinessActivityId, nodeCompareTargetInput.getActivityId());
+            List<ReportBusinessActivityDetailEntity> reportBusinessActivityDetailEntities = detailMapper.selectList(reportWrapper);
+            if (CollectionUtils.isEmpty(reportBusinessActivityDetailEntities)) {
+                return Response.success(new NodeCompareTargetOut());
+            }
 
-        List<ReportActivityResponse> activityResponses = reportBusinessActivityDetailEntities.stream().map(reportBusinessActivityDetailEntity -> {
-            ActivityResponse activityResponse = JSON.parseObject(reportBusinessActivityDetailEntity.getReportJson(), ActivityResponse.class);
-            ReportActivityResponse response = BeanUtil.copyProperties(activityResponse, ReportActivityResponse.class);
-            return response;
-        }).collect(Collectors.toList());
+            List<ReportActivityResponse> activityResponses = reportBusinessActivityDetailEntities.stream().map(reportBusinessActivityDetailEntity -> {
+                ActivityResponse activityResponse = JSON.parseObject(reportBusinessActivityDetailEntity.getReportJson(), ActivityResponse.class);
+                ReportActivityResponse response = BeanUtil.copyProperties(activityResponse, ReportActivityResponse.class);
+                return response;
+            }).collect(Collectors.toList());
 
-        //统计转换压测时候节点的信息
-        if (CollectionUtils.isEmpty(activityResponses)) {
-            return Response.success(new NodeCompareTargetOut());
+            //统计转换压测时候节点的信息
+            if (CollectionUtils.isEmpty(activityResponses)) {
+                return Response.success(new NodeCompareTargetOut());
+            }
+            NodeCompareTargetOut nodeCompareTargetOut = new NodeCompareTargetOut();
+            nodeCompareTargetOut.setReportIds(nodeCompareTargetInput.getReportIds());
+            NodeCompareTargetOut.TopologyNode root = new NodeCompareTargetOut.TopologyNode();
+            ReportActivityResponse response = activityResponses.get(0);
+            root.setId(response.getLinkId());
+            root.setMethodName(response.getMethod());
+            root.setService(response.getServiceName());
+            root.setLabel(response.getApplicationName());
+            Map<String, NodeCompareTargetOut.TopologyNode> topologyNode = genNodeCompareTargetOut(activityResponses);
+            nodeCompareTargetOut.setNode(genNodeTree(root, topologyNode));
+            return Response.success(nodeCompareTargetOut);
+        } catch (Exception e) {
+            log.error("getLtNodeCompare error:", e);
+            return Response.fail("getLtNodeCompare error");
         }
-        NodeCompareTargetOut nodeCompareTargetOut = new NodeCompareTargetOut();
-        nodeCompareTargetOut.setReportIds(nodeCompareTargetInput.getReportIds());
-        NodeCompareTargetOut.TopologyNode root = new NodeCompareTargetOut.TopologyNode();
-        ReportActivityResponse response = activityResponses.get(0);
-        root.setId(response.getLinkId());
-        root.setMethodName(response.getMethod());
-        root.setService(response.getServiceName());
-        root.setLabel(response.getApplicationName());
-        Map<String, NodeCompareTargetOut.TopologyNode> topologyNode = genNodeCompareTargetOut(activityResponses);
-        nodeCompareTargetOut.setNode(genNodeTree(root, topologyNode));
-        return Response.success(nodeCompareTargetOut);
     }
 
     private static Map<String, NodeCompareTargetOut.TopologyNode> genNodeCompareTargetOut(List<ReportActivityResponse> activityResponseList) {
@@ -524,52 +529,57 @@ public class ReportLocalServiceImpl implements ReportLocalService {
      */
     @Override
     public Response<List<ReportAppPerformanceOut>> getReortAppPerformanceList(Long reportId) {
-        ReportEntity reportEntity = getReportEntity(reportId);
-        if (reportEntity == null) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-        List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
-
-        if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-        // 首先获取到业务活动id
-        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> reportWrapper = new LambdaQueryWrapper<>();
-        reportWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
-        reportWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, reportEntity.getSceneId());
-        reportWrapper.in(ReportBusinessActivityDetailEntity::getBusinessActivityId, sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).collect(Collectors.toList()));
-        List<ReportBusinessActivityDetailEntity> reportBusinessActivityDetailEntities = detailMapper.selectList(reportWrapper);
-        if (CollectionUtils.isEmpty(reportBusinessActivityDetailEntities)) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-
-        List<ActivityResponse> activityResponses = reportBusinessActivityDetailEntities.stream().map(reportBusinessActivityDetailEntity -> {
-            ActivityResponse activityResponse = JSON.parseObject(reportBusinessActivityDetailEntity.getReportJson(), ActivityResponse.class);
-            return activityResponse;
-        }).collect(Collectors.toList());
-
-        ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
-        List<ReportAppPerformanceOut> list = new ArrayList<>();
-        for (ActivityResponse activityResponse : activityResponses) {
-            for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponse.getTopology().getNodes()) {
-                //非app节点就跳过去
-                if (!node.getNodeType().getType().equalsIgnoreCase("app")) {
-                    continue;
-                }
-                ReportAppPerformanceOut reportAppPerformanceOut = new ReportAppPerformanceOut();
-                reportAppPerformanceOut.setAppName(node.getLabel());
-                reportAppPerformanceOut.setTotalRequest(node.getServiceAllTotalCount() != null ? BigDecimal.valueOf(node.getServiceAllTotalCount()) : new BigDecimal(0));
-                reportAppPerformanceOut.setAvgTps(node.getServiceAllTotalTps() != null ? BigDecimal.valueOf(node.getServiceAllTotalTps()) : new BigDecimal(0));
-                reportAppPerformanceOut.setAvgRt(node.getServiceRt() != null ? BigDecimal.valueOf(node.getServiceRt()) : new BigDecimal(0));
-                reportAppPerformanceOut.setMaxRt(node.getServiceMaxRt() != null ? BigDecimal.valueOf(node.getServiceMaxRt()) : new BigDecimal(0));
-                reportAppPerformanceOut.setMinRt(node.getServiceMinRt() != null ? BigDecimal.valueOf(node.getServiceMinRt()) : new BigDecimal(0));
-                reportAppPerformanceOut.setSuccessRate(node.getServiceAllSuccessRate() != null ? BigDecimal.valueOf(node.getServiceAllSuccessRate() * 100) : new BigDecimal(0));
-                reportAppPerformanceOut.setSa(reportDetailOutput.getSa());
-                reportAppPerformanceOut.setStartTime(reportEntity.getStartTime());
-                list.add(reportAppPerformanceOut);
+        try {
+            ReportEntity reportEntity = getReportEntity(reportId);
+            if (reportEntity == null) {
+                return Response.success(Collections.EMPTY_LIST);
             }
+            List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
+
+            if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            // 首先获取到业务活动id
+            LambdaQueryWrapper<ReportBusinessActivityDetailEntity> reportWrapper = new LambdaQueryWrapper<>();
+            reportWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
+            reportWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, reportEntity.getSceneId());
+            reportWrapper.in(ReportBusinessActivityDetailEntity::getBusinessActivityId, sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).collect(Collectors.toList()));
+            List<ReportBusinessActivityDetailEntity> reportBusinessActivityDetailEntities = detailMapper.selectList(reportWrapper);
+            if (CollectionUtils.isEmpty(reportBusinessActivityDetailEntities)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+
+            List<ActivityResponse> activityResponses = reportBusinessActivityDetailEntities.stream().map(reportBusinessActivityDetailEntity -> {
+                ActivityResponse activityResponse = JSON.parseObject(reportBusinessActivityDetailEntity.getReportJson(), ActivityResponse.class);
+                return activityResponse;
+            }).collect(Collectors.toList());
+
+            ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
+            List<ReportAppPerformanceOut> list = new ArrayList<>();
+            for (ActivityResponse activityResponse : activityResponses) {
+                for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponse.getTopology().getNodes()) {
+                    //非app节点就跳过去
+                    if (!node.getNodeType().getType().equalsIgnoreCase("app")) {
+                        continue;
+                    }
+                    ReportAppPerformanceOut reportAppPerformanceOut = new ReportAppPerformanceOut();
+                    reportAppPerformanceOut.setAppName(node.getLabel());
+                    reportAppPerformanceOut.setTotalRequest(node.getServiceAllTotalCount() != null ? BigDecimal.valueOf(node.getServiceAllTotalCount()) : new BigDecimal(0));
+                    reportAppPerformanceOut.setAvgTps(node.getServiceAllTotalTps() != null ? BigDecimal.valueOf(node.getServiceAllTotalTps()) : new BigDecimal(0));
+                    reportAppPerformanceOut.setAvgRt(node.getServiceRt() != null ? BigDecimal.valueOf(node.getServiceRt()) : new BigDecimal(0));
+                    reportAppPerformanceOut.setMaxRt(node.getServiceMaxRt() != null ? BigDecimal.valueOf(node.getServiceMaxRt()) : new BigDecimal(0));
+                    reportAppPerformanceOut.setMinRt(node.getServiceMinRt() != null ? BigDecimal.valueOf(node.getServiceMinRt()) : new BigDecimal(0));
+                    reportAppPerformanceOut.setSuccessRate(node.getServiceAllSuccessRate() != null ? BigDecimal.valueOf(node.getServiceAllSuccessRate() * 100) : new BigDecimal(0));
+                    reportAppPerformanceOut.setSa(reportDetailOutput.getSa());
+                    reportAppPerformanceOut.setStartTime(reportEntity.getStartTime());
+                    list.add(reportAppPerformanceOut);
+                }
+            }
+            return Response.success(list);
+        }catch (Exception e){
+            log.error("getReortAppPerformanceList error:", e);
         }
-        return Response.success(list);
+        return Response.success(Collections.EMPTY_LIST);
     }
 
     /**
@@ -580,58 +590,63 @@ public class ReportLocalServiceImpl implements ReportLocalService {
      */
     @Override
     public Response<List<ReportAppInstancePerformanceOut>> getReortAppInstancePerformanceList(Long reportId) {
-        ReportEntity reportEntity = getReportEntity(reportId);
-        if (reportEntity == null) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-        List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
-
-        if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-        List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
-
-        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).in(ApplicationMntEntity::getApplicationId, appIds));
-
-        if (CollectionUtils.isEmpty(applicationMntEntities)) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-        List<MachineDetailDTO> machineDetailDTOList = new ArrayList<>();
-        for (ApplicationMntEntity applicationMntEntity : applicationMntEntities) {
-            ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
-            queryParam.setReportId(reportId);
-            queryParam.setApplicationName(applicationMntEntity.getApplicationName());
-            queryParam.setCurrent(0);
-            queryParam.setCurrentPage(9999);
-            List<MachineDetailDTO> machineDetailDTOPageInfo = listMachineDetailByReportId(queryParam);
-            if (CollectionUtils.isEmpty(machineDetailDTOPageInfo)) {
-                continue;
+        try{
+            ReportEntity reportEntity = getReportEntity(reportId);
+            if (reportEntity == null) {
+                return Response.success(Collections.EMPTY_LIST);
             }
-            for (MachineDetailDTO machineDetailDTO : machineDetailDTOPageInfo) {
-                MachineDetailDTO machineDetail = getMachineDetail(reportId, machineDetailDTO.getApplicationName(), machineDetailDTO.getMachineIp());
-                if (Objects.isNull(machineDetail)) {
+            List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
+
+            if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
+
+            List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).in(ApplicationMntEntity::getApplicationId, appIds));
+
+            if (CollectionUtils.isEmpty(applicationMntEntities)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            List<MachineDetailDTO> machineDetailDTOList = new ArrayList<>();
+            for (ApplicationMntEntity applicationMntEntity : applicationMntEntities) {
+                ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
+                queryParam.setReportId(reportId);
+                queryParam.setApplicationName(applicationMntEntity.getApplicationName());
+                queryParam.setCurrent(0);
+                queryParam.setCurrentPage(9999);
+                List<MachineDetailDTO> machineDetailDTOPageInfo = listMachineDetailByReportId(queryParam);
+                if (CollectionUtils.isEmpty(machineDetailDTOPageInfo)) {
                     continue;
                 }
-                machineDetailDTOList.add(machineDetail);
+                for (MachineDetailDTO machineDetailDTO : machineDetailDTOPageInfo) {
+                    MachineDetailDTO machineDetail = getMachineDetail(reportId, machineDetailDTO.getApplicationName(), machineDetailDTO.getMachineIp());
+                    if (Objects.isNull(machineDetail)) {
+                        continue;
+                    }
+                    machineDetailDTOList.add(machineDetail);
+                }
             }
-        }
-        List<ReportAppInstancePerformanceOut> reportAppInstancePerformanceOuts = machineDetailDTOList.stream().filter(Objects::nonNull).map(machine -> {
-            ReportAppInstancePerformanceOut reportAppInstancePerformanceOut = new ReportAppInstancePerformanceOut();
-            reportAppInstancePerformanceOut.setAppName(machine.getApplicationName());
-            reportAppInstancePerformanceOut.setInstanceName(machine.getMachineIp());
-            reportAppInstancePerformanceOut.setGcCount(Optional.ofNullable(machine.getGcCount()).orElse(BigDecimal.ZERO).intValue());
-            reportAppInstancePerformanceOut.setGcCost(Optional.ofNullable(machine.getGcCost()).orElse(BigDecimal.ZERO));
-            if (machine.getTpsTarget() == null) {
+            List<ReportAppInstancePerformanceOut> reportAppInstancePerformanceOuts = machineDetailDTOList.stream().filter(Objects::nonNull).map(machine -> {
+                ReportAppInstancePerformanceOut reportAppInstancePerformanceOut = new ReportAppInstancePerformanceOut();
+                reportAppInstancePerformanceOut.setAppName(machine.getApplicationName());
+                reportAppInstancePerformanceOut.setInstanceName(machine.getMachineIp());
+                reportAppInstancePerformanceOut.setGcCount(Optional.ofNullable(machine.getGcCount()).orElse(BigDecimal.ZERO).intValue());
+                reportAppInstancePerformanceOut.setGcCost(Optional.ofNullable(machine.getGcCost()).orElse(BigDecimal.ZERO));
+                if (machine.getTpsTarget() == null) {
+                    return reportAppInstancePerformanceOut;
+                }
+                reportAppInstancePerformanceOut.setAvgCpuUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getCpu())));
+                reportAppInstancePerformanceOut.setAvgMemUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMemory())));
+                reportAppInstancePerformanceOut.setAvgDiskIoWaitRate(getAvg(Arrays.asList(machine.getTpsTarget().getIo())));
+                reportAppInstancePerformanceOut.setAvgNetUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMbps())));
+                reportAppInstancePerformanceOut.setAvgTps(getAvg(Arrays.stream(machine.getTpsTarget().getTps()).map(BigDecimal::valueOf).collect(Collectors.toList())));
                 return reportAppInstancePerformanceOut;
-            }
-            reportAppInstancePerformanceOut.setAvgCpuUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getCpu())));
-            reportAppInstancePerformanceOut.setAvgMemUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMemory())));
-            reportAppInstancePerformanceOut.setAvgDiskIoWaitRate(getAvg(Arrays.asList(machine.getTpsTarget().getIo())));
-            reportAppInstancePerformanceOut.setAvgNetUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMbps())));
-            reportAppInstancePerformanceOut.setAvgTps(getAvg(Arrays.stream(machine.getTpsTarget().getTps()).map(BigDecimal::valueOf).collect(Collectors.toList())));
-            return reportAppInstancePerformanceOut;
-        }).collect(Collectors.toList());
-        return Response.success(reportAppInstancePerformanceOuts);
+            }).collect(Collectors.toList());
+            return Response.success(reportAppInstancePerformanceOuts);
+        }catch (Exception e){
+            log.error("getReortAppInstancePerformanceList error:", e);
+        }
+        return Response.success(Collections.EMPTY_LIST);
     }
 
     private List<MachineDetailDTO> listMachineDetailByReportId(ReportLocalQueryParam queryParam) {
@@ -747,35 +762,40 @@ public class ReportLocalServiceImpl implements ReportLocalService {
      */
     @Override
     public Response<List<MachineDetailDTO>> getReportAppInstanceTrendMap(Long reportId) {
-        ReportEntity reportEntity = getReportEntity(reportId);
-        if (reportEntity == null) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-        List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
+        try {
+            ReportEntity reportEntity = getReportEntity(reportId);
+            if (reportEntity == null) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
 
-        if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-        List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
 
-        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).in(ApplicationMntEntity::getApplicationId, appIds));
-        List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(appNames)) {
-            return Response.success(Collections.EMPTY_LIST);
+            List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).in(ApplicationMntEntity::getApplicationId, appIds));
+            List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(appNames)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            ApplicationNodeQueryDTO applicationQueryDTO = new ApplicationNodeQueryDTO();
+            applicationQueryDTO.setAppNames(String.join(",", appNames));
+            applicationQueryDTO.setCurrentPage(0);
+            applicationQueryDTO.setPageSize(9999);
+            PagingList<ApplicationNodeDTO> applicationNodePage = applicationClient.pageApplicationNodes(applicationQueryDTO);
+            if (CollectionUtils.isEmpty(applicationNodePage.getList())) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            List<MachineDetailDTO> list = new ArrayList<>();
+            for (ApplicationNodeDTO applicationNodeDTO : applicationNodePage.getList()) {
+                list.add(getMachineDetailByAgentId(reportId, applicationNodeDTO.getAppName(), applicationNodeDTO.getAgentId()));
+            }
+            return Response.success(list);
+        }catch (Exception e){
+            log.error("getReportAppInstanceTrendMap error", e);
         }
-        ApplicationNodeQueryDTO applicationQueryDTO = new ApplicationNodeQueryDTO();
-        applicationQueryDTO.setAppNames(String.join(",", appNames));
-        applicationQueryDTO.setCurrentPage(0);
-        applicationQueryDTO.setPageSize(9999);
-        PagingList<ApplicationNodeDTO> applicationNodePage = applicationClient.pageApplicationNodes(applicationQueryDTO);
-        if (CollectionUtils.isEmpty(applicationNodePage.getList())) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-        List<MachineDetailDTO> list = new ArrayList<>();
-        for (ApplicationNodeDTO applicationNodeDTO : applicationNodePage.getList()) {
-            list.add(getMachineDetailByAgentId(reportId, applicationNodeDTO.getAppName(), applicationNodeDTO.getAgentId()));
-        }
-        return Response.success(list);
+        return Response.success(Collections.EMPTY_LIST);
     }
 
     private MachineDetailDTO getMachineDetailByAgentId(Long reportId, String applicationName, String agentId) {

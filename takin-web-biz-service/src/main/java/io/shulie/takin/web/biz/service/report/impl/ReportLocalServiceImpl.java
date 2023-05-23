@@ -971,26 +971,56 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 }
                 //计算累计值
                 for (int i = 0; i < time.length; i++) {
-                    tps[i] = (tps[i] != null ? tps[i] : 0) + array.getTps()[i];
-                    cpu[i] = (cpu[i] != null ? cpu[i] : ZERO).add(array.getCpu()[i]);
-                    loading[i] = ((loading[i] != null) ? loading[i] : ZERO).add(array.getLoading()[i]);
-                    memory[i] = (memory[i] != null ? memory[i] : ZERO).add(array.getMemory()[i]);
-                    io[i] = (io[i] != null ? io[i] : ZERO).add(array.getIo()[i]);
-                    network[i] = (network[i] != null ? network[i] : ZERO).add(array.getNetwork()[i]);
-                    gcCost[i] = (gcCost[i] != null ? gcCost[i] : ZERO).add(array.getGcCost()[i]);
-                    gcCount[i] = (gcCount[i] != null ? gcCount[i] : ZERO).add(array.getGcCount()[i]);
+                    if (array.getTps()[i] == null) {
+                        tps[i] = (tps[i] != null ? tps[i] : 0) + array.getTps()[i];
+                    }
+                    if (array.getCpu()[i] != null) {
+                        cpu[i] = (cpu[i] != null ? cpu[i] : ZERO).add(array.getCpu()[i]);
+                    }
+                    if (array.getLoading()[i] != null) {
+                        loading[i] = (loading[i] != null ? loading[i] : ZERO).add(array.getLoading()[i]);
+                    }
+                    if (array.getMemory()[i] != null) {
+                        memory[i] = (memory[i] != null ? memory[i] : ZERO).add(array.getMemory()[i]);
+                    }
+                    if (array.getIo()[i] != null) {
+                        io[i] = (io[i] != null ? io[i] : ZERO).add(array.getIo()[i]);
+                    }
+                    if (array.getNetwork()[i] != null) {
+                        network[i] = (network[i] != null ? network[i] : ZERO).add(array.getNetwork()[i]);
+                    }
+                    if (array.getGcCost() != null) {
+                        gcCost[i] = (gcCost[i] != null ? gcCost[i] : ZERO).add(array.getGcCost()[i]);
+                    }
+                    if (array.getGcCount() != null) {
+                        gcCount[i] = (gcCount[i] != null ? gcCount[i] : ZERO).add(array.getGcCount()[i]);
+                    }
                 }
                 count++;
             }
             //tps计算累加值， 其他计算平均值
             for (int i = 0; i < time.length; i++) {
-                cpu[i] = avg(cpu[i], count);
-                loading[i] = avg(loading[i], count);
-                memory[i] = avg(memory[i], count);
-                io[i] = avg(io[i], count);
-                network[i] = avg(network[i], count);
-                gcCost[i] = avg(gcCost[i], count);
-                gcCount[i] = avg(gcCount[i], count);
+                if (cpu != null && cpu[i] != null) {
+                    cpu[i] = avg(cpu[i], count);
+                }
+                if (loading != null && loading[i] != null) {
+                    loading[i] = avg(loading[i], count);
+                }
+                if (memory != null && memory[i] != null) {
+                    memory[i] = avg(memory[i], count);
+                }
+                if (io != null && io[i] != null) {
+                    io[i] = avg(io[i], count);
+                }
+                if (network != null && network[i] != null) {
+                    network[i] = avg(network[i], count);
+                }
+                if (gcCost != null && gcCost[i] != null) {
+                    gcCost[i] = avg(gcCost[i], count);
+                }
+                if (gcCount != null && gcCount[i] != null) {
+                    gcCount[i] = avg(gcCount[i], count);
+                }
             }
             MachineDetailDTO.MachineTPSTargetDTO tpsTargetDTO = new MachineDetailDTO().new MachineTPSTargetDTO();
             tpsTargetDTO.setTime(time);
@@ -1004,7 +1034,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             tpsTargetDTO.setGcCount(gcCount);
             dto.setTpsTarget(tpsTargetDTO);
         } catch (Exception e) {
-            log.error("Parse PtsConfig Error:, error={}", e.getMessage());
+            log.error("Parse PtsConfig Error:, error={}", e.getMessage(), e);
         }
     }
 

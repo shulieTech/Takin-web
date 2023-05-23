@@ -30,10 +30,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -192,6 +189,10 @@ public class SummaryService {
                 searchBaseFieldAndAlias.put("mem_rate", "mem_rate");
                 searchBaseFieldAndAlias.put("iowait", "iowait");
                 searchBaseFieldAndAlias.put("net_bandwidth_rate", "net_bandwidth_rate");
+                searchBaseFieldAndAlias.put("young_gc_count", "young_gc_count");
+                searchBaseFieldAndAlias.put("young_gc_cost", "young_gc_cost");
+                searchBaseFieldAndAlias.put("full_gc_count", "full_gc_count");
+                searchBaseFieldAndAlias.put("full_gc_cost", "full_gc_cost");
                 searchBaseQuery.setFieldAndAlias(searchBaseFieldAndAlias);
                 searchBaseQuery.setStartTime(minTime);
                 searchBaseQuery.setEndTime(maxTime);
@@ -239,23 +240,27 @@ public class SummaryService {
                     continue;
                 }
                 if (currentIndex < j) {
-                    double cpu = bases.subList(currentIndex, j).stream().filter(data -> data.getCpuRate() != null)
-                        .mapToDouble(BaseServerResult::getCpuRate).average().orElse(0D);
-                    double loading = bases.subList(currentIndex, j).stream().filter(data -> data.getCpuLoad() != null)
-                        .mapToDouble(BaseServerResult::getCpuLoad).average().orElse(0D);
-                    double memory = bases.subList(currentIndex, j).stream().filter(data -> data.getMemRate() != null)
-                        .mapToDouble(BaseServerResult::getMemRate).average().orElse(0D);
-                    double io = bases.subList(currentIndex, j).stream().filter(data -> data.getIoWait() != null)
-                        .mapToDouble(BaseServerResult::getIoWait).average().orElse(0D);
-                    double mbps = bases.subList(currentIndex, j).stream().filter(
-                            data -> data.getNetBandWidthRate() != null).mapToDouble(BaseServerResult::getNetBandWidthRate)
-                        .average().orElse(0D);
+                    double cpu = bases.subList(currentIndex, j).stream().filter(data -> data.getCpuRate() != null).mapToDouble(BaseServerResult::getCpuRate).average().orElse(0D);
+                    double loading = bases.subList(currentIndex, j).stream().filter(data -> data.getCpuLoad() != null).mapToDouble(BaseServerResult::getCpuLoad).average().orElse(0D);
+                    double memory = bases.subList(currentIndex, j).stream().filter(data -> data.getMemRate() != null).mapToDouble(BaseServerResult::getMemRate).average().orElse(0D);
+                    double io = bases.subList(currentIndex, j).stream().filter(data -> data.getIoWait() != null).mapToDouble(BaseServerResult::getIoWait).average().orElse(0D);
+                    double mbps = bases.subList(currentIndex, j).stream().filter(data -> data.getNetBandWidthRate() != null).mapToDouble(BaseServerResult::getNetBandWidthRate).average().orElse(0D);
+                    double youngGcCount = bases.subList(currentIndex, j).stream().filter(data -> data.getYoungGcCount() != null).mapToDouble(BaseServerResult::getYoungGcCount).average().orElse(0D);
+                    double youngGcCost = bases.subList(currentIndex, j).stream().filter(data -> data.getYoungGcCost() != null).mapToDouble(BaseServerResult::getYoungGcCost).average().orElse(0D);
+                    double fullGcCount = bases.subList(currentIndex, j).stream().filter(data -> data.getFullGcCount() != null).mapToDouble(BaseServerResult::getFullGcCount).average().orElse(0D);
+                    double fullGcCost = bases.subList(currentIndex, j).stream().filter(data -> data.getFullGcCost() != null).mapToDouble(BaseServerResult::getFullGcCost).average().orElse(0D);
 
                     target.setCpu(new BigDecimal((int)cpu));
                     target.setLoading(new BigDecimal(loading).setScale(2, RoundingMode.HALF_UP));
                     target.setMemory(new BigDecimal(memory).setScale(2, RoundingMode.HALF_UP));
                     target.setIo(new BigDecimal(io).setScale(2, RoundingMode.HALF_UP));
                     target.setNetwork(new BigDecimal(mbps).setScale(2, RoundingMode.HALF_UP));
+                    target.setYoungGcCount(new BigDecimal(Optional.ofNullable(youngGcCount).orElse(0D)).setScale(2, RoundingMode.HALF_UP));
+                    target.setYoungGcCost(new BigDecimal(Optional.ofNullable(youngGcCost).orElse(0D)).setScale(2, RoundingMode.HALF_UP));
+                    target.setFullGcCount(new BigDecimal(Optional.ofNullable(fullGcCount).orElse(0D)).setScale(2, RoundingMode.HALF_UP));
+                    target.setFullGcCost(new BigDecimal(Optional.ofNullable(fullGcCost).orElse(0D)).setScale(2, RoundingMode.HALF_UP));
+                    target.setGcCost(target.getYoungGcCost().add(target.getFullGcCost()));
+                    target.setGcCount(target.getYoungGcCount().add(target.getFullGcCount()));
                 }
                 currentIndex = j;
                 break;
@@ -305,6 +310,18 @@ public class SummaryService {
 
         BigDecimal[] network = new BigDecimal[tpsList.size()];
 
+        BigDecimal[] youngGcCount = new BigDecimal[tpsList.size()];
+
+        BigDecimal[] youngGcCost = new BigDecimal[tpsList.size()];
+
+        BigDecimal[] fullGcCount = new BigDecimal[tpsList.size()];
+
+        BigDecimal[] fullGcCost = new BigDecimal[tpsList.size()];
+
+        BigDecimal[] gcCount = new BigDecimal[tpsList.size()];
+
+        BigDecimal[] gcCost = new BigDecimal[tpsList.size()];
+
         for (int i = 0; i < tpsList.size(); i++) {
             time[i] = tpsList.get(i).getTime();
             tps[i] = tpsList.get(i).getTps();
@@ -313,6 +330,12 @@ public class SummaryService {
             memory[i] = tpsList.get(i).getMemory();
             io[i] = tpsList.get(i).getIo();
             network[i] = tpsList.get(i).getNetwork();
+            youngGcCount[i] = tpsList.get(i).getYoungGcCount();
+            youngGcCost[i] = tpsList.get(i).getYoungGcCost();
+            fullGcCount[i] = tpsList.get(i).getFullGcCount();
+            fullGcCost[i] = tpsList.get(i).getFullGcCost();
+            gcCount[i] = tpsList.get(i).getGcCount();
+            gcCost[i] = tpsList.get(i).getGcCost();
         }
         TpsTargetArray array = new TpsTargetArray();
         array.setTime(time);
@@ -322,6 +345,12 @@ public class SummaryService {
         array.setMemory(memory);
         array.setIo(io);
         array.setNetwork(network);
+        array.setYoungGcCount(youngGcCount);
+        array.setYoungGcCost(youngGcCost);
+        array.setFullGcCount(fullGcCount);
+        array.setFullGcCost(fullGcCost);
+        array.setGcCount(gcCount);
+        array.setGcCost(gcCost);
         return array;
     }
 

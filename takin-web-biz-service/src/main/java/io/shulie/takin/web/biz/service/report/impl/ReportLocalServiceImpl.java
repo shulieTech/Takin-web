@@ -676,7 +676,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (count.compareTo(new BigDecimal(0)) == 0) {
             return new BigDecimal(0);
         }
-        return total.divide(count, 4, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
+        return count.divide(total, 4, RoundingMode.HALF_UP);
     }
 
     private List<SceneBusinessActivityRefEntity> getSceneBusinessActivityRefEntities(Long sceneId) {

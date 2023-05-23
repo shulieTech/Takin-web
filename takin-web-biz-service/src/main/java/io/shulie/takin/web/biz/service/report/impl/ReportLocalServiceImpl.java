@@ -1001,32 +1001,32 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 }
                 //计算累计值
                 for (int i = 0; i < time.length; i++) {
-                    if (array.getTps()[i] == null) {
+                    if (array.getTps() != null) {
                         tps[i] = (tps[i] != null ? tps[i] : 0) + array.getTps()[i];
                     }
-                    if (array.getCpu()[i] != null) {
+                    if (array.getCpu() != null) {
                         cpu[i] = (cpu[i] != null ? cpu[i] : ZERO).add(array.getCpu()[i]);
                     }
-                    if (array.getLoading()[i] != null) {
+                    if (array.getLoading() != null) {
                         loading[i] = (loading[i] != null ? loading[i] : ZERO).add(array.getLoading()[i]);
                     }
-                    if (array.getMemory()[i] != null) {
+                    if (array.getMemory() != null) {
                         memory[i] = (memory[i] != null ? memory[i] : ZERO).add(array.getMemory()[i]);
                     }
-                    if (array.getIo()[i] != null) {
+                    if (array.getIo() != null) {
                         io[i] = (io[i] != null ? io[i] : ZERO).add(array.getIo()[i]);
                     }
-                    if (array.getNetwork()[i] != null) {
+                    if (array.getNetwork() != null) {
                         network[i] = (network[i] != null ? network[i] : ZERO).add(array.getNetwork()[i]);
                     }
                     if (array.getGcCost() != null) {
                         gcCost[i] = (gcCost[i] != null ? gcCost[i] : ZERO).add(array.getGcCost()[i]);
-                    }else {
+                    } else {
                         gcCost[i] = ZERO;
                     }
                     if (array.getGcCount() != null) {
                         gcCount[i] = (gcCount[i] != null ? gcCount[i] : ZERO).add(array.getGcCount()[i]);
-                    }else {
+                    } else {
                         gcCount[i] = ZERO;
                     }
                 }

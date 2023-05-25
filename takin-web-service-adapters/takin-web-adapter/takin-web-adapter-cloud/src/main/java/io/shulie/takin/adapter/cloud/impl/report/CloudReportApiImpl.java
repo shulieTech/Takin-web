@@ -100,25 +100,32 @@ public class CloudReportApiImpl implements CloudReportApi {
     @Override
     public ReportTrendResp trend(ReportTrendQueryReq req) {
         try {
-            String key = JSON.toJSONString(req);
+            String key = "report_trend:" + req.getReportId() + ":" + req.getXpathMd5();
             ReportTrendResp data;
             if (redisClientUtil.hasKey(key)) {
                 data = JSON.parseObject(redisClientUtil.getString(key), ReportTrendResp.class);
-                if (Objects.isNull(data)
-                    || CollectionUtils.isEmpty(data.getConcurrent())
-                    || CollectionUtils.isEmpty(data.getSa())
-                    || CollectionUtils.isEmpty(data.getRt())
-                    || CollectionUtils.isEmpty(data.getTps())
-                    || CollectionUtils.isEmpty(data.getSuccessRate())) {
+                if (Objects.isNull(data) || CollectionUtils.isEmpty(data.getConcurrent()) || CollectionUtils.isEmpty(data.getSa())
+                        || CollectionUtils.isEmpty(data.getRt()) || CollectionUtils.isEmpty(data.getTps()) || CollectionUtils.isEmpty(data.getSuccessRate())) {
                     data = cloudReportService.queryReportTrend(req);
+                    if (Objects.isNull(data)) {
+                        log.info("获取报告趋势数据为空");
+                        return new ReportTrendResp();
+                    }
                     redisClientUtil.setString(key, JSON.toJSONString(data));
+                    redisClientUtil.expire(key, 60 * 30);
                 }
             } else {
                 data = cloudReportService.queryReportTrend(req);
+                if (Objects.isNull(data)) {
+                    log.info("获取报告趋势数据为空");
+                    return new ReportTrendResp();
+                }
                 redisClientUtil.setString(key, JSON.toJSONString(data));
+                redisClientUtil.expire(key, 60 * 30);
             }
             return data;
         } catch (Exception e) {
+            log.error("获取报告趋势数据异常", e);
             return new ReportTrendResp();
         }
     }

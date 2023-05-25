@@ -703,7 +703,10 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
 
-        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).in(ApplicationMntEntity::getApplicationId, appIds));
+        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>()
+                .select(ApplicationMntEntity::getApplicationName).
+                in(ApplicationMntEntity::getApplicationId, appIds));
+
         List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
         TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
         traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
@@ -753,11 +756,10 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
             ReportAppMapOut reportAppMapOut = new ReportAppMapOut();
             reportAppMapOut.setAppName(k);
-            reportAppMapOut.setTps(tps.toArray(new Double[0]));
-            reportAppMapOut.setRt(rt.toArray(new Double[0]));
-            reportAppMapOut.setSuccessRate(successRate.toArray(new Double[0]));
-            reportAppMapOut.setTotalRequest(totalRequest.toArray(new Integer[0]));
-            timeAndRequestMap.put("0", 0);
+            reportAppMapOut.setTps(tps.stream().toArray().length == 0 ? new Double[]{0.0} : tps.toArray(new Double[0]));
+            reportAppMapOut.setRt(rt.stream().toArray().length == 0 ? new Double[]{0.0} : rt.toArray(new Double[0]));
+            reportAppMapOut.setSuccessRate(successRate.stream().toArray().length == 0 ? new Double[]{0.0} : successRate.toArray(new Double[0]));
+            reportAppMapOut.setTotalRequest(totalRequest.stream().toArray().length == 0 ? new Integer[]{0} : totalRequest.toArray(new Integer[0]));
             reportAppMapOut.setTimeAndRequestMap(timeAndRequestMap);
             reportAppMapOuts.add(reportAppMapOut);
         });

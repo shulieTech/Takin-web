@@ -107,26 +107,29 @@ public class CloudReportApiImpl implements CloudReportApi {
                 if (Objects.isNull(data) || CollectionUtils.isEmpty(data.getConcurrent()) || CollectionUtils.isEmpty(data.getSa())
                         || CollectionUtils.isEmpty(data.getRt()) || CollectionUtils.isEmpty(data.getTps()) || CollectionUtils.isEmpty(data.getSuccessRate())) {
                     data = cloudReportService.queryReportTrend(req);
-                    if (Objects.isNull(data)) {
-                        log.info("获取报告趋势数据为空");
-                        return new ReportTrendResp();
-                    }
-                    redisClientUtil.setString(key, JSON.toJSONString(data));
-                    redisClientUtil.expire(key, 60 * 30);
+                    cachedTrend(req, data);
                 }
             } else {
                 data = cloudReportService.queryReportTrend(req);
-                if (Objects.isNull(data)) {
-                    log.info("获取报告趋势数据为空");
-                    return new ReportTrendResp();
-                }
-                redisClientUtil.setString(key, JSON.toJSONString(data));
-                redisClientUtil.expire(key, 60 * 30);
+                cachedTrend(req, data);
             }
             return data;
         } catch (Exception e) {
             log.error("获取报告趋势数据异常", e);
             return new ReportTrendResp();
+        }
+    }
+
+    private void cachedTrend(ReportTrendQueryReq req, ReportTrendResp data) {
+        try {
+            if (Objects.isNull(data) || CollectionUtils.isEmpty(data.getConcurrent()) || CollectionUtils.isEmpty(data.getSa())
+                    || CollectionUtils.isEmpty(data.getRt()) || CollectionUtils.isEmpty(data.getTps()) || CollectionUtils.isEmpty(data.getSuccessRate())) {
+                return;
+            }
+            String key = "report_trend:" + req.getReportId() + ":" + req.getXpathMd5();
+            redisClientUtil.setString(key, JSON.toJSONString(data));
+        } catch (Exception e) {
+            log.error("缓存报告趋势数据异常", e);
         }
     }
 

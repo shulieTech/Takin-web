@@ -694,96 +694,101 @@ public class ReportLocalServiceImpl implements ReportLocalService {
      */
     @Override
     public Response<List<ReportAppMapOut>> getReportAppTrendMap(Long reportId) {
-        TenantCommonExt tenantCommonExt = WebPluginUtils.traceTenantCommonExt();
-        UserExt userExt = WebPluginUtils.traceUser();
-        ReportEntity reportEntity = getReportEntity(reportId);
-        if (reportEntity == null) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-        List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
-
-        if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-        List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
-
-        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>()
-                .select(ApplicationMntEntity::getApplicationName).
-                in(ApplicationMntEntity::getApplicationId, appIds));
-
-        List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
-        TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
-        traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
-        traceMetricsRequest.setEndTime(reportEntity.getEndTime().getTime());
-        traceMetricsRequest.setClusterTest(1);
-        traceMetricsRequest.setQuerySource("tro");
-        traceMetricsRequest.setUserId(String.valueOf(userExt.getId()));
-        traceMetricsRequest.setUserName(userExt.getName());
-        traceMetricsRequest.setTenantAppKey(tenantCommonExt.getTenantAppKey());
-        traceMetricsRequest.setEnvCode(tenantCommonExt.getEnvCode());
-        traceMetricsRequest.setAppNames(appNames);
-        List<TraceMetrics> metricsList = traceClient.getSqlStatements(traceMetricsRequest);
-        if (CollectionUtils.isEmpty(metricsList)) {
-            return Response.success(Collections.EMPTY_LIST);
-        }
-
-        Map<String, List<TraceMetrics>> map = metricsList.stream().collect(Collectors.groupingBy(TraceMetrics::getAppName));
-        //根据map分别计算tps趋势图、成功率趋势图、rt趋势图
-        List<ReportAppMapOut> reportAppMapOuts = new ArrayList<>(map.size());
-        map.forEach((k, v) -> {
-            if (CollectionUtils.isEmpty(v)) {
-                return;
+        try {
+            TenantCommonExt tenantCommonExt = WebPluginUtils.traceTenantCommonExt();
+            UserExt userExt = WebPluginUtils.traceUser();
+            ReportEntity reportEntity = getReportEntity(reportId);
+            if (reportEntity == null) {
+                return Response.success(Collections.EMPTY_LIST);
             }
-            List<Double> tps = new ArrayList<>(v.size());
-            List<Double> rt = new ArrayList<>(v.size());
-            List<Double> successRate = new ArrayList<>(v.size());
-            List<Integer> totalRequest = new ArrayList<>(v.size());
-            List<String> xtime = new ArrayList<>(v.size());
+            List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
 
-            List<String> xcost = new ArrayList<>(4);
-            List<String> conut = new ArrayList<>(4);
+            if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
 
-            v.stream().sorted(Comparator.comparing(TraceMetrics::getTime)).forEach(traceMetrics -> {
-                tps.add(BigDecimal.valueOf(traceMetrics.getAvgTps()).doubleValue());
-                rt.add(BigDecimal.valueOf(traceMetrics.getAvgRt()).doubleValue());
-                totalRequest.add(traceMetrics.getTotal());
-                double suRate = BigDecimal.valueOf(traceMetrics.getSuccessCount()).divide(BigDecimal.valueOf(traceMetrics.getTotal()), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).doubleValue();
-                successRate.add(suRate);
-                if (StringUtils.isBlank(traceMetrics.getTime())) {
+            List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>()
+                    .select(ApplicationMntEntity::getApplicationName).
+                    in(ApplicationMntEntity::getApplicationId, appIds));
+
+            List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
+            TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
+            traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
+            traceMetricsRequest.setEndTime(reportEntity.getEndTime().getTime());
+            traceMetricsRequest.setClusterTest(1);
+            traceMetricsRequest.setQuerySource("tro");
+            traceMetricsRequest.setUserId(String.valueOf(userExt.getId()));
+            traceMetricsRequest.setUserName(userExt.getName());
+            traceMetricsRequest.setTenantAppKey(tenantCommonExt.getTenantAppKey());
+            traceMetricsRequest.setEnvCode(tenantCommonExt.getEnvCode());
+            traceMetricsRequest.setAppNames(appNames);
+            List<TraceMetrics> metricsList = traceClient.getSqlStatements(traceMetricsRequest);
+            if (CollectionUtils.isEmpty(metricsList)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+
+            Map<String, List<TraceMetrics>> map = metricsList.stream().collect(Collectors.groupingBy(TraceMetrics::getAppName));
+            //根据map分别计算tps趋势图、成功率趋势图、rt趋势图
+            List<ReportAppMapOut> reportAppMapOuts = new ArrayList<>(map.size());
+            map.forEach((k, v) -> {
+                if (CollectionUtils.isEmpty(v)) {
                     return;
                 }
-                long timestamp = Long.parseLong(traceMetrics.getTime());
-                Instant instant = Instant.ofEpochMilli(timestamp);
-                ZonedDateTime dateTime = instant.atZone(ZoneId.systemDefault());
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-                String formattedDateTime = dateTime.format(formatter);
-                xtime.add(formattedDateTime);
+                List<Double> tps = new ArrayList<>(v.size());
+                List<Double> rt = new ArrayList<>(v.size());
+                List<Double> successRate = new ArrayList<>(v.size());
+                List<Integer> totalRequest = new ArrayList<>(v.size());
+                List<String> xtime = new ArrayList<>(v.size());
+
+                List<String> xcost = new ArrayList<>(4);
+                List<String> conut = new ArrayList<>(4);
+
+                v.stream().sorted(Comparator.comparing(TraceMetrics::getTime)).forEach(traceMetrics -> {
+                    tps.add(BigDecimal.valueOf(traceMetrics.getAvgTps()).doubleValue());
+                    rt.add(BigDecimal.valueOf(traceMetrics.getAvgRt()).doubleValue());
+                    totalRequest.add(traceMetrics.getTotal());
+                    double suRate = BigDecimal.valueOf(traceMetrics.getSuccessCount()).divide(BigDecimal.valueOf(traceMetrics.getTotal()), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).doubleValue();
+                    successRate.add(suRate);
+                    if (StringUtils.isBlank(traceMetrics.getTime())) {
+                        return;
+                    }
+                    long timestamp = Long.parseLong(traceMetrics.getTime());
+                    Instant instant = Instant.ofEpochMilli(timestamp);
+                    ZonedDateTime dateTime = instant.atZone(ZoneId.systemDefault());
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+                    String formattedDateTime = dateTime.format(formatter);
+                    xtime.add(formattedDateTime);
+                });
+
+                //计算最大值
+                Integer max = v.stream().map(TraceMetrics::getAvgRt).max(Double::compare).get();
+                //计算最小值
+                Integer min = v.stream().map(TraceMetrics::getAvgRt).min(Integer::compare).get();
+                List<String> intervalList = getInterval(min, max, 5);
+
+                for (String inter : intervalList) {
+                    String str[] = inter.split("-");
+                    Integer count = v.stream().filter(traceMetrics -> traceMetrics.getAvgRt() >= Integer.valueOf(str[0]) && traceMetrics.getAvgRt() < Integer.valueOf(str[1])).map(TraceMetrics::getTotal).reduce(Integer::sum).orElse(0);
+                    conut.add(String.valueOf(count));
+                    xcost.add(inter);
+                }
+                ReportAppMapOut reportAppMapOut = new ReportAppMapOut();
+                reportAppMapOut.setAppName(k);
+                reportAppMapOut.setTps(tps.stream().toArray().length == 0 ? new Double[]{0.0} : tps.toArray(new Double[0]));
+                reportAppMapOut.setRt(rt.stream().toArray().length == 0 ? new Double[]{0.0} : rt.toArray(new Double[0]));
+                reportAppMapOut.setSuccessRate(successRate.stream().toArray().length == 0 ? new Double[]{0.0} : successRate.toArray(new Double[0]));
+                reportAppMapOut.setConcurent(totalRequest.stream().toArray().length == 0 ? new Integer[]{0} : totalRequest.toArray(new Integer[0]));
+                reportAppMapOut.setXtime(xtime.stream().toArray().length == 0 ? new String[]{"0"} : xtime.toArray(new String[0]));
+                reportAppMapOut.setXcost(xcost.stream().toArray().length == 0 ? new String[]{"0"} : xcost.toArray(new String[0]));
+                reportAppMapOut.setConut(conut.stream().toArray().length == 0 ? new String[]{"0"} : conut.toArray(new String[0]));
+                reportAppMapOuts.add(reportAppMapOut);
             });
-
-            //计算最大值
-            Integer max = v.stream().map(TraceMetrics::getAvgRt).max(Double::compare).get();
-            //计算最小值
-            Integer min = v.stream().map(TraceMetrics::getAvgRt).min(Integer::compare).get();
-            List<String> intervalList = getInterval(min, max, 5);
-
-            for (String inter : intervalList) {
-                String str[] = inter.split("-");
-                Integer count = v.stream().filter(traceMetrics -> traceMetrics.getAvgRt() >= Integer.valueOf(str[0]) && traceMetrics.getAvgRt() < Integer.valueOf(str[1])).map(TraceMetrics::getTotal).reduce(Integer::sum).orElse(0);
-                conut.add(String.valueOf(count));
-                xcost.add(inter);
-            }
-            ReportAppMapOut reportAppMapOut = new ReportAppMapOut();
-            reportAppMapOut.setAppName(k);
-            reportAppMapOut.setTps(tps.stream().toArray().length == 0 ? new Double[]{0.0} : tps.toArray(new Double[0]));
-            reportAppMapOut.setRt(rt.stream().toArray().length == 0 ? new Double[]{0.0} : rt.toArray(new Double[0]));
-            reportAppMapOut.setSuccessRate(successRate.stream().toArray().length == 0 ? new Double[]{0.0} : successRate.toArray(new Double[0]));
-            reportAppMapOut.setConcurent(totalRequest.stream().toArray().length == 0 ? new Integer[]{0} : totalRequest.toArray(new Integer[0]));
-            reportAppMapOut.setXtime(xtime.stream().toArray().length == 0 ? new String[]{"0"} : xtime.toArray(new String[0]));
-            reportAppMapOut.setXcost(xcost.stream().toArray().length == 0 ? new String[]{"0"} : xcost.toArray(new String[0]));
-            reportAppMapOut.setConut(conut.stream().toArray().length == 0 ? new String[]{"0"} : conut.toArray(new String[0]));
-            reportAppMapOuts.add(reportAppMapOut);
-        });
-        return Response.success(reportAppMapOuts);
+            return Response.success(reportAppMapOuts);
+        }catch (Exception e){
+            log.error("getReportAppTrendMap error:", e);
+        }
+        return Response.success(Collections.EMPTY_LIST);
     }
 
     /**

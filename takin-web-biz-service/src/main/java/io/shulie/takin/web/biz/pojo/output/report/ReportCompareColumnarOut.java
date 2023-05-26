@@ -32,4 +32,15 @@ public class ReportCompareColumnarOut implements Serializable {
         return successRate != null ? successRate.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
     }
 
+    public void setTps(BigDecimal tps) {
+        this.tps = (tps == null ? null : tps.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setRt(BigDecimal rt) {
+        this.rt = (rt == null ? null : rt.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setSuccessRate(BigDecimal successRate) {
+        this.successRate = (successRate == null ? null : successRate.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
 }

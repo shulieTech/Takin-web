@@ -69,4 +69,35 @@ public class ReportCompareRtOutput implements Serializable {
         return rt99 != null ? rt99.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
     }
 
+    public void setAvgRt(BigDecimal avgRt) {
+        this.avgRt = (avgRt == null ? null : avgRt.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setMaxRt(BigDecimal maxRt) {
+        this.maxRt = (maxRt ==  null ? null : maxRt.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setMinRt(BigDecimal minRt) {
+        this.minRt = (minRt == null ? null : minRt.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setRt50(BigDecimal rt50) {
+        this.rt50 = (rt50 == null ? null : rt50.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setRt75(BigDecimal rt75) {
+        this.rt75 = (rt75 == null ? null : rt75.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setRt90(BigDecimal rt90) {
+        this.rt90 = (rt90 == null ? null : rt90.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setRt95(BigDecimal rt95) {
+        this.rt95 = (rt95 == null ? null : rt95.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setRt99(BigDecimal rt99) {
+        this.rt99 = (rt99 == null ? null : rt99.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
 }

@@ -2,7 +2,11 @@ package io.shulie.takin.web.biz.service.report.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -734,12 +738,26 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             List<Double> rt = new ArrayList<>(v.size());
             List<Double> successRate = new ArrayList<>(v.size());
             List<Integer> totalRequest = new ArrayList<>(v.size());
+            List<String> xtime = new ArrayList<>(v.size());
+
+            List<String> xcost = new ArrayList<>(4);
+            List<String> conut = new ArrayList<>(4);
+
             v.stream().sorted(Comparator.comparing(TraceMetrics::getTime)).forEach(traceMetrics -> {
                 tps.add(BigDecimal.valueOf(traceMetrics.getAvgTps()).doubleValue());
                 rt.add(BigDecimal.valueOf(traceMetrics.getAvgRt()).doubleValue());
                 totalRequest.add(traceMetrics.getTotal());
                 double suRate = BigDecimal.valueOf(traceMetrics.getSuccessCount()).divide(BigDecimal.valueOf(traceMetrics.getTotal()), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).doubleValue();
                 successRate.add(suRate);
+                if (StringUtils.isBlank(traceMetrics.getTime())) {
+                    return;
+                }
+                long timestamp = Long.parseLong(traceMetrics.getTime());
+                Instant instant = Instant.ofEpochMilli(timestamp);
+                ZonedDateTime dateTime = instant.atZone(ZoneId.systemDefault());
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+                String formattedDateTime = dateTime.format(formatter);
+                xtime.add(formattedDateTime);
             });
 
             //计算最大值
@@ -747,20 +765,22 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             //计算最小值
             Integer min = v.stream().map(TraceMetrics::getAvgRt).min(Integer::compare).get();
             List<String> intervalList = getInterval(min, max, 5);
-            LinkedHashMap<String, Integer> timeAndRequestMap = new LinkedHashMap<>();
 
             for (String inter : intervalList) {
                 String str[] = inter.split("-");
                 Integer count = v.stream().filter(traceMetrics -> traceMetrics.getAvgRt() >= Integer.valueOf(str[0]) && traceMetrics.getAvgRt() < Integer.valueOf(str[1])).map(TraceMetrics::getTotal).reduce(Integer::sum).orElse(0);
-                timeAndRequestMap.put(inter, count);
+                conut.add(String.valueOf(count));
+                xcost.add(inter);
             }
             ReportAppMapOut reportAppMapOut = new ReportAppMapOut();
             reportAppMapOut.setAppName(k);
             reportAppMapOut.setTps(tps.stream().toArray().length == 0 ? new Double[]{0.0} : tps.toArray(new Double[0]));
             reportAppMapOut.setRt(rt.stream().toArray().length == 0 ? new Double[]{0.0} : rt.toArray(new Double[0]));
             reportAppMapOut.setSuccessRate(successRate.stream().toArray().length == 0 ? new Double[]{0.0} : successRate.toArray(new Double[0]));
-            reportAppMapOut.setTotalRequest(totalRequest.stream().toArray().length == 0 ? new Integer[]{0} : totalRequest.toArray(new Integer[0]));
-            reportAppMapOut.setTimeAndRequestMap(timeAndRequestMap);
+            reportAppMapOut.setConcurent(totalRequest.stream().toArray().length == 0 ? new Integer[]{0} : totalRequest.toArray(new Integer[0]));
+            reportAppMapOut.setXtime(xtime.stream().toArray().length == 0 ? new String[]{"0"} : xtime.toArray(new String[0]));
+            reportAppMapOut.setXcost(xcost.stream().toArray().length == 0 ? new String[]{"0"} : xcost.toArray(new String[0]));
+            reportAppMapOut.setConut(conut.stream().toArray().length == 0 ? new String[]{"0"} : conut.toArray(new String[0]));
             reportAppMapOuts.add(reportAppMapOut);
         });
         return Response.success(reportAppMapOuts);

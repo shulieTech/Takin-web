@@ -61,4 +61,6 @@ public class OpsScriptManageEntity extends UserBaseEntity implements Serializabl
      */
     private Date gmtUpdate;
 
+    private Long deptId;
+
 }

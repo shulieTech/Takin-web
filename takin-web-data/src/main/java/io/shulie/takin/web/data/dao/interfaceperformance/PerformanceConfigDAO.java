@@ -42,5 +42,5 @@ public interface PerformanceConfigDAO {
     /**
      * 分配用户
      */
-    void allocationUser(Long dataId, Long userId);
+    void allocationUser(Long dataId, Long userId,Long deptId);
 }

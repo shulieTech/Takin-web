@@ -118,6 +118,14 @@ public class LinkManageTableEntity extends UserBaseEntity {
     @TableField(value = "features")
     private String features;
 
+    /**
+     * 部门字段
+     */
+    @TableField(value = "dept_id")
+    private Long deptId;
+
+
+
     @TableField(value = "persistence")
     private boolean persistence = true;
 

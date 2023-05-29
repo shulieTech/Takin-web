@@ -69,11 +69,14 @@ public class LinkManageUpdateParam {
      */
     private Long userId;
 
+    private Long deptId;
+
     public LinkManageUpdateParam() {
     }
 
-    public LinkManageUpdateParam(Long linkId, Long userId) {
+    public LinkManageUpdateParam(Long linkId, Long userId,Long deptId) {
         this.linkId = linkId;
         this.userId = userId;
+        this.deptId =deptId;
     }
 }

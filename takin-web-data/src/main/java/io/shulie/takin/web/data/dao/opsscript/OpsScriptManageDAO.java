@@ -20,6 +20,6 @@ public interface OpsScriptManageDAO extends IService<OpsScriptManageEntity> {
 
     List<OpsScriptManageEntity> findList(OpsScriptParam param);
 
-    Boolean allocationUser(Long dataId, Long userId);
+    Boolean allocationUser(Long dataId, Long userId,Long deptId);
 }
 

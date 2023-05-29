@@ -11,6 +11,7 @@ import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.data.dao.opsscript.OpsScriptManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.OpsScriptManageMapper;
 import io.shulie.takin.web.data.model.mysql.OpsScriptManageEntity;
+import io.shulie.takin.web.data.model.mysql.ScriptManageEntity;
 import io.shulie.takin.web.data.param.opsscript.OpsScriptParam;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.springframework.stereotype.Service;
@@ -57,12 +58,13 @@ public class OpsScriptManageDAOImpl
     }
 
     @Override
-    public Boolean allocationUser(Long dataId, Long userId) {
+    public Boolean allocationUser(Long dataId, Long userId,Long deptId) {
         OpsScriptManageEntity one = this.lambdaQuery().eq(OpsScriptManageEntity::getId, dataId).one();
         if (one != null) {
             return this.lambdaUpdate()
                     .set(OpsScriptManageEntity::getUserId, userId)
                     .set(OpsScriptManageEntity::getGmtUpdate, new Date())
+                    .set(deptId != null, OpsScriptManageEntity::getDeptId, deptId)
                     .eq(OpsScriptManageEntity::getId, dataId).update();
         }
         return false;

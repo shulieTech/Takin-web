@@ -97,6 +97,12 @@ public class BusinessLinkManageTableEntity extends UserBaseEntity {
     private Date updateTime;
 
     /**
+     * 部门
+     */
+    @TableField(value = "dept_id")
+    private Long deptId;
+
+    /**
      * 业务域: 0:订单域", "1:运单域", "2:结算域
      */
     @TableField(value = "BUSINESS_DOMAIN", updateStrategy = FieldStrategy.IGNORED)
@@ -128,4 +134,8 @@ public class BusinessLinkManageTableEntity extends UserBaseEntity {
 
     @TableField(value = "persistence")
     private boolean persistence = true;
+
+
 }
+
+

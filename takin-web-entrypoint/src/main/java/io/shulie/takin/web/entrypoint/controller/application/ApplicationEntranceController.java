@@ -85,8 +85,8 @@ public class ApplicationEntranceController {
             .map(item -> {
                 ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
                 applicationEntrancesResponse.setMethod(item.getMethodName());
-                applicationEntrancesResponse.setRpcType(item.getRpcType());
-                applicationEntrancesResponse.setExtend(item.getExtend());
+//                applicationEntrancesResponse.setRpcType(item.getRpcType());
+//                applicationEntrancesResponse.setExtend(item.getExtend());
                 applicationEntrancesResponse.setServiceName(item.getServiceName());
                 applicationEntrancesResponse.setLabel(
                     ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));

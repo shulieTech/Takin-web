@@ -918,9 +918,8 @@ public class LinkTopologyService extends CommonService {
         if (CollectionUtils.isEmpty(jsonObjects)) {
             return Maps.newHashMap();
         }
-        Map<String, JSONObject> metricsMap = jsonObjects.stream().collect(
-                Collectors.toMap(jsonObject -> String.valueOf(jsonObject.get("edgeId")), self -> self));
-        return metricsMap;
+        return jsonObjects.stream().filter(a -> Objects.nonNull(a) && Objects.nonNull(a.get("edgeId"))).collect(
+                Collectors.toMap(jsonObject -> String.valueOf(jsonObject.get("edgeId")), self -> self, (oldValue, newValue) -> newValue));
     }
 
     public AppProvider getAppProvider(long realSeconds, List<TraceMetricsResult> allTotalTpsAndRtCountResults) {
@@ -1074,9 +1073,11 @@ public class LinkTopologyService extends CommonService {
         if (CollectionUtils.isEmpty(applicationsByName)) {
             return Maps.newHashMap();
         }
+
         Map<String, String> appNameManagerNameMap = applicationsByName.stream()
                 .filter(app -> StringUtils.isNotBlank(app.getAppManagerName()))
-                .collect(Collectors.toMap(ApplicationResult::getAppName, ApplicationResult::getAppManagerName));
+                .collect(Collectors.toMap(ApplicationResult::getAppName, ApplicationResult::getAppManagerName, (oldValue, newValue) -> newValue));
+
         Map<String, String> map = Maps.newHashMap();
         for (LinkNodeDTO node : nodes) {
             if (nodeIsApp(node) && !isVirtualNode(node)) {

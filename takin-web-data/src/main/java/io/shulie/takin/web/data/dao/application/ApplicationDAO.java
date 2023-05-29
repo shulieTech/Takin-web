@@ -435,4 +435,13 @@ public interface ApplicationDAO {
     void updateStatus(Long applicationId);
 
     boolean existsApplication(Long tenantId, String envCode);
+
+    /**
+     * 根据应用状态获取应用数目
+     * @param tenantId
+     * @param envCode
+     * @param status
+     * @return
+     */
+    long getAppCountByStatus(Long tenantId, String envCode, Integer status);
 }

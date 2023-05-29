@@ -259,7 +259,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             JSONObject jsonObject = JSON.parseObject(report.getFeatures());
             if (jsonObject.containsKey(ReportConstants.SLA_ERROR_MSG)) {
                 detail.setSlaMsg(
-                    JsonHelper.json2Bean(jsonObject.getString(ReportConstants.SLA_ERROR_MSG), SlaBean.class));
+                        JsonHelper.json2Bean(jsonObject.getString(ReportConstants.SLA_ERROR_MSG), SlaBean.class));
             }
             String ptlPath = jsonObject.getString(PressureStartCache.FEATURES_MACHINE_PTL_PATH);
             if (StringUtils.isNotBlank(ptlPath)) {
@@ -271,7 +271,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     }
 
     private void buildFailActivitiesByNodeDetails(List<ScriptNodeSummaryBean> reportNodeDetail,
-        List<BusinessActivitySummaryBean> result) {
+                                                  List<BusinessActivitySummaryBean> result) {
         if (CollectionUtils.isEmpty(reportNodeDetail)) {
             return;
         }
@@ -301,7 +301,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     private List<ScriptNodeSummaryBean> getReportNodeDetail(String scriptNodeTree, Long reportId) {
         List<ReportBusinessActivityDetail> activities = tReportBusinessActivityDetailMapper
-            .queryReportBusinessActivityDetailByReportId(reportId);
+                .queryReportBusinessActivityDetailByReportId(reportId);
         return getScriptNodeSummaryBeans(scriptNodeTree, activities);
     }
 
@@ -377,7 +377,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     });
             String resultTree = JsonPathUtil.putNodesToJson(nodeTree, resultMap);
             reportDetail.setNodeDetail(JsonUtil.parseArray(resultTree,
-                ScriptNodeSummaryBean.class));
+                    ScriptNodeSummaryBean.class));
         } else {
             List<ScriptNodeSummaryBean> nodeDetails = reportBusinessActivityDetails.stream()
                     .filter(Objects::nonNull)
@@ -674,9 +674,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (!reportResult.getPressureType().equals(PressureSceneEnum.DEFAULT.getCode())) {
             reportDao.finishReport(reportId);
             cloudSceneManageService.updateSceneLifeCycle(
-                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                    .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING,
-                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                            .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING,
+                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
             doneReport(reportResult);
             pressureEnd(reportResult);
             return true;
@@ -710,14 +710,14 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         SceneManageEntity sceneManage = sceneManageDao.getSceneById(reportResult.getSceneId());
         //如果是强制停止 不需要更新
         log.info("finish scene {}, state :{}", reportResult.getSceneId(), Optional.ofNullable(sceneManage)
-            .map(SceneManageEntity::getStatus)
-            .map(SceneManageStatusEnum::getSceneManageStatusEnum)
-            .map(SceneManageStatusEnum::getDesc).orElse("未找到场景"));
+                .map(SceneManageEntity::getStatus)
+                .map(SceneManageStatusEnum::getSceneManageStatusEnum)
+                .map(SceneManageStatusEnum::getDesc).orElse("未找到场景"));
         if (sceneManage != null && !sceneManage.getType().equals(SceneManageStatusEnum.FORCE_STOP.getValue())) {
             cloudSceneManageService.updateSceneLifeCycle(
-                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                    .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING, SceneManageStatusEnum.WAIT,
-                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                            .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING, SceneManageStatusEnum.WAIT,
+                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
         }
         //报告结束应该放在场景之后
         reportDao.finishReport(reportId);
@@ -740,8 +740,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
 
         cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(),
-                reportResult.getTenantId())
-            .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.FORCE_STOP).build());
+                        reportResult.getTenantId())
+                .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.FORCE_STOP).build());
         pressureEnd(reportResult);
     }
 
@@ -807,74 +807,84 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         long start = System.currentTimeMillis();
         ReportTrendResp reportTrend = new ReportTrendResp();
         ReportResult reportResult;
-        if (isTempReport) {
-            reportResult = reportDao.getTempReportBySceneId(reportTrendQuery.getSceneId());
-        } else {
-            reportResult = reportDao.selectById(reportTrendQuery.getReportId());
+        try {
+            if (isTempReport) {
+                reportResult = reportDao.getTempReportBySceneId(reportTrendQuery.getSceneId());
+            } else {
+                reportResult = reportDao.selectById(reportTrendQuery.getReportId());
+            }
+            if (reportResult == null) {
+                return new ReportTrendResp();
+            }
+            String testPlanXpathMd5 = getTestPlanXpathMd5(reportResult.getScriptNodeTree());
+            String transaction = StringUtils.isBlank(testPlanXpathMd5) ? ReportConstants.ALL_BUSINESS_ACTIVITY
+                    : testPlanXpathMd5;
+            if (StringUtils.isNotBlank(reportTrendQuery.getXpathMd5())) {
+                transaction = reportTrendQuery.getXpathMd5();
+            }
+            StringBuilder influxDbSql = new StringBuilder();
+            influxDbSql.append("select");
+            influxDbSql.append(
+                    " sum(count) as tempRequestCount, sum(fail_count) as failRequest, mean(avg_tps) as tps , sum(sum_rt)/sum"
+                            + "(count) as "
+                            + "avgRt, sum(sa_count) as saCount, count(avg_rt) as recordCount ,mean(active_threads) as "
+                            + "avgConcurrenceNum ");
+            influxDbSql.append(" from ");
+            influxDbSql.append(
+                    InfluxUtil.getMeasurement(reportResult.getJobId(), reportResult.getSceneId(),
+                            reportResult.getId(), reportResult.getTenantId()));
+            influxDbSql.append(" where ");
+            influxDbSql.append(" transaction = ").append("'").append(transaction).append("'");
+
+            //按配置中的时间间隔分组
+            influxDbSql.append(" group by time(").append(reportAggregationInterval).append(")");
+
+            List<StatReportDTO> list = Lists.newArrayList();
+
+            if (StringUtils.isNotEmpty(transaction)) {
+                list = influxWriter.query(influxDbSql.toString(), StatReportDTO.class);
+            }
+
+            if (CollectionUtils.isEmpty(list)) {
+                log.info("查询SQL：{}", influxDbSql);
+                log.info("实时监测链路趋势：queryReportTrend-运行时间：{}", System.currentTimeMillis() - start);
+                return new ReportTrendResp();
+            }
+
+            //influxdb 空数据也会返回,需要过滤空数据
+            //前端要求的格式
+            List<String> time = Lists.newLinkedList();
+            List<String> sa = Lists.newLinkedList();
+            List<String> avgRt = Lists.newLinkedList();
+            List<String> tps = Lists.newLinkedList();
+            List<String> successRate = Lists.newLinkedList();
+            List<String> concurrent = Lists.newLinkedList();
+
+            list.stream()
+                    .filter(Objects::nonNull)
+                    .filter(data -> data.getTps() != null)
+                    .filter(data -> StringUtils.isNotBlank(data.getTime()))
+                    .forEach(data -> {
+                        time.add(getTime(data.getTime()));
+                        sa.add(NumberUtil.decimalToString(data.getSa()));
+                        avgRt.add(NumberUtil.decimalToString(data.getAvgRt()));
+                        tps.add(NumberUtil.decimalToString(data.getTps()));
+                        successRate.add(NumberUtil.decimalToString(data.getSuccessRate()));
+                        concurrent.add(NumberUtil.decimalToString(data.getAvgConcurrenceNum()));
+                    });
+            //链路趋势
+            reportTrend.setTps(tps);
+            reportTrend.setSa(sa);
+            reportTrend.setSuccessRate(successRate);
+            reportTrend.setRt(avgRt);
+            reportTrend.setTime(time);
+            reportTrend.setConcurrent(concurrent);
+
+            return reportTrend;
+        } catch (Exception e) {
+            log.error("queryReportTrend error:", e);
         }
-        if (reportResult == null) {
-            return new ReportTrendResp();
-        }
-        String testPlanXpathMd5 = getTestPlanXpathMd5(reportResult.getScriptNodeTree());
-        String transaction = StringUtils.isBlank(testPlanXpathMd5) ? ReportConstants.ALL_BUSINESS_ACTIVITY
-                : testPlanXpathMd5;
-        if (StringUtils.isNotBlank(reportTrendQuery.getXpathMd5())) {
-            transaction = reportTrendQuery.getXpathMd5();
-        }
-        StringBuilder influxDbSql = new StringBuilder();
-        influxDbSql.append("select");
-        influxDbSql.append(
-                " sum(count) as tempRequestCount, sum(fail_count) as failRequest, mean(avg_tps) as tps , sum(sum_rt)/sum"
-                        + "(count) as "
-                        + "avgRt, sum(sa_count) as saCount, count(avg_rt) as recordCount ,mean(active_threads) as "
-                        + "avgConcurrenceNum ");
-        influxDbSql.append(" from ");
-        influxDbSql.append(
-                InfluxUtil.getMeasurement(reportResult.getJobId(), reportResult.getSceneId(),
-                        reportResult.getId(), reportResult.getTenantId()));
-        influxDbSql.append(" where ");
-        influxDbSql.append(" transaction = ").append("'").append(transaction).append("'");
-
-        //按配置中的时间间隔分组
-        influxDbSql.append(" group by time(").append(reportAggregationInterval).append(")");
-
-        List<StatReportDTO> list = Lists.newArrayList();
-
-        if (StringUtils.isNotEmpty(transaction)) {
-            list = influxWriter.query(influxDbSql.toString(), StatReportDTO.class);
-        }
-
-        //influxdb 空数据也会返回,需要过滤空数据
-        //前端要求的格式
-        List<String> time = Lists.newLinkedList();
-        List<String> sa = Lists.newLinkedList();
-        List<String> avgRt = Lists.newLinkedList();
-        List<String> tps = Lists.newLinkedList();
-        List<String> successRate = Lists.newLinkedList();
-        List<String> concurrent = Lists.newLinkedList();
-
-        list.stream()
-                .filter(Objects::nonNull)
-                .filter(data -> data.getTps() != null)
-                .filter(data -> StringUtils.isNotBlank(data.getTime()))
-                .forEach(data -> {
-                    time.add(getTime(data.getTime()));
-                    sa.add(NumberUtil.decimalToString(data.getSa()));
-                    avgRt.add(NumberUtil.decimalToString(data.getAvgRt()));
-                    tps.add(NumberUtil.decimalToString(data.getTps()));
-                    successRate.add(NumberUtil.decimalToString(data.getSuccessRate()));
-                    concurrent.add(NumberUtil.decimalToString(data.getAvgConcurrenceNum()));
-                });
-        //链路趋势
-        reportTrend.setTps(tps);
-        reportTrend.setSa(sa);
-        reportTrend.setSuccessRate(successRate);
-        reportTrend.setRt(avgRt);
-        reportTrend.setTime(time);
-        reportTrend.setConcurrent(concurrent);
-        log.info("实时监测链路趋势：queryReportTrend-运行时间：{}", System.currentTimeMillis() - start);
-
-        return reportTrend;
+        return null;
     }
 
     /**
@@ -1012,22 +1022,24 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             // 等待时间 influxDB完成
             Thread.sleep(2000);
             long start = System.currentTimeMillis();
-            TaskResult taskResult = (TaskResult)event.getExt();
+            TaskResult taskResult = (TaskResult) event.getExt();
             log.info("通知报告模块，开始生成本次压测{}-{}-{}的报告", taskResult.getSceneId(), taskResult.getTaskId(),
-                taskResult.getTenantId());
+                    taskResult.getTenantId());
             modifyReport(taskResult);
             log.info("本次压测{}-{}-{}的报告生成时间-{}", taskResult.getSceneId(), taskResult.getTaskId(),
-                taskResult.getTenantId(), System.currentTimeMillis() - start);
+                    taskResult.getTenantId(), System.currentTimeMillis() - start);
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：生成报告异常 --> 【通知报告模块】处理finished事件异常: {}",
-                TakinCloudExceptionEnum.TASK_STOP_DEAL_REPORT_ERROR, e);
+                    TakinCloudExceptionEnum.TASK_STOP_DEAL_REPORT_ERROR, e);
         }
     }
 
     @Override
     public ReportOutput selectById(Long id) {
         ReportResult reportResult = reportDao.selectById(id);
-        if (reportResult == null) {return null;}
+        if (reportResult == null) {
+            return null;
+        }
         return BeanUtil.copyProperties(reportResult, ReportOutput.class);
     }
 
@@ -1117,9 +1129,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             doneReport(reportResult);
             //更新场景 压测引擎停止压测---> 待启动  版本不一样，关闭不一样
             cloudSceneManageService.updateSceneLifeCycle(
-                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                    .checkEnum(
-                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                            .checkEnum(
+                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
         }
 
     }
@@ -1240,7 +1252,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             List<ReportBusinessActivityDetailEntity> activities = reportDao.getActivityByReportIds(reportIds);
             if (CollectionUtils.isNotEmpty(activities)) {
                 Map<Long, List<ReportBusinessActivityDetailEntity>> activityMap = activities.stream().filter(
-                        Objects::nonNull)
+                                Objects::nonNull)
                         .collect(Collectors.groupingBy(ReportBusinessActivityDetailEntity::getReportId));
                 return reportEntities.stream().filter(Objects::nonNull)
                         .map(entity -> {
@@ -1279,7 +1291,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      */
     private boolean isPass(ReportBusinessActivityDetail detail) {
         if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(
-            detail.getSuccessRate()) > 0) {
+                detail.getSuccessRate()) > 0) {
             return false;
         } else if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
             return false;
@@ -1439,7 +1451,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         List<DistributeBean> result;
         if (StringUtils.isNoneBlank(distributes)) {
             Map<String, String> distributeMap = JsonHelper.string2Obj(distributes,
-                new TypeReference<Map<String, String>>() {});
+                    new TypeReference<Map<String, String>>() {
+                    });
             List<DistributeBean> distributeBeans = Lists.newArrayList();
             distributeMap.forEach((key, value) -> {
                 DistributeBean distribute = new DistributeBean();
@@ -1575,7 +1588,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
         String features = reportResult.getFeatures();
         if (StringUtils.isNotBlank(features)
-            && JSONObject.parseObject(features).containsKey(PressureStartCache.FEATURES_MACHINE_PTL_PATH)) {
+                && JSONObject.parseObject(features).containsKey(PressureStartCache.FEATURES_MACHINE_PTL_PATH)) {
             return "";
         }
         String realJtlPath = pressureEngineJtlPath;
@@ -1613,7 +1626,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 return jtlPath + "/" + "Jmeter.zip";
             }
             throw new TakinCloudException(TakinCloudExceptionEnum.FILE_ZIP_ERROR, "查看" + jtlPath);
-        } else {return "";}
+        } else {
+            return "";
+        }
     }
 
     @Override

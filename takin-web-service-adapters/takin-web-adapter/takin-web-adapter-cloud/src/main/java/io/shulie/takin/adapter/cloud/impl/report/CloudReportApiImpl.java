@@ -100,26 +100,36 @@ public class CloudReportApiImpl implements CloudReportApi {
     @Override
     public ReportTrendResp trend(ReportTrendQueryReq req) {
         try {
-            String key = JSON.toJSONString(req);
+            String key = "report_trend:" + req.getReportId() + ":" + req.getXpathMd5();
             ReportTrendResp data;
             if (redisClientUtil.hasKey(key)) {
                 data = JSON.parseObject(redisClientUtil.getString(key), ReportTrendResp.class);
-                if (Objects.isNull(data)
-                    || CollectionUtils.isEmpty(data.getConcurrent())
-                    || CollectionUtils.isEmpty(data.getSa())
-                    || CollectionUtils.isEmpty(data.getRt())
-                    || CollectionUtils.isEmpty(data.getTps())
-                    || CollectionUtils.isEmpty(data.getSuccessRate())) {
+                if (Objects.isNull(data) || CollectionUtils.isEmpty(data.getConcurrent()) || CollectionUtils.isEmpty(data.getSa())
+                        || CollectionUtils.isEmpty(data.getRt()) || CollectionUtils.isEmpty(data.getTps()) || CollectionUtils.isEmpty(data.getSuccessRate())) {
                     data = cloudReportService.queryReportTrend(req);
-                    redisClientUtil.setString(key, JSON.toJSONString(data));
+                    cachedTrend(req, data);
                 }
             } else {
                 data = cloudReportService.queryReportTrend(req);
-                redisClientUtil.setString(key, JSON.toJSONString(data));
+                cachedTrend(req, data);
             }
             return data;
         } catch (Exception e) {
+            log.error("获取报告趋势数据异常", e);
             return new ReportTrendResp();
+        }
+    }
+
+    private void cachedTrend(ReportTrendQueryReq req, ReportTrendResp data) {
+        try {
+            if (Objects.isNull(data) || CollectionUtils.isEmpty(data.getConcurrent()) || CollectionUtils.isEmpty(data.getSa())
+                    || CollectionUtils.isEmpty(data.getRt()) || CollectionUtils.isEmpty(data.getTps()) || CollectionUtils.isEmpty(data.getSuccessRate())) {
+                return;
+            }
+            String key = "report_trend:" + req.getReportId() + ":" + req.getXpathMd5();
+            redisClientUtil.setString(key, JSON.toJSONString(data));
+        } catch (Exception e) {
+            log.error("缓存报告趋势数据异常", e);
         }
     }
 

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.pamirs.pradar.log.parser.ProtocolParserFactory;
 import com.pamirs.pradar.log.parser.trace.RpcBased;
@@ -315,14 +316,14 @@ public class TraceClientImpl implements TraceClient {
     @Override
     public List<TraceMetrics> getSqlStatements(TraceMetricsRequest traceMetricsRequest) {
         String url = properties.getUrl().getAmdb() + TRACE_METRIC_GET_SQL_STATEMENTS;
-        Response response = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
+        List<TraceMetrics> traceMetrics = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
                 .param(traceMetricsRequest)
                 .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
-                .eventName("应用趋势图查询").one(Response.class).getData();
-        if (!response.isSuccess()) {
-            return Collections.emptyList();
+                .eventName("应用趋势图查询").list(TraceMetrics.class).getData();
+        if (CollectionUtils.isEmpty(traceMetrics)) {
+            return Lists.newArrayList();
         }
-        return (List<TraceMetrics>) response.getData();
+        return traceMetrics;
     }
 
     @Override

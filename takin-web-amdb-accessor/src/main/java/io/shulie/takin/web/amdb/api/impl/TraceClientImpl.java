@@ -329,15 +329,11 @@ public class TraceClientImpl implements TraceClient {
     public List<String> getEdgeIdsByAppNames(List<String> appNames) {
         String url = properties.getUrl().getAmdb() + GET_EDGE_IDS_BY_APP_NAMES;
         try {
-            Object object = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
+            List<String> list = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
                     .param(appNames)
                     .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
-                    .eventName("应用趋势图查询").one(Response.class).getData();
-            if (object == null) {
-                return Collections.emptyList();
-            }
-            String response = String.valueOf(object);
-            return response == null ? Collections.emptyList() : JSON.parseArray(response, String.class);
+                    .eventName("应用趋势图查询").list(String.class).getData();
+            return list;
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION, e.getMessage());
         }

@@ -67,4 +67,6 @@ public interface TraceClient {
     String dataCalibration(DataCalibrationDTO dataCalibration);
 
     List<TraceMetrics> getSqlStatements(TraceMetricsRequest traceMetricsRequest);
+
+    List<String> getEdgeIdsByAppNames(List<String> appNames);
 }

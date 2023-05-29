@@ -580,7 +580,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 }
             }
             return Response.success(list);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("getReortAppPerformanceList error:", e);
         }
         return Response.success(Collections.EMPTY_LIST);
@@ -594,7 +594,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
      */
     @Override
     public Response<List<ReportAppInstancePerformanceOut>> getReortAppInstancePerformanceList(Long reportId) {
-        try{
+        try {
             ReportEntity reportEntity = getReportEntity(reportId);
             if (reportEntity == null) {
                 return Response.success(Collections.EMPTY_LIST);
@@ -657,7 +657,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 return reportAppInstancePerformanceOut;
             }).collect(Collectors.toList());
             return Response.success(reportAppInstancePerformanceOuts);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("getReortAppInstancePerformanceList error:", e);
         }
         return Response.success(Collections.EMPTY_LIST);
@@ -713,6 +713,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     in(ApplicationMntEntity::getApplicationId, appIds));
 
             List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(appNames)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
             TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
             traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
             traceMetricsRequest.setEndTime(reportEntity.getEndTime().getTime());
@@ -723,6 +726,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             traceMetricsRequest.setTenantAppKey(tenantCommonExt.getTenantAppKey());
             traceMetricsRequest.setEnvCode(tenantCommonExt.getEnvCode());
             traceMetricsRequest.setAppNames(appNames);
+            // 根据appName获取edgeid
+            //TODO 这边可能需要判断一下边的类型？
+            List<String> edgeIds = this.traceClient.getEdgeIdsByAppNames(appNames);
+            if (CollectionUtils.isEmpty(edgeIds)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            traceMetricsRequest.setEdgeIds(edgeIds.stream().collect(Collectors.joining(",")));
             List<TraceMetrics> metricsList = traceClient.getSqlStatements(traceMetricsRequest);
             if (CollectionUtils.isEmpty(metricsList)) {
                 return Response.success(Collections.EMPTY_LIST);
@@ -748,7 +758,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     tps.add(BigDecimal.valueOf(traceMetrics.getAvgTps()).doubleValue());
                     rt.add(BigDecimal.valueOf(traceMetrics.getAvgRt()).doubleValue());
                     totalRequest.add(traceMetrics.getTotal());
-                    double suRate = BigDecimal.valueOf(traceMetrics.getSuccessCount()).divide(BigDecimal.valueOf(traceMetrics.getTotal()), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).doubleValue();
+                    double suRate = BigDecimal.valueOf(traceMetrics.getSuccessCount()).divide(BigDecimal.valueOf(traceMetrics.getTotal()), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100)).doubleValue();
                     successRate.add(suRate);
                     if (StringUtils.isBlank(traceMetrics.getTime())) {
                         return;
@@ -785,7 +796,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 reportAppMapOuts.add(reportAppMapOut);
             });
             return Response.success(reportAppMapOuts);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("getReportAppTrendMap error:", e);
         }
         return Response.success(Collections.EMPTY_LIST);
@@ -829,7 +840,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 list.add(getMachineDetailByAgentId(reportId, applicationNodeDTO.getAppName(), applicationNodeDTO.getAgentId()));
             }
             return Response.success(list);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("getReportAppInstanceTrendMap error", e);
         }
         return Response.success(Collections.EMPTY_LIST);
@@ -1078,12 +1089,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 }
                 if (gcCost != null && gcCost[i] != null) {
                     gcCost[i] = avg(gcCost[i], count);
-                }else {
+                } else {
                     gcCost[i] = ZERO;
                 }
                 if (gcCount != null && gcCount[i] != null) {
                     gcCount[i] = avg(gcCount[i], count);
-                }else {
+                } else {
                     gcCount[i] = ZERO;
                 }
             }

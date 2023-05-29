@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Sets;
 import com.pamirs.pradar.log.parser.ProtocolParserFactory;
 import com.pamirs.pradar.log.parser.trace.RpcBased;
@@ -65,6 +66,8 @@ public class TraceClientImpl implements TraceClient {
     private static final String DATA_CALIBRATION_PATH = "/amdb/trace/compensate";
 
     private static final String TRACE_METRIC_GET_SQL_STATEMENTS = "/amdb/db/api/traceMetric/getSqlStatements";
+
+    private static final String GET_EDGE_IDS_BY_APP_NAMES = "/amdb/link/selectEdgeIdsByAppNames";
 
     @Autowired
     private AmdbClientProperties properties;
@@ -319,5 +322,19 @@ public class TraceClientImpl implements TraceClient {
             return Collections.emptyList();
         }
         return (List<TraceMetrics>) response.getData();
+    }
+
+    @Override
+    public List<String> getEdgeIdsByAppNames(List<String> appNames) {
+        String url = properties.getUrl().getAmdb() + GET_EDGE_IDS_BY_APP_NAMES;
+        try {
+            Response response = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
+                    .param(appNames)
+                    .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
+                    .eventName("应用趋势图查询").one(Response.class).getData();
+            return response.getData() == null ? Collections.emptyList() : JSON.parseArray(JSON.toJSONString(response.getData()), String.class);
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION, e.getMessage());
+        }
     }
 }

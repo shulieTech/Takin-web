@@ -44,6 +44,7 @@ public class WebPluginUtils {
 	public static Long CUSTOMER_ID = -1L;
     public static String DEFAULT_TENANT_APP_KEY = "default";
     public static Long DEFAULT_TENANT_ID = 1L;
+    public static Long DEFAULT_DEPT_ID = -1L;
     public static String DEFAULT_ENV_CODE = "test";
     public static String DEFAULT_TENANT_CODE = "default";
 
@@ -639,6 +640,29 @@ public class WebPluginUtils {
             return tenantId;
         }
         return DEFAULT_TENANT_ID;
+    }
+
+
+    /**
+     * 返回租户id
+     * 租户依赖于用户
+     *
+     * @return 租户主键
+     */
+    public static Long traceDeptId() {
+        if (userApi != null) {
+            // 未登录
+            if (userApi.traceSource() == null) {
+                return null;
+            }
+            UserExt userExt = userApi.traceUser();
+            if(userExt != null) {
+                return userExt.getDeptId();
+            }
+            return DEFAULT_DEPT_ID;
+
+        }
+        return DEFAULT_DEPT_ID;
     }
 
     /**

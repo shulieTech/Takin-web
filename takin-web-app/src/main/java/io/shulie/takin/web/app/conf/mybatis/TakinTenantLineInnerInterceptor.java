@@ -208,6 +208,21 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_interface_performance_result"
     };
 
+
+    private String[] tableArrWithDeptId = new String[] {
+        "t_app_business_table_info",
+        "t_business_link_manage_table",
+        "t_scene_manage",
+        "t_report",
+        "t_application_mnt",
+        "t_scene",
+        "t_script_manage",
+        "t_application_api_manage",
+        "t_fast_debug_config_info",
+        "t_tro_dbresource",
+        "t_interface_performance_config"
+    };
+
     /**
      * 没有tenant_id 的表
      */
@@ -222,6 +237,11 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
      * 没有user_id 的表
      */
     private List<String> tableWithoutUserId = Lists.newArrayList(tableArrWithoutUserId);
+
+    /**
+     * 没有dept_id 的表
+     */
+    private List<String> tableWithDeptId = Lists.newArrayList(tableArrWithDeptId);
 
     private TakinTenantLineHandler tenantLineHandler;
 
@@ -462,6 +482,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         // 已经存在
         String tenantIdColumn = tenantLineHandler.getTenantIdColumn();
         String envCodeColumn = tenantLineHandler.getEnvCodeColumn();
+        String deptIdColumn = tenantLineHandler.getDeptIdColumn();
 
         EqualsTo tenantIdCondition = null;
         if (!tenantLineHandler.ignoreSearch(where, tenantIdColumn) && !tableWithoutTenantId.contains(table.getName())) {
@@ -477,14 +498,25 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             envCodeCondition.setRightExpression(tenantLineHandler.getEnvCode());
         }
 
-        if (tenantIdCondition == null && envCodeCondition == null) {
-            return null;
+        EqualsTo deptIdCondition = null;
+        if (!tenantLineHandler.ignoreSearch(where, deptIdColumn) && tableWithDeptId.contains(table.getName())) {
+            deptIdCondition = new EqualsTo();
+            deptIdCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()));
+            deptIdCondition.setRightExpression(tenantLineHandler.getDeptId());
         }
+
+        AndExpression tenantExpression = null;
         // 1 = 1
         EqualsTo equalsTo = new EqualsTo(new LongValue(1), new LongValue(1));
+        if (tenantIdCondition == null && envCodeCondition == null) {
+            // 只有部分有这个数据
+            if(deptIdCondition != null) {
+                tenantExpression = new AndExpression(equalsTo, deptIdCondition);
+            }
+            return tenantExpression;
+        }
 
         //AndExpression allAndExpression = null;
-        AndExpression tenantExpression = null;
         if (tenantIdCondition != null && envCodeCondition != null) {
             tenantExpression = new AndExpression(tenantIdCondition, envCodeCondition);
         } else if (tenantIdCondition != null) {
@@ -492,6 +524,10 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             tenantExpression = new AndExpression(equalsTo, tenantIdCondition);
         }else if(envCodeCondition != null) {
             tenantExpression = new AndExpression(equalsTo, envCodeCondition);
+        }
+        // 只有部分有这个数据
+        if(deptIdCondition != null) {
+            tenantExpression = new AndExpression(tenantExpression, deptIdCondition);
         }
 
         return tenantExpression;

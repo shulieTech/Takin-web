@@ -16,6 +16,8 @@ public enum TenantField {
      * 租户
      */
     FIELD_TENANT_ID("tenantId", "tenant_Id"),
+
+    FIELD_DEPT_ID("deptId", "dept_id"),
     /**
      * 环境
      */

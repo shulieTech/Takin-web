@@ -19,7 +19,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.10.0</version>
+        <version>takin-web-5.10.0.hzbank</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-common</artifactId>

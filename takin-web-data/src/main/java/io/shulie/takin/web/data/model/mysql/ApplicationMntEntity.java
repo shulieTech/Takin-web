@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import com.sun.jna.platform.win32.WinDef.LONG;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -141,5 +142,8 @@ public class ApplicationMntEntity extends UserBaseEntity {
      */
     @TableField(value = "PRADAR_VERSION")
     private String pradarVersion;
+
+    @TableField(value = "dept_id")
+    private Long deptId;
 
 }

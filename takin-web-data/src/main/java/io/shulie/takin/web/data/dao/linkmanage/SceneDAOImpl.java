@@ -17,6 +17,7 @@ import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.convert.linkmanage.BusinessLinkManageConvert;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
@@ -58,6 +59,7 @@ public class SceneDAOImpl implements SceneDAO {
     public int allocationUser(SceneUpdateParam param) {
         LambdaUpdateWrapper<SceneEntity> wrapper = new LambdaUpdateWrapper();
         wrapper.set(SceneEntity::getUserId, param.getUserId())
+            .set(param.getDeptId() != null, SceneEntity::getDeptId, param.getDeptId())
             .eq(SceneEntity::getId, param.getId());
         return sceneMapper.update(null, wrapper);
     }

@@ -187,6 +187,7 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<
     public int allocationUser(BusinessLinkManageUpdateParam param) {
         LambdaUpdateWrapper<BusinessLinkManageTableEntity> wrapper = new LambdaUpdateWrapper();
         wrapper.set(BusinessLinkManageTableEntity::getUserId, param.getUserId())
+            .set(param.getDeptId() != null,BusinessLinkManageTableEntity::getDeptId, param.getDeptId())
             .eq(BusinessLinkManageTableEntity::getLinkId, param.getLinkId());
         return businessLinkManageTableMapper.update(null, wrapper);
     }

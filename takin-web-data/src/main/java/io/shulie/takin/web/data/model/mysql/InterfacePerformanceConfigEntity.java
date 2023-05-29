@@ -139,4 +139,7 @@ public class InterfacePerformanceConfigEntity extends TenantBaseEntity {
     @TableField(value = "gmt_modified")
     private Date gmtModified;
 
+    @TableField(value = "dept_id")
+    private Long deptId;
+
 }

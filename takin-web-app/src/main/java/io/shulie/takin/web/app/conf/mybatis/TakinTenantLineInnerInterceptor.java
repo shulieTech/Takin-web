@@ -19,9 +19,11 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.Parenthesis;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -220,7 +222,8 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_application_api_manage",
         "t_fast_debug_config_info",
         "t_tro_dbresource",
-        "t_interface_performance_config"
+        "t_interface_performance_config",
+        "t_link_manage_table"
     };
 
     /**
@@ -498,11 +501,18 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             envCodeCondition.setRightExpression(tenantLineHandler.getEnvCode());
         }
 
-        EqualsTo deptIdCondition = null;
+
+        OrExpression deptIdCondition = null;
         if (!tenantLineHandler.ignoreSearch(where, deptIdColumn) && tableWithDeptId.contains(table.getName())) {
-            deptIdCondition = new EqualsTo();
-            deptIdCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()));
-            deptIdCondition.setRightExpression(tenantLineHandler.getDeptId());
+            deptIdCondition = new OrExpression();
+            EqualsTo deptId = new EqualsTo();
+            deptId.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()));
+            deptId.setRightExpression(tenantLineHandler.getDeptId());
+            IsNullExpression isNullExpression = new IsNullExpression();
+            isNullExpression.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()));
+            isNullExpression.setNot(false);
+            deptIdCondition.setLeftExpression(deptId);
+            deptIdCondition.setRightExpression(isNullExpression);
         }
 
         AndExpression tenantExpression = null;

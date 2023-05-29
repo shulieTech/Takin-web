@@ -3,6 +3,7 @@ package io.shulie.takin.web.amdb.api.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollUtil;
@@ -328,11 +329,15 @@ public class TraceClientImpl implements TraceClient {
     public List<String> getEdgeIdsByAppNames(List<String> appNames) {
         String url = properties.getUrl().getAmdb() + GET_EDGE_IDS_BY_APP_NAMES;
         try {
-            Response response = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
+            Object object = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
                     .param(appNames)
                     .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
                     .eventName("应用趋势图查询").one(Response.class).getData();
-            return response.getData() == null ? Collections.emptyList() : JSON.parseArray(JSON.toJSONString(response.getData()), String.class);
+            if (object == null) {
+                return Collections.emptyList();
+            }
+            String response = String.valueOf(object);
+            return response == null ? Collections.emptyList() : JSON.parseArray(response, String.class);
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION, e.getMessage());
         }

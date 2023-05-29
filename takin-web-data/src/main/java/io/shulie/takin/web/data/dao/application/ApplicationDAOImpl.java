@@ -668,6 +668,7 @@ public class ApplicationDAOImpl
 
     @Override
     public IPage<ApplicationListResult> pageByParam(QueryApplicationParam param) {
+        param.setDeptId(WebPluginUtils.traceDeptId());
         return applicationMntMapper.selectApplicationPageByParam(this.setPage(param), param);
     }
 

@@ -41,14 +41,14 @@ public class MyBatisPlusConfig {
                 }
             }
 
-            //@Override
-            //public Expression getUserId() {
-            //    if (WebPluginUtils.traceUserId() != null) {
-            //        return new LongValue(WebPluginUtils.traceUserId());
-            //    }else {
-            //        return new LongValue(WebPluginUtils.DEFAULT_USER_ID);
-            //    }
-            //}
+            @Override
+            public Expression getDeptId() {
+               if (WebPluginUtils.traceUserId() != null && WebPluginUtils.traceDeptId() != null) {
+                   return new LongValue(WebPluginUtils.traceDeptId());
+               }else {
+                   return new LongValue(WebPluginUtils.DEFAULT_DEPT_ID);
+               }
+            }
 
             @Override
             public Expression getTenantId() {
@@ -72,6 +72,8 @@ public class MyBatisPlusConfig {
 
         return interceptor;
     }
+
+
 
     @Bean
     public ConfigurationCustomizer mybatisConfigurationCustomizer() {

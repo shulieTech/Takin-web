@@ -49,6 +49,9 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
     @InterceptorIgnore(tenantLine = "true")
     ApplicationMntEntity getApplicationByIdWithInterceptorIgnore(@Param("appId") Long appId);
 
+    List<ApplicationMntEntity> getApplicationById(@Param("appId") Long appId);
+
+
     /**
      * 查询
      *

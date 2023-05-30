@@ -501,23 +501,17 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             envCodeCondition.setRightExpression(tenantLineHandler.getEnvCode());
         }
 
+        // 1 = 1
+        EqualsTo equalsTo = new EqualsTo(new LongValue(1), new LongValue(1));
 
-        OrExpression deptIdCondition = null;
+        Expression deptIdCondition = null;
         if (!tenantLineHandler.ignoreSearch(where, deptIdColumn) && tableWithDeptId.contains(table.getName())) {
-            deptIdCondition = new OrExpression();
-            EqualsTo deptId = new EqualsTo();
-            deptId.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()));
-            deptId.setRightExpression(tenantLineHandler.getDeptId());
-            IsNullExpression isNullExpression = new IsNullExpression();
-            isNullExpression.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()));
-            isNullExpression.setNot(false);
-            deptIdCondition.setLeftExpression(deptId);
-            deptIdCondition.setRightExpression(isNullExpression);
+            deptIdCondition = new Parenthesis(new OrExpression(new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()),tenantLineHandler.getDeptId()),
+                new IsNullExpression().withLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()))));
         }
 
         AndExpression tenantExpression = null;
-        // 1 = 1
-        EqualsTo equalsTo = new EqualsTo(new LongValue(1), new LongValue(1));
+
         if (tenantIdCondition == null && envCodeCondition == null) {
             // 只有部分有这个数据
             if(deptIdCondition != null) {

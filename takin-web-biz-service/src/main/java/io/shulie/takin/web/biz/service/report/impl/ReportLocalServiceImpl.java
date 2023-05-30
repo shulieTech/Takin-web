@@ -789,10 +789,10 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 reportAppMapOut.setTps(tps.stream().toArray().length == 0 ? new Double[]{0.0} : tps.toArray(new Double[0]));
                 reportAppMapOut.setRt(rt.stream().toArray().length == 0 ? new Double[]{0.0} : rt.toArray(new Double[0]));
                 reportAppMapOut.setSuccessRate(successRate.stream().toArray().length == 0 ? new Double[]{0.0} : successRate.toArray(new Double[0]));
-                reportAppMapOut.setConcurent(totalRequest.stream().toArray().length == 0 ? new Integer[]{0} : totalRequest.toArray(new Integer[0]));
+                reportAppMapOut.setConcurrent(totalRequest.stream().toArray().length == 0 ? new Integer[]{0} : totalRequest.toArray(new Integer[0]));
                 reportAppMapOut.setXtime(xtime.stream().toArray().length == 0 ? new String[]{"0"} : xtime.toArray(new String[0]));
                 reportAppMapOut.setXcost(xcost.stream().toArray().length == 0 ? new String[]{"0"} : xcost.toArray(new String[0]));
-                reportAppMapOut.setConut(conut.stream().toArray().length == 0 ? new String[]{"0"} : conut.toArray(new String[0]));
+                reportAppMapOut.setCount(conut.stream().toArray().length == 0 ? new String[]{"0"} : conut.toArray(new String[0]));
                 reportAppMapOuts.add(reportAppMapOut);
             });
             return Response.success(reportAppMapOuts);

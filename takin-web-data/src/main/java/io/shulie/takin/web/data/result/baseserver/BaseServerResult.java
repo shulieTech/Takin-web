@@ -1,7 +1,5 @@
 package io.shulie.takin.web.data.result.baseserver;
 
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 

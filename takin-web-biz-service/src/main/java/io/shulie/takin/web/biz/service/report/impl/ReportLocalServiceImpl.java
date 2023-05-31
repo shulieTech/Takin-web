@@ -70,6 +70,7 @@ import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportMessageService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
@@ -325,6 +326,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         Map<Long, ReportDetailOutput> reportOutputMap = new HashMap<>();
         Integer minRt = 0;
         Integer maxRt = 0;
+        String bindRef = null;
         for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
             ReportDetailOutput reportOutput = reportService.getReportByReportId(reportId);
@@ -343,22 +345,25 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 continue;
             }
             reportOutputMap.put(reportId, reportOutput);
+            bindRef = detailEntity.getBindRef();
             //列表数据 性能指标 rt数据
             JSONObject jsonObject = JSON.parseObject(detailEntity.getRtDistribute());
             String jsonStepString = jsonObject.getString("stepData");
-            output.setTargetData(JsonHelper.json2List(jsonStepString, ReportCompareTargetOut.class));
-            if (CollectionUtils.isNotEmpty(output.getTargetData())) {
-                output.getTargetData().stream().forEach(data -> {
+            List<ReportCompareTargetOut> targetList = JsonHelper.json2List(jsonStepString, ReportCompareTargetOut.class);
+            if (CollectionUtils.isNotEmpty(targetList)) {
+                targetList.stream().forEach(data -> {
                     data.setReportId(reportId);
                     data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
                 });
+                output.getTargetData().addAll(targetList);
             }
-            output.setRtData(JsonHelper.json2List(jsonStepString, ReportCompareRtOutput.class));
-            if (CollectionUtils.isNotEmpty(output.getRtData())) {
-                output.getRtData().stream().forEach(data -> {
+            List<ReportCompareRtOutput> rtList = JsonHelper.json2List(jsonStepString, ReportCompareRtOutput.class);
+            if (CollectionUtils.isNotEmpty(rtList)) {
+                rtList.stream().forEach(data -> {
                     data.setReportId(reportId);
                     data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
                 });
+                output.getRtData().addAll(rtList);
             }
             //趋势图数据 TPS RT
             ReportTrendQueryReq trendQueryReq = new ReportTrendQueryReq();
@@ -376,7 +381,11 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 trendOut.setSa(trendResp.getSa());
                 Pair<Integer, Integer> pair = getMinMaxRt(trendResp.getRt());
                 if (pair != null) {
-                    minRt = Math.min(minRt, pair.getKey());
+                    if (minRt == 0) {
+                        minRt = pair.getKey();
+                    } else {
+                        minRt = Math.min(minRt, pair.getKey());
+                    }
                     maxRt = Math.max(maxRt, pair.getValue());
                 }
             }
@@ -392,16 +401,17 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
             for (Pair<Integer, Integer> costPair : costList) {
                 ReportCostTrendQueryReq costReq = new ReportCostTrendQueryReq();
-                costReq.setStartTime(reportOutput.getStartTime());
-                costReq.setEndTime(DateUtil.formatDateTime(reportOutput.getEndTime()));
-                costReq.setJobId(reportOutput.getJobId().toString());
+                costReq.setStartTime(ReportTimeUtils.beforeStartTime(DateUtil.parseDateTime(reportOutput.getStartTime()).getTime()));
+                costReq.setEndTime(ReportTimeUtils.afterEndTime(reportOutput.getEndTime().getTime()));
+                costReq.setJobId(reportOutput.getJobId());
                 costReq.setServiceName(activityResp.getServiceName());
                 costReq.setRequestMethod(activityResp.getMethod());
                 costReq.setMinCost(costPair.getKey());
                 costReq.setMaxCost(costPair.getValue());
-                Integer cost = reportMessageService.getRequestCountByCost(costReq);
+                costReq.setTransaction(bindRef);
+                Long costCount = reportMessageService.getRequestCountByCost(costReq);
                 output.getTrendData().get(i).getXCost().add(costPair.getKey() + "-" + costPair.getValue() + "ms");
-                output.getTrendData().get(i).getCount().add(String.valueOf(cost));
+                output.getTrendData().get(i).getCount().add(String.valueOf(costCount));
             }
         }
         return output;
@@ -886,7 +896,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     private static ReportActivityInfoQueryRequest genActivityInfo(long activityId, ReportEntity reportEntity) {
         ReportActivityInfoQueryRequest request = new ReportActivityInfoQueryRequest();
         request.setActivityId(activityId);
-        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
+        //request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
         request.setStartTime(reportEntity.getStartTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
         request.setEndTime(reportEntity.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plus(5, ChronoUnit.MINUTES));
         request.setReportId(reportEntity.getId());
@@ -1003,8 +1013,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             dto.setMemorySize(jsonObject.getBigDecimal(ReportConfigConstant.BASE_MEMORY_KEY));
             dto.setDiskSize(jsonObject.getBigDecimal(ReportConfigConstant.BASE_DISK_KEY));
             dto.setMbps(convertByte2Mb(jsonObject.getBigDecimal(ReportConfigConstant.BASE_MBPS_KEY)));
-            dto.setGcCost(jsonObject.getBigDecimal(ReportConfigConstant.CHART_GC_COST));
-            dto.setGcCount(jsonObject.getBigDecimal(ReportConfigConstant.CHART_GC_COUNT));
         } catch (Exception e) {
             log.error("Parse BaseConfig Error: config={}, error={}", baseConfig, e.getMessage());
         }

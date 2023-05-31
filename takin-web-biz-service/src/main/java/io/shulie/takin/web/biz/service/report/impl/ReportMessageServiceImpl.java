@@ -59,7 +59,7 @@ public class ReportMessageServiceImpl implements ReportMessageService {
     }
 
     @Override
-    public Integer getRequestCountByCost(ReportCostTrendQueryReq req) {
+    public Long getRequestCountByCost(ReportCostTrendQueryReq req) {
         HttpMethod httpMethod = HttpMethod.GET;
         req.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         req.setEnvCode(WebPluginUtils.traceEnvCode());
@@ -69,6 +69,6 @@ public class ReportMessageServiceImpl implements ReportMessageService {
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
                 .eventName("查询enginePressure数据")
                 .one(ReportCostDTO.class);
-        return response.getData().getCount();
+        return (response != null && response.getData() != null && response.getData().getCount() != null) ? response.getData().getCount() : 0L;
     }
 }

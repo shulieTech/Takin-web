@@ -99,6 +99,7 @@ import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.utils.ParsePressureTimeByModeUtils;
+import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
@@ -180,6 +181,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private String pressureEngineLogPath;
 
     public static final String COMPARE = "<=";
+
+    private static final BigDecimal ZERO = new BigDecimal("0");
 
     @Override
     public PageInfo<CloudReportDTO> listReport(ReportQueryReq param) {
@@ -629,12 +632,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      */
     private Map<String, List<BigDecimal>> getSummaryConcurrentStageThreadNum(Long reportId) {
         ReportOutput reportOutput = cloudReportService.selectById(reportId);
-        Long sceneId = reportOutput.getSceneId();
-        SceneManageEntity manageEntity = sceneManageMapper.selectById(sceneId);
-        if (manageEntity == null || manageEntity.getPtConfig() == null) {
-            return Collections.emptyMap();
-        }
-        PtConfigExt ext = JSON.parseObject(manageEntity.getPtConfig(), PtConfigExt.class);
+        PtConfigExt ext = JSON.parseObject(reportOutput.getPtConfig(), PtConfigExt.class);
         Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
         if (configMap == null || configMap.isEmpty()) {
             return Collections.emptyMap();
@@ -1424,23 +1422,29 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 for(int i = 0; i < timeList.size(); i++) {
                     //统计某个业务活动的数据
                     long startTime = timeList.get(i).getStartTime().getTime();
+                    long calcStartTime = startTime;
                     //查询>= <=，所以这里要+1
                     if(i > 0) {
-                        startTime = startTime + 1L;
+                        calcStartTime = startTime + 1L;
+                    } else {
+                        calcStartTime = ReportTimeUtils.beforeStartTime(startTime);
                     }
                     long endTime = timeList.get(i).getEndTime().getTime();
-
+                    long calcEndime = endTime;
+                    if(i == timeList.size() - 1) {
+                        calcEndime = ReportTimeUtils.afterEndTime(endTime);
+                    }
                     Map<String, Object> stepMap = new HashMap<>();
-                    StatReportDTO data = statReportByTimes(startTime, endTime, jobId, sceneId, reportId, tenantId, reportBusinessActivityDetail.getBindRef());
-                    Map<String, Integer> rtMap = reportEventService.queryAndCalcRtDistributeByTime(startTime, endTime, jobId, reportBusinessActivityDetail.getBindRef());
+                    StatReportDTO data = statReportByTimes(calcStartTime, calcEndime, jobId, sceneId, reportId, tenantId, reportBusinessActivityDetail.getBindRef());
+                    Map<String, Integer> rtMap = reportEventService.queryAndCalcRtDistributeByTime(calcStartTime, calcEndime, jobId, reportBusinessActivityDetail.getBindRef());
                     stepMap.put("startTime", DateUtil.formatDateTime(DateUtil.date(startTime)));
                     stepMap.put("endTime", DateUtil.formatDateTime(DateUtil.date(endTime)));
                     if(data != null) {
                         stepMap.put("totalRequest", data.getTotalRequest());
                         stepMap.put("concurrent", data.getAvgConcurrenceNum());
                         stepMap.put("avgTps", data.getTps());
-                        stepMap.put("minTps", data.getMaxTps());
-                        stepMap.put("maxTps", data.getMinTps());
+                        stepMap.put("minTps", data.getMinTps());
+                        stepMap.put("maxTps", data.getMaxTps());
                         stepMap.put("avgRt", data.getAvgRt());
                         stepMap.put("minRt", data.getMinRt());
                         stepMap.put("maxRt", data.getMaxRt());
@@ -1515,23 +1519,39 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      * @return -
      */
     private boolean isPass(ReportBusinessActivityDetail detail) {
-        if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(
-                detail.getSuccessRate()) > 0) {
+        if (detail.getTargetSuccessRate() != null
+                && detail.getTargetSuccessRate().compareTo(ZERO) > 0
+                && detail.getTargetSuccessRate().compareTo(detail.getSuccessRate()) > 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "成功率", detail.getTargetSuccessRate(), detail.getSuccessRate());
             return false;
-        } else if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
-            return false;
-        } else if (isTargetBiggerThanZero(detail.getTargetRt()) && detail.getTargetRt().compareTo(detail.getRt()) < 0) {
-            return false;
-        } else {
-            return !isTargetBiggerThanZero(detail.getTargetTps()) || detail.getTargetTps().compareTo(detail.getTps()) <= 0;
         }
-    }
-
-    private boolean isTargetBiggerThanZero(BigDecimal target) {
-        if (Objects.nonNull(target)) {
-            return target.compareTo(new BigDecimal(0)) > 0;
+        if (detail.getTargetSa() != null
+                && detail.getTargetSa().compareTo(ZERO) > 0
+                && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "SA", detail.getTargetSa(), detail.getSa());
+            return false;
         }
-        return false;
+        if (detail.getTargetRt() != null
+                && detail.getTargetRt().compareTo(ZERO) > 0
+                && detail.getTargetRt().compareTo(detail.getRt()) < 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "RT", detail.getTargetRt(), detail.getRt());
+            return false;
+        }
+        if (detail.getTargetTps() != null
+                && detail.getTargetTps().compareTo(ZERO) > 0
+                && detail.getTargetTps().compareTo(detail.getTps()) > 0){
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "TPS", detail.getTargetTps(), detail.getTps());
+            return false;
+        }
+        return true;
     }
 
     /**

@@ -23,7 +23,7 @@ public class ReportAppInstancePerformanceOut {
     @ApiModelProperty(value = "平均网络使用率")
     private BigDecimal avgNetUsageRate;
     @ApiModelProperty(value = "GC次数")
-    private int gcCount;
+    private BigDecimal gcCount;
     @ApiModelProperty(value = "GC时间")
     private BigDecimal gcCost;
     @ApiModelProperty(value = "平均TPS")

@@ -660,7 +660,7 @@ public class LinkTopologyService extends CommonService {
         Integer allMaxRt = (Integer)jsonObject.get("allMaxRt");
         traceMetricsResult.setAllMaxRt(allMaxRt.doubleValue());
 
-        Integer allMinRt = (Integer)jsonObject.get("allMinRt");
+        BigDecimal allMinRt = jsonObject.getBigDecimal("allMinRt");
         traceMetricsResult.setAllMinRt(allMinRt.doubleValue());
         traceMetricsResultList.add(traceMetricsResult);
     }
@@ -738,6 +738,7 @@ public class LinkTopologyService extends CommonService {
         appProvider.setAllTotalRt(appProviderContainer.getAllTotalRt());
         appProvider.setServiceAvgRt(appProviderContainer.getServiceRt());
         appProvider.setServiceAllMaxRt(appProviderContainer.getServiceAllMaxRt());
+        appProvider.setServiceAllMinRt(appProviderContainer.getServiceAllMinRt());
         // 4) 前端显示 RT
         appProvider.setServiceRt(appProvider.getServiceAvgRt());
     }
@@ -923,6 +924,7 @@ public class LinkTopologyService extends CommonService {
         appProvider.setServiceAvgRt(INIT); // 平均Rt
         appProvider.setAllTotalRt(INIT); // 总调用Rt
         appProvider.setServiceAllMaxRt(INIT); // maxRt
+        appProvider.setServiceAllMinRt(INIT);
 
         if (allTotalTpsAndRtCountResults.size() != 0) {
             TraceMetricsResult traceMetricsResult = allTotalTpsAndRtCountResults.get(0);
@@ -954,6 +956,8 @@ public class LinkTopologyService extends CommonService {
             // 最大 Rt    MAX(maxRt)
             double allMaxRt = traceMetricsResult.getAllMaxRt();
             appProvider.setServiceAllMaxRt(allMaxRt);
+
+            appProvider.setServiceAllMinRt(traceMetricsResult.getAllMinRt());
         }
         return appProvider;
     }

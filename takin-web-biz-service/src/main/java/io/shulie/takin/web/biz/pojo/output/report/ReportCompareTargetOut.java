@@ -43,4 +43,44 @@ public class ReportCompareTargetOut implements Serializable {
 
     @ApiModelProperty(value = "压测结束时间")
     private String endTime;
+
+    public BigDecimal getAvgTps() {
+        return avgTps != null ? avgTps.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getMaxTps() {
+        return maxTps != null ? maxTps.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getMinTps() {
+        return minTps != null ? minTps.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getSuccessRate() {
+        return successRate != null ? successRate.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public BigDecimal getSa() {
+        return sa != null ? sa.setScale(2, BigDecimal.ROUND_HALF_UP) : null;
+    }
+
+    public void setAvgTps(BigDecimal avgTps) {
+        this.avgTps = (avgTps == null ? null : avgTps.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setMaxTps(BigDecimal maxTps) {
+        this.maxTps = (maxTps == null ? null : maxTps.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setMinTps(BigDecimal minTps) {
+        this.minTps = (minTps == null ? null : minTps.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setSuccessRate(BigDecimal successRate) {
+        this.successRate = (successRate == null ? null : successRate.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+
+    public void setSa(BigDecimal sa) {
+        this.sa = (sa == null ? null : sa.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
 }

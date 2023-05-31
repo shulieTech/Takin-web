@@ -14,5 +14,5 @@ public interface ReportMessageService {
 
     ReportMessageDetailDTO getOneTraceDetail(ReportMessageDetailReq req);
 
-    Integer getRequestCountByCost(ReportCostTrendQueryReq req);
+    Long getRequestCountByCost(ReportCostTrendQueryReq req);
 }

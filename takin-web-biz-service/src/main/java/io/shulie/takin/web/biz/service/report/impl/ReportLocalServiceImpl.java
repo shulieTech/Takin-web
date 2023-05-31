@@ -585,7 +585,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     reportAppPerformanceOut.setMinRt(node.getServiceMinRt() != null ? BigDecimal.valueOf(node.getServiceMinRt()) : new BigDecimal(0));
                     reportAppPerformanceOut.setSuccessRate(node.getServiceAllSuccessRate() != null ? BigDecimal.valueOf(node.getServiceAllSuccessRate() * 100) : new BigDecimal(0));
                     reportAppPerformanceOut.setSa(reportDetailOutput.getSa());
-                    reportAppPerformanceOut.setStartTime(reportEntity.getStartTime());
+                    reportAppPerformanceOut.setStartTime(DateUtil.formatDateTime(reportEntity.getStartTime()));
                     list.add(reportAppPerformanceOut);
                 }
             }
@@ -644,7 +644,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 ReportAppInstancePerformanceOut reportAppInstancePerformanceOut = new ReportAppInstancePerformanceOut();
                 reportAppInstancePerformanceOut.setAppName(machine.getApplicationName());
                 reportAppInstancePerformanceOut.setInstanceName(machine.getMachineIp());
-                reportAppInstancePerformanceOut.setGcCount(Optional.ofNullable(machine.getGcCount()).orElse(BigDecimal.ZERO).intValue());
+                reportAppInstancePerformanceOut.setGcCount(Optional.ofNullable(machine.getGcCount()).orElse(BigDecimal.ZERO));
                 reportAppInstancePerformanceOut.setGcCost(Optional.ofNullable(machine.getGcCost()).orElse(BigDecimal.ZERO));
                 if (machine.getTpsTarget() == null) {
                     return reportAppInstancePerformanceOut;

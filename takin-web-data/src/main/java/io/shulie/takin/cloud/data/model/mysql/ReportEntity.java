@@ -3,6 +3,7 @@ package io.shulie.takin.cloud.data.model.mysql;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -173,7 +174,7 @@ public class ReportEntity {
     @TableField(value = "gmt_update")
     private Date gmtUpdate;
 
-    @TableField(value = "dept_id")
+    @TableField(value = "dept_id",fill = FieldFill.INSERT)
     private Long deptId;
 
     @TableField(value = "script_id")

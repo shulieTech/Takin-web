@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.model.mysql;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -139,7 +140,7 @@ public class InterfacePerformanceConfigEntity extends TenantBaseEntity {
     @TableField(value = "gmt_modified")
     private Date gmtModified;
 
-    @TableField(value = "dept_id")
+    @TableField(value = "dept_id",fill = FieldFill.INSERT)
     private Long deptId;
 
 }

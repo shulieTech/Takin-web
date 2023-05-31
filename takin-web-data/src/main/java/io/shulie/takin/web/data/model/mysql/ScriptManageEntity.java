@@ -60,7 +60,7 @@ public class ScriptManageEntity extends UserBaseEntity {
     @TableField(value = "sign",fill = FieldFill.INSERT)
     private String sign;
 
-    @TableField(value = "dept_id")
-    private String deptId;
+    @TableField(value = "dept_id",fill = FieldFill.INSERT)
+    private Long deptId;
 
 }

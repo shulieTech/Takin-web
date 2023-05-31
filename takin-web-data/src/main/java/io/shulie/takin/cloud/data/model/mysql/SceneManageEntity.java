@@ -113,7 +113,7 @@ public class SceneManageEntity {
     private String sign;
     @TableField(value = "custom_id")
     private Long customId;
-    @TableField(value = "dept_id")
+    @TableField(value = "dept_id",fill = FieldFill.INSERT)
     private Long deptId;
     @TableField(value = "create_uid")
     private Long createUid;

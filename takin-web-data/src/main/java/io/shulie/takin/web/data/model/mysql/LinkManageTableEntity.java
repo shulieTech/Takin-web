@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -121,7 +122,7 @@ public class LinkManageTableEntity extends UserBaseEntity {
     /**
      * 部门字段
      */
-    @TableField(value = "dept_id")
+    @TableField(value = "dept_id",fill = FieldFill.INSERT)
     private Long deptId;
 
 

@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -104,6 +105,6 @@ public class SceneEntity extends UserBaseEntity {
     @TableField(value = "features")
     private String features;
 
-    @TableField(value = "dept_id")
-    private String deptId;
+    @TableField(value = "dept_id",fill = FieldFill.INSERT)
+    private Long deptId;
 }

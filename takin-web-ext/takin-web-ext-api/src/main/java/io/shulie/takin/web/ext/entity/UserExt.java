@@ -86,4 +86,6 @@ public class UserExt {
     private Integer isSuper;
 
     private Long deptId;
+
+    private Boolean isProjectAdmin;
 }

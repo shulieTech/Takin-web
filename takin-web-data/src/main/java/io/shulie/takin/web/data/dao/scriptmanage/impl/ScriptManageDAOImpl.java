@@ -364,7 +364,7 @@ public class ScriptManageDAOImpl
         }
         scriptId = deployEntity.getScriptId();
         LambdaUpdateWrapper<ScriptManageEntity> wrapper = new LambdaUpdateWrapper();
-        wrapper.set(ScriptManageEntity::getUserId, userId)
+        wrapper.set(userId != null,ScriptManageEntity::getUserId, userId)
             .set(deptId != null, ScriptManageEntity::getDeptId, deptId)
             .eq(ScriptManageEntity::getId, scriptId);
         return scriptManageMapper.update(null, wrapper);

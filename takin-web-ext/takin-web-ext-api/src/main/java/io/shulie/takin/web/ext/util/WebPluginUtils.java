@@ -620,6 +620,26 @@ public class WebPluginUtils {
         }
         return null;
     }
+    /**
+     * 获取登录账号
+     *
+     * @return 登录的用户信息
+     */
+    public static Boolean isAdmin() {
+        if (Objects.nonNull(userApi)) {
+            UserExt userExt = userApi.traceUser();
+            if(userExt != null) {
+                Integer userType = userExt.getUserType();
+                if(userType == 0 || userType == 2) {
+                    return true;
+                }
+                return false;
+            }
+            return false;
+
+        }
+        return false;
+    }
 
     /**
      * 返回租户id

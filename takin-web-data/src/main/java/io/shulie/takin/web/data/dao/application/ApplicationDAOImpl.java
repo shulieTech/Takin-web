@@ -414,7 +414,7 @@ public class ApplicationDAOImpl
     @Override
     public int allocationUser(ApplicationUpdateParam param) {
         LambdaUpdateWrapper<ApplicationMntEntity> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(ApplicationMntEntity::getUserId, param.getUserId())
+        wrapper.set(param.getUserId() != null,ApplicationMntEntity::getUserId, param.getUserId())
             .set(param.getDeptId() != null, ApplicationMntEntity::getDeptId, param.getDeptId())
             .eq(ApplicationMntEntity::getApplicationId, param.getId());
         return applicationMntMapper.update(null, wrapper);

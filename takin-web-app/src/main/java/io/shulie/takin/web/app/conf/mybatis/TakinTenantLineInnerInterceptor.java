@@ -9,6 +9,8 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.google.common.collect.Lists;
+import io.shulie.takin.web.biz.constant.TakinWebContext;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -506,8 +508,15 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
 
         Expression deptIdCondition = null;
         if (!tenantLineHandler.ignoreSearch(where, deptIdColumn) && tableWithDeptId.contains(table.getName())) {
-            deptIdCondition = new Parenthesis(new OrExpression(new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()),tenantLineHandler.getDeptId()),
-                new IsNullExpression().withLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()))));
+            // 超级管理员
+            if(WebPluginUtils.isAdmin()) {
+                deptIdCondition = new Parenthesis(new OrExpression(new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()),tenantLineHandler.getDeptId()),
+                    new IsNullExpression().withLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()))));
+            }else {
+                // 固定
+                deptIdCondition = new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()),tenantLineHandler.getDeptId());
+            }
+
         }
 
         AndExpression tenantExpression = null;

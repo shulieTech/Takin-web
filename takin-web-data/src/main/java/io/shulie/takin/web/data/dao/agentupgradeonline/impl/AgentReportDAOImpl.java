@@ -88,12 +88,12 @@ public class AgentReportDAOImpl extends ServiceImpl<AgentReportMapper, AgentRepo
     public void clearExpiredData() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         // 删除1分钟前的数据
-        QueryWrapper<AgentReportEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().lt(AgentReportEntity::getGmtUpdate, simpleDateFormat.format(System.currentTimeMillis() - 60 * 1000));
-        List<AgentReportEntity> agentReportEntities = agentReportMapper.selectList(queryWrapper);
-        List<Long> ids = agentReportEntities.stream().map(AgentReportEntity::getId).collect(Collectors.toList());
-        agentReportMapper.deleteBatchIds(ids);
-//        agentReportMapper.selfDelete(simpleDateFormat.format(System.currentTimeMillis() - 60 * 1000));
+//        QueryWrapper<AgentReportEntity> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.lambda().lt(AgentReportEntity::getGmtUpdate, simpleDateFormat.format(System.currentTimeMillis() - 60 * 1000));
+//        List<AgentReportEntity> agentReportEntities = agentReportMapper.selectList(queryWrapper);
+//        List<Long> ids = agentReportEntities.stream().map(AgentReportEntity::getId).collect(Collectors.toList());
+//        agentReportMapper.deleteBatchIds(ids);
+        agentReportMapper.selfDelete(simpleDateFormat.format(System.currentTimeMillis() - 60 * 1000));
     }
 
     @Override

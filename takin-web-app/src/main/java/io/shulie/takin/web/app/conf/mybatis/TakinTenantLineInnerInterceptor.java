@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.google.common.collect.Lists;
-import io.shulie.takin.web.biz.constant.TakinWebContext;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +20,6 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.Parenthesis;
-import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
@@ -260,7 +258,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
      */
     @Override
     protected Expression builderExpression(Expression currentExpression, Table table) {
-        AndExpression tenantExpression = this.buildTenantExpression(table, currentExpression);
+        AndExpression tenantExpression = this.buildTenantExpression(table, currentExpression, true);
         // 没有租户的
         if (tenantExpression == null) {
             return currentExpression;
@@ -282,7 +280,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     @Override
     protected BinaryExpression andExpression(Table table, Expression where) {
         //获得where条件表达式
-        AndExpression tenantExpression = this.buildTenantExpression(table, where);
+        AndExpression tenantExpression = this.buildTenantExpression(table, where, false);
 
         if (tenantExpression == null) {
             EqualsTo equalsTo = new EqualsTo(new LongValue(1), new LongValue(1));
@@ -428,6 +426,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             // 过滤退出执行
             return;
         }
+        // 更新的时候不用部门
         update.setWhere(this.andExpression(table, update.getWhere()));
         log.debug("组装update的sql【{}】", update.toString());
     }
@@ -483,7 +482,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         return new Column(column.toString());
     }
 
-    private AndExpression buildTenantExpression(Table table, Expression where) {
+    private AndExpression buildTenantExpression(Table table, Expression where,Boolean isNeedDept) {
         // 已经存在
         String tenantIdColumn = tenantLineHandler.getTenantIdColumn();
         String envCodeColumn = tenantLineHandler.getEnvCodeColumn();
@@ -507,9 +506,9 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         EqualsTo equalsTo = new EqualsTo(new LongValue(1), new LongValue(1));
 
         Expression deptIdCondition = null;
-        if (!tenantLineHandler.ignoreSearch(where, deptIdColumn) && tableWithDeptId.contains(table.getName())) {
+        if (isNeedDept && !tenantLineHandler.ignoreSearch(where, deptIdColumn) && tableWithDeptId.contains(table.getName())) {
             // 超级管理员
-            if(WebPluginUtils.isAdmin()) {
+            if(WebPluginUtils.isProjectAdmin()) {
                 deptIdCondition = new Parenthesis(new OrExpression(new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()),tenantLineHandler.getDeptId()),
                     new IsNullExpression().withLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()))));
             }else {

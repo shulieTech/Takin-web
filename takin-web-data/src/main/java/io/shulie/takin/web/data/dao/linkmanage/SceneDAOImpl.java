@@ -58,7 +58,7 @@ public class SceneDAOImpl implements SceneDAO {
     @Override
     public int allocationUser(SceneUpdateParam param) {
         LambdaUpdateWrapper<SceneEntity> wrapper = new LambdaUpdateWrapper();
-        wrapper.set(SceneEntity::getUserId, param.getUserId())
+        wrapper.set(param.getUserId() != null,SceneEntity::getUserId, param.getUserId())
             .set(param.getDeptId() != null, SceneEntity::getDeptId, param.getDeptId())
             .eq(SceneEntity::getId, param.getId());
         return sceneMapper.update(null, wrapper);

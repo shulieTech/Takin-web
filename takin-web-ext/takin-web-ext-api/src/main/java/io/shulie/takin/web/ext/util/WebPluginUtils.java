@@ -621,11 +621,11 @@ public class WebPluginUtils {
         return null;
     }
     /**
-     * 获取登录账号
+     * 是否是项目管理员
      *
      * @return 登录的用户信息
      */
-    public static Boolean isAdmin() {
+    public static Boolean isProjectAdmin() {
         if (Objects.nonNull(userApi)) {
             UserExt userExt = userApi.traceUser();
             if(userExt != null) {
@@ -633,7 +633,7 @@ public class WebPluginUtils {
                 if(userType == 0 || userType == 2) {
                     return true;
                 }
-                return false;
+                return userExt.getIsProjectAdmin();
             }
             return false;
 

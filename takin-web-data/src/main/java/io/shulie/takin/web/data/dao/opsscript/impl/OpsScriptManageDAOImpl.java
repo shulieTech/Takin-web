@@ -62,7 +62,7 @@ public class OpsScriptManageDAOImpl
         OpsScriptManageEntity one = this.lambdaQuery().eq(OpsScriptManageEntity::getId, dataId).one();
         if (one != null) {
             return this.lambdaUpdate()
-                    .set(OpsScriptManageEntity::getUserId, userId)
+                    .set(userId != null,OpsScriptManageEntity::getUserId, userId)
                     .set(OpsScriptManageEntity::getGmtUpdate, new Date())
                     .set(deptId != null, OpsScriptManageEntity::getDeptId, deptId)
                     .eq(OpsScriptManageEntity::getId, dataId).update();

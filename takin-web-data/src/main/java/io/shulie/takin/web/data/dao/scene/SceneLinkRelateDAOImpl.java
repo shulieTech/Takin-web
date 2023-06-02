@@ -220,7 +220,7 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
 
     private List<SceneLinkRelateResult> toResult(List<SceneLinkRelateEntity> entities) {
         if (CollectionUtils.isEmpty(entities)) {
-            return null;
+            return Lists.newArrayList();
         }
         return entities.stream().filter(Objects::nonNull)
             .map(this::toResult)

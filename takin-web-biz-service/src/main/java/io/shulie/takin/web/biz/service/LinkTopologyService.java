@@ -586,8 +586,8 @@ public class LinkTopologyService extends CommonService {
                     appProviderContainer.setServiceAllMaxRt(
                             Math.max(appProviderContainer.getServiceAllMaxRt(), appProvider.getServiceAllMaxRt())
                     );
-                    if(appProviderContainer.getServiceAllMinRt() < 0.000001d) {
-                        appProviderContainer.setServiceAllMinRt(appProvider.getServiceAllMinRt());
+                    if(appProvider.getServiceAllMinRt() == null || appProvider.getServiceAllMinRt() < 0.000001d) {
+                        appProviderContainer.setServiceAllMinRt(0.000001d);
                     } else {
                         appProviderContainer.setServiceAllMinRt(
                                 Math.min(appProviderContainer.getServiceAllMinRt(), appProvider.getServiceAllMinRt())

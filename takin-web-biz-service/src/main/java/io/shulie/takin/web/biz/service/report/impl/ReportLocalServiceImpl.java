@@ -308,6 +308,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         String bindRef = null;
         for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
+            if(reportId == null) {
+                continue;
+            }
             ReportDetailOutput reportOutput = reportService.getReportByReportId(reportId);
             if (reportOutput == null) {
                 continue;

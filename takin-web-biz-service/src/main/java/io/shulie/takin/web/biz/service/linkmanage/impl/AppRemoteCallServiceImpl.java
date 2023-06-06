@@ -86,7 +86,6 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -318,7 +317,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     }
 
     private String getMiddlewareName(List<TDictionaryVo> voList) {
-        Set<String> middlewareNames = Sets.newSet();
+        Set<String> middlewareNames = new HashSet<>();
         List<InterfaceTypeMainEntity> mainList = interfaceTypeMainDAO.selectList();
         mainList.forEach(main -> {
             middlewareNames.add(main.getEngName().toUpperCase());

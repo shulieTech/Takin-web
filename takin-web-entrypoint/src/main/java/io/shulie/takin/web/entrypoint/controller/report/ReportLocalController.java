@@ -1,10 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.report;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -30,7 +27,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -321,7 +317,7 @@ public class ReportLocalController {
         queryParam.setReportId(reportId);
         queryParam.setCurrentPage(0);
         queryParam.setPageSize(200);
-        Set<String> bottleneckSet = Sets.newSet();
+        Set<String> bottleneckSet = new HashSet<>();
         PageInfo<BottleneckInterfaceDTO> pageInfo = reportLocalService.listBottleneckInterface(queryParam);
         if (pageInfo != null && CollectionUtils.isNotEmpty(pageInfo.getList())) {
             bottleneckSet.addAll(

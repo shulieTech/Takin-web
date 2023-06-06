@@ -96,7 +96,17 @@
             <artifactId>swagger-annotations</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.dangdang</groupId>
+            <artifactId>elastic-job-lite-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!--整合springboot job-->
+        <dependency>
+            <groupId>com.dangdang</groupId>
+            <artifactId>elastic-job-lite-spring</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
 </project>

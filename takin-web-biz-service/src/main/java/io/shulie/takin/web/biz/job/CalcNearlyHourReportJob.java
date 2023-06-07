@@ -27,13 +27,13 @@ public class CalcNearlyHourReportJob extends AbstractSceneTask {
     private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
     private static AtomicInteger EMPTY = new AtomicInteger();
 
-    @XxlJob("calcTmpReportDataJobExecute")
+    @XxlJob("calcNearlyHourReportJob")
     public void execute() {
         try {
             this.execute_ext();
         } catch (Throwable e) {
             // 捕捉全部异常,防止任务异常，导致esjob有问题
-            log.error("io.shulie.takin.web.biz.job.CalcTmpReportDataJob#execute error" + ExceptionUtils.getStackTrace(e));
+            log.error("io.shulie.takin.web.biz.job.calcNearlyHourReportJob#execute error" + ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -54,7 +54,7 @@ public class CalcNearlyHourReportJob extends AbstractSceneTask {
                         try {
                             reportTaskService.calcMachineDate(reportId);
                         } catch (Throwable e) {
-                            log.error("execute CalcNearlyHourReportJob occured error. reportId={}", reportId, e);
+                            log.error("execute calcNearlyHourReportJob occured error. reportId={}", reportId, e);
                         } finally {
                             runningTasks.remove(reportId);
                         }
@@ -62,7 +62,7 @@ public class CalcNearlyHourReportJob extends AbstractSceneTask {
                 }
             }
         }
-        log.debug("CalcNearlyHourReportJob 执行时间:{}", System.currentTimeMillis() - start);
+        log.debug("calcNearlyHourReportJob 执行时间:{}", System.currentTimeMillis() - start);
     }
 
     @Override

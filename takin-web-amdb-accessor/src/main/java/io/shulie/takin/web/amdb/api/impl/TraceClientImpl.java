@@ -17,14 +17,13 @@ import com.pamirs.pradar.log.parser.trace.RpcStack;
 import com.pamirs.takin.common.util.DateUtils;
 import io.shulie.amdb.common.request.trace.EntryTraceQueryParam;
 import io.shulie.surge.data.deploy.pradar.link.model.TTrackClickhouseModel;
-import io.shulie.takin.cloud.ext.content.response.Response;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.*;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
-import io.shulie.takin.web.amdb.bean.result.trace.TraceMetrics;
+import io.shulie.takin.web.amdb.bean.result.trace.TraceMetricsAll;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -314,12 +313,12 @@ public class TraceClientImpl implements TraceClient {
     }
 
     @Override
-    public List<TraceMetrics> getSqlStatements(TraceMetricsRequest traceMetricsRequest) {
+    public List<TraceMetricsAll> getSqlStatements(TraceMetricsRequest traceMetricsRequest) {
         String url = properties.getUrl().getAmdb() + TRACE_METRIC_GET_SQL_STATEMENTS;
-        List<TraceMetrics> traceMetrics = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
+        List<TraceMetricsAll> traceMetrics = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
                 .param(traceMetricsRequest)
                 .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
-                .eventName("应用趋势图查询").list(TraceMetrics.class).getData();
+                .eventName("应用趋势图查询").list(TraceMetricsAll.class).getData();
         if (CollectionUtils.isEmpty(traceMetrics)) {
             return Lists.newArrayList();
         }

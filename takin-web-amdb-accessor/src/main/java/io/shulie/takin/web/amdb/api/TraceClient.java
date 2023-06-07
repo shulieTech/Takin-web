@@ -10,7 +10,7 @@ import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceMetricsRequest;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
-import io.shulie.takin.web.amdb.bean.result.trace.TraceMetrics;
+import io.shulie.takin.web.amdb.bean.result.trace.TraceMetricsAll;
 
 import java.util.List;
 
@@ -66,7 +66,7 @@ public interface TraceClient {
 
     String dataCalibration(DataCalibrationDTO dataCalibration);
 
-    List<TraceMetrics> getSqlStatements(TraceMetricsRequest traceMetricsRequest);
+    List<TraceMetricsAll> getSqlStatements(TraceMetricsRequest traceMetricsRequest);
 
     List<String> getEdgeIdsByAppNames(List<String> appNames);
 }

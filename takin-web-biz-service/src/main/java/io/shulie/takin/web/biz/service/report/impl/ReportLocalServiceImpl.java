@@ -57,7 +57,7 @@ import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceMetricsRequest;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeDTO;
-import io.shulie.takin.web.amdb.bean.result.trace.TraceMetrics;
+import io.shulie.takin.web.amdb.bean.result.trace.TraceMetricsAll;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
 import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
 import io.shulie.takin.web.biz.pojo.output.report.*;
@@ -807,12 +807,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 return Response.success(Collections.EMPTY_LIST);
             }
             traceMetricsRequest.setEdgeIds(edgeIds.stream().collect(Collectors.joining(",")));
-            List<TraceMetrics> metricsList = traceClient.getSqlStatements(traceMetricsRequest);
+            List<TraceMetricsAll> metricsList = traceClient.getSqlStatements(traceMetricsRequest);
             if (CollectionUtils.isEmpty(metricsList)) {
                 return Response.success(Collections.EMPTY_LIST);
             }
 
-            Map<String, List<TraceMetrics>> map = metricsList.stream().collect(Collectors.groupingBy(TraceMetrics::getAppName));
+            Map<String, List<TraceMetricsAll>> map = metricsList.stream().collect(Collectors.groupingBy(TraceMetricsAll::getAppName));
             //根据map分别计算tps趋势图、成功率趋势图、rt趋势图
             List<ReportAppMapOut> reportAppMapOuts = new ArrayList<>(map.size());
             map.forEach((k, v) -> {
@@ -828,17 +828,17 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 List<String> xcost = new ArrayList<>(4);
                 List<String> conut = new ArrayList<>(4);
 
-                v.stream().sorted(Comparator.comparing(TraceMetrics::getTime)).forEach(traceMetrics -> {
-                    tps.add(BigDecimal.valueOf(traceMetrics.getAvgTps()).doubleValue());
-                    rt.add(BigDecimal.valueOf(traceMetrics.getAvgRt()).doubleValue());
+                v.stream().sorted(Comparator.comparing(TraceMetricsAll::getTime)).forEach(traceMetrics -> {
+                    tps.add(traceMetrics.getAvgTps().setScale(2, RoundingMode.HALF_UP).doubleValue());
+                    rt.add(traceMetrics.getAvgRt().setScale(2, RoundingMode.HALF_UP).doubleValue());
                     totalRequest.add(traceMetrics.getTotal());
                     double suRate = BigDecimal.valueOf(traceMetrics.getSuccessCount()).divide(BigDecimal.valueOf(traceMetrics.getTotal()), 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100)).doubleValue();
                     successRate.add(suRate);
-                    if (StringUtils.isBlank(traceMetrics.getTime())) {
+                    if (traceMetrics.getTime()==null) {
                         return;
                     }
-                    long timestamp = Long.parseLong(traceMetrics.getTime());
+                    long timestamp = traceMetrics.getTime();
                     Instant instant = Instant.ofEpochMilli(timestamp);
                     ZonedDateTime dateTime = instant.atZone(ZoneId.systemDefault());
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -847,14 +847,14 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 });
 
                 //计算最大值
-                Integer max = v.stream().map(TraceMetrics::getAvgRt).max(Double::compare).get();
+                Integer max = v.stream().map(TraceMetricsAll::getAvgRt).max(BigDecimal::compareTo).get().intValue();
                 //计算最小值
-                Integer min = v.stream().map(TraceMetrics::getAvgRt).min(Integer::compare).get();
+                Integer min = v.stream().map(TraceMetricsAll::getAvgRt).min(BigDecimal::compareTo).get().intValue();
                 List<String> intervalList = getInterval(min, max, 5);
 
                 for (String inter : intervalList) {
                     String str[] = inter.split("-");
-                    Integer count = v.stream().filter(traceMetrics -> traceMetrics.getAvgRt() >= Integer.valueOf(str[0]) && traceMetrics.getAvgRt() < Integer.valueOf(str[1])).map(TraceMetrics::getTotal).reduce(Integer::sum).orElse(0);
+                    Integer count = v.stream().filter(traceMetrics -> traceMetrics.getAvgRt().compareTo(new BigDecimal(str[0])) >= 0 && traceMetrics.getAvgRt().compareTo(new BigDecimal(str[1])) < 0).map(TraceMetricsAll::getTotal).reduce(Integer::sum).orElse(0);
                     conut.add(String.valueOf(count));
                     xcost.add(inter);
                 }

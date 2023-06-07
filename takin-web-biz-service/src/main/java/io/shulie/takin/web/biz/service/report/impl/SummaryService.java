@@ -247,9 +247,10 @@ public class SummaryService {
                     double memory = bases.subList(currentIndex, j).stream().filter(data -> data.getMemRate() != null).mapToDouble(BaseServerResult::getMemRate).average().orElse(0D);
                     double io = bases.subList(currentIndex, j).stream().filter(data -> data.getIoWait() != null).mapToDouble(BaseServerResult::getIoWait).average().orElse(0D);
                     double mbps = bases.subList(currentIndex, j).stream().filter(data -> data.getNetBandWidthRate() != null).mapToDouble(BaseServerResult::getNetBandWidthRate).average().orElse(0D);
-                    double youngGcCount = bases.subList(currentIndex, j).stream().filter(data -> data.getYoungGcCount() != null).mapToDouble(BaseServerResult::getYoungGcCount).average().orElse(0D);
+                    double youngGcCount = bases.subList(currentIndex, j).stream().filter(data -> data.getYoungGcCount() != null).mapToDouble(BaseServerResult::getYoungGcCount).reduce(0, Double::sum);
                     double youngGcCost = bases.subList(currentIndex, j).stream().filter(data -> data.getYoungGcCost() != null).mapToDouble(BaseServerResult::getYoungGcCost).average().orElse(0D);
-                    double fullGcCount = bases.subList(currentIndex, j).stream().filter(data -> data.getFullGcCount() != null).mapToDouble(BaseServerResult::getFullGcCount).average().orElse(0D);
+
+                    double fullGcCount = bases.subList(currentIndex, j).stream().filter(data -> data.getFullGcCount() != null).mapToDouble(BaseServerResult::getFullGcCount).reduce(0, Double::sum);
                     double fullGcCost = bases.subList(currentIndex, j).stream().filter(data -> data.getFullGcCost() != null).mapToDouble(BaseServerResult::getFullGcCost).average().orElse(0D);
 
                     target.setCpu(new BigDecimal((int)cpu));
@@ -257,9 +258,9 @@ public class SummaryService {
                     target.setMemory(new BigDecimal(memory).setScale(2, RoundingMode.HALF_UP));
                     target.setIo(new BigDecimal(io).setScale(2, RoundingMode.HALF_UP));
                     target.setNetwork(new BigDecimal(mbps).setScale(2, RoundingMode.HALF_UP));
-                    target.setYoungGcCount(new BigDecimal(Optional.ofNullable(youngGcCount).orElse(0D)).setScale(2, RoundingMode.HALF_UP));
+                    target.setYoungGcCount(new BigDecimal(Optional.ofNullable(youngGcCount).orElse(0D)).setScale(0, RoundingMode.HALF_UP));
                     target.setYoungGcCost(new BigDecimal(Optional.ofNullable(youngGcCost).orElse(0D)).setScale(2, RoundingMode.HALF_UP));
-                    target.setFullGcCount(new BigDecimal(Optional.ofNullable(fullGcCount).orElse(0D)).setScale(2, RoundingMode.HALF_UP));
+                    target.setFullGcCount(new BigDecimal(Optional.ofNullable(fullGcCount).orElse(0D)).setScale(0, RoundingMode.HALF_UP));
                     target.setFullGcCost(new BigDecimal(Optional.ofNullable(fullGcCost).orElse(0D)).setScale(2, RoundingMode.HALF_UP));
                     target.setGcCost(target.getYoungGcCost().add(target.getFullGcCost()));
                     target.setGcCount(target.getYoungGcCount().add(target.getFullGcCount()));

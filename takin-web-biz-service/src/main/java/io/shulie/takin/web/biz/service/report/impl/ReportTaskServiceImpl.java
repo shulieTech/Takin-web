@@ -354,6 +354,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             }
             ReportEntity reportEntity = reportEntities.get(0);
 
+            //Ready 数据准备
+            reportDataCache.readyCloudReportData(reportId);
+
             ExecutorService executorService = Executors.newFixedThreadPool(3);
             Long endTime = reportEntity.getEndTime().getTime();
             //first 同步应用基础信息
@@ -386,8 +389,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             executorService.execute(() -> {
                 reportService.modifyLinkDiagrams(reportLinkDiagramReq, bindRefList);
             });
-        }catch (Exception e){
-            log.error("calcNearlyHourReportService error,reportId={}",reportId,e);
+        } catch (Exception e) {
+            log.error("calcNearlyHourReportService error,reportId={}", reportId, e);
         }
     }
 }

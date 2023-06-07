@@ -75,6 +75,7 @@ import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.util.DataTransformUtil;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
@@ -151,6 +152,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Resource
     private ReportBusinessActivityDetailMapper detailMapper;
+
+    @Resource
+    private RedisClientUtil redisClientUtil;
+
+    private static final String reportCompareData = "report:vlt:compareData:%s:%s";
+
+    private static final String reportMessageData = "report:vlt:messageData:%s:%s";
 
     @Override
     public ReportCountDTO getReportCount(Long reportId) {
@@ -316,6 +324,22 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     }
 
     @Override
+    public void cacheLTReportData2Redis(Long reportId) {
+        ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
+        if(reportDetailOutput == null || CollectionUtils.isEmpty(reportDetailOutput.getBusinessActivity())) {
+            log.warn("未找到报告{}的业务活动数据", reportId);
+            return;
+        }
+        List<BusinessActivitySummaryBean> activitySummaryBeanList = reportDetailOutput.getBusinessActivity().stream().filter(data -> data.getBusinessActivityId() != null && data.getBusinessActivityId() > 0L).collect(Collectors.toList());
+        List<Long> reportIds = Collections.singletonList(reportId);
+        for(BusinessActivitySummaryBean activitySummaryBean : activitySummaryBeanList) {
+            Long activityId = activitySummaryBean.getBusinessActivityId();
+            ReportCompareOutput compareOutput = getReportCompare(reportIds, activityId);
+            redisClientUtil.setString(String.format(reportCompareData, reportId, activityId), JSON.toJSONString(compareOutput));
+        }
+    }
+
+    @Override
     public ReportCompareOutput getReportCompare(List<Long> reportIds, Long businessActivityId) {
         ReportCompareOutput output = new ReportCompareOutput();
         //查询业务活动serviceName和methodName
@@ -330,6 +354,18 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
             if(reportId == null) {
+                continue;
+            }
+            String redisKey = String.format(reportCompareData, reportId, businessActivityId);
+            if(redisClientUtil.hasKey(redisKey)) {
+                String redisValue = redisClientUtil.getString(redisKey);
+                ReportCompareOutput tempOutput = JSON.parseObject(redisValue, ReportCompareOutput.class);
+                if(tempOutput != null) {
+                    output.getColumnarData().addAll(tempOutput.getColumnarData());
+                    output.getTargetData().addAll(tempOutput.getTargetData());
+                    output.getRtData().addAll(tempOutput.getRtData());
+                    output.getTrendData().addAll(tempOutput.getTrendData());
+                }
                 continue;
             }
             ReportDetailOutput reportOutput = reportService.getReportByReportId(reportId);
@@ -398,6 +434,19 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         //按耗时取请求量
         for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
+            if(reportId == null) {
+                continue;
+            }
+            String redisKey = String.format(reportCompareData, reportId, businessActivityId);
+            if(redisClientUtil.hasKey(redisKey)) {
+                String redisValue = redisClientUtil.getString(redisKey);
+                ReportCompareOutput tempOutput = JSON.parseObject(redisValue, ReportCompareOutput.class);
+                if(tempOutput != null && CollectionUtils.isNotEmpty(tempOutput.getTrendData())) {
+                    output.getTrendData().get(i).getXCost().addAll(tempOutput.getTrendData().get(0).getXCost());
+                    output.getTrendData().get(i).getCount().addAll(tempOutput.getTrendData().get(0).getCount());
+                }
+                continue;
+            }
             ReportDetailOutput reportOutput = reportOutputMap.get(reportId);
             if (reportOutput == null || CollectionUtils.isEmpty(costList)) {
                 continue;

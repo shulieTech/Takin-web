@@ -899,7 +899,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     private static ReportActivityInfoQueryRequest genActivityInfo(long activityId, ReportEntity reportEntity) {
         ReportActivityInfoQueryRequest request = new ReportActivityInfoQueryRequest();
         request.setActivityId(activityId);
-        //request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
+        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
         request.setStartTime(reportEntity.getStartTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
         request.setEndTime(reportEntity.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plus(5, ChronoUnit.MINUTES));
         request.setReportId(reportEntity.getId());

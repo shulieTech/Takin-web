@@ -10,24 +10,32 @@ public interface ReportTaskService {
 
     /**
      * 完成报告
+     *
      * @param reportId
      * @return 报告是否正常结束 true=是 false=否
      */
     Boolean finishReport(Long reportId, TenantCommonExt commonExt);
 
-    /**
-     * 同步应用基础信息
-     */
-    void syncMachineData(Long reportId);
+//    /**
+//     * 同步应用基础信息
+//     */
+//    void syncMachineData(Long reportId);
+//
+//    /**
+//     * tps指标图
+//     */
+//    void calcTpsTarget(Long reportId);
+//
+//    /**
+//     * 汇总应用 机器数 风险机器数
+//     */
+//    void calcApplicationSummary(Long reportId);
 
     /**
-     * tps指标图
+     * 汇总实况数据，包括应用基础信息、tps指标图、应用机器数和风险机器
+     *
+     * @param reportId
      */
-    void calcTpsTarget(Long reportId);
-
-    /**
-     * 汇总应用 机器数 风险机器数
-     */
-    void calcApplicationSummary(Long reportId);
+    void calcTmpReportData(Long reportId);
 
 }

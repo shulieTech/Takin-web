@@ -3,6 +3,8 @@ package io.shulie.takin.web.biz.service.report.impl;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -255,37 +257,28 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         }
 
     }
-
+    
+    /**
+     * 汇总实况数据，包括应用基础信息、tps指标图、应用机器数和风险机器
+     *
+     * @param reportId
+     */
     @Override
-    public void syncMachineData(Long reportId) {
+    public void calcTmpReportData(Long reportId) {
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
         //Ready 数据准备
         reportDataCache.readyCloudReportData(reportId);
         //first 同步应用基础信息
-        long startTime = System.currentTimeMillis();
-        problemAnalysisService.syncMachineData(reportId);
-        log.debug("reportId={} syncMachineData success，cost time={}s", reportId,
-                (System.currentTimeMillis() - startTime) / 1000);
-    }
-
-    @Override
-    public void calcTpsTarget(Long reportId) {
-        long startTime = System.currentTimeMillis();
-        //Ready 数据准备
-        reportDataCache.readyCloudReportData(reportId);
+        executorService.execute(() -> {
+            problemAnalysisService.syncMachineData(reportId);
+        });
         //then tps指标图
-        summaryService.calcTpsTarget(reportId);
-        log.debug("reportId={} calcTpsTarget success，cost time={}s", reportId,
-                (System.currentTimeMillis() - startTime) / 1000);
-    }
-
-    @Override
-    public void calcApplicationSummary(Long reportId) {
-        long startTime = System.currentTimeMillis();
-        //Ready 数据准备
-        reportDataCache.readyCloudReportData(reportId);
-        //汇总应用 机器数 风险机器数
-        summaryService.calcApplicationSummary(reportId);
-        log.debug("reportId={} calcApplicationSummary success，cost time={}s", reportId,
-                (System.currentTimeMillis() - startTime) / 1000);
+        executorService.execute(() -> {
+            summaryService.calcTpsTarget(reportId);
+        });
+        //end汇总应用 机器数 风险机器数
+        executorService.execute(() -> {
+            summaryService.calcApplicationSummary(reportId);
+        });
     }
 }

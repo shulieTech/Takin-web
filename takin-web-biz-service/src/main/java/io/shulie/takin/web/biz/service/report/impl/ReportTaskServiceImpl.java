@@ -28,6 +28,7 @@ import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneBusinessActivityRefEntity;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
+import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
 import io.shulie.takin.web.biz.utils.VolumnUtil;
@@ -136,6 +137,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     @Resource
     private ReportMachineDAO reportMachineDAO;
 
+    @Autowired
+    private ReportLocalService reportLocalService;
+
 
     @Override
     public Boolean finishReport(Long reportId, TenantCommonExt commonExt) {
@@ -215,7 +219,12 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                     ResponseResult<String> responseResult = sceneTaskApi.updateReportStatus(conclusionReq);
                     log.info("修改压测报告的结果:[{}]", JSON.toJSONString(responseResult));
                 }
-
+                try {
+                    //缓存新版压测报告对比数据
+                    reportLocalService.cacheLTReportData2Redis(reportId);
+                } catch (Throwable e) {
+                    log.error("生成压测报告{}时，计算报告对比数据异常={}", reportId, e);
+                }
                 reportDataCache.clearDataCache(reportId);
                 log.info("报告id={}汇总成功，花费时间={}", reportId, (System.currentTimeMillis() - startTime));
             } catch (Throwable e) {

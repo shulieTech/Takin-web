@@ -38,6 +38,8 @@ public interface ReportLocalService {
 
     ReportCompareOutput getReportCompare(List<Long> reportIds, Long businessActivityId);
 
+    void cacheLTReportData2Redis(Long reportId);
+
     /**
      * 获取节点对比目标
      *

@@ -696,8 +696,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 ReportAppInstancePerformanceOut reportAppInstancePerformanceOut = new ReportAppInstancePerformanceOut();
                 reportAppInstancePerformanceOut.setAppName(machine.getApplicationName());
                 reportAppInstancePerformanceOut.setInstanceName(machine.getMachineIp());
-                reportAppInstancePerformanceOut.setGcCount(Optional.ofNullable(machine.getGcCount()).orElse(BigDecimal.ZERO));
-                reportAppInstancePerformanceOut.setGcCost(Optional.ofNullable(machine.getGcCost()).orElse(BigDecimal.ZERO));
                 if (machine.getTpsTarget() == null) {
                     return reportAppInstancePerformanceOut;
                 }
@@ -715,6 +713,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 }
                 if (machine.getTpsTarget().getTps() != null) {
                     reportAppInstancePerformanceOut.setAvgTps(getAvg(Arrays.stream(machine.getTpsTarget().getTps()).filter(a -> Objects.nonNull(a)).map(BigDecimal::valueOf).collect(Collectors.toList())));
+                }
+                if (machine.getTpsTarget().getGcCount() != null) {
+                    reportAppInstancePerformanceOut.setGcCount(Arrays.stream(machine.getTpsTarget().getGcCount()).reduce(BigDecimal.ZERO, BigDecimal::add));
+                }else {
+                    reportAppInstancePerformanceOut.setGcCount(Optional.ofNullable(machine.getGcCount()).orElse(BigDecimal.ZERO));
+                }
+                if (machine.getTpsTarget().getGcCost() != null) {
+                    reportAppInstancePerformanceOut.setGcCost(Arrays.stream(machine.getTpsTarget().getGcCost()).reduce(BigDecimal.ZERO, BigDecimal::add));
+                }else {
+                    reportAppInstancePerformanceOut.setGcCost(Optional.ofNullable(machine.getGcCost()).orElse(BigDecimal.ZERO));
                 }
                 return reportAppInstancePerformanceOut;
             }).collect(Collectors.toList());

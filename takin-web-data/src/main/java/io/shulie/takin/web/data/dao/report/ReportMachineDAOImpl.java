@@ -145,7 +145,7 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
     @Override
     public int updateTpsTargetConfig(ReportMachineUpdateParam param) {
         ReportMachineEntity entity = new ReportMachineEntity();
-        BeanUtils.copyProperties(param,entity);
+        BeanUtils.copyProperties(param, entity);
         return this.baseMapper.updateTpsTargetConfig(entity);
     }
 

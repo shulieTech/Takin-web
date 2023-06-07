@@ -17,7 +17,6 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneBusinessActivityRefMapper;
-import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.entity.report.TpsTarget;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
@@ -67,6 +66,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -358,7 +358,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             reportDataCache.readyCloudReportData(reportId);
 
             ExecutorService executorService = Executors.newFixedThreadPool(3);
-            Long endTime = reportEntity.getEndTime().getTime();
+            Long endTime = DateUtils.addMinutes(reportEntity.getEndTime(), 5).getTime();
             //first 同步应用基础信息
             executorService.execute(() -> {
                 problemAnalysisService.syncMachineData(reportId, endTime);

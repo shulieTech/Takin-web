@@ -63,14 +63,4 @@ public class Application {
         ApplicationContext applicationContext = new SpringApplicationBuilder().sources(Application.class).run(args);
         SpringContextUtil.setApplicationContext(applicationContext);
     }
-
-    @Bean
-    public SqlCostInterceptor sqlCostInterceptor() {
-        return new SqlCostInterceptor();
-    }
-
-    @Bean
-    public Interceptor[] interceptors(SqlCostInterceptor sqlCostInterceptor) {
-        return new Interceptor[]{sqlCostInterceptor};
-    }
 }

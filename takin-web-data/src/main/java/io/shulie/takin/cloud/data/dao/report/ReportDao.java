@@ -169,4 +169,6 @@ public interface ReportDao {
      * @param linkDiagram 链路拓扑图json数据
      */
     void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram);
+
+    List<Long> nearlyHourReportIds();
 }

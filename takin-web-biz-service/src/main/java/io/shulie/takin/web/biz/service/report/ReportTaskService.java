@@ -2,6 +2,8 @@ package io.shulie.takin.web.biz.service.report;
 
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
+import java.util.List;
+
 /**
  * @author qianshui
  * @date 2020/7/28 上午10:59
@@ -37,5 +39,9 @@ public interface ReportTaskService {
      * @param reportId
      */
     void calcTmpReportData(Long reportId);
+
+    List<Long> nearlyHourReportIds();
+
+    void calcMachineDate(Long reportId);
 
 }

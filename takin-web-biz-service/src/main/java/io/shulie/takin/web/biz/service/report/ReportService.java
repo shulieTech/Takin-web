@@ -211,4 +211,11 @@ public interface ReportService {
     List<ReportEntity> getReportListByReportIds(List<Long> reportIds);
 
     void buildReportTestData(Long jobId, Long sceneId, Long reportId, Long tenantId);
+
+    /**
+     * 获取最近一小时的报告ids
+     * @return
+     */
+    List<Long> nearlyHourReportIds();
+
 }

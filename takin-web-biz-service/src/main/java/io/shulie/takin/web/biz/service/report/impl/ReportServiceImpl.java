@@ -765,6 +765,16 @@ public class ReportServiceImpl implements ReportService {
         cloudReportService.updateReportBusinessActivity(jobId, sceneId, reportId, tenantId);
     }
 
+    /**
+     * 获取最近一小时的报告ids
+     *
+     * @return
+     */
+    @Override
+    public List<Long> nearlyHourReportIds() {
+        return reportDao.nearlyHourReportIds();
+    }
+
     private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5) {
         if (scriptNodeSummaryBean.getXpathMd5().equals(xpathMd5)) {
             return scriptNodeSummaryBean;

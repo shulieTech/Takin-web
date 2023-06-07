@@ -27,9 +27,11 @@ import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -347,5 +349,16 @@ public class ReportDaoImpl implements ReportDao {
         updateWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5);
         updateWrapper.set(ReportBusinessActivityDetailEntity::getReportJson, linkDiagram);
         detailMapper.update(null, updateWrapper);
+    }
+
+    @Override
+    public List<Long> nearlyHourReportIds() {
+        LambdaQueryWrapper<ReportEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.select(ReportEntity::getId);
+        //取近一小时的数据
+        Date date = new Date();
+        lambdaQueryWrapper.ge(ReportEntity::getEndTime, DateUtils.addHours(date, -1));
+        lambdaQueryWrapper.eq(ReportEntity::getStatus, 2);
+        return reportMapper.selectList(lambdaQueryWrapper).stream().map(ReportEntity::getId).collect(Collectors.toList());
     }
 }

@@ -358,7 +358,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             reportDataCache.readyCloudReportData(reportId);
 
             ExecutorService executorService = Executors.newFixedThreadPool(3);
-            Long endTime = DateUtils.addMinutes(reportEntity.getEndTime(), 5).getTime();
+            Long endTime = DateUtils.addMinutes(reportEntity.getEndTime(), 10).getTime();
             //first 同步应用基础信息
             executorService.execute(() -> {
                 problemAnalysisService.syncMachineData(reportId, endTime);

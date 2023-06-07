@@ -347,44 +347,47 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 
     @Override
     public void calcMachineDate(Long reportId) {
-        List<ReportEntity> reportEntities = reportService.getReportListByReportIds(Lists.newArrayList(reportId));
-        if (CollectionUtils.isEmpty(reportEntities)) {
-            return;
+        try {
+            List<ReportEntity> reportEntities = reportService.getReportListByReportIds(Lists.newArrayList(reportId));
+            if (CollectionUtils.isEmpty(reportEntities)) {
+                return;
+            }
+            ReportEntity reportEntity = reportEntities.get(0);
+
+            ExecutorService executorService = Executors.newFixedThreadPool(3);
+            Long endTime = reportEntity.getEndTime().getTime();
+            //first 同步应用基础信息
+            executorService.execute(() -> {
+                problemAnalysisService.syncMachineData(reportId, endTime);
+            });
+            //then tps指标图
+            executorService.execute(() -> {
+                summaryService.calcTpsTarget(reportId, endTime);
+            });
+
+            //重建链路图信息
+            ReportLinkDiagramReq reportLinkDiagramReq = new ReportLinkDiagramReq();
+            reportLinkDiagramReq.setReportId(reportId);
+            ZoneId zoneId = ZoneId.systemDefault();
+            reportLinkDiagramReq.setStartTime(LocalDateTime.ofInstant(reportEntity.getStartTime().toInstant(), zoneId));
+            reportLinkDiagramReq.setEndTime(LocalDateTime.ofInstant(reportEntity.getEndTime().toInstant(), zoneId));
+            reportLinkDiagramReq.setSceneId(reportEntity.getSceneId());
+
+            List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = tSceneBusinessActivityRefMapper.selectList(new LambdaQueryWrapper<SceneBusinessActivityRefEntity>()
+                    .select(SceneBusinessActivityRefEntity::getBindRef)
+                    .eq(SceneBusinessActivityRefEntity::getSceneId, reportEntity.getSceneId()));
+            if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
+                return;
+            }
+            List<String> bindRefList = sceneBusinessActivityRefEntities.stream().filter(a -> StringUtils.isNotBlank(a.getBindRef())).map(SceneBusinessActivityRefEntity::getBindRef).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(bindRefList)) {
+                return;
+            }
+            executorService.execute(() -> {
+                reportService.modifyLinkDiagrams(reportLinkDiagramReq, bindRefList);
+            });
+        }catch (Exception e){
+            log.error("calcNearlyHourReportService error,reportId={}",reportId,e);
         }
-        ReportEntity reportEntity = reportEntities.get(0);
-
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-        Long endTime = reportEntity.getEndTime().getTime();
-        //first 同步应用基础信息
-        executorService.execute(() -> {
-            problemAnalysisService.syncMachineData(reportId, endTime);
-        });
-        //then tps指标图
-        executorService.execute(() -> {
-            summaryService.calcTpsTarget(reportId, endTime);
-        });
-
-        //重建链路图信息
-        ReportLinkDiagramReq reportLinkDiagramReq = new ReportLinkDiagramReq();
-        reportLinkDiagramReq.setReportId(reportId);
-        ZoneId zoneId = ZoneId.systemDefault();
-        reportLinkDiagramReq.setStartTime(LocalDateTime.ofInstant(reportEntity.getStartTime().toInstant(), zoneId));
-        reportLinkDiagramReq.setEndTime(LocalDateTime.ofInstant(reportEntity.getEndTime().toInstant(), zoneId));
-        reportLinkDiagramReq.setSceneId(reportEntity.getSceneId());
-
-        List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = tSceneBusinessActivityRefMapper.selectList(new LambdaQueryWrapper<SceneBusinessActivityRefEntity>()
-                .select(SceneBusinessActivityRefEntity::getBindRef)
-                .eq(SceneBusinessActivityRefEntity::getSceneId, reportEntity.getSceneId()));
-        if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
-            return;
-        }
-        List<String> bindRefList = sceneBusinessActivityRefEntities.stream().filter(a -> StringUtils.isNotBlank(a.getBindRef())).map(SceneBusinessActivityRefEntity::getBindRef).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(bindRefList)) {
-            return;
-        }
-        executorService.execute(() -> {
-            reportService.modifyLinkDiagrams(reportLinkDiagramReq, bindRefList);
-        });
-
     }
 }

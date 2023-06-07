@@ -42,7 +42,7 @@ public class CalcNearlyHourReportJob extends AbstractSceneTask {
         long start = System.currentTimeMillis();
         List<Long> reportIds = reportTaskService.nearlyHourReportIds(10);
         if (CollectionUtils.isEmpty(reportIds)) {
-            log.warn("current not running pressure task!!!");
+            log.warn("calcNearlyHourReportJob current not running pressure task!!!");
             return;
         }
         for (Long reportId : reportIds) {

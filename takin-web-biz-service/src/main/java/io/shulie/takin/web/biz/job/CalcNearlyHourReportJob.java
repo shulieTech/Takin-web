@@ -40,7 +40,7 @@ public class CalcNearlyHourReportJob extends AbstractSceneTask {
     //取过去一个小时的report，计算水位数据
     public void execute_ext() {
         long start = System.currentTimeMillis();
-        List<Long> reportIds = reportTaskService.nearlyHourReportIds();
+        List<Long> reportIds = reportTaskService.nearlyHourReportIds(10);
         if (CollectionUtils.isEmpty(reportIds)) {
             log.warn("current not running pressure task!!!");
             return;

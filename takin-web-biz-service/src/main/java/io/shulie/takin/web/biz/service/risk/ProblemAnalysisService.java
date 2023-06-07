@@ -14,7 +14,7 @@ public interface ProblemAnalysisService {
     /**
      * 同步机器数据到表
      */
-    void syncMachineData(Long reportId);
+    void syncMachineData(Long reportId,Long endTime);
 
     /**
      * 检查风险机器，并保存

@@ -88,9 +88,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
      * 同步机器基础信息到表
      */
     @Override
-    public void syncMachineData(Long reportId) {
+    public void syncMachineData(Long reportId, Long endTime) {
         long startTime = System.currentTimeMillis();
-        long endTime = System.currentTimeMillis();
         ReportDetailDTO dto = reportDataCache.getReportDetailDTO(reportId);
         if (dto == null) {
             return;
@@ -100,6 +99,9 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         }
         // 统计当前时间 前5分钟数据
         int riskTime = ConfigServerHelper.getIntegerValueByKey(ConfigServerKeyEnum.TAKIN_RISK_COLLECT_TIME);
+        if (endTime == null) {
+            endTime = System.currentTimeMillis();
+        }
         if (endTime - startTime >= riskTime) {
             startTime = endTime - riskTime;
         }
@@ -116,10 +118,11 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         param.setApplicationNames(appNameList);
         List<String> onlineAgentIds = applicationNodeDAO.getOnlineAgentIds(param);
         long finalStartTime = startTime;
+        Long finalEndTime = endTime;
         appNameList.forEach(appName -> {
-            Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(finalStartTime, endTime, appName));
+            Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(finalStartTime, finalEndTime, appName));
             if (CollectionUtils.isNotEmpty(baseList)) {
-                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, finalStartTime, endTime, baseList.size());
+                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, finalStartTime, finalEndTime, baseList.size());
                 List<BaseAppVo> tmpList = baseList.stream().map(base -> {
                     BaseAppVo vo = new BaseAppVo();
                     vo.setCore(formatDouble(base.getCpuCores()).intValue());
@@ -140,7 +143,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     baseAppVoList.addAll(tmpList);
                 }
             } else {
-                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, finalStartTime, endTime);
+                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, finalStartTime, finalEndTime);
             }
         });
 

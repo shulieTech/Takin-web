@@ -343,6 +343,15 @@ public class ReportDaoImpl implements ReportDao {
     }
 
     @Override
+    public List<ReportBusinessActivityDetailEntity> getReportBusinessActivityDetails(Long sceneId, List<String> xpathMd5List, Long reportId) {
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, sceneId);
+        queryWrapper.in(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5List);
+        queryWrapper.eq(null != reportId,ReportBusinessActivityDetailEntity::getReportId, reportId);
+        return detailMapper.selectList(queryWrapper);
+    }
+
+    @Override
     public void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram) {
         LambdaUpdateWrapper<ReportBusinessActivityDetailEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
@@ -352,12 +361,12 @@ public class ReportDaoImpl implements ReportDao {
     }
 
     @Override
-    public List<Long> nearlyHourReportIds() {
+    public List<Long> nearlyHourReportIds(int minutes) {
         LambdaQueryWrapper<ReportEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.select(ReportEntity::getId);
         //取近一小时的数据
         Date date = new Date();
-        lambdaQueryWrapper.ge(ReportEntity::getEndTime, DateUtils.addHours(date, -1));
+        lambdaQueryWrapper.ge(ReportEntity::getEndTime, DateUtils.addMinutes(date, minutes * -1));
         lambdaQueryWrapper.eq(ReportEntity::getStatus, 2);
         return reportMapper.selectList(lambdaQueryWrapper).stream().map(ReportEntity::getId).collect(Collectors.toList());
     }

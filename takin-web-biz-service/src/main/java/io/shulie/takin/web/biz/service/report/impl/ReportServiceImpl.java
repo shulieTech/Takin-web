@@ -743,6 +743,22 @@ public class ReportServiceImpl implements ReportService {
         reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
     }
 
+    @Override
+    public void modifyLinkDiagrams(ReportLinkDiagramReq reportLinkDiagramReq, List<String> pathMd5List) {
+        reportLinkDiagramReq.setEndTime(LocalDateTime.now());
+
+        List<ReportBusinessActivityDetailEntity> detailList = reportDao.getReportBusinessActivityDetails(reportLinkDiagramReq.getSceneId(), pathMd5List, reportLinkDiagramReq.getReportId());
+        if (CollectionUtils.isEmpty(detailList)){
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_VALIDATE_ERROR, "重新生成拓扑图，没有获取到对应的数据!");
+        }
+        for (ReportBusinessActivityDetailEntity detailEntity : detailList) {
+            io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = queryLinkDiagram(detailEntity.getBusinessActivityId(), reportLinkDiagramReq);
+            if (activityResponse != null){
+                reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), detailEntity.getBindRef(), JSON.toJSONString(activityResponse));
+            }
+        }
+    }
+
     /**
      * 根据报告ids查询报告详情
      *
@@ -771,8 +787,8 @@ public class ReportServiceImpl implements ReportService {
      * @return
      */
     @Override
-    public List<Long> nearlyHourReportIds() {
-        return reportDao.nearlyHourReportIds();
+    public List<Long> nearlyHourReportIds(int minutes) {
+        return reportDao.nearlyHourReportIds(minutes);
     }
 
     private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5) {

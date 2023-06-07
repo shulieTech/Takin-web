@@ -203,6 +203,8 @@ public interface ReportService {
 
     void modifyLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
 
+    void modifyLinkDiagrams(ReportLinkDiagramReq reportLinkDiagramReq, List<String> pathMd5List);
+
     /**
      * 根据报告ids查询报告详情
      * @param reportIds
@@ -213,9 +215,9 @@ public interface ReportService {
     void buildReportTestData(Long jobId, Long sceneId, Long reportId, Long tenantId);
 
     /**
-     * 获取最近一小时的报告ids
+     * 获取最近多少分钟的报告ids
      * @return
      */
-    List<Long> nearlyHourReportIds();
+    List<Long> nearlyHourReportIds(int minutes);
 
 }

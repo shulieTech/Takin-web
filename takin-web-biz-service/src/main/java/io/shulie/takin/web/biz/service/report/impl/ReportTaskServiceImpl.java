@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -16,8 +17,12 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneBusinessActivityRefMapper;
+import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
+import com.pamirs.takin.entity.domain.entity.report.TpsTarget;
+import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import com.pamirs.takin.entity.domain.risk.BaseAppVo;
+import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.adapter.api.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneBusinessActivityRefEntity;
@@ -49,6 +54,7 @@ import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
+import io.shulie.takin.web.data.param.baseserver.AppBaseDataQuery;
 import io.shulie.takin.web.data.param.baseserver.BaseServerParam;
 import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
 import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
@@ -58,7 +64,7 @@ import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -313,11 +319,11 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         reportDataCache.readyCloudReportData(reportId);
         //first 同步应用基础信息
         executorService.execute(() -> {
-            problemAnalysisService.syncMachineData(reportId);
+            problemAnalysisService.syncMachineData(reportId, null);
         });
         //then tps指标图
         executorService.execute(() -> {
-            summaryService.calcTpsTarget(reportId);
+            summaryService.calcTpsTarget(reportId, null);
         });
         //end汇总应用 机器数 风险机器数
         executorService.execute(() -> {
@@ -326,8 +332,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     }
 
     @Override
-    public List<Long> nearlyHourReportIds() {
-        return reportService.nearlyHourReportIds();
+    public List<Long> nearlyHourReportIds(int minutes) {
+        return reportService.nearlyHourReportIds(minutes);
     }
 
     @Override
@@ -336,147 +342,40 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         if (CollectionUtils.isEmpty(reportEntities)) {
             return;
         }
-
         ReportEntity reportEntity = reportEntities.get(0);
-        List<SceneBusinessActivityRefEntity> businessActivityRefEntityList = tSceneBusinessActivityRefMapper
-                .selectList(new LambdaQueryWrapper<SceneBusinessActivityRefEntity>()
-                        .eq(SceneBusinessActivityRefEntity::getSceneId, reportEntity.getSceneId()));
-
-        if (CollectionUtils.isEmpty(businessActivityRefEntityList)) {
-            return;
-        }
-        List<Long> appIds = businessActivityRefEntityList.stream().map(SceneBusinessActivityRefEntity::getApplicationIds)
-                .filter(org.apache.commons.lang3.StringUtils::isNotBlank)
-                .flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf))
-                .collect(Collectors.toList());
-
-        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>()
-                .select(ApplicationMntEntity::getApplicationName).
-                in(ApplicationMntEntity::getApplicationId, appIds));
-
-        List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(appNames)) {
-            return;
-        }
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
-        //处理机器的信息
+        Long endTime = reportEntity.getEndTime().getTime();
+        //first 同步应用基础信息
         executorService.execute(() -> {
-            calcMachine(appNames, reportEntity);
+            problemAnalysisService.syncMachineData(reportId, endTime);
+        });
+        //then tps指标图
+        executorService.execute(() -> {
+            summaryService.calcTpsTarget(reportId, endTime);
         });
 
         //重建链路图信息
         ReportLinkDiagramReq reportLinkDiagramReq = new ReportLinkDiagramReq();
         reportLinkDiagramReq.setReportId(reportId);
-        reportLinkDiagramReq.setStartTime(date2LocalDateTime(reportEntity.getStartTime()));
-        reportLinkDiagramReq.setEndTime(date2LocalDateTime(reportEntity.getEndTime()));
-        reportLinkDiagramReq.setSceneId(reportEntity.getSceneId());
-        //TODO md5值
-        //reportLinkDiagramReq.setXpathMd5(reportEntity.getXpressureMd5());
-        executorService.execute(() -> {
-            reportService.modifyLinkDiagram(reportLinkDiagramReq);
-        });
-    }
-
-    //Date转换为LocalDateTime
-    private LocalDateTime date2LocalDateTime(Date date) {
-        Instant instant = date.toInstant();
         ZoneId zoneId = ZoneId.systemDefault();
-        return LocalDateTime.ofInstant(instant, zoneId);
+        reportLinkDiagramReq.setStartTime(LocalDateTime.ofInstant(reportEntity.getStartTime().toInstant(), zoneId));
+        reportLinkDiagramReq.setEndTime(LocalDateTime.ofInstant(reportEntity.getEndTime().toInstant(), zoneId));
+        reportLinkDiagramReq.setSceneId(reportEntity.getSceneId());
 
-    }
-
-    private void calcMachine(List<String> appNames, ReportEntity reportEntity) {
-        long startTime = reportEntity.getStartTime().getTime();
-        long endTime = reportEntity.getEndTime().getTime();
-        long reportId = reportEntity.getId();
-        List<BaseAppVo> baseAppVoList = Lists.newArrayList();
-        ApplicationNodeQueryParam param = new ApplicationNodeQueryParam();
-        param.setApplicationNames(appNames);
-        List<String> onlineAgentIds = applicationNodeDAO.getOnlineAgentIds(param);
-        for (String appName : appNames) {
-            Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(startTime, endTime, appName));
-            if (CollectionUtils.isEmpty(baseList)) {
-                continue;
-            }
-            List<BaseAppVo> tmpList = baseList.stream().map(base -> {
-                BaseAppVo vo = new BaseAppVo();
-                vo.setCore(new BigDecimal(Optional.ofNullable(base.getCpuCores()).orElse(0D)).setScale(2, BigDecimal.ROUND_HALF_UP).intValue());
-                vo.setDisk(new BigDecimal(Optional.ofNullable(base.getDisk()).orElse(0D)).setScale(2, BigDecimal.ROUND_HALF_UP));
-                vo.setMbps(new BigDecimal(Optional.ofNullable(base.getNetBandwidth()).orElse(0D)).setScale(2, BigDecimal.ROUND_HALF_UP));
-                vo.setMemory(new BigDecimal(Optional.ofNullable(base.getMemory()).orElse(0D)).setScale(2, BigDecimal.ROUND_HALF_UP));
-                vo.setAppIp(base.getAppIp());
-                vo.setAppName(appName);
-                vo.setReportId(reportId);
-                vo.setAgentIp(base.getAgentId());
-                vo.setGcCount(BigDecimal.valueOf(Optional.ofNullable(base.getFullGcCount()).orElse(0D))
-                        .add(BigDecimal.valueOf(Optional.ofNullable(base.getYoungGcCount()).orElse(0D))));
-                vo.setGcTime(BigDecimal.valueOf(Optional.ofNullable(base.getFullGcCost()).orElse(0D))
-                        .add(BigDecimal.valueOf(Optional.ofNullable(base.getYoungGcCost()).orElse(0D))));
-                return vo;
-            }).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(tmpList)) {
-                baseAppVoList.addAll(tmpList);
-            }
-        }
-
-        // 处理基础信息
-        if (CollectionUtils.isEmpty(baseAppVoList)) {
+        List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = tSceneBusinessActivityRefMapper.selectList(new LambdaQueryWrapper<SceneBusinessActivityRefEntity>()
+                .select(SceneBusinessActivityRefEntity::getBindRef)
+                .eq(SceneBusinessActivityRefEntity::getSceneId, reportEntity.getSceneId()));
+        if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
             return;
         }
-        Map<String, List<BaseAppVo>> appMap = baseAppVoList.stream().collect(Collectors.groupingBy(this::fetchApp));
-
-        List<ReportMachineUpdateParam> insertList = Lists.newArrayList();
-
-        Iterator<List<BaseAppVo>> iterable = appMap.values().iterator();
-        while (iterable.hasNext()) {
-            List<BaseAppVo> appVoList = iterable.next();
-            if (CollectionUtils.isEmpty(appVoList)) {
-                continue;
-            }
-            BaseAppVo baseAppVo = appVoList.stream().filter(base -> {
-                // agentId 是否在线 只有不等于空
-                if (CollectionUtils.isNotEmpty(onlineAgentIds) && !onlineAgentIds.contains(base.getAgentIp())) {
-                    return false;
-                }
-                return true;
-            }).findFirst().orElse(null);
-            if (baseAppVo == null) {
-                return;
-            }
-            ReportMachineUpdateParam tmp = new ReportMachineUpdateParam();
-            tmp.setReportId(baseAppVo.getReportId());
-            tmp.setMachineIp(baseAppVo.getAppIp());
-            tmp.setApplicationName(baseAppVo.getAppName());
-            tmp.setRiskFlag(0);
-            tmp.setAgentId(baseAppVo.getAgentIp());
-            /**
-             * 单位换算 磁盘 内存
-             */
-            baseAppVo.setDisk(VolumnUtil.convertByte2Gb(baseAppVo.getDisk()));
-            baseAppVo.setMemory(VolumnUtil.convertByte2Gb(baseAppVo.getMemory()));
-            baseAppVo.setGcCount(baseAppVo.getGcCount().setScale(0, BigDecimal.ROUND_HALF_UP));
-            baseAppVo.setGcTime(baseAppVo.getGcTime().setScale(2, BigDecimal.ROUND_HALF_UP));
-            baseAppVo.setMbps(baseAppVo.getMbps().setScale(2, BigDecimal.ROUND_HALF_UP));
-            baseAppVo.setCore(baseAppVo.getCore());
-            //只保存基础信息
-            baseAppVo.setAppIp(null);
-            baseAppVo.setAppName(null);
-            baseAppVo.setReportId(null);
-            baseAppVo.setAgentIp(null);
-            tmp.setMachineBaseConfig(JSON.toJSONString(baseAppVo));
-            // 增加租户
-            WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(), tmp);
-            insertList.add(tmp);
+        List<String> bindRefList = sceneBusinessActivityRefEntities.stream().filter(a -> StringUtils.isNotBlank(a.getBindRef())).map(SceneBusinessActivityRefEntity::getBindRef).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(bindRefList)) {
+            return;
         }
+        executorService.execute(() -> {
+            reportService.modifyLinkDiagrams(reportLinkDiagramReq, bindRefList);
+        });
 
-        if (CollectionUtils.isNotEmpty(insertList)) {
-            //TODO machineTpsTargetConfig 指标信息也需要更新
-            insertList.forEach(reportMachineDAO::insertOrUpdate);
-        }
-    }
-
-    private String fetchApp(BaseAppVo vo) {
-        return vo.getReportId() + vo.getAppIp() + vo.getAppName();
     }
 }

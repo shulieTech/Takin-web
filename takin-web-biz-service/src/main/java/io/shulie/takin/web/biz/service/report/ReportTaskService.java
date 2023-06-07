@@ -40,7 +40,7 @@ public interface ReportTaskService {
      */
     void calcTmpReportData(Long reportId);
 
-    List<Long> nearlyHourReportIds();
+    List<Long> nearlyHourReportIds(int minutes);
 
     void calcMachineDate(Long reportId);
 

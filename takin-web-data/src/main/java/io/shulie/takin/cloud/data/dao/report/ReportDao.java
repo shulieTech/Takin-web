@@ -162,6 +162,8 @@ public interface ReportDao {
      */
     ReportBusinessActivityDetailEntity getReportBusinessActivityDetail(Long sceneId,String xpathMd5,Long reportId);
 
+    List<ReportBusinessActivityDetailEntity> getReportBusinessActivityDetails(Long sceneId, List<String> xpathMd5List, Long reportId);
+
     /**
      * 更新链路拓扑图
      * @param reportId 报告id
@@ -170,5 +172,5 @@ public interface ReportDao {
      */
     void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram);
 
-    List<Long> nearlyHourReportIds();
+    List<Long> nearlyHourReportIds(int minutes);
 }

@@ -243,6 +243,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         result.setServiceName(entranceEntity.getServiceName());
         result.setMethod(entranceEntity.getMethodName());
         result.setRpcType(entranceEntity.getRpcType());
+        result.setApplicationName(entity.getApplicationName());
         return result;
     }
 

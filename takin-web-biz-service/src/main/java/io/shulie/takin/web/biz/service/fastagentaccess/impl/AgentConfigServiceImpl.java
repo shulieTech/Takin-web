@@ -338,6 +338,8 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         queryParam.setTenantId(WebPluginUtils.SYS_DEFAULT_TENANT_ID);
         queryParam.setEnvCode(WebPluginUtils.SYS_DEFAULT_ENV_CODE);
         queryParam.setType(AgentConfigTypeEnum.GLOBAL.getVal());
+        //仅看重启能生效的
+        queryParam.setEffectMechanism(1);
         List<AgentConfigDetailResult> globalConfigList = agentConfigDAO.listByTypeAndTenantIdAndEnvCode(queryParam);
         if (globalConfigList.isEmpty()) {
             return new HashMap<>(0);

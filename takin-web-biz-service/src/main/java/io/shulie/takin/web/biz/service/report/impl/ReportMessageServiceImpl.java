@@ -86,27 +86,31 @@ public class ReportMessageServiceImpl implements ReportMessageService {
         paramMap.put("envCode", WebPluginUtils.traceEnvCode());
         paramMap.put("page", 0);
         paramMap.put("size", 100);
-        String requestResult = HttpUtil.createGet(takinSreUrl + TAKIN_SRE_BIZRISKLOG_PATH)
-                .form(paramMap)
-                .execute()
-                .body();
-        TakinSreBizRiskLogDTO logDTO = JsonHelper.json2Bean(requestResult, TakinSreBizRiskLogDTO.class);
-        List<ReportProblemCheckDTO> dtoList = new ArrayList<>();
-        if(!logDTO.getSuccess() || CollectionUtils.isEmpty(logDTO.getData())) {
+        try {
+            String requestResult = HttpUtil.createGet(takinSreUrl + TAKIN_SRE_BIZRISKLOG_PATH)
+                    .form(paramMap)
+                    .execute()
+                    .body();
+            TakinSreBizRiskLogDTO logDTO = JsonHelper.json2Bean(requestResult, TakinSreBizRiskLogDTO.class);
+            List<ReportProblemCheckDTO> dtoList = new ArrayList<>();
+            if (!logDTO.getSuccess() || CollectionUtils.isEmpty(logDTO.getData())) {
+                return dtoList;
+            }
+            for (int i = 0; i < logDTO.getData().size(); i++) {
+                ReportProblemCheckDTO dto = new ReportProblemCheckDTO();
+                dto.setSeqNo(i + 1);
+                dto.setCheckResult(logDTO.getData().get(i).getCalcResult());
+                dto.setNodeId(logDTO.getData().get(i).getInvokeId());
+                dto.setNodeName(logDTO.getData().get(i).getRiskSubject());
+                dto.setCurrentValue(logDTO.getData().get(i).getCurrentValue() + logDTO.getData().get(i).getCurrentValueUnit());
+                dto.setTechRiskName(logDTO.getData().get(i).getStandardName());
+                dto.setTraceSampling(logDTO.getData().get(i).getTraceSampling());
+                dtoList.add(dto);
+            }
             return dtoList;
+        } catch (Exception e) {
+            return new ArrayList<>();
         }
-        for(int i = 0; i < logDTO.getData().size(); i++) {
-            ReportProblemCheckDTO dto = new ReportProblemCheckDTO();
-            dto.setSeqNo(i + 1);
-            dto.setCheckResult(logDTO.getData().get(i).getCalcResult());
-            dto.setNodeId(logDTO.getData().get(i).getInvokeId());
-            dto.setNodeName(logDTO.getData().get(i).getRiskSubject());
-            dto.setCurrentValue(logDTO.getData().get(i).getCurrentValue() + logDTO.getData().get(i).getCurrentValueUnit());
-            dto.setTechRiskName(logDTO.getData().get(i).getStandardName());
-            dto.setTraceSampling(logDTO.getData().get(i).getTraceSampling());
-            dtoList.add(dto);
-        }
-        return dtoList;
     }
 
     @Override

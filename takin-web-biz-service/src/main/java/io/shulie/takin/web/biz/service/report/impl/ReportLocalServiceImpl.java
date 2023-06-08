@@ -96,6 +96,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -792,7 +793,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
             TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
             traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
-            traceMetricsRequest.setEndTime(reportEntity.getEndTime().getTime());
+            traceMetricsRequest.setEndTime(DateUtils.addMinutes(reportEntity.getEndTime(), 10).getTime());
             traceMetricsRequest.setClusterTest(1);
             traceMetricsRequest.setQuerySource("tro");
             traceMetricsRequest.setUserId(String.valueOf(userExt.getId()));
@@ -835,7 +836,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     double suRate = BigDecimal.valueOf(traceMetrics.getSuccessCount()).divide(BigDecimal.valueOf(traceMetrics.getTotal()), 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100)).doubleValue();
                     successRate.add(suRate);
-                    if (traceMetrics.getTime()==null) {
+                    if (traceMetrics.getTime() == null) {
                         return;
                     }
                     long timestamp = traceMetrics.getTime();

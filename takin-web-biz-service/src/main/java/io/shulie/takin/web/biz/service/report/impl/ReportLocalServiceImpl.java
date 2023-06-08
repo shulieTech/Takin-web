@@ -60,9 +60,12 @@ import io.shulie.takin.web.amdb.bean.query.trace.TraceMetricsRequest;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.TraceMetricsAll;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
+import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
 import io.shulie.takin.web.biz.pojo.output.report.*;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ReportActivityInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ReportActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
@@ -74,7 +77,12 @@ import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
+import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
@@ -93,6 +101,7 @@ import io.shulie.takin.web.data.result.report.ReportApplicationSummaryResult;
 import io.shulie.takin.web.data.result.report.ReportBottleneckInterfaceResult;
 import io.shulie.takin.web.data.result.report.ReportMachineResult;
 import io.shulie.takin.web.data.result.report.ReportSummaryResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -807,26 +816,15 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             traceMetricsRequest.setTenantAppKey(tenantCommonExt.getTenantAppKey());
             traceMetricsRequest.setEnvCode(tenantCommonExt.getEnvCode());
             traceMetricsRequest.setAppNames(appNames);
-            List<String> linkIds =  new ArrayList<>();
-            sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).collect(Collectors.toList()).forEach(businessActivityId -> {
-                //根据业务活动id获取业务活动信息
-                //TODO 业务活动信息从缓存中获取(缓存中没有则从数据库中获取
-                ActivityResult result = activityDAO.getActivityById(businessActivityId);
-                StringBuffer tags = new StringBuffer();
-                tags.append(objectToString(result.getServiceName(), ""))
-                        .append("|")
-                        .append(objectToString(result.getMethod(), ""))
-                        .append("|")
-                        .append(objectToString(result.getApplicationName(), ""))
-                        .append("|")
-                        .append(objectToString(result.getRpcType(), ""))
-                        .append("|")
-                        .append(objectToString(result.getExtend(), ""));
-                String linkId = Md5Utils.md5(tags.toString());
-                linkIds.add(linkId);
+            List<io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest> requestList =  new ArrayList<>();
+            sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).distinct().collect(Collectors.toList()).forEach(businessActivityId -> {
+                io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest queryRequest = genTopologyQueryRequest(businessActivityId);
+                if (queryRequest == null) {
+                    return;
+                }
+                requestList.add(queryRequest);
             });
-            traceMetricsRequest.setLinkIds(linkIds);
-            List<String> edgeIds = this.traceClient.getEdgeIdsByLinkIds(traceMetricsRequest);
+            List<String> edgeIds = this.traceClient.getEdgeIdsByLinkIds(requestList);
             if (CollectionUtils.isEmpty(edgeIds)) {
                 return Response.success(Collections.EMPTY_LIST);
             }
@@ -900,18 +898,22 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return Response.success(Collections.EMPTY_LIST);
     }
 
-    /**
-     * 对象转字符串
-     *
-     * @param value
-     * @param defaultStr
-     * @return
-     */
-    private String objectToString(Object value, String defaultStr) {
-        if (value == null || "null".equalsIgnoreCase(value.toString())) {
-            return "";
+    private io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest genTopologyQueryRequest(long activityId) {
+        ActivityResult result = activityDAO.getActivityById(activityId);
+        if (result == null) {
+            return null;
         }
-        return ObjectUtils.toString(value);
+        // 拓扑图查询
+        io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest request
+                = new io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest();
+        request.setApplicationName(result.getApplicationName());
+        request.setLinkId(String.valueOf(result.getLinkId()));
+        request.setMethod(result.getMethod());
+        request.setRpcType(result.getRpcType());
+        request.setExtend(result.getExtend());
+        request.setServiceName(result.getServiceName());
+        request.setType(result.getType());
+        return request;
     }
 
     /**

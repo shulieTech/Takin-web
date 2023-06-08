@@ -326,7 +326,7 @@ public class TraceClientImpl implements TraceClient {
     }
 
     @Override
-    public List<String> getEdgeIdsByLinkIds(TraceMetricsRequest traceMetricsRequest){
+    public List<String> getEdgeIdsByLinkIds(List<ApplicationEntranceTopologyQueryRequest> traceMetricsRequest){
         String url = properties.getUrl().getAmdb() + GET_EDGE_IDS_BY_APP_NAMES;
         try {
             List<String> list = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)

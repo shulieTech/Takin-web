@@ -77,6 +77,7 @@ import io.shulie.takin.web.common.constant.ReportConfigConstant;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
@@ -87,6 +88,7 @@ import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.model.mysql.ReportMachineEntity;
 import io.shulie.takin.web.data.param.report.ReportApplicationSummaryQueryParam;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
+import io.shulie.takin.web.data.result.activity.ActivityResult;
 import io.shulie.takin.web.data.result.report.ReportApplicationSummaryResult;
 import io.shulie.takin.web.data.result.report.ReportBottleneckInterfaceResult;
 import io.shulie.takin.web.data.result.report.ReportMachineResult;
@@ -158,6 +160,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Resource
     private RedisClientUtil redisClientUtil;
+    @Resource
+    private ActivityDAO activityDAO;
 
     private static final String reportCompareData = "report:vlt:compareData:%s:%s";
 
@@ -807,17 +811,17 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).collect(Collectors.toList()).forEach(businessActivityId -> {
                 //根据业务活动id获取业务活动信息
                 //TODO 业务活动信息从缓存中获取(缓存中没有则从数据库中获取
-                ActivityResponse activityResp = activityService.getActivityServiceById(businessActivityId);
+                ActivityResult result = activityDAO.getActivityById(businessActivityId);
                 StringBuffer tags = new StringBuffer();
-                tags.append(objectToString(activityResp.getServiceName(), ""))
+                tags.append(objectToString(result.getServiceName(), ""))
                         .append("|")
-                        .append(objectToString(activityResp.getMethod(), ""))
+                        .append(objectToString(result.getMethod(), ""))
                         .append("|")
-                        .append(objectToString(activityResp.getApplicationName(), ""))
+                        .append(objectToString(result.getApplicationName(), ""))
                         .append("|")
-                        .append(objectToString(activityResp.getRpcType(), ""))
+                        .append(objectToString(result.getRpcType(), ""))
                         .append("|")
-                        .append(objectToString(activityResp.getExtend(), ""));
+                        .append(objectToString(result.getExtend(), ""));
                 String linkId = Md5Utils.md5(tags.toString());
                 linkIds.add(linkId);
             });

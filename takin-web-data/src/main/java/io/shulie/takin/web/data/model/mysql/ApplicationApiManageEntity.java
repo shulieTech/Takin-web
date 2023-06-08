@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -69,4 +70,8 @@ public class ApplicationApiManageEntity extends UserBaseEntity {
 
     @TableField(value = "is_agent_registe")
     private Integer isAgentRegiste;
+
+
+    @TableField(value = "dept_id",fill = FieldFill.INSERT)
+    private Long deptId;
 }

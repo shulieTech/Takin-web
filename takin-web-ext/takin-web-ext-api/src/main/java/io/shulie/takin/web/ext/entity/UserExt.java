@@ -84,4 +84,8 @@ public class UserExt {
      * 是否有超级管理员的权限(创建租户)
      */
     private Integer isSuper;
+
+    private Long deptId;
+
+    private Boolean isProjectAdmin;
 }

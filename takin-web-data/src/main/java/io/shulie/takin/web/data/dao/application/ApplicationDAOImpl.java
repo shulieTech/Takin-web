@@ -47,6 +47,7 @@ import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
+import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
@@ -413,7 +414,8 @@ public class ApplicationDAOImpl
     @Override
     public int allocationUser(ApplicationUpdateParam param) {
         LambdaUpdateWrapper<ApplicationMntEntity> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(ApplicationMntEntity::getUserId, param.getUserId())
+        wrapper.set(param.getUserId() != null,ApplicationMntEntity::getUserId, param.getUserId())
+            .set(param.getDeptId() != null, ApplicationMntEntity::getDeptId, param.getDeptId())
             .eq(ApplicationMntEntity::getApplicationId, param.getId());
         return applicationMntMapper.update(null, wrapper);
     }
@@ -668,6 +670,7 @@ public class ApplicationDAOImpl
 
     @Override
     public IPage<ApplicationListResult> pageByParam(QueryApplicationParam param) {
+        param.setDeptId(WebPluginUtils.traceDeptId());
         return applicationMntMapper.selectApplicationPageByParam(this.setPage(param), param);
     }
 

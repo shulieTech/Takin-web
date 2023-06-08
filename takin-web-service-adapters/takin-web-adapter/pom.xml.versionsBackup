@@ -3,23 +3,17 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>takin-web</artifactId>
+        <artifactId>takin-web-service-adapters</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.10.0.hzbank</version>
+        <version>takin-web-5.10.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>takin-web-ext</artifactId>
-    <version>takin-web-5.10.0.hzbank</version>
+    <artifactId>takin-web-adapter</artifactId>
     <packaging>pom</packaging>
+
     <modules>
-        <module>takin-web-ext-api</module>
-        <module>takin-web-ext-jmeter</module>
+        <module>takin-web-adapter-api</module>
+        <module>takin-web-adapter-cloud</module>
     </modules>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-    </properties>
-
 </project>

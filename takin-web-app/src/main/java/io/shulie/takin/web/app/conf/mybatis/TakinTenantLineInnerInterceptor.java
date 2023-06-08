@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.google.common.collect.Lists;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,6 +23,7 @@ import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -208,6 +210,22 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_interface_performance_result"
     };
 
+
+    private String[] tableArrWithDeptId = new String[] {
+        "t_app_business_table_info",
+        "t_business_link_manage_table",
+        "t_scene_manage",
+        "t_report",
+        "t_application_mnt",
+        "t_scene",
+        "t_script_manage",
+        "t_application_api_manage",
+        "t_fast_debug_config_info",
+        "t_tro_dbresource",
+        "t_interface_performance_config",
+        "t_link_manage_table"
+    };
+
     /**
      * 没有tenant_id 的表
      */
@@ -223,6 +241,11 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
      */
     private List<String> tableWithoutUserId = Lists.newArrayList(tableArrWithoutUserId);
 
+    /**
+     * 没有dept_id 的表
+     */
+    private List<String> tableWithDeptId = Lists.newArrayList(tableArrWithDeptId);
+
     private TakinTenantLineHandler tenantLineHandler;
 
     public TakinTenantLineInnerInterceptor(TakinTenantLineHandler takinTenantLineHandler) {
@@ -235,7 +258,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
      */
     @Override
     protected Expression builderExpression(Expression currentExpression, Table table) {
-        AndExpression tenantExpression = this.buildTenantExpression(table, currentExpression);
+        AndExpression tenantExpression = this.buildTenantExpression(table, currentExpression, true);
         // 没有租户的
         if (tenantExpression == null) {
             return currentExpression;
@@ -257,7 +280,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     @Override
     protected BinaryExpression andExpression(Table table, Expression where) {
         //获得where条件表达式
-        AndExpression tenantExpression = this.buildTenantExpression(table, where);
+        AndExpression tenantExpression = this.buildTenantExpression(table, where, false);
 
         if (tenantExpression == null) {
             EqualsTo equalsTo = new EqualsTo(new LongValue(1), new LongValue(1));
@@ -403,6 +426,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             // 过滤退出执行
             return;
         }
+        // 更新的时候不用部门
         update.setWhere(this.andExpression(table, update.getWhere()));
         log.debug("组装update的sql【{}】", update.toString());
     }
@@ -458,10 +482,11 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         return new Column(column.toString());
     }
 
-    private AndExpression buildTenantExpression(Table table, Expression where) {
+    private AndExpression buildTenantExpression(Table table, Expression where,Boolean isNeedDept) {
         // 已经存在
         String tenantIdColumn = tenantLineHandler.getTenantIdColumn();
         String envCodeColumn = tenantLineHandler.getEnvCodeColumn();
+        String deptIdColumn = tenantLineHandler.getDeptIdColumn();
 
         EqualsTo tenantIdCondition = null;
         if (!tenantLineHandler.ignoreSearch(where, tenantIdColumn) && !tableWithoutTenantId.contains(table.getName())) {
@@ -477,14 +502,33 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             envCodeCondition.setRightExpression(tenantLineHandler.getEnvCode());
         }
 
-        if (tenantIdCondition == null && envCodeCondition == null) {
-            return null;
-        }
         // 1 = 1
         EqualsTo equalsTo = new EqualsTo(new LongValue(1), new LongValue(1));
 
-        //AndExpression allAndExpression = null;
+        Expression deptIdCondition = null;
+        if (isNeedDept && !tenantLineHandler.ignoreSearch(where, deptIdColumn) && tableWithDeptId.contains(table.getName())) {
+            // 超级管理员
+            if(WebPluginUtils.isProjectAdmin()) {
+                deptIdCondition = new Parenthesis(new OrExpression(new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()),tenantLineHandler.getDeptId()),
+                    new IsNullExpression().withLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()))));
+            }else {
+                // 固定
+                deptIdCondition = new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()),tenantLineHandler.getDeptId());
+            }
+
+        }
+
         AndExpression tenantExpression = null;
+
+        if (tenantIdCondition == null && envCodeCondition == null) {
+            // 只有部分有这个数据
+            if(deptIdCondition != null) {
+                tenantExpression = new AndExpression(equalsTo, deptIdCondition);
+            }
+            return tenantExpression;
+        }
+
+        //AndExpression allAndExpression = null;
         if (tenantIdCondition != null && envCodeCondition != null) {
             tenantExpression = new AndExpression(tenantIdCondition, envCodeCondition);
         } else if (tenantIdCondition != null) {
@@ -492,6 +536,10 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             tenantExpression = new AndExpression(equalsTo, tenantIdCondition);
         }else if(envCodeCondition != null) {
             tenantExpression = new AndExpression(equalsTo, envCodeCondition);
+        }
+        // 只有部分有这个数据
+        if(deptIdCondition != null) {
+            tenantExpression = new AndExpression(tenantExpression, deptIdCondition);
         }
 
         return tenantExpression;

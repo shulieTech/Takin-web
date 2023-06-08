@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -97,6 +98,12 @@ public class BusinessLinkManageTableEntity extends UserBaseEntity {
     private Date updateTime;
 
     /**
+     * 部门
+     */
+    @TableField(value = "dept_id",fill = FieldFill.INSERT)
+    private Long deptId;
+
+    /**
      * 业务域: 0:订单域", "1:运单域", "2:结算域
      */
     @TableField(value = "BUSINESS_DOMAIN", updateStrategy = FieldStrategy.IGNORED)
@@ -128,4 +135,8 @@ public class BusinessLinkManageTableEntity extends UserBaseEntity {
 
     @TableField(value = "persistence")
     private boolean persistence = true;
+
+
 }
+
+

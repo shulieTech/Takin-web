@@ -32,5 +32,9 @@ public class ApplicationEntranceTopologyQueryRequest {
 
     // 原始的链路拓扑图
     private boolean isConvert;
+
+    private String tenantAppKey;
+
+    private String envCode;
 }
 

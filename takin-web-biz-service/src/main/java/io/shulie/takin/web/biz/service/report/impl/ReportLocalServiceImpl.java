@@ -818,7 +818,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             traceMetricsRequest.setAppNames(appNames);
             List<io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest> requestList =  new ArrayList<>();
             sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).distinct().collect(Collectors.toList()).forEach(businessActivityId -> {
-                io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest queryRequest = genTopologyQueryRequest(businessActivityId);
+                io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest queryRequest = genTopologyQueryRequest(businessActivityId, tenantCommonExt.getTenantAppKey());
                 if (queryRequest == null) {
                     return;
                 }
@@ -898,7 +898,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return Response.success(Collections.EMPTY_LIST);
     }
 
-    private io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest genTopologyQueryRequest(long activityId) {
+    private io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest genTopologyQueryRequest(long activityId,String tenantAppKey) {
         ActivityResult result = activityDAO.getActivityById(activityId);
         if (result == null) {
             return null;
@@ -913,6 +913,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         request.setExtend(result.getExtend());
         request.setServiceName(result.getServiceName());
         request.setType(result.getType());
+        request.setEnvCode(result.getEnvCode());
+        request.setTenantAppKey(tenantAppKey);
         return request;
     }
 

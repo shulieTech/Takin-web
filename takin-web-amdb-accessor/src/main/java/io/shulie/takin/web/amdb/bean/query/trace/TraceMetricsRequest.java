@@ -54,6 +54,9 @@ public class TraceMetricsRequest extends AbstractAmdbBaseRequest {
     @ApiModelProperty("应用名称列表")
     List<String> appNames;
 
+    @ApiModelProperty("linkIds")
+    private List<String> linkIds;
+
     public List<E2ENodeMetricsRequest> getE2eNodeRequestList() {
         if (!CollectionUtils.isEmpty(e2eNodeRequestList)) {
             String tenantAppKey = getTenantAppKey();

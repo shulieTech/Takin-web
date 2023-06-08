@@ -68,7 +68,7 @@ public class TraceClientImpl implements TraceClient {
 
     private static final String TRACE_METRIC_GET_SQL_STATEMENTS = "/amdb/db/api/traceMetric/getSqlStatements";
 
-    private static final String GET_EDGE_IDS_BY_APP_NAMES = "/amdb/link/selectEdgeIdsByAppNames";
+    private static final String GET_EDGE_IDS_BY_APP_NAMES = "/amdb/link/selectEdgeIdsByLinkIds";
 
     @Autowired
     private AmdbClientProperties properties;
@@ -326,11 +326,11 @@ public class TraceClientImpl implements TraceClient {
     }
 
     @Override
-    public List<String> getEdgeIdsByAppNames(List<String> appNames) {
+    public List<String> getEdgeIdsByLinkIds(TraceMetricsRequest traceMetricsRequest){
         String url = properties.getUrl().getAmdb() + GET_EDGE_IDS_BY_APP_NAMES;
         try {
             List<String> list = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
-                    .param(appNames)
+                    .param(traceMetricsRequest)
                     .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
                     .eventName("应用趋势图查询").list(String.class).getData();
             return list;

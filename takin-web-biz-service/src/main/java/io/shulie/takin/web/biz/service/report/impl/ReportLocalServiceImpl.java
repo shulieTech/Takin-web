@@ -36,6 +36,7 @@ import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import com.pamirs.takin.entity.domain.vo.TopologyNode;
+import io.shulie.surge.data.deploy.pradar.parser.utils.Md5Utils;
 import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
@@ -96,6 +97,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -327,13 +329,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Override
     public void cacheLTReportData2Redis(Long reportId) {
         ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
-        if(reportDetailOutput == null || CollectionUtils.isEmpty(reportDetailOutput.getBusinessActivity())) {
+        if (reportDetailOutput == null || CollectionUtils.isEmpty(reportDetailOutput.getBusinessActivity())) {
             log.warn("未找到报告{}的业务活动数据", reportId);
             return;
         }
         List<BusinessActivitySummaryBean> activitySummaryBeanList = reportDetailOutput.getBusinessActivity().stream().filter(data -> data.getBusinessActivityId() != null && data.getBusinessActivityId() > 0L).collect(Collectors.toList());
         List<Long> reportIds = Collections.singletonList(reportId);
-        for(BusinessActivitySummaryBean activitySummaryBean : activitySummaryBeanList) {
+        for (BusinessActivitySummaryBean activitySummaryBean : activitySummaryBeanList) {
             Long activityId = activitySummaryBean.getBusinessActivityId();
             ReportCompareOutput compareOutput = getReportCompare(reportIds, activityId);
             redisClientUtil.setString(String.format(reportCompareData, reportId, activityId), JSON.toJSONString(compareOutput));
@@ -354,14 +356,14 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         String bindRef = null;
         for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
-            if(reportId == null) {
+            if (reportId == null) {
                 continue;
             }
             String redisKey = String.format(reportCompareData, reportId, businessActivityId);
-            if(redisClientUtil.hasKey(redisKey)) {
+            if (redisClientUtil.hasKey(redisKey)) {
                 String redisValue = redisClientUtil.getString(redisKey);
                 ReportCompareOutput tempOutput = JSON.parseObject(redisValue, ReportCompareOutput.class);
-                if(tempOutput != null) {
+                if (tempOutput != null) {
                     output.getColumnarData().addAll(tempOutput.getColumnarData());
                     output.getTargetData().addAll(tempOutput.getTargetData());
                     output.getRtData().addAll(tempOutput.getRtData());
@@ -435,14 +437,14 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         //按耗时取请求量
         for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
-            if(reportId == null) {
+            if (reportId == null) {
                 continue;
             }
             String redisKey = String.format(reportCompareData, reportId, businessActivityId);
-            if(redisClientUtil.hasKey(redisKey)) {
+            if (redisClientUtil.hasKey(redisKey)) {
                 String redisValue = redisClientUtil.getString(redisKey);
                 ReportCompareOutput tempOutput = JSON.parseObject(redisValue, ReportCompareOutput.class);
-                if(tempOutput != null && CollectionUtils.isNotEmpty(tempOutput.getTrendData())) {
+                if (tempOutput != null && CollectionUtils.isNotEmpty(tempOutput.getTrendData())) {
                     output.getTrendData().get(i).getXCost().addAll(tempOutput.getTrendData().get(0).getXCost());
                     output.getTrendData().get(i).getCount().addAll(tempOutput.getTrendData().get(0).getCount());
                 }
@@ -584,7 +586,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     root.getNodes().add(map.get(key));
                 }
                 genNodeTree(map.get(key), map);
-            }else if (root.getLabel().equals(split[0])) {
+            } else if (root.getLabel().equals(split[0])) {
                 NodeCompareTargetOut.TopologyNode topologyNode = map.get(key);
                 root.setService1Rt(topologyNode.getService1Rt());
                 root.setService2Rt(topologyNode.getService2Rt());
@@ -721,12 +723,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 }
                 if (machine.getTpsTarget().getGcCount() != null) {
                     reportAppInstancePerformanceOut.setGcCount(Arrays.stream(machine.getTpsTarget().getGcCount()).reduce(BigDecimal.ZERO, BigDecimal::add));
-                }else {
+                } else {
                     reportAppInstancePerformanceOut.setGcCount(Optional.ofNullable(machine.getGcCount()).orElse(BigDecimal.ZERO));
                 }
                 if (machine.getTpsTarget().getGcCost() != null) {
                     reportAppInstancePerformanceOut.setGcCost(Arrays.stream(machine.getTpsTarget().getGcCost()).reduce(BigDecimal.ZERO, BigDecimal::add));
-                }else {
+                } else {
                     reportAppInstancePerformanceOut.setGcCost(Optional.ofNullable(machine.getGcCost()).orElse(BigDecimal.ZERO));
                 }
                 return reportAppInstancePerformanceOut;
@@ -801,9 +803,26 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             traceMetricsRequest.setTenantAppKey(tenantCommonExt.getTenantAppKey());
             traceMetricsRequest.setEnvCode(tenantCommonExt.getEnvCode());
             traceMetricsRequest.setAppNames(appNames);
-            // 根据appName获取edgeid
-            //TODO 这边可能需要判断一下边的类型？
-            List<String> edgeIds = this.traceClient.getEdgeIdsByAppNames(appNames);
+            List<String> linkIds =  new ArrayList<>();
+            sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).collect(Collectors.toList()).forEach(businessActivityId -> {
+                //根据业务活动id获取业务活动信息
+                //TODO 业务活动信息从缓存中获取(缓存中没有则从数据库中获取
+                ActivityResponse activityResp = activityService.getActivityServiceById(businessActivityId);
+                StringBuffer tags = new StringBuffer();
+                tags.append(objectToString(activityResp.getServiceName(), ""))
+                        .append("|")
+                        .append(objectToString(activityResp.getMethod(), ""))
+                        .append("|")
+                        .append(objectToString(activityResp.getApplicationName(), ""))
+                        .append("|")
+                        .append(objectToString(activityResp.getRpcType(), ""))
+                        .append("|")
+                        .append(objectToString(activityResp.getExtend(), ""));
+                String linkId = Md5Utils.md5(tags.toString());
+                linkIds.add(linkId);
+            });
+            traceMetricsRequest.setLinkIds(linkIds);
+            List<String> edgeIds = this.traceClient.getEdgeIdsByLinkIds(traceMetricsRequest);
             if (CollectionUtils.isEmpty(edgeIds)) {
                 return Response.success(Collections.EMPTY_LIST);
             }
@@ -834,7 +853,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     rt.add(traceMetrics.getAvgRt().setScale(2, RoundingMode.HALF_UP).doubleValue());
                     totalRequest.add(traceMetrics.getTotal());
                     double suRate = BigDecimal.valueOf(traceMetrics.getSuccessCount()).divide(BigDecimal.valueOf(traceMetrics.getTotal()), 4, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100)).doubleValue();
+                            .multiply(BigDecimal.valueOf(100)).doubleValue();
                     successRate.add(suRate);
                     if (traceMetrics.getTime() == null) {
                         return;
@@ -875,6 +894,20 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             log.error("getReportAppTrendMap error:", e);
         }
         return Response.success(Collections.EMPTY_LIST);
+    }
+
+    /**
+     * 对象转字符串
+     *
+     * @param value
+     * @param defaultStr
+     * @return
+     */
+    private String objectToString(Object value, String defaultStr) {
+        if (value == null || "null".equalsIgnoreCase(value.toString())) {
+            return "";
+        }
+        return ObjectUtils.toString(value);
     }
 
     /**

@@ -781,6 +781,8 @@ public class ActivityServiceImpl implements ActivityService {
         response.setServiceName(result.getServiceName());
         response.setMethod(result.getMethod());
         response.setRpcType(result.getRpcType());
+        response.setApplicationName(result.getApplicationName());
+        response.setExtend(result.getExtend());
         return response;
     }
 

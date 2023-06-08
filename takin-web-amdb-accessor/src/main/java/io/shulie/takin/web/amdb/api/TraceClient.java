@@ -68,5 +68,5 @@ public interface TraceClient {
 
     List<TraceMetricsAll> getSqlStatements(TraceMetricsRequest traceMetricsRequest);
 
-    List<String> getEdgeIdsByAppNames(List<String> appNames);
+    List<String> getEdgeIdsByLinkIds(TraceMetricsRequest traceMetricsRequest);
 }

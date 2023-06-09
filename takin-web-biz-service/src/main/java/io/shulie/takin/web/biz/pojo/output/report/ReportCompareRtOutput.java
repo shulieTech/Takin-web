@@ -14,6 +14,10 @@ public class ReportCompareRtOutput implements Serializable {
     private Long reportId;
     @ApiModelProperty(value = "压测时长")
     private String pressureTestTime;
+    @ApiModelProperty(value = "请求总数")
+    private Long totalRequest;
+    @ApiModelProperty(value = "并发数")
+    private Integer concurrent;
     @ApiModelProperty(value = "平均Rt")
     private BigDecimal avgRt;
     @ApiModelProperty(value = "最大Rt")

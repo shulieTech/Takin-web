@@ -36,6 +36,7 @@ import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import com.pamirs.takin.entity.domain.vo.TopologyNode;
+import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
 import io.shulie.surge.data.deploy.pradar.parser.utils.Md5Utils;
 import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
@@ -816,7 +817,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             traceMetricsRequest.setTenantAppKey(tenantCommonExt.getTenantAppKey());
             traceMetricsRequest.setEnvCode(tenantCommonExt.getEnvCode());
             traceMetricsRequest.setAppNames(appNames);
-            List<io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest> requestList =  new ArrayList<>();
+            List<io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest> requestList = new ArrayList<>();
             sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).distinct().collect(Collectors.toList()).forEach(businessActivityId -> {
                 io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest queryRequest = genTopologyQueryRequest(businessActivityId, tenantCommonExt.getTenantAppKey());
                 if (queryRequest == null) {
@@ -824,7 +825,21 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 }
                 requestList.add(queryRequest);
             });
-            List<String> edgeIds = this.traceClient.getEdgeIdsByLinkIds(requestList);
+
+            List<Long> activityIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).collect(Collectors.toList());
+            List<String> edgeIds = new ArrayList<>();
+            for (Long activityId : activityIds) {
+                ActivityInfoQueryRequest activityInfoQueryRequest = new ActivityInfoQueryRequest();
+                activityInfoQueryRequest.setActivityId(activityId);
+                activityInfoQueryRequest.setTempActivity(false);
+                ActivityResponse activity = activityService.getActivityById(activityInfoQueryRequest);
+                if (activity == null) {
+                    continue;
+                }
+                List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> allNodes = activity.getTopology().getNodes();
+                edgeIds.addAll(getAllEagleIds(allNodes));
+            }
+
             if (CollectionUtils.isEmpty(edgeIds)) {
                 return Response.success(Collections.EMPTY_LIST);
             }
@@ -898,7 +913,34 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return Response.success(Collections.EMPTY_LIST);
     }
 
-    private io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest genTopologyQueryRequest(long activityId,String tenantAppKey) {
+    /**
+     * 获取拓扑图中所有边ID
+     *
+     * @param allNodes
+     * @return
+     */
+    private List<String> getAllEagleIds(List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> allNodes) {
+        List<String> allEagleIds = new ArrayList<>();
+        for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : allNodes) {
+            ApplicationEntranceTopologyResponse.TopologyAppNodeResponse appnode = (ApplicationEntranceTopologyResponse.TopologyAppNodeResponse) node;
+            if (appnode.getProviderService() != null) {
+                List<ApplicationEntranceTopologyResponse.AppProviderInfo> providerService = node.getProviderService();
+                for (ApplicationEntranceTopologyResponse.AppProviderInfo appProviderInfo : providerService) {
+                    for (ApplicationEntranceTopologyResponse.AppProvider appProvider : appProviderInfo.getDataSource()) {
+                        List<String> eagleIds = appProvider.getContainEdgeList().stream().map(LinkEdgeDTO::getEagleId)
+                                .collect(
+                                        Collectors.toList());
+                        if (CollectionUtils.isNotEmpty(eagleIds)) {
+                            allEagleIds.addAll(eagleIds);
+                        }
+                    }
+                }
+            }
+        }
+        return allEagleIds;
+    }
+
+    private io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest genTopologyQueryRequest(long activityId, String tenantAppKey) {
         ActivityResult result = activityDAO.getActivityById(activityId);
         if (result == null) {
             return null;

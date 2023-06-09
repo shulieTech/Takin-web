@@ -715,7 +715,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             List<ReportAppInstancePerformanceOut> reportAppInstancePerformanceOuts = machineDetailDTOList.stream().filter(Objects::nonNull).map(machine -> {
                 ReportAppInstancePerformanceOut reportAppInstancePerformanceOut = new ReportAppInstancePerformanceOut();
                 reportAppInstancePerformanceOut.setAppName(machine.getApplicationName());
-                reportAppInstancePerformanceOut.setInstanceName(machine.getMachineIp());
+                reportAppInstancePerformanceOut.setInstanceName(machine.getAgentId());
                 if (machine.getTpsTarget() == null) {
                     return reportAppInstancePerformanceOut;
                 }

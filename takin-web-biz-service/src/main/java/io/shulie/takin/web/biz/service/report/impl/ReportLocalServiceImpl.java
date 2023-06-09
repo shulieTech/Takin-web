@@ -713,6 +713,11 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     machineDetailDTOList.add(machineDetail);
                 }
             }
+
+            List<Long> activityIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId)
+                    .collect(Collectors.toList());
+            Map<String, BigDecimal> appNameTpsMap = getNodeTps(reportEntity, activityIds);
+
             List<ReportAppInstancePerformanceOut> reportAppInstancePerformanceOuts = machineDetailDTOList.stream().filter(Objects::nonNull).map(machine -> {
                 ReportAppInstancePerformanceOut reportAppInstancePerformanceOut = new ReportAppInstancePerformanceOut();
                 reportAppInstancePerformanceOut.setAppName(machine.getApplicationName());
@@ -733,7 +738,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     reportAppInstancePerformanceOut.setAvgNetUsageRate(getAvg(Arrays.asList(machine.getTpsTarget().getMbps())));
                 }
                 if (machine.getTpsTarget().getTps() != null) {
-                    reportAppInstancePerformanceOut.setAvgTps(getAvg(Arrays.stream(machine.getTpsTarget().getTps()).filter(a -> Objects.nonNull(a)).map(BigDecimal::valueOf).collect(Collectors.toList())));
+                    BigDecimal tps;
+                    if (MapUtils.isNotEmpty(appNameTpsMap)) {
+                        tps = appNameTpsMap.get(machine.getApplicationName());
+                    } else {
+                        tps = getAvg(Arrays.stream(machine.getTpsTarget().getTps()).filter(a -> Objects.nonNull(a)).map(BigDecimal::valueOf).collect(Collectors.toList()));
+                    }
+                    reportAppInstancePerformanceOut.setAvgTps(tps);
                 }
                 if (machine.getTpsTarget().getGcCount() != null) {
                     reportAppInstancePerformanceOut.setGcCount(Arrays.stream(machine.getTpsTarget().getGcCount()).reduce(BigDecimal.ZERO, BigDecimal::add));
@@ -752,6 +763,34 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             log.error("getReortAppInstancePerformanceList error:", e);
         }
         return Response.success(Collections.EMPTY_LIST);
+    }
+
+    private Map<String, BigDecimal> getNodeTps(ReportEntity reportEntity, List<Long> activityIds) {
+        // 首先获取到业务活动id
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> reportWrapper = new LambdaQueryWrapper<>();
+        reportWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportEntity.getId());
+        reportWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, reportEntity.getSceneId());
+        reportWrapper.in(ReportBusinessActivityDetailEntity::getBusinessActivityId, activityIds);
+        List<ReportBusinessActivityDetailEntity> reportBusinessActivityDetailEntities = detailMapper.selectList(reportWrapper);
+        if (CollectionUtils.isEmpty(reportBusinessActivityDetailEntities)) {
+            return Collections.EMPTY_MAP;
+        }
+
+        List<ActivityResponse> activityResponses = reportBusinessActivityDetailEntities.stream().map(reportBusinessActivityDetailEntity -> {
+            ActivityResponse activityResponse = JSON.parseObject(reportBusinessActivityDetailEntity.getReportJson(), ActivityResponse.class);
+            return activityResponse;
+        }).collect(Collectors.toList());
+        Map<String, BigDecimal> map = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(activityResponses)) {
+            for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponses.get(0).getTopology().getNodes()) {
+                //非app节点就跳过去
+                if (!node.getNodeType().getType().equalsIgnoreCase("app")) {
+                    continue;
+                }
+                map.put(node.getLabel(), new BigDecimal(Optional.ofNullable(node.getServiceAllTotalTps()).orElse(0D)));
+            }
+        }
+        return map;
     }
 
     private List<MachineDetailDTO> listMachineDetailByReportId(ReportLocalQueryParam queryParam) {

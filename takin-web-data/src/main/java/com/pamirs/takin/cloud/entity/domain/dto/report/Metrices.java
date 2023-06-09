@@ -19,4 +19,10 @@ public class Metrices {
      * tps
      */
     private Double avgTps;
+
+    private Integer totalCount;
+
+    private Integer successCount;
+
+    private Double avgRt;
 }

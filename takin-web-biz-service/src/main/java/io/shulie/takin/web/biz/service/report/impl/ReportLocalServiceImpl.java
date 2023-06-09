@@ -1069,7 +1069,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     private MachineDetailDTO convert2MachineDetailDTO(ReportMachineResult param) {
         MachineDetailDTO dto = new MachineDetailDTO();
         dto.setId(param.getId());
-        dto.setMachineIp(param.getMachineIp());
+        dto.setMachineIp(param.getAgentId());
         dto.setApplicationName(param.getApplicationName());
         dto.setAgentId(param.getAgentId());
         dto.setRiskFlag(checkRisk(param.getRiskFlag()));

@@ -13,12 +13,12 @@
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
-        id, report_id, application_name, machine_total_count, machine_risk_count,target_tps
+        id, report_id, application_name, machine_total_count, machine_risk_count, target_tps
     </sql>
 
     <insert id="insertOrUpdate" >
         insert into t_report_application_summary (report_id, application_name,
-                                                  machine_total_count, machine_risk_count,tenant_id,env_code,target_tps)
+                                                  machine_total_count, machine_risk_count, tenant_id, env_code, target_tps)
         values (
                    #{reportId,jdbcType=BIGINT},
                    #{applicationName,jdbcType=VARCHAR},
@@ -26,13 +26,14 @@
                    #{machineRiskCount,jdbcType=INTEGER},
                    #{tenantId,jdbcType=BIGINT},
                    #{envCode,jdbcType=VARCHAR},
-                   #{target_tps,jdbcType=VARCHAR}
+                   #{targetTps,jdbcType=VARCHAR}
                )
-            on duplicate key update machine_total_count=#{machineTotalCount,jdbcType=INTEGER},
-                                 machine_risk_count=#{machineRiskCount,jdbcType=INTEGER},
-                                 tenant_id=#{tenantId,jdbcType=BIGINT},
-                                 env_code=#{envCode,jdbcType=VARCHAR},
-                                 target_tps=#{targetTps,jdbcType=VARCHAR}
+            on duplicate key update
+                    machine_total_count=#{machineTotalCount,jdbcType=INTEGER},
+                    machine_risk_count=#{machineRiskCount,jdbcType=INTEGER},
+                    tenant_id=#{tenantId,jdbcType=BIGINT},
+                    env_code=#{envCode,jdbcType=VARCHAR},
+                    target_tps=#{targetTps,jdbcType=VARCHAR}
     </insert>
 
     <select id="selectCountByReportId" resultType="java.util.Map">

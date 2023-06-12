@@ -847,7 +847,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     public List<ReportAppMapOut> getReportAppTrendMapToReportApplication(Long reportId) {
         try {
             TenantCommonExt tenantCommonExt = WebPluginUtils.traceTenantCommonExt();
-            UserExt userExt = WebPluginUtils.traceUser();
+//            UserExt userExt = WebPluginUtils.traceUser();
             ReportEntity reportEntity = getReportEntity(reportId);
             if (reportEntity == null) {
                 return Collections.EMPTY_LIST;
@@ -872,8 +872,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             traceMetricsRequest.setEndTime(DateUtils.addMinutes(reportEntity.getEndTime(), 10).getTime());
             traceMetricsRequest.setClusterTest(1);
             traceMetricsRequest.setQuerySource("tro");
-            traceMetricsRequest.setUserId(String.valueOf(userExt.getId()));
-            traceMetricsRequest.setUserName(userExt.getName());
+//            traceMetricsRequest.setUserId(String.valueOf(userExt.getId()));
+//            traceMetricsRequest.setUserName(userExt.getName());
             traceMetricsRequest.setTenantAppKey(tenantCommonExt.getTenantAppKey());
             traceMetricsRequest.setEnvCode(tenantCommonExt.getEnvCode());
             traceMetricsRequest.setAppNames(appNames);

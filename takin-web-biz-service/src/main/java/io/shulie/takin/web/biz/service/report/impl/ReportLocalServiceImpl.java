@@ -835,7 +835,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (CollectionUtils.isEmpty(reportApplicationSummaryEntityList)) {
             return Response.success(Collections.emptyList());
         }
-        List<ReportAppMapOut> list = reportApplicationSummaryEntityList.stream().map(a -> {
+        List<ReportAppMapOut> list = reportApplicationSummaryEntityList.stream().filter(out->Objects.nonNull(out)).map(a -> {
                     ReportApplicationSummary reportApplicationSummary = ReportApplicationSummary.genRepportApplicationSummary(a);
                     return ReportApplicationSummary.genReportAppMapOut(reportApplicationSummary);
                 }

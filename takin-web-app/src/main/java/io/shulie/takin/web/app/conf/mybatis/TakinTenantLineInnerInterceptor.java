@@ -516,6 +516,11 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
                 deptIdCondition = new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()),tenantLineHandler.getDeptId());
             }
 
+            // 特殊情况，比如定时任务 deptId 没有设置，是设置空 或者 -1 ,就排查deptId条件
+            if(WebPluginUtils.traceDeptId() == null || WebPluginUtils.traceDeptId() == -1) {
+                deptIdCondition = null;
+            }
+
         }
 
         AndExpression tenantExpression = null;

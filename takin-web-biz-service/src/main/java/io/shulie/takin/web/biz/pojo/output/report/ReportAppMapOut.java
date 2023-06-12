@@ -1,12 +1,9 @@
 package io.shulie.takin.web.biz.pojo.output.report;
 
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @Data
 @ApiModel(value = "ReportAppMapOut", description = "应用趋势图")

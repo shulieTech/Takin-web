@@ -70,6 +70,7 @@ import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopol
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ReportActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
+import io.shulie.takin.web.biz.pojo.response.report.ReportApplicationSummary;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportMessageService;
@@ -92,8 +93,10 @@ import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
 import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
+import io.shulie.takin.web.data.mapper.mysql.ReportApplicationSummaryMapper;
 import io.shulie.takin.web.data.mapper.mysql.ReportMachineMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
+import io.shulie.takin.web.data.model.mysql.ReportApplicationSummaryEntity;
 import io.shulie.takin.web.data.model.mysql.ReportMachineEntity;
 import io.shulie.takin.web.data.param.report.ReportApplicationSummaryQueryParam;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
@@ -172,6 +175,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     private RedisClientUtil redisClientUtil;
     @Resource
     private ActivityDAO activityDAO;
+    @Resource
+    private ReportApplicationSummaryMapper reportApplicationSummaryMapper;
 
     private static final String reportCompareData = "report:vlt:compareData:%s:%s";
 
@@ -824,17 +829,33 @@ public class ReportLocalServiceImpl implements ReportLocalService {
      */
     @Override
     public Response<List<ReportAppMapOut>> getReportAppTrendMap(Long reportId) {
+        LambdaQueryWrapper<ReportApplicationSummaryEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ReportApplicationSummaryEntity::getReportId, reportId);
+        List<ReportApplicationSummaryEntity> reportApplicationSummaryEntityList = reportApplicationSummaryMapper.selectList(lambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(reportApplicationSummaryEntityList)) {
+            return Response.success(Collections.emptyList());
+        }
+        List<ReportAppMapOut> list = reportApplicationSummaryEntityList.stream().map(a -> {
+                    ReportApplicationSummary reportApplicationSummary = ReportApplicationSummary.genRepportApplicationSummary(a);
+                    return ReportApplicationSummary.genReportAppMapOut(reportApplicationSummary);
+                }
+        ).collect(Collectors.toList());
+        return Response.success(list);
+    }
+
+    @Override
+    public List<ReportAppMapOut> getReportAppTrendMapToReportApplication(Long reportId) {
         try {
             TenantCommonExt tenantCommonExt = WebPluginUtils.traceTenantCommonExt();
             UserExt userExt = WebPluginUtils.traceUser();
             ReportEntity reportEntity = getReportEntity(reportId);
             if (reportEntity == null) {
-                return Response.success(Collections.EMPTY_LIST);
+                return Collections.EMPTY_LIST;
             }
             List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
 
             if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
-                return Response.success(Collections.EMPTY_LIST);
+                return Collections.EMPTY_LIST;
             }
             List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
 
@@ -844,7 +865,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
             List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(appNames)) {
-                return Response.success(Collections.EMPTY_LIST);
+                return Collections.EMPTY_LIST;
             }
             TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
             traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
@@ -880,12 +901,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
 
             if (CollectionUtils.isEmpty(edgeIds)) {
-                return Response.success(Collections.EMPTY_LIST);
+                return Collections.EMPTY_LIST;
             }
             traceMetricsRequest.setEdgeIds(edgeIds.stream().collect(Collectors.joining(",")));
             List<TraceMetricsAll> metricsList = traceClient.getSqlStatements(traceMetricsRequest);
             if (CollectionUtils.isEmpty(metricsList)) {
-                return Response.success(Collections.EMPTY_LIST);
+                return Collections.EMPTY_LIST;
             }
 
             Map<String, List<TraceMetricsAll>> map = metricsList.stream().collect(Collectors.groupingBy(TraceMetricsAll::getAppName));
@@ -945,11 +966,11 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 reportAppMapOut.setCount(conut.stream().toArray().length == 0 ? new String[]{"0"} : conut.toArray(new String[0]));
                 reportAppMapOuts.add(reportAppMapOut);
             });
-            return Response.success(reportAppMapOuts);
+            return reportAppMapOuts;
         } catch (Exception e) {
             log.error("getReportAppTrendMap error:", e);
         }
-        return Response.success(Collections.EMPTY_LIST);
+        return Collections.EMPTY_LIST;
     }
 
     /**

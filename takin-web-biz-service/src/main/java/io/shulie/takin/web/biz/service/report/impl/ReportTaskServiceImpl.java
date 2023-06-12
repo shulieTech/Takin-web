@@ -25,8 +25,10 @@ import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.adapter.api.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneBusinessActivityRefEntity;
+import io.shulie.takin.web.biz.pojo.output.report.ReportAppMapOut;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
+import io.shulie.takin.web.biz.pojo.response.report.ReportApplicationSummary;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
@@ -52,7 +54,9 @@ import io.shulie.takin.web.data.dao.baseserver.BaseServerDao;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
+import io.shulie.takin.web.data.mapper.mysql.ReportApplicationSummaryMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
+import io.shulie.takin.web.data.model.mysql.ReportApplicationSummaryEntity;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.baseserver.AppBaseDataQuery;
 import io.shulie.takin.web.data.param.baseserver.BaseServerParam;
@@ -127,19 +131,12 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 
     @Resource
     private TSceneBusinessActivityRefMapper tSceneBusinessActivityRefMapper;
-    @Resource
-    private ApplicationMntMapper applicationMntMapper;
-
-    @Resource
-    private ApplicationNodeDAO applicationNodeDAO;
-    @Resource
-    private BaseServerDao baseServerDao;
-    @Resource
-    private ReportMachineDAO reportMachineDAO;
 
     @Autowired
     private ReportLocalService reportLocalService;
 
+    @Resource
+    private ReportApplicationSummaryMapper reportApplicationSummaryMapper;
 
     @Override
     public Boolean finishReport(Long reportId, TenantCommonExt commonExt) {
@@ -357,7 +354,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             //Ready 数据准备
             reportDataCache.readyCloudReportData(reportId);
 
-            ExecutorService executorService = Executors.newFixedThreadPool(3);
+            ExecutorService executorService = Executors.newFixedThreadPool(4);
             Long endTime = DateUtils.addMinutes(reportEntity.getEndTime(), 15).getTime();
             //first 同步应用基础信息
             executorService.execute(() -> {
@@ -366,6 +363,11 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             //then tps指标图
             executorService.execute(() -> {
                 summaryService.calcTpsTarget(reportId, endTime);
+            });
+
+            //存储应用信息到数据库
+            executorService.execute(() -> {
+                insertReportApplicationSummaryEntity(reportId);
             });
 
             //重建链路图信息
@@ -393,4 +395,30 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             log.error("calcNearlyHourReportService error,reportId={}", reportId, e);
         }
     }
+
+    private void insertReportApplicationSummaryEntity(Long reportId) {
+
+        LambdaQueryWrapper<ReportApplicationSummaryEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ReportApplicationSummaryEntity::getReportId, reportId);
+        List<ReportApplicationSummaryEntity> dbSummaryEntityList = reportApplicationSummaryMapper.selectList(lambdaQueryWrapper);
+
+        Map<String, ReportApplicationSummaryEntity> map = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(dbSummaryEntityList)) {
+            map = dbSummaryEntityList.stream().collect(Collectors.toMap(ReportApplicationSummaryEntity::getApplicationName, summary -> summary, (k1, k2) -> k2));
+        }
+
+        Map<String, ReportApplicationSummaryEntity> finalMap = map;
+        List<ReportAppMapOut> list = reportLocalService.getReportAppTrendMapToReportApplication(reportId);
+        List<ReportApplicationSummaryEntity> reportApplicationSummaryEntities = list.stream().map(a -> {
+            ReportApplicationSummaryEntity dbReportApplicationSummaryEntity = finalMap.get(a.getAppName());
+            Long id = dbReportApplicationSummaryEntity != null ? dbReportApplicationSummaryEntity.getId() : null;
+            return ReportApplicationSummary.genReportApplicationSummaryEntity(a, reportId, id);
+        }).collect(Collectors.toList());
+
+        for (ReportApplicationSummaryEntity reportApplicationSummary : reportApplicationSummaryEntities) {
+            reportApplicationSummaryMapper.insertOrUpdate(reportApplicationSummary);
+        }
+
+    }
+
 }

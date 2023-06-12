@@ -71,6 +71,8 @@ public interface ReportLocalService {
      */
     Response<List<ReportAppMapOut>> getReportAppTrendMap(Long reportId);
 
+    List<ReportAppMapOut> getReportAppTrendMapToReportApplication(Long reportId);
+
     /**
      * 获取报告应用性能趋势图
      *

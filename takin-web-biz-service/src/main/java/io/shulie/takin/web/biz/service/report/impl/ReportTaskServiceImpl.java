@@ -320,7 +320,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
      */
     @Override
     public void calcTmpReportData(Long reportId) {
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
         //Ready 数据准备
         reportDataCache.readyCloudReportData(reportId);
         //first 同步应用基础信息
@@ -334,6 +334,10 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         //end汇总应用 机器数 风险机器数
         executorService.execute(() -> {
             summaryService.calcApplicationSummary(reportId);
+        });
+        //存储应用信息到数据库
+        executorService.execute(() -> {
+            insertReportApplicationSummaryEntity(reportId);
         });
     }
 

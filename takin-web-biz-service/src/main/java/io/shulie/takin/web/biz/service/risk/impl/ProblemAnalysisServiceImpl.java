@@ -99,7 +99,11 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         }
         // 统计当前时间 前5分钟数据
         if (endTime == null) {
-            endTime = dto.getEndTime().getTime();
+            if (dto.getEndTime() != null) {
+                endTime = dto.getEndTime().getTime();
+            }else {
+                endTime = System.currentTimeMillis();
+            }
         }
 
         List<BaseAppVo> baseAppVoList = Lists.newArrayList();

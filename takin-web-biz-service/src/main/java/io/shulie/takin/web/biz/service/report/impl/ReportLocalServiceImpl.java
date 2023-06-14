@@ -985,6 +985,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         List<String> list = new ArrayList<>();
         for (ReportBusinessActivityDetailEntity detail : detailEntityList) {
+            if (Objects.isNull(detail)){
+                continue;
+            }
             String reportJson = detail.getReportJson();
             if (reportJson != null && StringUtils.isNotBlank(reportJson.trim())) {
                 io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = JSON.parseObject(reportJson, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);

@@ -893,7 +893,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             List<String> edgeIds = new ArrayList<>();
 
             for (Long activityId : activityIds) {
-                List<String> stringList = getApplicationEntranceTopologyResponse(activityId);
+                List<String> stringList = getApplicationEntranceTopologyResponse(reportId, activityId);
                 if (CollectionUtils.isEmpty(stringList)) {
                     continue;
                 }
@@ -973,21 +973,28 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return Collections.EMPTY_LIST;
     }
 
-    private List<String>  getApplicationEntranceTopologyResponse(Long activityId) {
-        ActivityResult result = activityDAO.getActivityById(activityId);
-        ApplicationEntranceTopologyQueryRequest request = new ApplicationEntranceTopologyQueryRequest();
-        request.setApplicationName(result.getApplicationName());
-        request.setLinkId(ActivityUtil.createLinkId(result.getServiceName(), result.getMethod(), result.getApplicationName(), result.getRpcType(), result.getExtend()));
-        request.setMethod(result.getMethod());
-        request.setRpcType(result.getRpcType());
-        request.setExtend(result.getExtend());
-        request.setServiceName(result.getServiceName());
-        request.setType(result.getType());
-        ApplicationEntranceTopologyResponse response = linkTopologyService.getApplicationEntrancesTopology(request, false);
-        if (Objects.isNull(response) || CollectionUtils.isEmpty(response.getNodes())) {
+    private List<String> getApplicationEntranceTopologyResponse(Long reportId, Long activityId) {
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
+        lambdaQueryWrapper.eq(ReportBusinessActivityDetailEntity::getBusinessActivityId, activityId);
+        lambdaQueryWrapper.select(ReportBusinessActivityDetailEntity::getReportJson);
+        List<ReportBusinessActivityDetailEntity> detailEntityList = detailMapper.selectList(lambdaQueryWrapper);
+
+        if (CollectionUtils.isEmpty(detailEntityList)) {
             return Collections.EMPTY_LIST;
         }
-        return getAllEagleIds(response.getNodes());
+        List<String> list = new ArrayList<>();
+        for (ReportBusinessActivityDetailEntity detail : detailEntityList) {
+            String reportJson = detail.getReportJson();
+            if (reportJson != null && StringUtils.isNotBlank(reportJson.trim())) {
+                io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = JSON.parseObject(reportJson, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
+                if (Objects.isNull(activityResponse) || Objects.isNull(activityResponse.getTopology()) || CollectionUtils.isEmpty(activityResponse.getTopology().getNodes())) {
+                    continue;
+                }
+                list.addAll(getAllEagleIds(activityResponse.getTopology().getNodes()));
+            }
+        }
+        return list;
     }
 
     /**

@@ -675,6 +675,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     list.add(reportAppPerformanceOut);
                 }
             }
+            list.sort(Comparator.comparing(ReportAppPerformanceOut::getAppName).reversed());
             return Response.success(list);
         } catch (Exception e) {
             log.error("getReortAppPerformanceList error:", e);
@@ -771,6 +772,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 }
                 return reportAppInstancePerformanceOut;
             }).collect(Collectors.toList());
+            reportAppInstancePerformanceOuts.sort(Comparator.comparing(ReportAppInstancePerformanceOut::getAppName).reversed());
             return Response.success(reportAppInstancePerformanceOuts);
         } catch (Exception e) {
             log.error("getReortAppInstancePerformanceList error:", e);

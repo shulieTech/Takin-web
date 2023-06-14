@@ -72,6 +72,7 @@ import io.shulie.takin.web.biz.pojo.response.activity.ReportActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.report.ReportApplicationSummary;
 import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.LinkTopologyService;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportMessageService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
@@ -185,6 +186,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Autowired
     private ApplicationNodeDAO applicationNodeDAO;
+
+    @Autowired
+    private LinkTopologyService linkTopologyService;
 
     private static final String reportCompareData = "report:vlt:compareData:%s:%s";
 
@@ -887,16 +891,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             traceMetricsRequest.setAppNames(appNameList);
             List<Long> activityIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).collect(Collectors.toList());
             List<String> edgeIds = new ArrayList<>();
+
             for (Long activityId : activityIds) {
-                ActivityInfoQueryRequest activityInfoQueryRequest = new ActivityInfoQueryRequest();
-                activityInfoQueryRequest.setActivityId(activityId);
-                activityInfoQueryRequest.setTempActivity(false);
-                ActivityResponse activity = activityService.getActivityById(activityInfoQueryRequest);
-                if (activity == null) {
+                List<String> stringList = getApplicationEntranceTopologyResponse(activityId);
+                if (CollectionUtils.isEmpty(stringList)) {
                     continue;
                 }
-                List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> allNodes = activity.getTopology().getNodes();
-                edgeIds.addAll(getAllEagleIds(allNodes));
+                edgeIds.addAll(stringList);
             }
 
             if (CollectionUtils.isEmpty(edgeIds)) {
@@ -970,6 +971,23 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             log.error("getReportAppTrendMap error:", e);
         }
         return Collections.EMPTY_LIST;
+    }
+
+    private List<String>  getApplicationEntranceTopologyResponse(Long activityId) {
+        ActivityResult result = activityDAO.getActivityById(activityId);
+        ApplicationEntranceTopologyQueryRequest request = new ApplicationEntranceTopologyQueryRequest();
+        request.setApplicationName(result.getApplicationName());
+        request.setLinkId(ActivityUtil.createLinkId(result.getServiceName(), result.getMethod(), result.getApplicationName(), result.getRpcType(), result.getExtend()));
+        request.setMethod(result.getMethod());
+        request.setRpcType(result.getRpcType());
+        request.setExtend(result.getExtend());
+        request.setServiceName(result.getServiceName());
+        request.setType(result.getType());
+        ApplicationEntranceTopologyResponse response = linkTopologyService.getApplicationEntrancesTopology(request, false);
+        if (Objects.isNull(response) || CollectionUtils.isEmpty(response.getNodes())) {
+            return Collections.EMPTY_LIST;
+        }
+        return getAllEagleIds(response.getNodes());
     }
 
     /**
@@ -1048,7 +1066,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
             for (String appName : appNameList) {
                 List<ApplicationNodeDTO> agentInfoList = onlineAgentIdsMap.get(appName);
-                if (CollectionUtils.isEmpty(agentInfoList)){
+                if (CollectionUtils.isEmpty(agentInfoList)) {
 
                 }
                 for (ApplicationNodeDTO info : agentInfoList) {

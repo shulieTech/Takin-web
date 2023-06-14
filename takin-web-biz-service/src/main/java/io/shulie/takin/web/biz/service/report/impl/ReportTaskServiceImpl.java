@@ -413,7 +413,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 
         Map<String, ReportApplicationSummaryEntity> finalMap = map;
         List<ReportAppMapOut> list = reportLocalService.getReportAppTrendMapToReportApplication(reportId);
-        List<ReportApplicationSummaryEntity> reportApplicationSummaryEntities = list.stream().map(a -> {
+        List<ReportApplicationSummaryEntity> reportApplicationSummaryEntities = list.parallelStream().map(a -> {
             ReportApplicationSummaryEntity dbReportApplicationSummaryEntity = finalMap.get(a.getAppName());
             Long id = dbReportApplicationSummaryEntity != null ? dbReportApplicationSummaryEntity.getId() : null;
             return ReportApplicationSummary.genReportApplicationSummaryEntity(a, reportId, id);

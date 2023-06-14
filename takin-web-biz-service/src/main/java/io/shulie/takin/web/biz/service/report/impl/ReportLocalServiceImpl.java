@@ -178,6 +178,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Resource
     private ReportApplicationSummaryMapper reportApplicationSummaryMapper;
 
+    @Autowired
+    private ReportDataCache reportDataCache;
+
     private static final String reportCompareData = "report:vlt:compareData:%s:%s";
 
     private static final String reportMessageData = "report:vlt:messageData:%s:%s";
@@ -847,7 +850,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     public List<ReportAppMapOut> getReportAppTrendMapToReportApplication(Long reportId) {
         try {
             TenantCommonExt tenantCommonExt = WebPluginUtils.traceTenantCommonExt();
-//            UserExt userExt = WebPluginUtils.traceUser();
             ReportEntity reportEntity = getReportEntity(reportId);
             if (reportEntity == null) {
                 return Collections.EMPTY_LIST;
@@ -857,14 +859,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
                 return Collections.EMPTY_LIST;
             }
-            List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
+            /**
+             * 获取压测中所有的应用信息
+             */
+            List<String> appNameList = reportDataCache.getApplications(reportId);
 
-            List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>()
-                    .select(ApplicationMntEntity::getApplicationName).
-                    in(ApplicationMntEntity::getApplicationId, appIds));
-
-            List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(appNames)) {
+            if (CollectionUtils.isEmpty(appNameList)) {
                 return Collections.EMPTY_LIST;
             }
             TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
@@ -872,11 +872,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             traceMetricsRequest.setEndTime(DateUtils.addMinutes(reportEntity.getEndTime(), 10).getTime());
             traceMetricsRequest.setClusterTest(1);
             traceMetricsRequest.setQuerySource("tro");
-//            traceMetricsRequest.setUserId(String.valueOf(userExt.getId()));
-//            traceMetricsRequest.setUserName(userExt.getName());
             traceMetricsRequest.setTenantAppKey(tenantCommonExt.getTenantAppKey());
             traceMetricsRequest.setEnvCode(tenantCommonExt.getEnvCode());
-            traceMetricsRequest.setAppNames(appNames);
+            traceMetricsRequest.setAppNames(appNameList);
             List<io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest> requestList = new ArrayList<>();
             sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).distinct().collect(Collectors.toList()).forEach(businessActivityId -> {
                 io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest queryRequest = genTopologyQueryRequest(businessActivityId, tenantCommonExt.getTenantAppKey());

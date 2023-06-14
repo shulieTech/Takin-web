@@ -878,15 +878,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             traceMetricsRequest.setTenantAppKey(tenantCommonExt.getTenantAppKey());
             traceMetricsRequest.setEnvCode(tenantCommonExt.getEnvCode());
             traceMetricsRequest.setAppNames(appNameList);
-            List<io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest> requestList = new ArrayList<>();
-            sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).distinct().collect(Collectors.toList()).forEach(businessActivityId -> {
-                io.shulie.takin.web.amdb.bean.query.trace.ApplicationEntranceTopologyQueryRequest queryRequest = genTopologyQueryRequest(businessActivityId, tenantCommonExt.getTenantAppKey());
-                if (queryRequest == null) {
-                    return;
-                }
-                requestList.add(queryRequest);
-            });
-
             List<Long> activityIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getBusinessActivityId).collect(Collectors.toList());
             List<String> edgeIds = new ArrayList<>();
             for (Long activityId : activityIds) {
@@ -922,7 +913,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 List<Double> successRate = new ArrayList<>(v.size());
                 List<Integer> totalRequest = new ArrayList<>(v.size());
                 List<String> xtime = new ArrayList<>(v.size());
-
                 List<String> xcost = new ArrayList<>(4);
                 List<String> conut = new ArrayList<>(4);
 
@@ -952,7 +942,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
                 for (String inter : intervalList) {
                     String str[] = inter.split("-");
-                    Integer count = v.stream().filter(traceMetrics -> traceMetrics.getAvgRt().compareTo(new BigDecimal(str[0])) >= 0 && traceMetrics.getAvgRt().compareTo(new BigDecimal(str[1])) < 0).map(TraceMetricsAll::getTotal).reduce(Integer::sum).orElse(0);
+                    Integer count = v.stream().filter(traceMetrics -> traceMetrics.getAvgRt().compareTo(new BigDecimal(str[0])) >= 0 && traceMetrics.getAvgRt()
+                            .compareTo(new BigDecimal(str[1])) < 0).map(TraceMetricsAll::getTotal).reduce(Integer::sum).orElse(0);
                     conut.add(String.valueOf(count));
                     xcost.add(inter);
                 }

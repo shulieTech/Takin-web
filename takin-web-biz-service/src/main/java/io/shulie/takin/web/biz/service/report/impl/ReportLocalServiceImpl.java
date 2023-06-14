@@ -990,17 +990,18 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
             String reportJson = detail.getReportJson();
             if (reportJson != null && StringUtils.isNotBlank(reportJson.trim())) {
-                ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse activityResponse = JSON
-                        .parseObject(reportJson, ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse.class);
-                if (Objects.isNull(activityResponse) || Objects.isNull(activityResponse.getNodes())) {
+                io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = JSON.parseObject(reportJson, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
+                if (Objects.isNull(activityResponse) || Objects.isNull(activityResponse.getTopology())
+                        || Objects.isNull(activityResponse.getTopology().getNodes())) {
                     continue;
                 }
-                allNodes.add(activityResponse);
+                allNodes.addAll(activityResponse.getTopology().getNodes());
             }
         }
         if (CollectionUtils.isEmpty(allNodes)){
             return Collections.EMPTY_LIST;
         }
+        allNodes = allNodes.stream().distinct().collect(Collectors.toList());
         return getAllEagleIds(allNodes);
     }
 

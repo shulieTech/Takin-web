@@ -26,14 +26,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
 import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneBusinessActivityRefMapper;
-import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
-import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
-import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
+import com.pamirs.takin.entity.domain.dto.report.*;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import com.pamirs.takin.entity.domain.vo.TopologyNode;
 import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
@@ -879,7 +872,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 return Collections.EMPTY_LIST;
             }
             TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
-            traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
+            if (reportEntity.getStartTime() != null){
+                traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
+            }else {
+                ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
+                long startTime = io.shulie.takin.web.biz.service.risk.util.DateUtil.parseSecondFormatter(reportDetailDTO.getStartTime()).getTime();
+                traceMetricsRequest.setStartTime(startTime);
+            }
             traceMetricsRequest.setEndTime(System.currentTimeMillis());
             if (reportEntity.getEndTime() != null) {
                 traceMetricsRequest.setEndTime(DateUtils.addMinutes(reportEntity.getEndTime(), 10).getTime());
@@ -1014,7 +1013,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     private List<String> getAllEagleIds(List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> allNodes) {
         List<String> allEagleIds = new ArrayList<>();
         for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : allNodes) {
-            ApplicationEntranceTopologyResponse.TopologyAppNodeResponse appnode = (ApplicationEntranceTopologyResponse.TopologyAppNodeResponse) node;
+            ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse appnode =  node;
             if (appnode.getProviderService() != null) {
                 List<ApplicationEntranceTopologyResponse.AppProviderInfo> providerService = node.getProviderService();
                 for (ApplicationEntranceTopologyResponse.AppProviderInfo appProviderInfo : providerService) {

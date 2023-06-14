@@ -222,7 +222,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 } catch (Throwable e) {
                     log.error("生成压测报告{}时，计算报告对比数据异常={}", reportId, e);
                 }
-                reportDataCache.clearDataCache(reportId);
                 log.info("报告id={}汇总成功，花费时间={}", reportId, (System.currentTimeMillis() - startTime));
             } catch (Throwable e) {
                 // log.error("客户端生成报告id={}数据异常:{}", reportId, e.getMessage(), e);

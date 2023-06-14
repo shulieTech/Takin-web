@@ -98,12 +98,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             startTime = DateUtil.parseSecondFormatter(dto.getStartTime()).getTime();
         }
         // 统计当前时间 前5分钟数据
-        int riskTime = ConfigServerHelper.getIntegerValueByKey(ConfigServerKeyEnum.TAKIN_RISK_COLLECT_TIME);
         if (endTime == null) {
-            endTime = System.currentTimeMillis();
-        }
-        if (endTime - startTime >= riskTime) {
-            startTime = endTime - riskTime;
+            endTime = dto.getEndTime().getTime();
         }
 
         List<BaseAppVo> baseAppVoList = Lists.newArrayList();

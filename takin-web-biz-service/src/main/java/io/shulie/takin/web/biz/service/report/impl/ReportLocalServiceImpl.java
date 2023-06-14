@@ -983,21 +983,25 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (CollectionUtils.isEmpty(detailEntityList)) {
             return Collections.EMPTY_LIST;
         }
-        List<String> list = new ArrayList<>();
+        List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> allNodes = new ArrayList<>();
         for (ReportBusinessActivityDetailEntity detail : detailEntityList) {
             if (Objects.isNull(detail)){
                 continue;
             }
             String reportJson = detail.getReportJson();
             if (reportJson != null && StringUtils.isNotBlank(reportJson.trim())) {
-                io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = JSON.parseObject(reportJson, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
-                if (Objects.isNull(activityResponse) || Objects.isNull(activityResponse.getTopology()) || CollectionUtils.isEmpty(activityResponse.getTopology().getNodes())) {
+                ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse activityResponse = JSON
+                        .parseObject(reportJson, ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse.class);
+                if (Objects.isNull(activityResponse) || Objects.isNull(activityResponse.getNodes())) {
                     continue;
                 }
-                list.addAll(getAllEagleIds(activityResponse.getTopology().getNodes()));
+                allNodes.add(activityResponse);
             }
         }
-        return list;
+        if (CollectionUtils.isEmpty(allNodes)){
+            return Collections.EMPTY_LIST;
+        }
+        return getAllEagleIds(allNodes);
     }
 
     /**

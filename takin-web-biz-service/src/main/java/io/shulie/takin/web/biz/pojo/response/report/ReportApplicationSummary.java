@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
+
 @Data
 public class ReportApplicationSummary {
     private Long id;
@@ -82,6 +84,9 @@ public class ReportApplicationSummary {
     public static ReportAppMapOut genReportAppMapOut(ReportApplicationSummary summary) {
         ReportAppMapOut reportAppMapOut = new ReportAppMapOut();
         reportAppMapOut.setAppName(summary.getAppName());
+        if (Objects.isNull(summary.getTargetTps())){
+            return  reportAppMapOut;
+        }
         reportAppMapOut.setTps(summary.getTargetTps().getTps());
         reportAppMapOut.setRt(summary.getTargetTps().getRt());
         reportAppMapOut.setSuccessRate(summary.getTargetTps().getSuccessRate());

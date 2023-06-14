@@ -359,14 +359,18 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             reportDataCache.readyCloudReportData(reportId);
 
             ExecutorService executorService = Executors.newFixedThreadPool(4);
-            Long endTime = DateUtils.addMinutes(reportEntity.getEndTime(), 15).getTime();
+            Long endTime = System.currentTimeMillis();
+            if (reportEntity.getEndTime() != null) {
+                endTime = DateUtils.addMinutes(reportEntity.getEndTime(), 15).getTime();
+            }
             //first 同步应用基础信息
+            Long finalEndTime = endTime;
             executorService.execute(() -> {
-                problemAnalysisService.syncMachineData(reportId, endTime);
+                problemAnalysisService.syncMachineData(reportId, finalEndTime);
             });
             //then tps指标图
             executorService.execute(() -> {
-                summaryService.calcTpsTarget(reportId, endTime);
+                summaryService.calcTpsTarget(reportId, finalEndTime);
             });
 
             //存储应用信息到数据库

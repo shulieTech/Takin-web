@@ -869,9 +869,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
             TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
             traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
-            if (reportEntity.getEndTime() == null) {
-                traceMetricsRequest.setEndTime(System.currentTimeMillis());
-            }else {
+            traceMetricsRequest.setEndTime(System.currentTimeMillis());
+            if (reportEntity.getEndTime() != null) {
                 traceMetricsRequest.setEndTime(DateUtils.addMinutes(reportEntity.getEndTime(), 10).getTime());
             }
             traceMetricsRequest.setClusterTest(1);

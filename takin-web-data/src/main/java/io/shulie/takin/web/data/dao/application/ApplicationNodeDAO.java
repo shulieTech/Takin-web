@@ -1,8 +1,10 @@
 package io.shulie.takin.web.data.dao.application;
 
 import java.util.List;
+import java.util.Map;
 
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeDTO;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationNodeParam;
 import io.shulie.takin.web.data.result.application.ApplicationNodeListResult;
@@ -34,4 +36,6 @@ public interface ApplicationNodeDAO {
      * @return
      */
     List<String> getOnlineAgentIds(ApplicationNodeQueryParam param);
+
+    Map<String,List<ApplicationNodeDTO>> getOnlineAgentIdsMap(ApplicationNodeQueryParam param);
 }

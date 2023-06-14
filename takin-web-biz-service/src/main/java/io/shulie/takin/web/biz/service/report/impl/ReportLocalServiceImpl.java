@@ -88,6 +88,7 @@ import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
 import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
@@ -98,6 +99,7 @@ import io.shulie.takin.web.data.mapper.mysql.ReportMachineMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.model.mysql.ReportApplicationSummaryEntity;
 import io.shulie.takin.web.data.model.mysql.ReportMachineEntity;
+import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.report.ReportApplicationSummaryQueryParam;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
@@ -180,6 +182,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Autowired
     private ReportDataCache reportDataCache;
+
+    @Autowired
+    private ApplicationNodeDAO applicationNodeDAO;
 
     private static final String reportCompareData = "report:vlt:compareData:%s:%s";
 
@@ -838,7 +843,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (CollectionUtils.isEmpty(reportApplicationSummaryEntityList)) {
             return Response.success(Collections.emptyList());
         }
-        List<ReportAppMapOut> list = reportApplicationSummaryEntityList.stream().filter(out->Objects.nonNull(out)).map(a -> {
+        List<ReportAppMapOut> list = reportApplicationSummaryEntityList.stream().filter(out -> Objects.nonNull(out)).map(a -> {
                     ReportApplicationSummary reportApplicationSummary = ReportApplicationSummary.genRepportApplicationSummary(a);
                     return ReportApplicationSummary.genReportAppMapOut(reportApplicationSummary);
                 }
@@ -1027,17 +1032,26 @@ public class ReportLocalServiceImpl implements ReportLocalService {
              * 获取压测中所有的应用信息
              */
             List<String> appNameList = reportDataCache.getApplications(reportId);
-            ApplicationNodeQueryDTO applicationQueryDTO = new ApplicationNodeQueryDTO();
-            applicationQueryDTO.setAppNames(String.join(",", appNameList));
-            applicationQueryDTO.setCurrentPage(0);
-            applicationQueryDTO.setPageSize(9999);
-            PagingList<ApplicationNodeDTO> applicationNodePage = applicationClient.pageApplicationNodes(applicationQueryDTO);
-            if (CollectionUtils.isEmpty(applicationNodePage.getList())) {
+            if (CollectionUtils.isEmpty(appNameList)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            //获取在线应用的agentId --> 目前查询amdb不隔离
+            ApplicationNodeQueryParam param = new ApplicationNodeQueryParam();
+            param.setApplicationNames(appNameList);
+            Map<String, List<ApplicationNodeDTO>> onlineAgentIdsMap = applicationNodeDAO.getOnlineAgentIdsMap(param);
+            if (MapUtils.isEmpty(onlineAgentIdsMap)) {
                 return Response.success(Collections.EMPTY_LIST);
             }
             List<MachineDetailDTO> list = new ArrayList<>();
-            for (ApplicationNodeDTO applicationNodeDTO : applicationNodePage.getList()) {
-                list.add(getMachineDetailByAgentId(reportId, applicationNodeDTO.getAppName(), applicationNodeDTO.getAgentId()));
+
+            for (String appName : appNameList) {
+                List<ApplicationNodeDTO> agentInfoList = onlineAgentIdsMap.get(appName);
+                if (CollectionUtils.isEmpty(agentInfoList)){
+
+                }
+                for (ApplicationNodeDTO info : agentInfoList) {
+                    list.add(getMachineDetailByAgentId(reportId, appName, info.getAgentId()));
+                }
             }
             return Response.success(list);
         } catch (Exception e) {

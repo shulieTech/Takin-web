@@ -988,9 +988,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 List<ApplicationEntranceTopologyResponse.AppProviderInfo> providerService = node.getProviderService();
                 for (ApplicationEntranceTopologyResponse.AppProviderInfo appProviderInfo : providerService) {
                     for (ApplicationEntranceTopologyResponse.AppProvider appProvider : appProviderInfo.getDataSource()) {
-                        List<String> eagleIds = appProvider.getContainEdgeList().stream().map(LinkEdgeDTO::getEagleId)
-                                .collect(
-                                        Collectors.toList());
+                        List<String> eagleIds = appProvider.getContainEdgeList().stream().map(LinkEdgeDTO::getEagleId).collect(Collectors.toList());
                         if (CollectionUtils.isNotEmpty(eagleIds)) {
                             allEagleIds.addAll(eagleIds);
                         }
@@ -1034,20 +1032,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             if (reportEntity == null) {
                 return Response.success(Collections.EMPTY_LIST);
             }
-            List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = getSceneBusinessActivityRefEntities(reportEntity.getSceneId());
-
-            if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
-                return Response.success(Collections.EMPTY_LIST);
-            }
-            List<Long> appIds = sceneBusinessActivityRefEntities.stream().map(SceneBusinessActivityRefEntity::getApplicationIds).filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(",")).map(Long::valueOf)).collect(Collectors.toList());
-
-            List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(new LambdaQueryWrapper<ApplicationMntEntity>().select(ApplicationMntEntity::getApplicationName).in(ApplicationMntEntity::getApplicationId, appIds));
-            List<String> appNames = applicationMntEntities.stream().map(ApplicationMntEntity::getApplicationName).collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(appNames)) {
-                return Response.success(Collections.EMPTY_LIST);
-            }
+            /**
+             * 获取压测中所有的应用信息
+             */
+            List<String> appNameList = reportDataCache.getApplications(reportId);
             ApplicationNodeQueryDTO applicationQueryDTO = new ApplicationNodeQueryDTO();
-            applicationQueryDTO.setAppNames(String.join(",", appNames));
+            applicationQueryDTO.setAppNames(String.join(",", appNameList));
             applicationQueryDTO.setCurrentPage(0);
             applicationQueryDTO.setPageSize(9999);
             PagingList<ApplicationNodeDTO> applicationNodePage = applicationClient.pageApplicationNodes(applicationQueryDTO);

@@ -1011,21 +1011,15 @@ public class ReportLocalServiceImpl implements ReportLocalService {
      * @return
      */
     private List<String> getAllEagleIds(List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> allNodes) {
-        List<String> allEagleIds = new ArrayList<>();
-        for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : allNodes) {
-            ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse appnode =  node;
-            if (appnode.getProviderService() != null) {
-                List<ApplicationEntranceTopologyResponse.AppProviderInfo> providerService = node.getProviderService();
-                for (ApplicationEntranceTopologyResponse.AppProviderInfo appProviderInfo : providerService) {
-                    for (ApplicationEntranceTopologyResponse.AppProvider appProvider : appProviderInfo.getDataSource()) {
-                        List<String> eagleIds = appProvider.getContainEdgeList().stream().map(LinkEdgeDTO::getEagleId).collect(Collectors.toList());
-                        if (CollectionUtils.isNotEmpty(eagleIds)) {
-                            allEagleIds.addAll(eagleIds);
-                        }
-                    }
-                }
-            }
-        }
+        List<String> allEagleIds = allNodes.stream()
+                .filter(node -> node.getProviderService() != null)
+                .flatMap(node -> node.getProviderService().stream())
+                .flatMap(appProviderInfo -> appProviderInfo.getDataSource().stream())
+                .map(ApplicationEntranceTopologyResponse.AppProvider::getContainEdgeList)
+                .filter(CollectionUtils::isNotEmpty)
+                .flatMap(List::stream)
+                .map(LinkEdgeDTO::getEagleId)
+                .collect(Collectors.toList());
         return allEagleIds;
     }
 

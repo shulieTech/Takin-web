@@ -1,39 +1,16 @@
 package io.shulie.takin.web.biz.service.impl;
 
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import cn.hutool.Hutool;
-import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.date.*;
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.NumberUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -101,7 +78,6 @@ import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.WhiteListConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
-import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
@@ -113,6 +89,7 @@ import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.excel.*;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.dao.agentupgradeonline.AgentReportDAO;
 import io.shulie.takin.web.data.dao.application.*;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
@@ -132,8 +109,6 @@ import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.dom4j.DocumentException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,9 +123,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
-import static io.shulie.takin.web.common.common.Response.PAGE_TOTAL_HEADER;
-
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
@@ -159,9 +133,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static io.shulie.takin.web.common.common.Response.PAGE_TOTAL_HEADER;
 
 /**
  * @author mubai<chengjiacai.shulie.io>
@@ -301,6 +276,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Resource
     private ApplicationMntMapper applicationMntMapper;
+
+    @Resource
+    private AgentReportDAO agentReportDAO;
 
     @PostConstruct
     public void init() {
@@ -773,65 +751,48 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 // 赋值查询出的应用数量
                 applicationNumber = applicationList.size();
 
-                // 收集应用名称
-                List<String> appNames = applicationList.stream()
-                        .map(ApplicationListResult::getApplicationName)
-                        .collect(Collectors.toList());
-
-                // 大数据应用的map, key 应用名称, value amdb应用实例
-                Map<String, ApplicationResult> amdbApplicationMap = this.getAmdbApplicationMap(appNames);
-
-                // 大数据应用节点的map, key 应用名称, value amdb节点列表
-                Map<String, List<ApplicationNodeResult>> amdbApplicationNodeMap = this.getAmdbApplicationNodeMap(
-                        appNames);
+                List<Long> appIds = applicationList.stream().map(ApplicationListResult::getApplicationId).collect(Collectors.toList());
+                List<AgentReportDetailResult> reportDetailResults = agentReportDAO.getList(appIds);
+                Map<Long, List<AgentReportDetailResult>> longListMap = new HashMap<>();
+                if (CollectionUtils.isNotEmpty(reportDetailResults)) {
+                    longListMap = reportDetailResults.stream().collect(Collectors.groupingBy(AgentReportDetailResult::getApplicationId));
+                }
 
                 // 异常的应用
                 Set<Long> errorApplicationIdSet = new HashSet<>(20);
-                // 正常的应用
-                Set<Long> normalApplicationIdSet = new HashSet<>(20);
 
                 Map<Long, String> errorInfo = Maps.newHashMap();
+                Map<Long, Map<String, String>> errorAgentIdInfo = Maps.newHashMap();
                 // 遍历比对
                 for (ApplicationListResult application : applicationList) {
-                    String applicationName = application.getApplicationName();
                     Long applicationId = application.getApplicationId();
                     Integer nodeNum = application.getNodeNum();
 
-                    // 该应用对应的大数据应用实例
-                    ApplicationResult amdbApplication;
-                    // 该应用对应的大数据节点列表
-                    List<ApplicationNodeResult> amdbApplicationNodeList;
-
-                    if (amdbApplicationMap.isEmpty()
-                            || (amdbApplication = amdbApplicationMap.get(applicationName)) == null
-                            || !Objects.equals(amdbApplication.getInstanceInfo().getInstanceOnlineAmount(), nodeNum)) {
-                        // amdbApplicationMap 不存在, map.get 不存在, 或者节点数不一致
+                    //节点数不一致
+                    if (!longListMap.containsKey(applicationId) || longListMap.get(applicationId).size() != nodeNum) {
                         errorApplicationIdSet.add(applicationId);
                         errorInfo.put(applicationId, "节点数不一致");
-
-
-                    } else if (!amdbApplicationMap.isEmpty()
-                            && (amdbApplication = amdbApplicationMap.get(applicationName)) != null
-                            && amdbApplication.getAppIsException()) {
-                        // map 存在, map.get 存在, amdb应用为异常
-                        errorApplicationIdSet.add(applicationId);
-
-                    } else if (!amdbApplicationNodeMap.isEmpty()
-                            && CollectionUtil.isNotEmpty(
-                            amdbApplicationNodeList = amdbApplicationNodeMap.get(applicationName))
-                            && amdbApplicationNodeList.stream().map(ApplicationNodeResult::getAgentVersion).distinct()
-                            .count()
-                            > 1) {
-                        // 判断agent版本号是否一致
-                        errorApplicationIdSet.add(applicationId);
-
                     } else {
-                        normalApplicationIdSet.add(applicationId);
+                        List<AgentReportDetailResult> detailResults = longListMap.get(applicationId);
+                        List<AgentReportDetailResult> errorNodes = detailResults.stream().filter(o -> StringUtils.isNotBlank(o.getAgentErrorInfo())).collect(Collectors.toList());
+                        if (CollectionUtils.isNotEmpty(errorNodes)) {
+                            errorApplicationIdSet.add(applicationId);
+                            Map<String, String> agentIdError = new HashMap<>();
+                            errorNodes.forEach(agentReportDetailResult -> {
+                                agentIdError.put(agentReportDetailResult.getAgentId(), agentReportDetailResult.getAgentErrorInfo());
+                                errorAgentIdInfo.put(applicationId, agentIdError);
+                            });
+
+                        }
+
+                        if (detailResults.stream().map(AgentReportDetailResult::getAgentVersion).distinct().count() > 1) {
+                            errorApplicationIdSet.add(applicationId);
+                            errorInfo.put(applicationId, "节点版本号不一致");
+                        }
                     }
                 }
 
-
-                this.syncApplicationAccessStatus(applicationList, errorApplicationIdSet, errorInfo);
+                this.syncApplicationAccessStatus(applicationList, errorApplicationIdSet, errorInfo, errorAgentIdInfo);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
@@ -841,45 +802,39 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList, Set<Long> errorApplicationIdSet, Map<Long, String> errorInfo) {
-        if (CollectionUtils.isEmpty(applicationList)) {
-            return;
-        }
-        for (ApplicationListResult app : applicationList) {
-            ApplicationInfo result = applicationDAO.getStatus(app.getApplicationName());
-            if (result != null && (result.getAgentNum() != 0 || (errorApplicationIdSet.contains(app.getApplicationId())))) {
-                String agentErrorInfo = result.getAgentErrorInfo();
-                //不知道异常和Ip就别展示出来误导了
-                if (StringUtils.isBlank(agentErrorInfo)) {
-                    String agentId = result.getAgentId();
-                    if (StringUtils.isEmpty(agentId)) {
-                        if (!io.shulie.takin.utils.string.StringUtil.isEmpty(errorInfo.get(app.getApplicationId()))) {
-                            //节点不一致
-                            applicationDAO.updateStatus(app.getApplicationId(), agentErrorInfo);
-                        }
-                        continue;
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList
+            , Set<Long> errorApplicationIdSet, Map<Long, String> errorInfo, Map<Long, Map<String, String>> errorAgentIdInfo) {
+        if (CollectionUtils.isNotEmpty(applicationList)) {
+            for (ApplicationListResult app : applicationList) {
+                if (errorApplicationIdSet.contains(app.getApplicationId())) {
+                    if (CollectionUtils.isNotEmpty(errorInfo)) {
+                        String e = errorInfo.get(app.getApplicationId());
+                        applicationDAO.updateStatus(app.getApplicationId(), e);
                     }
-                    agentErrorInfo = "探针接入异常";
-                    if (StringUtils.isNotEmpty(agentId)) {
-                        agentErrorInfo += "，agentId为" + agentId;
+                    if (CollectionUtils.isNotEmpty(errorAgentIdInfo)) {
+                        Map<String, String> stringMap = errorAgentIdInfo.get(app.getApplicationId());
+                        StringBuilder e = new StringBuilder();
+                        stringMap.forEach((agentId, errorMessage) -> {
+                            NodeUploadDataDTO param = new NodeUploadDataDTO();
+                            param.setApplicationName(app.getApplicationName());
+                            param.setAgentId(agentId);
+                            param.setNodeKey(UUID.randomUUID().toString().replace("_", ""));
+                            param.setExceptionTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+                            Map<String, Object> map = new HashMap<>(1);
+                            ExceptionInfo exceptionInfo = new ExceptionInfo();
+                            exceptionInfo.setErrorCode("—");
+                            exceptionInfo.setMessage(errorMessage);
+                            exceptionInfo.setDetail(errorMessage);
+                            map.put("Agent异常:" + this.toString().hashCode(), JSON.toJSONString(exceptionInfo));
+                            param.setSwitchErrorMap(map);
+                            uploadAccessStatus(param);
+                            e.append("agentId:").append(agentId).append("出现异常");
+                        });
+                        applicationDAO.updateStatus(app.getApplicationId(), e.length() > 1000 ? e.substring(0, 1000) : e.toString());
                     }
+                } else {
+                    applicationDAO.updateStatus(app.getApplicationId());
                 }
-                applicationDAO.updateStatus(app.getApplicationId(), agentErrorInfo);
-                NodeUploadDataDTO param = new NodeUploadDataDTO();
-                param.setApplicationName(app.getApplicationName());
-                param.setAgentId(result.getAgentId());
-                param.setNodeKey(UUID.randomUUID().toString().replace("_", ""));
-                param.setExceptionTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-                HashMap map = new HashMap(1);
-                ExceptionInfo exceptionInfo = new ExceptionInfo();
-                exceptionInfo.setErrorCode("—");
-                exceptionInfo.setMessage(agentErrorInfo);
-                exceptionInfo.setDetail(agentErrorInfo);
-                map.put("Agent异常:" + this.toString().hashCode(), JSON.toJSONString(exceptionInfo));
-                param.setSwitchErrorMap(map);
-                uploadAccessStatus(param);
-            } else {
-                applicationDAO.updateStatus(app.getApplicationId());
             }
         }
     }

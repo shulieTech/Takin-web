@@ -32,9 +32,12 @@ import com.pamirs.takin.entity.domain.vo.TopologyNode;
 import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
 import io.shulie.surge.data.deploy.pradar.parser.utils.Md5Utils;
 import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
+import io.shulie.takin.adapter.api.model.request.report.ReportMessageCodeReq;
+import io.shulie.takin.adapter.api.model.request.report.ReportMessageDetailReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.biz.utils.ReportLtDetailOutputUtils;
 import io.shulie.takin.cloud.common.pojo.Pair;
 import io.shulie.takin.cloud.common.utils.TestTimeUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportBusinessActivityDetailDao;
@@ -185,7 +188,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     private static final String reportCompareData = "report:vlt:compareData:%s:%s";
 
-    private static final String reportMessageData = "report:vlt:messageData:%s:%s";
+    private static final String reportMessageCodeData = "report:vlt:messageCodeData:%s:%s";
+
+    private static final String reportMessageDetailData = "report:vlt:messageDetailData:%s:%s:%s";
 
     @Override
     public ReportCountDTO getReportCount(Long reportId) {
@@ -359,10 +364,43 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         List<BusinessActivitySummaryBean> activitySummaryBeanList = reportDetailOutput.getBusinessActivity().stream().filter(data -> data.getBusinessActivityId() != null && data.getBusinessActivityId() > 0L).collect(Collectors.toList());
         List<Long> reportIds = Collections.singletonList(reportId);
+        //缓存报告比对数据
         for (BusinessActivitySummaryBean activitySummaryBean : activitySummaryBeanList) {
-            Long activityId = activitySummaryBean.getBusinessActivityId();
-            ReportCompareOutput compareOutput = getReportCompare(reportIds, activityId);
-            redisClientUtil.setString(String.format(reportCompareData, reportId, activityId), JSON.toJSONString(compareOutput));
+            try {
+                Long activityId = activitySummaryBean.getBusinessActivityId();
+                ReportCompareOutput compareOutput = getReportCompare(reportIds, activityId);
+                redisClientUtil.setString(String.format(reportCompareData, reportId, activityId), JSON.toJSONString(compareOutput));
+            } catch (Exception e) {
+                log.error("缓存报告比对数据异常...", e);
+            }
+        }
+        //缓存明细数据
+        ReportLtDetailOutput detailOutput = ReportLtDetailOutputUtils.convertToLt(reportDetailOutput);
+        for(BusinessActivityReportOutput activityOutput : detailOutput.getBusinessActivities()) {
+            if(StringUtils.isBlank(activityOutput.getServiceName())) {
+                continue;
+            }
+            try {
+                ReportMessageCodeReq codeReq = new ReportMessageCodeReq();
+                codeReq.setStartTime(detailOutput.getStartTime());
+                codeReq.setEndTime(detailOutput.getEndTime());
+                codeReq.setJobId(detailOutput.getJobId());
+                codeReq.setServiceName(activityOutput.getServiceName());
+                List<ReportMessageStatusCodeDTO> codeList = reportMessageService.getStatusCodeList(codeReq);
+                redisClientUtil.setString(String.format(reportMessageCodeData, detailOutput.getJobId(), activityOutput.getServiceName()), JSON.toJSONString(codeList));
+                for (ReportMessageStatusCodeDTO codeDTO : codeList) {
+                    ReportMessageDetailReq detailReq = new ReportMessageDetailReq();
+                    detailReq.setStartTime(codeReq.getStartTime());
+                    detailReq.setEndTime(codeReq.getEndTime());
+                    detailReq.setJobId(codeReq.getJobId());
+                    detailReq.setServiceName(codeReq.getServiceName());
+                    detailReq.setStatusCode(codeDTO.getStatusCode());
+                    ReportMessageDetailDTO detailDTO = reportMessageService.getOneTraceDetail(detailReq);
+                    redisClientUtil.setString(String.format(reportMessageDetailData, detailOutput.getJobId(), activityOutput.getServiceName(), codeDTO.getStatusCode()), JSON.toJSONString(detailDTO));
+                }
+            } catch (Exception e) {
+                log.error("缓存压测明细数据异常...", e);
+            }
         }
     }
 

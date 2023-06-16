@@ -31,10 +31,7 @@ import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationParam;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
-import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.data.result.application.*;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.apache.ibatis.annotations.Param;
 
@@ -47,6 +44,8 @@ import org.apache.ibatis.annotations.Param;
 public interface ApplicationDAO {
 
     List<ApplicationDetailResult> getApplications(List<String> appNames);
+
+    List<ApplicationDetailResult> getApplicationByAppIds(List<Long> appIds);
 
     /**
      * 去amdb, 根据应用名称列表查询
@@ -428,7 +427,7 @@ public interface ApplicationDAO {
     PagingList<ApplicationListResult> pageByApplicationNamesAndUserId(Collection<String> applicationNames,
         PageBaseDTO pageBaseDTO);
 
-    Map getStatus(String name);
+    ApplicationInfo getStatus(String name);
 
     void updateStatus(Long applicationId, String e);
 

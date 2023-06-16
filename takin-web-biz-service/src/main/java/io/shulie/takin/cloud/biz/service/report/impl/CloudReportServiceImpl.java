@@ -25,6 +25,7 @@ import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import com.pamirs.takin.cloud.entity.domain.entity.report.Report;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.WarnDetail;
+import com.pamirs.takin.entity.domain.dto.report.PressureTestTimeDTO;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.common.DistributeBean;
@@ -97,6 +98,8 @@ import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.biz.utils.ParsePressureTimeByModeUtils;
+import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
@@ -178,6 +181,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private String pressureEngineLogPath;
 
     public static final String COMPARE = "<=";
+
+    private static final BigDecimal ZERO = new BigDecimal("0");
 
     @Override
     public PageInfo<CloudReportDTO> listReport(ReportQueryReq param) {
@@ -267,9 +272,30 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             if (StringUtils.isNotBlank(ptlPath)) {
                 detail.setPtlPath(Arrays.asList(ptlPath.split(",")));
             }
+            detail.setMaxTps(jsonObject.getBigDecimal("maxTps"));
+            detail.setMaxRt(jsonObject.getBigDecimal("maxRt"));
+            detail.setMinTps(jsonObject.getBigDecimal("minTps"));
+            detail.setMinRt(jsonObject.getBigDecimal("minRt"));
         }
         dealCalibrationStatus(detail);
         return detail;
+    }
+
+    @Override
+    public List<ReportDetailOutput> getReportListBySceneId(Long sceneId) {
+        List<ReportResult> resultList = reportDao.selectBySceneId(sceneId);
+        List<ReportDetailOutput> outputList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(resultList)) {
+            return outputList;
+        }
+        resultList.stream().forEach(result -> {
+            ReportDetailOutput output = new ReportDetailOutput();
+            output.setId(result.getId());
+            output.setStartTime(DateUtil.formatDateTime(result.getStartTime()));
+            output.setConcurrent(result.getConcurrent());
+            outputList.add(output);
+        });
+        return outputList;
     }
 
     private void buildFailActivitiesByNodeDetails(List<ScriptNodeSummaryBean> reportNodeDetail,
@@ -293,6 +319,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 summaryBean.setSuccessRate(bean.getSuccessRate());
                 summaryBean.setTotalRequest(bean.getTotalRequest());
                 summaryBean.setTps(bean.getTps());
+                summaryBean.setFeatures(bean.getFeatures());
+                summaryBean.setRtDistribute(bean.getRtDistribute());
+                summaryBean.setDistribute(bean.getDistribute());
                 result.add(summaryBean);
             }
             if (CollectionUtils.isNotEmpty(bean.getChildren())) {
@@ -589,6 +618,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     bean.setApplicationIds(detail.getApplicationIds());
                     bean.setActivityId(detail.getBusinessActivityId());
                     bean.setSa(new DataBean(detail.getSa(), detail.getTargetSa()));
+                    bean.setFeatures(detail.getFeatures());
+                    bean.setRtDistribute(detail.getRtDistribute());
                     return bean;
                 }).collect(Collectors.toList());
     }
@@ -601,12 +632,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      */
     private Map<String, List<BigDecimal>> getSummaryConcurrentStageThreadNum(Long reportId) {
         ReportOutput reportOutput = cloudReportService.selectById(reportId);
-        Long sceneId = reportOutput.getSceneId();
-        SceneManageEntity manageEntity = sceneManageMapper.selectById(sceneId);
-        if (manageEntity == null || manageEntity.getPtConfig() == null) {
-            return Collections.emptyMap();
-        }
-        PtConfigExt ext = JSON.parseObject(manageEntity.getPtConfig(), PtConfigExt.class);
+        PtConfigExt ext = JSON.parseObject(reportOutput.getPtConfig(), PtConfigExt.class);
         Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
         if (configMap == null || configMap.isEmpty()) {
             return Collections.emptyMap();
@@ -1275,6 +1301,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         fieldAndAlias.put("avg(avg_tps)", "tps");
         fieldAndAlias.put("sum(sum_rt)", "sumRt");
         fieldAndAlias.put("sum(sa_count)", "saCount");
+        fieldAndAlias.put("min(avg_tps)", "minTps");
         fieldAndAlias.put("max(avg_tps)", "maxTps");
         fieldAndAlias.put("min(min_rt)", "minRt");
         fieldAndAlias.put("max(max_rt)", "maxRt");
@@ -1296,6 +1323,35 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             log.warn("生成报告查询数据出现异常", e);
             return null;
         }
+    }
+
+    public StatReportDTO statReportByTimes(Long startTime, Long endTime, Long jobId, Long sceneId, Long reportId, Long customerId, String transaction) {
+        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("sum(count)", "totalRequest");
+        fieldAndAlias.put("sum(fail_count)", "failRequest");
+        fieldAndAlias.put("avg(avg_tps)", "tps");
+        fieldAndAlias.put("sum(sum_rt)", "sumRt");
+        fieldAndAlias.put("sum(sa_count)", "saCount");
+        fieldAndAlias.put("min(avg_tps)", "minTps");
+        fieldAndAlias.put("max(avg_tps)", "maxTps");
+        fieldAndAlias.put("min(min_rt)", "minRt");
+        fieldAndAlias.put("max(max_rt)", "maxRt");
+        fieldAndAlias.put("count(avg_rt)", "recordCount");
+        fieldAndAlias.put("max(active_threads)", "maxConcurrenceNum");
+        fieldAndAlias.put("avg(active_threads)", "avgConcurrenceNum");
+        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+        enginePressureQuery.setTransaction(transaction);
+        enginePressureQuery.setJobId(jobId);
+        enginePressureQuery.setStartTime(startTime);
+        enginePressureQuery.setEndTime(endTime);
+        List<StatReportDTO> statReportDTOList = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
+        if (CollectionUtils.isNotEmpty(statReportDTOList)) {
+            statReportDTOList.forEach(statReportDTO -> {
+                statReportDTO.setTempRequestCount(statReportDTO.getTotalRequest());
+            });
+        }
+        return CollectionUtils.isNotEmpty(statReportDTOList) ? statReportDTOList.get(0) : null;
     }
 
     /**
@@ -1334,6 +1390,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             reportBusinessActivityDetail.setAvgConcurrenceNum(data.getAvgConcurrenceNum());
             reportBusinessActivityDetail.setMaxRt(data.getMaxRt());
             reportBusinessActivityDetail.setMaxTps(data.getMaxTps());
+            reportBusinessActivityDetail.setMinTps(data.getMinTps());
             reportBusinessActivityDetail.setMinRt(data.getMinRt());
             reportBusinessActivityDetail.setTps(data.getTps());
             reportBusinessActivityDetail.setRt(data.getAvgRt());
@@ -1348,6 +1405,71 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             tReportBusinessActivityDetailMapper.updateByPrimaryKeySelective(reportBusinessActivityDetail);
             if (!passFlag) {
                 totalPassFlag = false;
+            }
+        }
+        //联通版新报告 根据压测时间段，统计性能指标明细、RT分位明细
+        Report dbReport = tReportMapper.selectByPrimaryKey(reportId);
+        if(dbReport.getStartTime() != null && dbReport.getEndTime() != null) {
+            Map<String, List<PressureTestTimeDTO>> timeMap = ParsePressureTimeByModeUtils.parsePtConfig2Map(dbReport.getStartTime(), dbReport.getEndTime(), dbReport.getPtConfig());
+            List<ScriptNodeSummaryBean> refList = JSON.parseArray(dbReport.getScriptNodeTree(), ScriptNodeSummaryBean.class);
+            //key=业务活动, value=线程组
+            Map<String, String> httpThreadGroupMap = new HashMap<>();
+            calcHttpAndThreadGroupRef(refList, httpThreadGroupMap);
+            for(ReportBusinessActivityDetail reportBusinessActivityDetail : reportBusinessActivityDetails) {
+                if (StringUtils.isBlank(reportBusinessActivityDetail.getBindRef())) {
+                    continue;
+                }
+                List<PressureTestTimeDTO> timeList = timeMap.get(httpThreadGroupMap.get(reportBusinessActivityDetail.getBindRef()));
+                if(CollectionUtils.isEmpty(timeList)) {
+                    continue;
+                }
+                List<Map<String, Object>> stepList = new ArrayList<>();
+                for(int i = 0; i < timeList.size(); i++) {
+                    //统计某个业务活动的数据
+                    long startTime = timeList.get(i).getStartTime().getTime();
+                    long calcStartTime = startTime;
+                    //查询>= <=，所以这里要+1
+                    if(i > 0) {
+                        calcStartTime = startTime + 1L;
+                    } else {
+                        calcStartTime = ReportTimeUtils.beforeStartTime(startTime);
+                    }
+                    long endTime = timeList.get(i).getEndTime().getTime();
+                    long calcEndime = endTime;
+                    if(i == timeList.size() - 1) {
+                        calcEndime = ReportTimeUtils.afterEndTime(endTime);
+                    }
+                    Map<String, Object> stepMap = new HashMap<>();
+                    StatReportDTO data = statReportByTimes(calcStartTime, calcEndime, jobId, sceneId, reportId, tenantId, reportBusinessActivityDetail.getBindRef());
+                    Map<String, Integer> rtMap = reportEventService.queryAndCalcRtDistributeByTime(calcStartTime, calcEndime, jobId, reportBusinessActivityDetail.getBindRef());
+                    stepMap.put("startTime", DateUtil.formatDateTime(DateUtil.date(startTime)));
+                    stepMap.put("endTime", DateUtil.formatDateTime(DateUtil.date(endTime)));
+                    if(data != null) {
+                        stepMap.put("totalRequest", data.getTotalRequest());
+                        stepMap.put("concurrent", data.getAvgConcurrenceNum());
+                        stepMap.put("avgTps", data.getTps());
+                        stepMap.put("minTps", data.getMinTps());
+                        stepMap.put("maxTps", data.getMaxTps());
+                        stepMap.put("avgRt", data.getAvgRt());
+                        stepMap.put("minRt", data.getMinRt());
+                        stepMap.put("maxRt", data.getMaxRt());
+                        stepMap.put("successRate", data.getSuccessRate());
+                        stepMap.put("sa", data.getSa());
+                    }
+                    if(MapUtils.isNotEmpty(rtMap)) {
+                        stepMap.putAll(rtMap);
+                    }
+                    stepList.add(stepMap);
+                }
+                ReportBusinessActivityDetail updateDetail = new ReportBusinessActivityDetail();
+                updateDetail.setId(reportBusinessActivityDetail.getId());
+                Map<String, Object> targetMap = JSON.parseObject(reportBusinessActivityDetail.getRtDistribute(), Map.class);
+                if(MapUtils.isEmpty(targetMap)) {
+                    targetMap = new HashMap<>();
+                }
+                targetMap.put("stepData", stepList);
+                updateDetail.setRtDistribute(JSON.toJSONString(targetMap));
+                tReportBusinessActivityDetailMapper.updateByPrimaryKeySelective(updateDetail);
             }
         }
         return totalPassFlag;
@@ -1402,23 +1524,39 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      * @return -
      */
     private boolean isPass(ReportBusinessActivityDetail detail) {
-        if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(
-                detail.getSuccessRate()) > 0) {
+        if (detail.getTargetSuccessRate() != null
+                && detail.getTargetSuccessRate().compareTo(ZERO) > 0
+                && detail.getTargetSuccessRate().compareTo(detail.getSuccessRate()) > 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "成功率", detail.getTargetSuccessRate(), detail.getSuccessRate());
             return false;
-        } else if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
-            return false;
-        } else if (isTargetBiggerThanZero(detail.getTargetRt()) && detail.getTargetRt().compareTo(detail.getRt()) < 0) {
-            return false;
-        } else {
-            return !isTargetBiggerThanZero(detail.getTargetTps()) || detail.getTargetTps().compareTo(detail.getTps()) <= 0;
         }
-    }
-
-    private boolean isTargetBiggerThanZero(BigDecimal target) {
-        if (Objects.nonNull(target)) {
-            return target.compareTo(new BigDecimal(0)) > 0;
+        if (detail.getTargetSa() != null
+                && detail.getTargetSa().compareTo(ZERO) > 0
+                && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "SA", detail.getTargetSa(), detail.getSa());
+            return false;
         }
-        return false;
+        if (detail.getTargetRt() != null
+                && detail.getTargetRt().compareTo(ZERO) > 0
+                && detail.getTargetRt().compareTo(detail.getRt()) < 0) {
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "RT", detail.getTargetRt(), detail.getRt());
+            return false;
+        }
+        if (detail.getTargetTps() != null
+                && detail.getTargetTps().compareTo(ZERO) > 0
+                && detail.getTargetTps().compareTo(detail.getTps()) > 0){
+            log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
+                    detail.getReportId(), detail.getBusinessActivityId(),
+                    "TPS", detail.getTargetTps(), detail.getTps());
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -1460,6 +1598,19 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             reportResult.setId(reportResult.getId());
             reportResult.setAvgConcurrent(statReport.getAvgConcurrenceNum());
             reportResult.setConcurrent(statReport.getMaxConcurrenceNum());
+            //保存最大 最小tps、最大、最小rt到features中
+            if(statReport.getMaxTps() != null) {
+                getReportFeatures(reportResult, "maxTps", statReport.getMaxTps().toString());
+            }
+            if(statReport.getMinTps() != null) {
+                getReportFeatures(reportResult, "minTps", statReport.getMinTps().toString());
+            }
+            if(statReport.getMaxRt() != null) {
+                getReportFeatures(reportResult, "maxRt", statReport.getMaxRt().toString());
+            }
+            if(statReport.getMinRt() != null) {
+                getReportFeatures(reportResult, "minRt", statReport.getMinRt().toString());
+            }
         }
         reportResult.setGmtUpdate(new Date());
 
@@ -1549,6 +1700,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             resultMap.put("totalRequest", detail.getRequest());
             resultMap.put("successRate", new DataBean(detail.getSuccessRate(), detail.getTargetSuccessRate()));
             resultMap.put("avgConcurrenceNum", detail.getAvgConcurrenceNum());
+            resultMap.put("rtDistribute", detail.getRtDistribute());
             resultMap.put("distribute", getDistributes(detail.getRtDistribute()));
             if (detail.getBusinessActivityId() > -1 && StringUtils.isNotBlank(detail.getApplicationIds())) {
                 resultMap.put("applicationIds", detail.getApplicationIds());
@@ -1557,6 +1709,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             if (threadNumStages.containsKey(xpathMd5)) {
                 resultMap.put("concurrentStageThreadNum", threadNumStages.get(xpathMd5));
             }
+            resultMap.put("features", detail.getFeatures());
             return resultMap;
         }
         return null;
@@ -1566,15 +1719,18 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private List<DistributeBean> getDistributes(String distributes) {
         List<DistributeBean> result;
         if (StringUtils.isNoneBlank(distributes)) {
-            Map<String, String> distributeMap = JsonHelper.string2Obj(distributes,
-                    new TypeReference<Map<String, String>>() {
+            Map<String, Object> distributeMap = JsonHelper.string2Obj(distributes,
+                    new TypeReference<Map<String, Object>>() {
                     });
             List<DistributeBean> distributeBeans = Lists.newArrayList();
             distributeMap.forEach((key, value) -> {
-                DistributeBean distribute = new DistributeBean();
-                distribute.setLable(key);
-                distribute.setValue(COMPARE + value);
-                distributeBeans.add(distribute);
+                //联通报告，增加了stepData的key，这里把它去掉
+                if(!key.equals("stepData")) {
+                    DistributeBean distribute = new DistributeBean();
+                    distribute.setLable(key);
+                    distribute.setValue(COMPARE + value);
+                    distributeBeans.add(distribute);
+                }
             });
             distributeBeans.sort(((o1, o2) -> -o1.getLable().compareTo(o2.getLable())));
             result = distributeBeans;
@@ -1787,5 +1943,34 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             calibration = 1;
         }
         detail.setCalibration(calibration);
+    }
+
+    private void calcHttpAndThreadGroupRef(List<ScriptNodeSummaryBean> dataList, Map<String, String> dataMap) {
+        if(CollectionUtils.isEmpty(dataList)) {
+            return;
+        }
+        dataList.forEach(data -> {
+            if(data.getType().equals(NodeTypeEnum.THREAD_GROUP.name())) {
+                String key = data.getXpathMd5();
+                List<String> sampleList = new ArrayList<>();
+                calcHttp(data.getChildren(), sampleList);
+                if(CollectionUtils.isNotEmpty(sampleList)) {
+                    sampleList.stream().forEach(sampler -> dataMap.put(sampler, key));
+                }
+            }
+            calcHttpAndThreadGroupRef(data.getChildren(), dataMap);
+        });
+    }
+
+    private void calcHttp(List<ScriptNodeSummaryBean> dataList, List<String> sampleList){
+        if(CollectionUtils.isEmpty(dataList)) {
+            return;
+        }
+        dataList.forEach(data -> {
+            if(data.getType().equals(NodeTypeEnum.SAMPLER.name())) {
+                sampleList.add(data.getXpathMd5());
+            }
+            calcHttp(data.getChildren(), sampleList);
+        });
     }
 }

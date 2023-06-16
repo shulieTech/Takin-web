@@ -1,6 +1,8 @@
 package io.shulie.takin.web.data.dao.application;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.esotericsoftware.minlog.Log;
@@ -126,6 +128,38 @@ public class ApplicationNodeDAOImpl implements ApplicationNodeDAO {
             return Lists.newArrayList();
         }
         return nodeDTOS.stream().map(ApplicationNodeDTO::getAgentId).collect(Collectors.toList());
+    }
+
+    public Map<String,List<ApplicationNodeDTO>> getOnlineAgentIdsMap(ApplicationNodeQueryParam param){
+        if(CollectionUtils.isEmpty(param.getApplicationNames())) {
+            return Collections.EMPTY_MAP;
+        }
+
+        List<ApplicationNodeDTO> nodeDTOS = Lists.newArrayList();
+        // 50个轮询一次
+        if (param.getApplicationNames().size() > LOOP_NUM) {
+            int i = 1;
+            boolean loop = true;
+            do {
+                List<String> subList = null;
+                //批量处理
+                if (param.getApplicationNames().size() > i * LOOP_NUM) {
+                    subList = param.getApplicationNames().subList((i - 1) * LOOP_NUM, i * LOOP_NUM);
+                } else {
+                    subList =  param.getApplicationNames().subList((i - 1) * LOOP_NUM,  param.getApplicationNames().size());
+                    loop = false;
+                }
+                i++;
+                nodeDTOS.addAll(getNodeDTOS(subList));
+            } while (loop);
+        } else {
+            nodeDTOS.addAll(getNodeDTOS(param.getApplicationNames()));
+        }
+
+        if(CollectionUtils.isEmpty(nodeDTOS)) {
+            return Collections.EMPTY_MAP;
+        }
+        return nodeDTOS.stream().collect(Collectors.groupingBy(ApplicationNodeDTO::getAppName));
     }
 
     private List<ApplicationNodeDTO> getNodeDTOS(List<String> subList) {

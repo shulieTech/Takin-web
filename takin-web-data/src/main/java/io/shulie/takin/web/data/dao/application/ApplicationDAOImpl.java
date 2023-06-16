@@ -49,12 +49,7 @@ import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationParam;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
-import io.shulie.takin.web.data.result.application.ApplicationResult;
-import io.shulie.takin.web.data.result.application.InstanceInfoResult;
-import io.shulie.takin.web.data.result.application.LibraryResult;
+import io.shulie.takin.web.data.result.application.*;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
@@ -86,6 +81,23 @@ public class ApplicationDAOImpl
         LambdaQueryWrapper<ApplicationMntEntity> query = new LambdaQueryWrapper<>();
         if (appNames != null && appNames.size() > 0) {
             query.in(ApplicationMntEntity::getApplicationName, appNames);
+        }
+        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(query);
+        if (applicationMntEntities == null || applicationMntEntities.size() == 0) {
+            return Lists.newArrayList();
+        }
+        return applicationMntEntities.stream().map(entity -> {
+            ApplicationDetailResult result = new ApplicationDetailResult();
+            BeanUtils.copyProperties(entity, result);
+            return result;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ApplicationDetailResult> getApplicationByAppIds(List<Long> appIds) {
+        LambdaQueryWrapper<ApplicationMntEntity> query = new LambdaQueryWrapper<>();
+        if (appIds != null && appIds.size() > 0) {
+            query.in(ApplicationMntEntity::getApplicationId, appIds);
         }
         List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(query);
         if (applicationMntEntities == null || applicationMntEntities.size() == 0) {
@@ -737,7 +749,7 @@ public class ApplicationDAOImpl
     }
 
     @Override
-    public Map getStatus(String name) {
+    public ApplicationInfo getStatus(String name) {
         return applicationMntMapper.getStatus(name);
     }
 

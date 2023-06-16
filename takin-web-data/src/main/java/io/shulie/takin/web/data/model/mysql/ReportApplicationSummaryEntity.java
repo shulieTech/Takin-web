@@ -30,4 +30,7 @@ public class ReportApplicationSummaryEntity extends TenantBaseEntity {
      */
     @TableField(value = "machine_risk_count")
     private Integer machineRiskCount;
+
+    @TableField(value = "target_tps")
+    private String targetTps;
 }

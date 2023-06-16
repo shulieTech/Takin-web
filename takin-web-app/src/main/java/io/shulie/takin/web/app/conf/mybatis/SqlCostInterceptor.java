@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory;
  * @date 2018/10/10 14:19
  */
 @Intercepts({
-    @Signature(type = StatementHandler.class, method = "query", args = {Statement.class, ResultHandler.class}),
-    @Signature(type = StatementHandler.class, method = "update", args = {Statement.class})})
+        @Signature(type = StatementHandler.class, method = "query", args = {Statement.class, ResultHandler.class}),
+        @Signature(type = StatementHandler.class, method = "update", args = {Statement.class})})
 public class SqlCostInterceptor implements Interceptor {
 
     private final Logger LOGGER = LoggerFactory.getLogger(SqlCostInterceptor.class);
@@ -39,7 +39,7 @@ public class SqlCostInterceptor implements Interceptor {
         Object target = invocation.getTarget();
 
         long startTime = System.currentTimeMillis();
-        StatementHandler statementHandler = (StatementHandler)target;
+        StatementHandler statementHandler = (StatementHandler) target;
         try {
             return invocation.proceed();
         } finally {
@@ -53,7 +53,6 @@ public class SqlCostInterceptor implements Interceptor {
 
             // 格式化Sql语句，去除换行符，替换参数
             sql = formatSql(sql, parameterObject, parameterMappingList);
-
             LOGGER.info(String.format("执行的SQL语句为: %s,执行耗时为: %s ms", sql, sqlCost));
         }
     }
@@ -93,7 +92,7 @@ public class SqlCostInterceptor implements Interceptor {
                 // 如果参数是StrictMap且Value类型为Collection，获取key="list"的属性，这里主要是为了处理<foreach>循环时传入List这种参数的占位符替换
                 // 例如select * from xxx where id in <foreach collection="list">...</foreach>
                 if (isStrictMap(parameterObjectClass)) {
-                    StrictMap<Collection<?>> strictMap = (StrictMap<Collection<?>>)parameterObject;
+                    StrictMap<Collection<?>> strictMap = (StrictMap<Collection<?>>) parameterObject;
 
                     if (isList(strictMap.get("list").getClass())) {
                         sql = handleListParameter(sql, strictMap.get("list"));
@@ -101,7 +100,7 @@ public class SqlCostInterceptor implements Interceptor {
                 } else if (isMap(parameterObjectClass)) {
                     // 如果参数是Map则直接强转，通过map.get(key)方法获取真正的属性值
                     // 这里主要是为了处理<insert>、<delete>、<update>、<select>时传入parameterType为map的场景
-                    Map<?, ?> paramMap = (Map<?, ?>)parameterObject;
+                    Map<?, ?> paramMap = (Map<?, ?>) parameterObject;
                     sql = handleMapParameter(sql, paramMap, parameterMappingList);
                 } else {
                     // 通用场景，比如传的是一个自定义的对象或者八种基本数据类型之一或者String
@@ -171,8 +170,8 @@ public class SqlCostInterceptor implements Interceptor {
      * 处理通用的场景
      */
     private String handleCommonParameter(String sql, List<ParameterMapping> parameterMappingList,
-        Class<?> parameterObjectClass,
-        Object parameterObject) throws Exception {
+                                         Class<?> parameterObjectClass,
+                                         Object parameterObject) throws Exception {
         for (ParameterMapping parameterMapping : parameterMappingList) {
             String propertyValue = null;
             // 基本数据类型或者基本数据类型的包装类，直接toString即可获取其真正的参数值，其余直接取paramterMapping中的property属性即可
@@ -201,12 +200,12 @@ public class SqlCostInterceptor implements Interceptor {
      */
     private boolean isPrimitiveOrPrimitiveWrapper(Class<?> parameterObjectClass) {
         boolean isPrimitive = parameterObjectClass.isPrimitive() || parameterObjectClass.isAssignableFrom(
-            Character.class) || parameterObjectClass.isAssignableFrom(Boolean.class);
+                Character.class) || parameterObjectClass.isAssignableFrom(Boolean.class);
         boolean isNaturalNum = parameterObjectClass.isAssignableFrom(Byte.class) || parameterObjectClass
-            .isAssignableFrom(Short.class) ||
-            parameterObjectClass.isAssignableFrom(Integer.class) || parameterObjectClass.isAssignableFrom(Long.class);
+                .isAssignableFrom(Short.class) ||
+                parameterObjectClass.isAssignableFrom(Integer.class) || parameterObjectClass.isAssignableFrom(Long.class);
         boolean isDecimal = parameterObjectClass.isAssignableFrom(Double.class) || parameterObjectClass
-            .isAssignableFrom(Float.class);
+                .isAssignableFrom(Float.class);
         return isPrimitive || isNaturalNum || isDecimal;
     }
 

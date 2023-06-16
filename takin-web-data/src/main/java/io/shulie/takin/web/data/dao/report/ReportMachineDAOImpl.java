@@ -145,7 +145,7 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
     @Override
     public int updateTpsTargetConfig(ReportMachineUpdateParam param) {
         ReportMachineEntity entity = new ReportMachineEntity();
-        BeanUtils.copyProperties(param,entity);
+        BeanUtils.copyProperties(param, entity);
         return this.baseMapper.updateTpsTargetConfig(entity);
     }
 
@@ -180,6 +180,9 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
         }
         if(StringUtils.isNotBlank(queryParam.getMachineIp())) {
             queryWrapper.eq(ReportMachineEntity::getMachineIp, queryParam.getMachineIp());
+        }
+        if (StringUtils.isNotBlank(queryParam.getAgentId())) {
+            queryWrapper.eq(ReportMachineEntity::getAgentId, queryParam.getAgentId());
         }
         queryWrapper.orderByDesc(ReportMachineEntity::getRiskValue);
         return queryWrapper;

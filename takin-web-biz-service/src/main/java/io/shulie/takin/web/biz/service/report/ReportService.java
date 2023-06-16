@@ -11,11 +11,14 @@ import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
 import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.*;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
+import io.shulie.takin.web.biz.pojo.output.report.SceneReportListOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 
 /**
@@ -38,6 +41,8 @@ public interface ReportService {
      * @return 报告详情
      */
     ReportDetailOutput getReportByReportId(Long reportId);
+
+    List<SceneReportListOutput> getReportListBySceneId(Long sceneId);
 
     /**
      * 查询报告趋势
@@ -179,6 +184,7 @@ public interface ReportService {
      */
     ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse>  getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
 
+    io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse  getLinkDiagram2(ReportLinkDiagramReq2 reportLinkDiagramReq);
 
     /**
      * 查询阶梯递增模式下指定线程数的明细
@@ -196,4 +202,22 @@ public interface ReportService {
     ThreadReportTrendResp queryReportTrendByThread(ReportTrendQueryReq reportTrendQuery);
 
     void modifyLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
+
+    void modifyLinkDiagrams(ReportLinkDiagramReq reportLinkDiagramReq, List<String> pathMd5List);
+
+    /**
+     * 根据报告ids查询报告详情
+     * @param reportIds
+     * @return
+     */
+    List<ReportEntity> getReportListByReportIds(List<Long> reportIds);
+
+    void buildReportTestData(Long jobId, Long sceneId, Long reportId, Long tenantId);
+
+    /**
+     * 获取最近多少分钟的报告ids
+     * @return
+     */
+    List<Long> nearlyHourReportIds(int minutes);
+
 }

@@ -12,10 +12,12 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
@@ -24,6 +26,9 @@ import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.common.constants.SceneManageConstant;
+import io.shulie.takin.cloud.data.mapper.mysql.ReportBusinessActivityDetailMapper;
+import io.shulie.takin.web.biz.pojo.request.activity.*;
+import io.shulie.takin.web.biz.pojo.response.activity.*;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.adapter.api.entrypoint.scenetask.CloudTaskApi;
@@ -44,21 +49,7 @@ import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.convert.activity.ActivityServiceConvert;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ListApplicationRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.BusinessApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
@@ -110,6 +101,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 /**
  * @author shiyajian
@@ -427,9 +420,9 @@ public class ActivityServiceImpl implements ActivityService {
     @Transactional(rollbackFor = Throwable.class)
     public void updateActivity(ActivityUpdateRequest request) {
         //
-        if (request.getServiceName() == null && request.getMethod() == null && StringUtils.isNotBlank(request.getLabel())){
+        if (request.getServiceName() == null && request.getMethod() == null && StringUtils.isNotBlank(request.getLabel())) {
             String[] split = request.getLabel().split("#");
-            if (split.length == 2){
+            if (split.length == 2) {
                 request.setServiceName(split[0]);
                 request.setMethod(split[1]);
             }
@@ -494,8 +487,8 @@ public class ActivityServiceImpl implements ActivityService {
             List<String> exists = activityDAO.exists(param);
             if (CollectionUtils.isNotEmpty(exists)) {
                 Optional<String> any = exists.stream()
-                    .filter(item -> !item.equals(oldActivity.getActivityName()))
-                    .findAny();
+                        .filter(item -> !item.equals(oldActivity.getActivityName()))
+                        .findAny();
                 if (any.isPresent()) {
                     throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, String
                             .format("保存失败，入口已[应用名称：%s，类型：%s，入口：%s]已被使用，对应的虚拟业务活动为：%s", request.getActivityName(),
@@ -661,37 +654,35 @@ public class ActivityServiceImpl implements ActivityService {
         linkTopologyService.fillMetrics(
                 request,
                 activity.getTopology(),
-                startTimeUseInInFluxDB, endTimeUseInInFluxDB,
-                allTotalCountStartDateTimeUseInInFluxDB);
+                startTimeUseInInFluxDB, endTimeUseInInFluxDB);
 
         return activity;
     }
 
     @Override
-    public ActivityResponse getActivityWithMetricsByIdForReport(Long activityId,
-                                                                LocalDateTime startDateTime,
-                                                                LocalDateTime endDateTime) {
-
-        ActivityInfoQueryRequest activityInfoQueryRequest = new ActivityInfoQueryRequest();
-        activityInfoQueryRequest.setActivityId(activityId);
-        ActivityResponse activity = getActivityById(activityInfoQueryRequest);
-
-        if (startDateTime == null || endDateTime == null) {
-            return activity;
+    public List<ReportActivityResponse> getActivityWithMetricsByIdForReports(List<ReportActivityInfoQueryRequest> activityInfoQueryRequests) {
+        if (CollectionUtils.isEmpty(activityInfoQueryRequests)) {
+            return Lists.newArrayList();
         }
-
-        ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
-        request.setActivityId(activityId);
-        request.setFlowTypeEnum(FlowTypeEnum.BLEND);
-
-        linkTopologyService.fillMetrics(
-                request,
-                activity.getTopology(),
-                startDateTime, endDateTime,
-                //默认不区分流量类型，按照混合流量查询
-                startDateTime);
-
-        return activity;
+        List<ReportActivityResponse> activityResponses = Lists.newArrayList();
+        for (ReportActivityInfoQueryRequest reportActivityInfoQueryRequest : activityInfoQueryRequests) {
+            ActivityInfoQueryRequest activityInfoQueryRequest = new ActivityInfoQueryRequest();
+            BeanUtil.copyProperties(reportActivityInfoQueryRequest, activityInfoQueryRequest);
+            ActivityResult result = activityDAO.getActivityById(activityInfoQueryRequest.getActivityId());
+            if (result == null || result.getBusinessType().equals(BusinessTypeEnum.VIRTUAL_BUSINESS.getType())) {
+                continue;
+            }
+            ActivityResponse activity = getActivityById(activityInfoQueryRequest);
+            if (activity.getTopology() == null) {
+                continue;
+            }
+            linkTopologyService.fillMetrics(activityInfoQueryRequest, activity.getTopology(), activityInfoQueryRequest.getStartTime(), activityInfoQueryRequest.getEndTime());
+            ReportActivityResponse reportActivityResponse = new ReportActivityResponse();
+            BeanUtil.copyProperties(activity, reportActivityResponse);
+            reportActivityResponse.setReportId(reportActivityInfoQueryRequest.getReportId());
+            activityResponses.add(reportActivityResponse);
+        }
+        return activityResponses;
     }
 
     @Override
@@ -776,6 +767,23 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setVerifiedFlag(
                 verifyStatus.equals(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFIED));
         return activityResponse;
+    }
+
+    @Override
+    public ActivityResponse getActivityServiceById(Long id) {
+        ActivityResult result = activityDAO.getActivityServiceById(id);
+        if(result == null) {
+            return null;
+        }
+        ActivityResponse response = new ActivityResponse();
+        response.setActivityId(id);
+        response.setEntranceName(result.getEntranceName());
+        response.setServiceName(result.getServiceName());
+        response.setMethod(result.getMethod());
+        response.setRpcType(result.getRpcType());
+        response.setApplicationName(result.getApplicationName());
+        response.setExtend(result.getExtend());
+        return response;
     }
 
     @Override
@@ -1048,7 +1056,7 @@ public class ActivityServiceImpl implements ActivityService {
         String extend = map.get(FeaturesConstants.EXTEND_KEY);
         LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
                 false, linkManageTableEntity.getApplicationName(), null, serviceName, methodName,
-                rpcType, extend,false);
+                rpcType, extend, false);
         if (applicationEntrancesTopology == null || CollectionUtils.isEmpty(applicationEntrancesTopology.getNodes())) {
             return new ArrayList<>(Collections.singleton(linkManageTableEntity.getApplicationName()));
         }
@@ -1096,6 +1104,25 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public boolean existsActivity(Long tenantId, String envCode) {
         return activityDAO.existsActivity(tenantId, envCode);
+    }
+
+    /**
+     * 判断业务活动类型
+     * 是否是虚拟业务活动
+     *
+     * @param activityId
+     * @return
+     */
+    @Override
+    public boolean judgeActivityVirtual(Long activityId) {
+        LambdaQueryWrapper<BusinessLinkManageTableEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BusinessLinkManageTableEntity::getLinkId, activityId);
+        queryWrapper.select(BusinessLinkManageTableEntity::getType);
+        BusinessLinkManageTableEntity businessLinkManageTableEntity = this.businessLinkManageTableMapper.selectOne(queryWrapper);
+        if (businessLinkManageTableEntity != null) {
+            return !ActivityUtil.isNormalBusiness(businessLinkManageTableEntity.getType());
+        }
+        return false;
     }
 }
 

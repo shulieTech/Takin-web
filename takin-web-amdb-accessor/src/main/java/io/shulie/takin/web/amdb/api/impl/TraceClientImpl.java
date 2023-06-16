@@ -3,10 +3,13 @@ package io.shulie.takin.web.amdb.api.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.pamirs.pradar.log.parser.ProtocolParserFactory;
 import com.pamirs.pradar.log.parser.trace.RpcBased;
@@ -18,11 +21,9 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.DataCalibrationDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.trace.*;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
+import io.shulie.takin.web.amdb.bean.result.trace.TraceMetricsAll;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -64,6 +65,10 @@ public class TraceClientImpl implements TraceClient {
     private static final String ENTRY_TRACE_LOG_PATH = "/amdb/trace/getAllTraceList";
 
     private static final String DATA_CALIBRATION_PATH = "/amdb/trace/compensate";
+
+    private static final String TRACE_METRIC_GET_SQL_STATEMENTS = "/amdb/db/api/traceMetric/getSqlStatements";
+
+    private static final String GET_EDGE_IDS_BY_APP_NAMES = "/amdb/link/selectEdgeIdsByLinkIds";
 
     @Autowired
     private AmdbClientProperties properties;
@@ -305,5 +310,32 @@ public class TraceClientImpl implements TraceClient {
         return AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST).param(dataCalibration)
             .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
             .eventName("压测报告数据校准").one(String.class).getData();
+    }
+
+    @Override
+    public List<TraceMetricsAll> getSqlStatements(TraceMetricsRequest traceMetricsRequest) {
+        String url = properties.getUrl().getAmdb() + TRACE_METRIC_GET_SQL_STATEMENTS;
+        List<TraceMetricsAll> traceMetrics = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
+                .param(traceMetricsRequest)
+                .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
+                .eventName("应用趋势图查询").list(TraceMetricsAll.class).getData();
+        if (CollectionUtils.isEmpty(traceMetrics)) {
+            return Lists.newArrayList();
+        }
+        return traceMetrics;
+    }
+
+    @Override
+    public List<String> getEdgeIdsByLinkIds(List<ApplicationEntranceTopologyQueryRequest> traceMetricsRequest){
+        String url = properties.getUrl().getAmdb() + GET_EDGE_IDS_BY_APP_NAMES;
+        try {
+            List<String> list = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
+                    .param(traceMetricsRequest)
+                    .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
+                    .eventName("应用趋势图查询").list(String.class).getData();
+            return list;
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION, e.getMessage());
+        }
     }
 }

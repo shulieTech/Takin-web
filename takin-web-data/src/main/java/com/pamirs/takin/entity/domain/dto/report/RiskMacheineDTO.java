@@ -21,7 +21,10 @@ public class RiskMacheineDTO implements Serializable {
     @ApiModelProperty(value = "ID")
     private Long id;
 
-    @ApiModelProperty(value = "机器")
+    @ApiModelProperty(value = "应用名称")
+    private String appName;
+
+    @ApiModelProperty(value = "机器IP")
     private String machineIp;
 
     @ApiModelProperty(value = "agentId")

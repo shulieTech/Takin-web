@@ -79,6 +79,18 @@ public class ReportDetailResp extends ContextExt {
     @ApiModelProperty(value = "平均RT")
     private BigDecimal avgRt;
 
+    @ApiModelProperty(value = "最大TPS")
+    private BigDecimal maxTps;
+
+    @ApiModelProperty(value = "最小TPS")
+    private BigDecimal minTps;
+
+    @ApiModelProperty(value = "最大RT")
+    private BigDecimal maxRt;
+
+    @ApiModelProperty(value = "最小RT")
+    private BigDecimal minRt;
+
     @ApiModelProperty(value = "成功率")
     private BigDecimal successRate;
 

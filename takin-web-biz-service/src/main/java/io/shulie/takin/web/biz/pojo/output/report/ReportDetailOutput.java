@@ -81,8 +81,16 @@ public class ReportDetailOutput extends AuthQueryResponseCommonExt {
     @ApiModelProperty(value = "平均TPS")
     private BigDecimal avgTps;
 
+    private BigDecimal maxTps;
+
+    private BigDecimal minTps;
+
     @ApiModelProperty(value = "平均RT")
     private BigDecimal avgRt;
+
+    private BigDecimal maxRt;
+
+    private BigDecimal minRt;
 
     @ApiModelProperty(value = "成功率")
     private BigDecimal successRate;

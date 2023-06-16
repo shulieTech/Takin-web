@@ -25,6 +25,10 @@ public class MachineDetailDTO implements Serializable {
     @ApiModelProperty(value = "主机ip")
     private String machineIp;
 
+    private BigDecimal gcCost;
+
+    private BigDecimal gcCount;
+
     @ApiModelProperty(value = "cpu")
     private Integer cpuNum;
 
@@ -70,5 +74,17 @@ public class MachineDetailDTO implements Serializable {
         private BigDecimal[] io;
 
         private BigDecimal[] mbps;
+
+        private BigDecimal[] gcCost;
+
+        private BigDecimal[] gcCount;
+
+        private Long[] fullGcCount;
+
+        private Integer[] fullGcCost;
+
+        private Long[] youngGcCount;
+
+        private Integer[] youngGcCost;
     }
 }

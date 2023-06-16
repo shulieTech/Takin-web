@@ -16,4 +16,5 @@ public interface ReportEventService {
      */
     Map<String, String> queryAndCalcRtDistribute(Long jobId, String bindRef);
 
+    Map<String, Integer> queryAndCalcRtDistributeByTime(Long startTime, Long endTime, Long jobId, String bindRef);
 }

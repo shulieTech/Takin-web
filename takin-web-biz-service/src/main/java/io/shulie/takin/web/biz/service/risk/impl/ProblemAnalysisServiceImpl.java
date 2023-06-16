@@ -45,6 +45,7 @@ import io.shulie.takin.web.data.result.risk.LinkDataResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -88,9 +89,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
      * 同步机器基础信息到表
      */
     @Override
-    public void syncMachineData(Long reportId) {
+    public void syncMachineData(Long reportId, Long endTime) {
         long startTime = System.currentTimeMillis();
-        long endTime = System.currentTimeMillis();
         ReportDetailDTO dto = reportDataCache.getReportDetailDTO(reportId);
         if (dto == null) {
             return;
@@ -99,12 +99,13 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             startTime = DateUtil.parseSecondFormatter(dto.getStartTime()).getTime();
         }
         // 统计当前时间 前5分钟数据
-        int riskTime = ConfigServerHelper.getIntegerValueByKey(ConfigServerKeyEnum.TAKIN_RISK_COLLECT_TIME);
-        if (endTime - startTime >= riskTime) {
-            startTime = endTime - riskTime;
+        if (endTime == null) {
+            if (dto.getEndTime() != null) {
+                endTime = dto.getEndTime().getTime();
+            } else {
+                endTime = System.currentTimeMillis();
+            }
         }
-
-        List<BaseAppVo> baseAppVoList = Lists.newArrayList();
 
         /**
          * 获取压测中所有的应用信息
@@ -115,63 +116,52 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         ApplicationNodeQueryParam param = new ApplicationNodeQueryParam();
         param.setApplicationNames(appNameList);
         List<String> onlineAgentIds = applicationNodeDAO.getOnlineAgentIds(param);
+
         long finalStartTime = startTime;
-        appNameList.forEach(appName -> {
-            Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(finalStartTime, endTime, appName));
-            if (CollectionUtils.isNotEmpty(baseList)) {
-                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, finalStartTime, endTime, baseList.size());
-                List<BaseAppVo> tmpList = baseList.stream().map(base -> {
-                    BaseAppVo vo = new BaseAppVo();
-                    vo.setCore(formatDouble(base.getCpuCores()).intValue());
-                    vo.setDisk(formatDouble(base.getDisk()));
-                    vo.setMbps(formatDouble(base.getNetBandwidth()));
-                    vo.setMemory(formatDouble(base.getMemory()));
-                    vo.setAppIp(base.getAppIp());
-                    vo.setAppName(appName);
-                    vo.setReportId(reportId);
-                    vo.setAgentIp(base.getAgentId());
-                    return vo;
-                }).collect(Collectors.toList());
-                if (CollectionUtils.isNotEmpty(tmpList)) {
-                    baseAppVoList.addAll(tmpList);
-                }
-            } else {
-                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, finalStartTime, endTime);
+        long finalEndTime = endTime;
+        List<BaseAppVo> baseAppVoList = appNameList.stream().map(appName -> {
+            Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(finalStartTime, finalEndTime, appName));
+            if (CollectionUtils.isEmpty(baseList)) {
+                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, finalStartTime, finalEndTime);
             }
-        });
 
-        // 处理基础信息
-        if (CollectionUtils.isNotEmpty(baseAppVoList)) {
+            logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, finalStartTime, finalEndTime, baseList.size());
 
-            Map<String, List<BaseAppVo>> appMap = baseAppVoList.stream().collect(Collectors.groupingBy(this::fetchApp));
+            return baseList.stream().filter(Objects::nonNull).map(base -> {
+                BaseAppVo vo = new BaseAppVo();
+                vo.setCore(formatDouble(base.getCpuCores()).intValue());
+                vo.setDisk(formatDouble(base.getDisk()));
+                vo.setMbps(formatDouble(base.getNetBandwidth()));
+                vo.setMemory(formatDouble(base.getMemory()));
+                vo.setAppIp(base.getAppIp());
+                vo.setAppName(appName);
+                vo.setReportId(reportId);
+                vo.setAgentIp(base.getAgentId());
+                vo.setGcCount(BigDecimal.valueOf(Optional.ofNullable(base.getFullGcCount()).orElse(0D))
+                        .add(BigDecimal.valueOf(Optional.ofNullable(base.getYoungGcCount()).orElse(0D))));
+                vo.setGcTime(BigDecimal.valueOf(Optional.ofNullable(base.getFullGcCost()).orElse(0D))
+                        .add(BigDecimal.valueOf(Optional.ofNullable(base.getYoungGcCost()).orElse(0D))));
+                return vo;
+            }).collect(Collectors.toList());
+        }).filter(CollectionUtils::isNotEmpty).flatMap(List::stream).collect(Collectors.toList());
 
-            List<ReportMachineUpdateParam> insertList = Lists.newArrayList();
-            appMap.values().forEach(value -> {
+        if (CollectionUtils.isEmpty(baseAppVoList)) {
+            return;
+        }
 
-                if (CollectionUtils.isEmpty(value)) {
-                    return;
-                }
-                BaseAppVo baseAppVo = value.stream().filter(base -> {
-                    // agentId 是否在线 只有不等于空
-                    if (CollectionUtils.isNotEmpty(onlineAgentIds) && !onlineAgentIds.contains(base.getAgentIp())) {
-                        return false;
-                    }
-                    return true;
-                }).collect(Collectors.toList()).get(0);
-                if (baseAppVo != null) {
+        baseAppVoList.stream().collect(Collectors.groupingBy(this::fetchApp)).values().stream().filter(CollectionUtils::isNotEmpty).map(list -> list.stream()
+                        .filter(base -> CollectionUtils.isEmpty(onlineAgentIds) || onlineAgentIds.contains(base.getAgentIp())).findFirst().orElse(null))
+                .filter(Objects::nonNull).map(baseAppVo -> {
                     ReportMachineUpdateParam tmp = new ReportMachineUpdateParam();
                     tmp.setReportId(baseAppVo.getReportId());
                     tmp.setMachineIp(baseAppVo.getAppIp());
                     tmp.setApplicationName(baseAppVo.getAppName());
                     tmp.setRiskFlag(0);
                     tmp.setAgentId(baseAppVo.getAgentIp());
-                    /**
-                     * 单位换算 磁盘 内存
-                     */
+                    // 单位换算 磁盘 内存
                     baseAppVo.setDisk(VolumnUtil.convertByte2Gb(baseAppVo.getDisk()));
                     baseAppVo.setMemory(VolumnUtil.convertByte2Gb(baseAppVo.getMemory()));
-
-                    //只保存基础信息
+                    // 只保存基础信息
                     baseAppVo.setAppIp(null);
                     baseAppVo.setAppName(null);
                     baseAppVo.setReportId(null);
@@ -179,14 +169,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     tmp.setMachineBaseConfig(JSON.toJSONString(baseAppVo));
                     // 增加租户
                     WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(), tmp);
-                    insertList.add(tmp);
-                }
-            });
-            if (CollectionUtils.isNotEmpty(insertList)) {
-                // machineTpsTargetConfig 指标信息不更新
-                insertList.forEach(reportMachineDAO::insertOrUpdate);
-            }
-        }
+                    return tmp;
+                }).filter(Objects::nonNull).forEach(reportMachineDAO::insertOrUpdate);
     }
 
     /**

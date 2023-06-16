@@ -99,28 +99,53 @@ public class CloudReportApiImpl implements CloudReportApi {
     }
 
     @Override
+    public List<ReportDetailResp> detailListBySceneId(ReportDetailBySceneIdReq req) {
+        List<ReportDetailOutput> outputList = cloudReportService.getReportListBySceneId(req.getSceneId());
+        List<ReportDetailResp> respList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(outputList)) {
+            return respList;
+        }
+        outputList.stream().forEach(output -> {
+            ReportDetailResp resp = new ReportDetailResp();
+            resp.setId(output.getId());
+            resp.setStartTime(output.getStartTime());
+            resp.setConcurrent(output.getConcurrent());
+            respList.add(resp);
+        });
+        return respList;
+    }
+
+    @Override
     public ReportTrendResp trend(ReportTrendQueryReq req) {
         try {
-            String key = JSON.toJSONString(req);
+            String key = "report_trend:" + req.getReportId() + ":" + req.getXpathMd5();
             ReportTrendResp data;
             if (redisClientUtil.hasKey(key)) {
                 data = JSON.parseObject(redisClientUtil.getString(key), ReportTrendResp.class);
                 if (Objects.isNull(data)
-                    || CollectionUtils.isEmpty(data.getConcurrent())
-                    || CollectionUtils.isEmpty(data.getSa())
-                    || CollectionUtils.isEmpty(data.getRt())
-                    || CollectionUtils.isEmpty(data.getTps())
-                    || CollectionUtils.isEmpty(data.getSuccessRate())) {
+                        || CollectionUtils.isEmpty(data.getConcurrent())
+                        || CollectionUtils.isEmpty(data.getSa())
+                        || CollectionUtils.isEmpty(data.getRt())
+                        || CollectionUtils.isEmpty(data.getTps())
+                        || CollectionUtils.isEmpty(data.getSuccessRate())) {
                     data = cloudReportService.queryReportTrend(req);
+                    if (Objects.isNull(data)) {
+                        return new ReportTrendResp();
+                    }
                     redisClientUtil.setString(key, JSON.toJSONString(data));
+                    redisClientUtil.expire(key, 2, TimeUnit.MINUTES);
                 }
             } else {
                 data = cloudReportService.queryReportTrend(req);
+                if (Objects.isNull(data)) {
+                    return new ReportTrendResp();
+                }
                 redisClientUtil.setString(key, JSON.toJSONString(data));
                 redisClientUtil.expire(key, 2, TimeUnit.MINUTES);
             }
             return data;
         } catch (Exception e) {
+            log.error("获取报告趋势数据异常", e);
             return new ReportTrendResp();
         }
     }

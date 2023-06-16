@@ -142,4 +142,6 @@ public class Report {
 
     private String resourceId;
     private Long jobId;
+
+    private String ptConfig;
 }

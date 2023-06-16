@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.mapper.mysql;
 import java.util.Map;
 import java.util.List;
 
+import io.shulie.takin.web.data.result.application.ApplicationInfo;
 import org.apache.ibatis.annotations.Param;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -232,5 +233,5 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
     IPage<ApplicationListResultByUpgrade> selectApplicationListByUpgrade(
             @Param("page") IPage<ApplicationMntEntity> page, @Param("param") QueryApplicationByUpgradeParam param);
 
-    Map getStatus(@Param("name") String name);
+    ApplicationInfo getStatus(@Param("name") String name);
 }

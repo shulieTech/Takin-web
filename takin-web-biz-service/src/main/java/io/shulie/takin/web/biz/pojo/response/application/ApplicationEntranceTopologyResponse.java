@@ -99,17 +99,22 @@ public class ApplicationEntranceTopologyResponse {
         private List<NodeDetailDatasourceInfo> nodes;
 
         // <<<<< 节点中 某个服务的 4 个性能指标
-            @ApiModelProperty("服务总调用量")
-            private Double serviceAllTotalCount;
+        @ApiModelProperty("服务总调用量")
+        private Double serviceAllTotalCount;
 
-            @ApiModelProperty("服务总成功率")
-            private Double serviceAllSuccessRate;
+        @ApiModelProperty("服务总成功率")
+        private Double serviceAllSuccessRate;
 
-            @ApiModelProperty("服务总Tps")
-            private Double serviceAllTotalTps;
+        @ApiModelProperty("服务总Tps")
+        private Double serviceAllTotalTps;
 
-            @ApiModelProperty("服务Rt")
-            private Double serviceRt;
+        @ApiModelProperty("服务最大Rt")
+        private Double serviceMaxRt;
+        @ApiModelProperty("服务最小Rt")
+        private Double serviceMinRt;
+
+        @ApiModelProperty("服务Rt")
+        private Double serviceRt;
         // >>>>> 节点中 某个服务的 4 个性能指标
 
         // 一般瓶颈 [false 没有瓶颈 | true 有一般瓶颈]
@@ -192,14 +197,13 @@ public class ApplicationEntranceTopologyResponse {
 
         public static AppProvider buildInit() {
             AppProvider appProvider = new AppProvider();
-
             // init
             appProvider.setServiceAllTotalCount(INIT);
             appProvider.setAllSuccessCount(INIT); // 总成功调用次数
             appProvider.setServiceAllTotalTps(INIT);
             appProvider.setAllTotalRt(INIT);
             appProvider.setServiceAllMaxRt(INIT);
-
+            appProvider.setServiceAllMinRt(INIT);
             return appProvider;
         }
 
@@ -232,39 +236,40 @@ public class ApplicationEntranceTopologyResponse {
         // 边 rpcType
         private String rpcType;
 
-    // <<<<< 节点中 某个服务的 4 个性能指标
+        // <<<<< 节点中 某个服务的 4 个性能指标
         // 1) 总调用量
         private Double serviceAllTotalCount;
 
         // 2) 总成功率
         private Double serviceAllSuccessRate;
-            // 总成功调用次数
-            private Double allSuccessCount;
-            // 总成功率 瓶颈类型(-1 没有瓶颈 | 1 一般瓶颈 | 2 严重瓶颈)
-            private int allSuccessRateBottleneckType;
-            // 总成功率 瓶颈详情 id
-            private Long successRateBottleneckId;
+        // 总成功调用次数
+        private Double allSuccessCount;
+        // 总成功率 瓶颈类型(-1 没有瓶颈 | 1 一般瓶颈 | 2 严重瓶颈)
+        private int allSuccessRateBottleneckType;
+        // 总成功率 瓶颈详情 id
+        private Long successRateBottleneckId;
 
         // 3) 总Tps
         private Double serviceAllTotalTps;
 
         // 4) 前端显示 RT
         private Double serviceRt;
-            // 平均RT
-            private Double serviceAvgRt;
-            // 总调用Rt
-            private Double allTotalRt;
-                // 总Rt 瓶颈类型(-1 没有瓶颈 | 1 一般卡慢 | 2 严重卡慢)
-                private int allTotalRtBottleneckType;
-                // 总Rt 瓶颈详情 id
-                private Long rtBottleneckId;
-            // 最大RT
-            private Double serviceAllMaxRt;
-                // 总Rt sql 瓶颈类型(-1 没有瓶颈 | 1 一般卡慢 | 2 严重卡慢)
-                private int allSqlTotalRtBottleneckType;
-                // 总Rt sql 瓶颈详情 id
-                private Long rtSqlBottleneckId;
-    // >>>>> 节点中 某个服务的 4 个性能指标
+        // 平均RT
+        private Double serviceAvgRt;
+        // 总调用Rt
+        private Double allTotalRt;
+        // 总Rt 瓶颈类型(-1 没有瓶颈 | 1 一般卡慢 | 2 严重卡慢)
+        private int allTotalRtBottleneckType;
+        // 总Rt 瓶颈详情 id
+        private Long rtBottleneckId;
+        // 最大RT
+        private Double serviceAllMaxRt;
+        // 总Rt sql 瓶颈类型(-1 没有瓶颈 | 1 一般卡慢 | 2 严重卡慢)
+        private Double serviceAllMinRt;
+        private int allSqlTotalRtBottleneckType;
+        // 总Rt sql 瓶颈详情 id
+        private Long rtSqlBottleneckId;
+        // >>>>> 节点中 某个服务的 4 个性能指标
     }
 
     @Data

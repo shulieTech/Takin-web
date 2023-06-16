@@ -231,6 +231,23 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     }
 
     @Override
+    public ActivityResult getActivityServiceById(Long activityId) {
+        BusinessLinkManageTableEntity entity = businessLinkManageTableMapper.selectById(activityId);
+        if(entity == null) {
+            return null;
+        }
+        ActivityResult result = new ActivityResult();
+        result.setActivityId(activityId);
+        result.setEntranceName(entity.getEntrace());
+        EntranceJoinEntity entranceEntity = ActivityUtil.covertEntrance(entity.getEntrace());
+        result.setServiceName(entranceEntity.getServiceName());
+        result.setMethod(entranceEntity.getMethodName());
+        result.setRpcType(entranceEntity.getRpcType());
+        result.setApplicationName(entity.getApplicationName());
+        return result;
+    }
+
+    @Override
     public int updateActivity(ActivityUpdateParam updateParam) {
         LinkManageTableEntity linkManageTableEntity = linkManageTableMapper.selectById(updateParam.getLinkId());
         String applicationName = updateParam.getApplicationName();

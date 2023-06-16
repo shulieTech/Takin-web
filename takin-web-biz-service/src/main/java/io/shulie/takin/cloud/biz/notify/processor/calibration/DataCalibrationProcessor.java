@@ -63,7 +63,13 @@ public class DataCalibrationProcessor extends AbstractIndicators
      */
     @Override
     public String process(DataCalibrationNotifyParam param) {
+        if (Objects.isNull(param)) {
+            return null;
+        }
         Data data = param.getData();
+        if (Objects.isNull(data)) {
+            return null;
+        }
         long jobId = data.getPressureId();
         String resourceId = String.valueOf(data.getResourceId());
         String statusKey = PressureStartCache.getDataCalibrationStatusKey(jobId);

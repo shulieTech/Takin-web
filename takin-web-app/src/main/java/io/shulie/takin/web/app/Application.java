@@ -1,8 +1,10 @@
 package io.shulie.takin.web.app;
 
 import com.pamirs.takin.common.util.SpringContextUtil;
+import io.shulie.takin.web.app.conf.mybatis.SqlCostInterceptor;
 import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
+import org.apache.ibatis.plugin.Interceptor;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,6 +12,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
@@ -59,7 +62,5 @@ public class Application {
 //        PreparedStatementHandler.init();
         ApplicationContext applicationContext = new SpringApplicationBuilder().sources(Application.class).run(args);
         SpringContextUtil.setApplicationContext(applicationContext);
-
-
     }
 }

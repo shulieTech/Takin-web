@@ -1,9 +1,6 @@
 package io.shulie.takin.cloud.data.dao.report;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -30,9 +27,11 @@ import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -106,6 +105,25 @@ public class ReportDaoImpl implements ReportDao {
         );
         if (entityList.size() != 1) {return null;}
         return BeanUtil.copyProperties(entityList.get(0), ReportResult.class);
+    }
+
+    @Override
+    public List<ReportResult> selectBySceneId(Long sceneId) {
+        List<ReportEntity> entityList = reportMapper.selectList(
+                Wrappers.lambdaQuery(ReportEntity.class)
+                        .eq(ReportEntity::getSceneId, sceneId)
+                        .eq(ReportEntity::getStatus, 2)
+                        .isNotNull(ReportEntity::getEndTime)
+        );
+        List<ReportResult> resultList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(entityList)) {
+            return resultList;
+        }
+        entityList.stream().forEach(entity -> {
+            ReportResult result = BeanUtil.copyProperties(entity, ReportResult.class);
+            resultList.add(result);
+        });
+        return resultList;
     }
 
     /**
@@ -325,11 +343,31 @@ public class ReportDaoImpl implements ReportDao {
     }
 
     @Override
+    public List<ReportBusinessActivityDetailEntity> getReportBusinessActivityDetails(Long sceneId, List<String> xpathMd5List, Long reportId) {
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, sceneId);
+        queryWrapper.in(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5List);
+        queryWrapper.eq(null != reportId,ReportBusinessActivityDetailEntity::getReportId, reportId);
+        return detailMapper.selectList(queryWrapper);
+    }
+
+    @Override
     public void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram) {
         LambdaUpdateWrapper<ReportBusinessActivityDetailEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
         updateWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5);
         updateWrapper.set(ReportBusinessActivityDetailEntity::getReportJson, linkDiagram);
         detailMapper.update(null, updateWrapper);
+    }
+
+    @Override
+    public List<Long> nearlyHourReportIds(int minutes) {
+        LambdaQueryWrapper<ReportEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.select(ReportEntity::getId);
+        //取近一小时的数据
+        Date date = new Date();
+        lambdaQueryWrapper.ge(ReportEntity::getEndTime, DateUtils.addMinutes(date, minutes * -1));
+        lambdaQueryWrapper.eq(ReportEntity::getStatus, 2);
+        return reportMapper.selectList(lambdaQueryWrapper).stream().map(ReportEntity::getId).collect(Collectors.toList());
     }
 }

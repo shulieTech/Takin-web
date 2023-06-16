@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
- * @author shiyajian
+ * @author shiyajian1
  * create: 2021-01-11
  */
 @Data

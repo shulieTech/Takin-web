@@ -3,15 +3,7 @@ package io.shulie.takin.web.biz.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -198,13 +190,11 @@ public class LinkTopologyService extends CommonService {
     /**
      * @param startTimeUseInInFluxDB                  拓扑图的 开始时间
      * @param endTimeUseInInFluxDB                    拓扑图的 结束时间
-     * @param allTotalCountStartDateTimeUseInInFluxDB 拓扑图的 线上总调用量指标的 开始时间
      */
     public void fillMetrics(ActivityInfoQueryRequest request,
         ApplicationEntranceTopologyResponse topologyResponse,
         LocalDateTime startTimeUseInInFluxDB,
-        LocalDateTime endTimeUseInInFluxDB,
-        LocalDateTime allTotalCountStartDateTimeUseInInFluxDB) {
+        LocalDateTime endTimeUseInInFluxDB) {
 
         Boolean metricsType = null;
         // 压测流量(true)，业务流量(false)，混合流量(null)
@@ -216,9 +206,6 @@ public class LinkTopologyService extends CommonService {
 
         // startTime
         long startMilliUseInInFluxDB = startTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
-        long allTotalCountStartMilliUseInInFluxDB = allTotalCountStartDateTimeUseInInFluxDB.toInstant(
-            ZoneOffset.of("+0")).toEpochMilli();
-
         // endTime
         long endMilliUseInInFluxDB = endTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
 
@@ -235,9 +222,13 @@ public class LinkTopologyService extends CommonService {
         List<AbstractTopologyNodeResponse> allNodes = topologyResponse.getNodes();
 
         // 找到 root 节点
-        final AbstractTopologyNodeResponse rootNode = allNodes.stream()
-            .filter(AbstractTopologyNodeResponse::getRoot)
-            .findFirst().get();
+        final AbstractTopologyNodeResponse rootNode = allNodes.stream().filter(AbstractTopologyNodeResponse::getRoot)
+                .findFirst()
+                .orElse(null);
+
+        if (Objects.isNull(rootNode)) {
+            return;
+        }
 
         // 仅在 临时业务活动时，圈定一个入口范围
         String response1 = "";
@@ -453,37 +444,49 @@ public class LinkTopologyService extends CommonService {
         node.setServiceAllSuccessRate(appProviderContainer.getServiceAllSuccessRate());
         node.setServiceAllTotalTps(appProviderContainer.getServiceAllTotalTps());
         node.setServiceRt(appProviderContainer.getServiceRt());
+        node.setServiceMaxRt(appProviderContainer.getServiceAllMaxRt());
+        node.setServiceMinRt(appProviderContainer.getServiceAllMinRt());
     }
 
     private AppProvider avgComputer(AppProvider appProviderContainer, List<AppProvider> appProviderList) {
         appProviderList.stream()
-            // 如果服务打开，则更新值
-            .filter(a -> {
-                if (a.getSwitchState() == null) { return true; } else { return a.getSwitchState(); }
-            })
-            .forEach(appProvider -> {
-                appProviderContainer.setServiceAllTotalCount(
-                    bigDecimalAdd(appProviderContainer.getServiceAllTotalCount(), appProvider.getServiceAllTotalCount())
-                );
-                appProviderContainer.setAllSuccessCount(
-                    bigDecimalAdd(appProviderContainer.getAllSuccessCount(), appProvider.getAllSuccessCount())
-                );
-                appProviderContainer.setServiceAllTotalTps(
-                    bigDecimalAdd(appProviderContainer.getServiceAllTotalTps(), appProvider.getServiceAllTotalTps())
-                );
-                appProviderContainer.setAllTotalRt(
-                    bigDecimalAdd(appProviderContainer.getAllTotalRt(), appProvider.getAllTotalRt())
-                );
-                appProviderContainer.setServiceAllMaxRt(
-                    Math.max(appProviderContainer.getServiceAllMaxRt(), appProvider.getServiceAllMaxRt())
-                );
-            });
+                // 如果服务打开，则更新值
+                .filter(a -> {
+                    if (a.getSwitchState() == null) {
+                        return true;
+                    } else {
+                        return a.getSwitchState();
+                    }
+                })
+                .forEach(appProvider -> {
+                    appProviderContainer.setServiceAllTotalCount(
+                            bigDecimalAdd(Optional.ofNullable(appProviderContainer.getServiceAllTotalCount()).orElse(0.0), Optional.ofNullable(appProvider.getServiceAllTotalCount()).orElse(0.0))
+                    );
+                    appProviderContainer.setAllSuccessCount(
+                            bigDecimalAdd(Optional.ofNullable(appProviderContainer.getAllSuccessCount()).orElse(0.0), Optional.ofNullable(appProvider.getAllSuccessCount()).orElse(0.0))
+                    );
+                    appProviderContainer.setServiceAllTotalTps(
+                            bigDecimalAdd(Optional.ofNullable(appProviderContainer.getServiceAllTotalTps()).orElse(0.0), Optional.ofNullable(appProvider.getServiceAllTotalTps()).orElse(0.0))
+                    );
+                    appProviderContainer.setAllTotalRt(
+                            bigDecimalAdd(Optional.ofNullable(appProviderContainer.getAllTotalRt()).orElse(0.0), Optional.ofNullable(appProvider.getAllTotalRt()).orElse(0.0))
+                    );
+                    appProviderContainer.setServiceAllMaxRt(
+                            Math.max(Optional.ofNullable(appProviderContainer.getServiceAllMaxRt()).orElse(0.0), Optional.ofNullable(appProvider.getServiceAllMaxRt()).orElse(0.0)));
+                    if(appProvider.getServiceAllMinRt() == null || appProvider.getServiceAllMinRt() < 0.000001d) {
+                        appProviderContainer.setServiceAllMinRt(0.000001d);
+                    } else {
+                        appProviderContainer.setServiceAllMinRt(
+                                Math.min(appProviderContainer.getServiceAllMinRt(), appProvider.getServiceAllMinRt())
+                        );
+                    }
+                });
 
         appProviderContainer.setServiceAllSuccessRate(
-            bigDecimalDivide(appProviderContainer.getAllSuccessCount(), appProviderContainer.getServiceAllTotalCount())
+                bigDecimalDivide(appProviderContainer.getAllSuccessCount(), appProviderContainer.getServiceAllTotalCount())
         );
         appProviderContainer.setServiceRt(
-            bigDecimalDivide(appProviderContainer.getAllTotalRt(), appProviderContainer.getServiceAllTotalCount())
+                bigDecimalDivide(appProviderContainer.getAllTotalRt(), appProviderContainer.getServiceAllTotalCount())
         );
 
         return appProviderContainer;
@@ -594,7 +597,8 @@ public class LinkTopologyService extends CommonService {
             appProviderFromDb.setAllSuccessRateBottleneckType(rateBottleneckType);
             appProviderFromDb.setAllTotalRtBottleneckType(rateBottleneckType);
             appProviderFromDb.setAllSqlTotalRtBottleneckType(rateBottleneckType);
-
+            appProviderFromDb.setServiceAllMinRt(appProvider.getServiceAllMinRt());
+            appProviderFromDb.setServiceAllMaxRt(appProvider.getServiceAllMaxRt());
             appProvider.getContainRealAppProvider().add(appProviderFromDb);
         }
     }
@@ -663,6 +667,8 @@ public class LinkTopologyService extends CommonService {
         Integer allMaxRt = (Integer)jsonObject.get("allMaxRt");
         traceMetricsResult.setAllMaxRt(allMaxRt.doubleValue());
 
+        BigDecimal allMinRt = jsonObject.getBigDecimal("allMinRt");
+        traceMetricsResult.setAllMinRt(allMinRt.doubleValue());
         traceMetricsResultList.add(traceMetricsResult);
     }
 
@@ -739,6 +745,7 @@ public class LinkTopologyService extends CommonService {
         appProvider.setAllTotalRt(appProviderContainer.getAllTotalRt());
         appProvider.setServiceAvgRt(appProviderContainer.getServiceRt());
         appProvider.setServiceAllMaxRt(appProviderContainer.getServiceAllMaxRt());
+        appProvider.setServiceAllMinRt(appProviderContainer.getServiceAllMinRt());
         // 4) 前端显示 RT
         appProvider.setServiceRt(appProvider.getServiceAvgRt());
     }
@@ -924,6 +931,7 @@ public class LinkTopologyService extends CommonService {
         appProvider.setServiceAvgRt(INIT); // 平均Rt
         appProvider.setAllTotalRt(INIT); // 总调用Rt
         appProvider.setServiceAllMaxRt(INIT); // maxRt
+        appProvider.setServiceAllMinRt(INIT);
 
         if (allTotalTpsAndRtCountResults.size() != 0) {
             TraceMetricsResult traceMetricsResult = allTotalTpsAndRtCountResults.get(0);
@@ -955,6 +963,8 @@ public class LinkTopologyService extends CommonService {
             // 最大 Rt    MAX(maxRt)
             double allMaxRt = traceMetricsResult.getAllMaxRt();
             appProvider.setServiceAllMaxRt(allMaxRt);
+
+            appProvider.setServiceAllMinRt(traceMetricsResult.getAllMinRt());
         }
         return appProvider;
     }
@@ -1150,9 +1160,7 @@ public class LinkTopologyService extends CommonService {
                 log.error("查询链路图节点转换异常",e);
             }
             return null;
-        })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     private void setUnknownResponse(TopologyUnknownNodeResponse nodeResponse, LinkNodeDTO node,

@@ -36,6 +36,8 @@ public interface ReportDao {
      */
     ReportResult selectById(Long id);
 
+    List<ReportResult> selectBySceneId(Long sceneId);
+
     /**
      * 获取当前场景最新一条报告
      *
@@ -160,6 +162,8 @@ public interface ReportDao {
      */
     ReportBusinessActivityDetailEntity getReportBusinessActivityDetail(Long sceneId,String xpathMd5,Long reportId);
 
+    List<ReportBusinessActivityDetailEntity> getReportBusinessActivityDetails(Long sceneId, List<String> xpathMd5List, Long reportId);
+
     /**
      * 更新链路拓扑图
      * @param reportId 报告id
@@ -167,4 +171,6 @@ public interface ReportDao {
      * @param linkDiagram 链路拓扑图json数据
      */
     void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram);
+
+    List<Long> nearlyHourReportIds(int minutes);
 }

@@ -872,9 +872,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 return Collections.EMPTY_LIST;
             }
             TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
-            if (reportEntity.getStartTime() != null){
+            if (reportEntity.getStartTime() != null) {
                 traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
-            }else {
+            } else {
                 ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
                 long startTime = io.shulie.takin.web.biz.service.risk.util.DateUtil.parseSecondFormatter(reportDetailDTO.getStartTime()).getTime();
                 traceMetricsRequest.setStartTime(startTime);
@@ -984,7 +984,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> allNodes = new ArrayList<>();
         for (ReportBusinessActivityDetailEntity detail : detailEntityList) {
-            if (Objects.isNull(detail)){
+            if (Objects.isNull(detail)) {
                 continue;
             }
             String reportJson = detail.getReportJson();
@@ -997,7 +997,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 allNodes.addAll(activityResponse.getTopology().getNodes());
             }
         }
-        if (CollectionUtils.isEmpty(allNodes)){
+        if (CollectionUtils.isEmpty(allNodes)) {
             return Collections.EMPTY_LIST;
         }
         allNodes = allNodes.stream().distinct().collect(Collectors.toList());
@@ -1056,31 +1056,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             if (reportEntity == null) {
                 return Response.success(Collections.EMPTY_LIST);
             }
-            /**
-             * 获取压测中所有的应用信息
-             */
-            List<String> appNameList = reportDataCache.getApplications(reportId);
-            if (CollectionUtils.isEmpty(appNameList)) {
-                return Response.success(Collections.EMPTY_LIST);
-            }
-            //获取在线应用的agentId --> 目前查询amdb不隔离
-            ApplicationNodeQueryParam param = new ApplicationNodeQueryParam();
-            param.setApplicationNames(appNameList);
-            Map<String, List<ApplicationNodeDTO>> onlineAgentIdsMap = applicationNodeDAO.getOnlineAgentIdsMap(param);
-            if (MapUtils.isEmpty(onlineAgentIdsMap)) {
-                return Response.success(Collections.EMPTY_LIST);
-            }
-            List<MachineDetailDTO> list = new ArrayList<>();
-
-            for (String appName : appNameList) {
-                List<ApplicationNodeDTO> agentInfoList = onlineAgentIdsMap.get(appName);
-                if (CollectionUtils.isEmpty(agentInfoList)) {
-
-                }
-                for (ApplicationNodeDTO info : agentInfoList) {
-                    list.add(getMachineDetailByAgentId(reportId, appName, info.getAgentId()));
-                }
-            }
+            List<MachineDetailDTO> list = getMachineDetailByAgentId(reportId);
             return Response.success(list);
         } catch (Exception e) {
             log.error("getReportAppInstanceTrendMap error", e);
@@ -1088,15 +1064,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return Response.success(Collections.EMPTY_LIST);
     }
 
-    private MachineDetailDTO getMachineDetailByAgentId(Long reportId, String applicationName, String agentId) {
+    private List<MachineDetailDTO> getMachineDetailByAgentId(Long reportId) {
         QueryWrapper<ReportMachineEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("report_id", reportId).eq("application_name", applicationName).eq("agent_id", agentId);
-        ReportMachineEntity reportMachineEntity = reportMachineMapper.selectOne(queryWrapper);
-        if (reportMachineEntity == null) {
-            return new MachineDetailDTO();
+        queryWrapper.eq("report_id", reportId);
+        List<ReportMachineEntity> reportMachineEntitys = reportMachineMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(reportMachineEntitys)) {
+            return Collections.EMPTY_LIST;
         }
-        ReportMachineResult data = BeanUtil.copyProperties(reportMachineEntity, ReportMachineResult.class);
-        return convert2MachineDetailDTO(data);
+        return reportMachineEntitys.stream()
+                .filter(a -> Objects.nonNull(a))
+                .map(machine -> convert2MachineDetailDTO(BeanUtil.copyProperties(machine, ReportMachineResult.class))).collect(Collectors.toList());
     }
 
     /**

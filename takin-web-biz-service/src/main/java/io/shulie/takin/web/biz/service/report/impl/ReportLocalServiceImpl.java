@@ -878,7 +878,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     ReportApplicationSummary reportApplicationSummary = ReportApplicationSummary.genRepportApplicationSummary(a);
                     return ReportApplicationSummary.genReportAppMapOut(reportApplicationSummary);
                 }
-        ).collect(Collectors.toList());
+        ).filter(a -> {
+            if (a.getTps() == null && a.getRt() == null && a.getCount() == null
+                    && a.getXcost() == null && a.getSuccessRate() == null && a.getConcurrent() == null && a.getXtime() == null) {
+                return false;
+            }
+            return true;
+        }).collect(Collectors.toList());
 
         //如果查询mysql没有拿到数据，那就去ck查一下然后存到mysql
         List<String> appNames = reportDataCache.getApplications(reportId);

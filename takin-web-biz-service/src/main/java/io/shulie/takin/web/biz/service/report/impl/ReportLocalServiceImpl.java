@@ -32,9 +32,12 @@ import com.pamirs.takin.entity.domain.vo.TopologyNode;
 import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
 import io.shulie.surge.data.deploy.pradar.parser.utils.Md5Utils;
 import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
+import io.shulie.takin.adapter.api.model.request.report.ReportMessageCodeReq;
+import io.shulie.takin.adapter.api.model.request.report.ReportMessageDetailReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.biz.utils.ReportLtDetailOutputUtils;
 import io.shulie.takin.cloud.common.pojo.Pair;
 import io.shulie.takin.cloud.common.utils.TestTimeUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportBusinessActivityDetailDao;
@@ -66,10 +69,7 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopo
 import io.shulie.takin.web.biz.pojo.response.report.ReportApplicationSummary;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.LinkTopologyService;
-import io.shulie.takin.web.biz.service.report.ReportLocalService;
-import io.shulie.takin.web.biz.service.report.ReportMessageService;
-import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
-import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.biz.service.report.*;
 import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
@@ -178,14 +178,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     private ReportDataCache reportDataCache;
 
     @Autowired
-    private ApplicationNodeDAO applicationNodeDAO;
-
-    @Autowired
-    private LinkTopologyService linkTopologyService;
+    private ReportTaskService reportTaskService;
 
     private static final String reportCompareData = "report:vlt:compareData:%s:%s";
 
-    private static final String reportMessageData = "report:vlt:messageData:%s:%s";
+    private static final String reportMessageCodeData = "report:vlt:messageCodeData:%s:%s";
+
+    private static final String reportMessageDetailData = "report:vlt:messageDetailData:%s:%s:%s";
 
     @Override
     public ReportCountDTO getReportCount(Long reportId) {
@@ -359,10 +358,43 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         List<BusinessActivitySummaryBean> activitySummaryBeanList = reportDetailOutput.getBusinessActivity().stream().filter(data -> data.getBusinessActivityId() != null && data.getBusinessActivityId() > 0L).collect(Collectors.toList());
         List<Long> reportIds = Collections.singletonList(reportId);
+        //缓存报告比对数据
         for (BusinessActivitySummaryBean activitySummaryBean : activitySummaryBeanList) {
-            Long activityId = activitySummaryBean.getBusinessActivityId();
-            ReportCompareOutput compareOutput = getReportCompare(reportIds, activityId);
-            redisClientUtil.setString(String.format(reportCompareData, reportId, activityId), JSON.toJSONString(compareOutput));
+            try {
+                Long activityId = activitySummaryBean.getBusinessActivityId();
+                ReportCompareOutput compareOutput = getReportCompare(reportIds, activityId);
+                redisClientUtil.setString(String.format(reportCompareData, reportId, activityId), JSON.toJSONString(compareOutput));
+            } catch (Exception e) {
+                log.error("缓存报告比对数据异常...", e);
+            }
+        }
+        //缓存明细数据
+        ReportLtDetailOutput detailOutput = ReportLtDetailOutputUtils.convertToLt(reportDetailOutput);
+        for(BusinessActivityReportOutput activityOutput : detailOutput.getBusinessActivities()) {
+            if(StringUtils.isBlank(activityOutput.getServiceName())) {
+                continue;
+            }
+            try {
+                ReportMessageCodeReq codeReq = new ReportMessageCodeReq();
+                codeReq.setStartTime(detailOutput.getStartTime());
+                codeReq.setEndTime(detailOutput.getEndTime());
+                codeReq.setJobId(detailOutput.getJobId());
+                codeReq.setServiceName(activityOutput.getServiceName());
+                List<ReportMessageStatusCodeDTO> codeList = reportMessageService.getStatusCodeList(codeReq);
+                redisClientUtil.setString(String.format(reportMessageCodeData, detailOutput.getJobId(), activityOutput.getServiceName()), JSON.toJSONString(codeList));
+                for (ReportMessageStatusCodeDTO codeDTO : codeList) {
+                    ReportMessageDetailReq detailReq = new ReportMessageDetailReq();
+                    detailReq.setStartTime(codeReq.getStartTime());
+                    detailReq.setEndTime(codeReq.getEndTime());
+                    detailReq.setJobId(codeReq.getJobId());
+                    detailReq.setServiceName(codeReq.getServiceName());
+                    detailReq.setStatusCode(codeDTO.getStatusCode());
+                    ReportMessageDetailDTO detailDTO = reportMessageService.getOneTraceDetail(detailReq);
+                    redisClientUtil.setString(String.format(reportMessageDetailData, detailOutput.getJobId(), activityOutput.getServiceName(), codeDTO.getStatusCode()), JSON.toJSONString(detailDTO));
+                }
+            } catch (Exception e) {
+                log.error("缓存压测明细数据异常...", e);
+            }
         }
     }
 
@@ -846,7 +878,23 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     ReportApplicationSummary reportApplicationSummary = ReportApplicationSummary.genRepportApplicationSummary(a);
                     return ReportApplicationSummary.genReportAppMapOut(reportApplicationSummary);
                 }
-        ).collect(Collectors.toList());
+        ).filter(a -> {
+            if (a.getTps() == null && a.getRt() == null && a.getCount() == null
+                    && a.getXcost() == null && a.getSuccessRate() == null && a.getConcurrent() == null && a.getXtime() == null) {
+                return false;
+            }
+            return true;
+        }).collect(Collectors.toList());
+
+        //如果查询mysql没有拿到数据，那就去ck查一下然后存到mysql
+        List<String> appNames = reportDataCache.getApplications(reportId);
+        if (CollectionUtils.isNotEmpty(appNames) && list.size() < appNames.size()) {
+            reportTaskService.insertReportApplicationSummaryEntity(reportId);
+            List<ReportAppMapOut> tmpList = getReportAppTrendMapToReportApplication(reportId);
+            if (CollectionUtils.isNotEmpty(tmpList)) {
+                list = tmpList;
+            }
+        }
         return Response.success(list);
     }
 
@@ -872,9 +920,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 return Collections.EMPTY_LIST;
             }
             TraceMetricsRequest traceMetricsRequest = new TraceMetricsRequest();
-            if (reportEntity.getStartTime() != null){
+            if (reportEntity.getStartTime() != null) {
                 traceMetricsRequest.setStartTime(reportEntity.getStartTime().getTime());
-            }else {
+            } else {
                 ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
                 long startTime = io.shulie.takin.web.biz.service.risk.util.DateUtil.parseSecondFormatter(reportDetailDTO.getStartTime()).getTime();
                 traceMetricsRequest.setStartTime(startTime);
@@ -984,7 +1032,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> allNodes = new ArrayList<>();
         for (ReportBusinessActivityDetailEntity detail : detailEntityList) {
-            if (Objects.isNull(detail)){
+            if (Objects.isNull(detail)) {
                 continue;
             }
             String reportJson = detail.getReportJson();
@@ -997,7 +1045,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 allNodes.addAll(activityResponse.getTopology().getNodes());
             }
         }
-        if (CollectionUtils.isEmpty(allNodes)){
+        if (CollectionUtils.isEmpty(allNodes)) {
             return Collections.EMPTY_LIST;
         }
         allNodes = allNodes.stream().distinct().collect(Collectors.toList());
@@ -1056,31 +1104,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             if (reportEntity == null) {
                 return Response.success(Collections.EMPTY_LIST);
             }
-            /**
-             * 获取压测中所有的应用信息
-             */
-            List<String> appNameList = reportDataCache.getApplications(reportId);
-            if (CollectionUtils.isEmpty(appNameList)) {
-                return Response.success(Collections.EMPTY_LIST);
-            }
-            //获取在线应用的agentId --> 目前查询amdb不隔离
-            ApplicationNodeQueryParam param = new ApplicationNodeQueryParam();
-            param.setApplicationNames(appNameList);
-            Map<String, List<ApplicationNodeDTO>> onlineAgentIdsMap = applicationNodeDAO.getOnlineAgentIdsMap(param);
-            if (MapUtils.isEmpty(onlineAgentIdsMap)) {
-                return Response.success(Collections.EMPTY_LIST);
-            }
-            List<MachineDetailDTO> list = new ArrayList<>();
-
-            for (String appName : appNameList) {
-                List<ApplicationNodeDTO> agentInfoList = onlineAgentIdsMap.get(appName);
-                if (CollectionUtils.isEmpty(agentInfoList)) {
-
-                }
-                for (ApplicationNodeDTO info : agentInfoList) {
-                    list.add(getMachineDetailByAgentId(reportId, appName, info.getAgentId()));
-                }
-            }
+            List<MachineDetailDTO> list = getMachineDetailByAgentId(reportId);
             return Response.success(list);
         } catch (Exception e) {
             log.error("getReportAppInstanceTrendMap error", e);
@@ -1088,15 +1112,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return Response.success(Collections.EMPTY_LIST);
     }
 
-    private MachineDetailDTO getMachineDetailByAgentId(Long reportId, String applicationName, String agentId) {
+    private List<MachineDetailDTO> getMachineDetailByAgentId(Long reportId) {
         QueryWrapper<ReportMachineEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("report_id", reportId).eq("application_name", applicationName).eq("agent_id", agentId);
-        ReportMachineEntity reportMachineEntity = reportMachineMapper.selectOne(queryWrapper);
-        if (reportMachineEntity == null) {
-            return new MachineDetailDTO();
+        queryWrapper.eq("report_id", reportId);
+        List<ReportMachineEntity> reportMachineEntitys = reportMachineMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(reportMachineEntitys)) {
+            return Collections.EMPTY_LIST;
         }
-        ReportMachineResult data = BeanUtil.copyProperties(reportMachineEntity, ReportMachineResult.class);
-        return convert2MachineDetailDTO(data);
+        return reportMachineEntitys.stream()
+                .filter(a -> Objects.nonNull(a))
+                .map(machine -> convert2MachineDetailDTO(BeanUtil.copyProperties(machine, ReportMachineResult.class))).collect(Collectors.toList());
     }
 
     /**

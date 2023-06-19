@@ -28,4 +28,6 @@ public interface ReportTaskService {
 
     void calcMachineDate(Long reportId);
 
+    void insertReportApplicationSummaryEntity(Long reportId);
+
 }

@@ -66,10 +66,7 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopo
 import io.shulie.takin.web.biz.pojo.response.report.ReportApplicationSummary;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.LinkTopologyService;
-import io.shulie.takin.web.biz.service.report.ReportLocalService;
-import io.shulie.takin.web.biz.service.report.ReportMessageService;
-import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
-import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.biz.service.report.*;
 import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
@@ -178,10 +175,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     private ReportDataCache reportDataCache;
 
     @Autowired
-    private ApplicationNodeDAO applicationNodeDAO;
-
-    @Autowired
-    private LinkTopologyService linkTopologyService;
+    private ReportTaskService reportTaskService;
 
     private static final String reportCompareData = "report:vlt:compareData:%s:%s";
 
@@ -847,6 +841,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     return ReportApplicationSummary.genReportAppMapOut(reportApplicationSummary);
                 }
         ).collect(Collectors.toList());
+
+        //如果查询mysql没有拿到数据，那就去ck查一下然后存到mysql
+        List<String> appNames = reportDataCache.getApplications(reportId);
+        if (CollectionUtils.isNotEmpty(appNames) && list.size() < appNames.size()) {
+            reportTaskService.insertReportApplicationSummaryEntity(reportId);
+            list = getReportAppTrendMapToReportApplication(reportId);
+        }
         return Response.success(list);
     }
 

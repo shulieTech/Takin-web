@@ -403,7 +403,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         }
     }
 
-    private void insertReportApplicationSummaryEntity(Long reportId) {
+    @Override
+    public void insertReportApplicationSummaryEntity(Long reportId) {
 
         LambdaQueryWrapper<ReportApplicationSummaryEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ReportApplicationSummaryEntity::getReportId, reportId);

@@ -890,7 +890,10 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         List<String> appNames = reportDataCache.getApplications(reportId);
         if (CollectionUtils.isNotEmpty(appNames) && list.size() < appNames.size()) {
             reportTaskService.insertReportApplicationSummaryEntity(reportId);
-            list = getReportAppTrendMapToReportApplication(reportId);
+            List<ReportAppMapOut> tmpList = getReportAppTrendMapToReportApplication(reportId);
+            if (CollectionUtils.isNotEmpty(tmpList)) {
+                list = tmpList;
+            }
         }
         return Response.success(list);
     }

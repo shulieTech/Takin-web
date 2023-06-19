@@ -24,6 +24,7 @@ import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.ScriptFileRefMapper;
 import io.shulie.takin.web.data.mapper.mysql.ScriptManageDeployMapper;
 import io.shulie.takin.web.data.mapper.mysql.ScriptManageMapper;
+import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptExecuteResultEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptManageEntity;
@@ -356,14 +357,15 @@ public class ScriptManageDAOImpl
      * @return
      */
     @Override
-    public int allocationUser(Long scriptId, Long userId) {
+    public int allocationUser(Long scriptId, Long userId,Long deptId) {
         ScriptManageDeployEntity deployEntity = scriptManageDeployMapper.selectById(scriptId);
         if (null == deployEntity) {
             return 0;
         }
         scriptId = deployEntity.getScriptId();
         LambdaUpdateWrapper<ScriptManageEntity> wrapper = new LambdaUpdateWrapper();
-        wrapper.set(ScriptManageEntity::getUserId, userId)
+        wrapper.set(userId != null,ScriptManageEntity::getUserId, userId)
+            .set(deptId != null, ScriptManageEntity::getDeptId, deptId)
             .eq(ScriptManageEntity::getId, scriptId);
         return scriptManageMapper.update(null, wrapper);
     }

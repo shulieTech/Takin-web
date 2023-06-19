@@ -116,7 +116,7 @@ public interface ScriptManageDAO extends IService<ScriptManageEntity> {
      * @param userId   负责人id
      * @return
      */
-    int allocationUser(Long scriptId, Long userId);
+    int allocationUser(Long scriptId, Long userId,Long deptId);
 
     /**
      * 通过脚本发布id, 获得脚本实例

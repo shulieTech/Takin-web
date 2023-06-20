@@ -118,7 +118,7 @@ public class CloudReportApiImpl implements CloudReportApi {
     @Override
     public ReportTrendResp trend(ReportTrendQueryReq req) {
         try {
-            String key = "report_trend:" + req.getReportId() + ":" + req.getXpathMd5();
+            String key = JSON.toJSONString(req);
             ReportTrendResp data;
             if (redisClientUtil.hasKey(key)) {
                 data = JSON.parseObject(redisClientUtil.getString(key), ReportTrendResp.class);

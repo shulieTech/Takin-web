@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -117,7 +118,7 @@ public class CloudReportApiImpl implements CloudReportApi {
     @Override
     public ReportTrendResp trend(ReportTrendQueryReq req) {
         try {
-            String key = JSON.toJSONString(req);
+            String key = "report_trend:" + req.getReportId() + ":" + req.getXpathMd5();
             ReportTrendResp data;
             if (redisClientUtil.hasKey(key)) {
                 data = JSON.parseObject(redisClientUtil.getString(key), ReportTrendResp.class);
@@ -129,10 +130,12 @@ public class CloudReportApiImpl implements CloudReportApi {
                     || CollectionUtils.isEmpty(data.getSuccessRate())) {
                     data = cloudReportService.queryReportTrend(req);
                     redisClientUtil.setString(key, JSON.toJSONString(data));
+                    redisClientUtil.expire(key, 1, TimeUnit.MINUTES);
                 }
             } else {
                 data = cloudReportService.queryReportTrend(req);
                 redisClientUtil.setString(key, JSON.toJSONString(data));
+                redisClientUtil.expire(key, 1, TimeUnit.MINUTES);
             }
             return data;
         } catch (Exception e) {

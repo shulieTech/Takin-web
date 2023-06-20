@@ -3,6 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.pts;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
 import io.shulie.takin.cloud.common.enums.pts.PtsThreadGroupTypeEnum;
+import io.shulie.takin.cloud.common.utils.PtsXmlContentUtils;
 import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
@@ -228,7 +229,13 @@ public class PtsProcessController {
                            apiRequest.getBase().setRequestUrl(requestUrl.toString());
                        }
                     }
-
+                    PtsApiBodyRequest bodyRequest = apiRequest.getBody();
+                    bodyRequest.setRawData(PtsXmlContentUtils.replace2Jmx(bodyRequest.getRawData()));
+                } else {
+                    List<JavaParamRequest> paramRequestList = apiRequest.getParam().getParams();
+                    for(JavaParamRequest paramRequest : paramRequestList) {
+                        paramRequest.setParamValue(PtsXmlContentUtils.replace2Jmx(paramRequest.getParamValue()));
+                    }
                 }
             }
 
@@ -252,7 +259,7 @@ public class PtsProcessController {
     public ResponseResult detailActivity(@RequestParam(name = "id") Long id) {
         String key = String.format(PTS_SAVE_KEY, id);
         if(redisTemplate.hasKey(key)) {
-            return ResponseResult.fail("业务流程保存中...，请稍后再试", "");
+            return ResponseResult.fail("业务流程保存中...，请先返回列表页，稍后再试", "");
         }
         JmeterJavaRequestResponse javaConfig = getJavaRequestConfig("IB2");
         PtsSceneResponse sceneResponse = ptsProcessService.detailProcess(id);
@@ -278,6 +285,15 @@ public class PtsProcessController {
     @ApiOperation("发起调试")
     @PostMapping("/process/debug")
     public ResponseResult debugScene(@Valid @RequestBody IdRequest request) {
+        String key = String.format(PTS_SAVE_KEY, request.getId());
+        Long startTime = System.currentTimeMillis();
+        while(redisTemplate.hasKey(key) && (System.currentTimeMillis() - startTime) < 5 * 1000) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
         return ptsProcessService.debugProcess(request.getId());
     }
 
@@ -368,6 +384,10 @@ public class PtsProcessController {
                     sb.deleteCharAt(sb.length() - 1);
                     apiRequest.getBase().setRequestUrl(appendUrlAndParams(url, sb.toString()));
                 }
+                PtsApiBodyRequest bodyRequest = apiRequest.getBody();
+                if(bodyRequest != null) {
+                    bodyRequest.setRawData(PtsXmlContentUtils.parseFromJmx(bodyRequest.getRawData()));
+                }
             } else if (apiRequest.getApiType().equals(SamplerTypeEnum.JAVA.getType())) {
                 Map<String, JmeterJavaRequestParamsResponse> paramMap = new HashMap<>();
                 javaConfig.getParams().stream().forEach(data -> {
@@ -375,6 +395,7 @@ public class PtsProcessController {
                 });
                 if(CollectionUtils.isNotEmpty(apiRequest.getParam().getParams())) {
                     apiRequest.getParam().getParams().stream().forEach(param -> {
+                        param.setParamValue(PtsXmlContentUtils.parseFromJmx(param.getParamValue()));
                         if (paramMap.containsKey(param.getParamName())) {
                             param.setAllowEdit(false);
                             param.setParamCNDesc(paramMap.get(param.getParamName()).getParamCNDesc());

@@ -44,7 +44,9 @@ public class PtsBuildJsonToJmxTextTools {
         PtsJmxBuildUtil.buildHttpHeader(testPlan, convertHeader(globalHeader.getHeaders()));
         //全局HTTP请求
         PtsGlobalHttpRequest globalHttp = sceneRequest.getGlobalHttp();
-        if(StringUtils.isNotBlank(globalHttp.getDomain())) {
+        if(StringUtils.isNotBlank(globalHttp.getProtocol()) || StringUtils.isNotBlank(globalHttp.getDomain())
+                || StringUtils.isNotBlank(globalHttp.getPort()) || StringUtils.isNotBlank(globalHttp.getPath())
+                || StringUtils.isNotBlank(globalHttp.getContentEncoding())) {
             PtsJmxBuildUtil.buildHttpDefault(testPlan, JSONObject.parseObject(JSON.toJSONString(globalHttp)));
         }
         //计数器

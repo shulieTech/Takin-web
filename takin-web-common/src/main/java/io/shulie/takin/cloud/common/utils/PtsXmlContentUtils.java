@@ -10,7 +10,6 @@ public class PtsXmlContentUtils {
         }
         String jmxContent = content.replace("<", "&lt;");
         jmxContent = jmxContent.replace( ">", "&gt;");
-        jmxContent = jmxContent.replace( "\"", "&quot;");
         return jmxContent;
     }
 
@@ -20,7 +19,6 @@ public class PtsXmlContentUtils {
         }
         String jmxContent = content.replace("&lt;", "<");
         jmxContent = jmxContent.replace( "&gt;", ">");
-        jmxContent = jmxContent.replace( "&quot;", "\"");
         return jmxContent;
     }
 

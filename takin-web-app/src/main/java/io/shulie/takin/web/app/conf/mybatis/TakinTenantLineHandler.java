@@ -18,6 +18,7 @@ public interface TakinTenantLineHandler extends TenantLineHandler {
      */
     Expression getEnvCode();
 
+
     /**
      * 默认 字段名
      *
@@ -26,6 +27,27 @@ public interface TakinTenantLineHandler extends TenantLineHandler {
     default String getEnvCodeColumn() {
         return TenantField.FIELD_ENV_CODE.getColumnName();
     }
+
+
+    /**
+     * 部门
+     *
+     * @return
+     */
+    Expression getDeptId();
+
+    /**
+     * 默认 字段名
+     *
+     * @return 默认部门
+     */
+    default String getDeptIdColumn() {
+        return TenantField.FIELD_DEPT_ID.getColumnName();
+    }
+
+
+
+
 
     ///**
     // * 用户id

@@ -113,6 +113,7 @@ public class LinkManageDAOImpl implements LinkManageDAO, MPUtil<LinkManageTableE
     public int allocationUser(LinkManageUpdateParam param) {
         LambdaUpdateWrapper<LinkManageTableEntity> wrapper = new LambdaUpdateWrapper();
         wrapper.set(LinkManageTableEntity::getUserId, param.getUserId())
+            .set(param.getDeptId() != null,LinkManageTableEntity::getDeptId, param.getDeptId())
             .eq(LinkManageTableEntity::getLinkId, param.getLinkId());
         return linkManageTableMapper.update(null, wrapper);
     }

@@ -99,17 +99,23 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
      * 分配用户
      */
     @Override
-    public void allocationUser(Long dataId, Long userId) {
+    public void allocationUser(Long dataId, Long userId,Long deptId) {
         if (dataId == null) {
             throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "参数未设置");
         }
-        if (userId == null) {
-            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "参数未设置");
-        }
+        // if (userId == null) {
+        //     throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "参数未设置");
+        // }
         InterfacePerformanceConfigEntity updateEntity = new InterfacePerformanceConfigEntity();
         updateEntity.setGmtModified(new Date());
-        updateEntity.setUserId(userId);
+        if(userId != null) {
+            updateEntity.setUserId(userId);
+        }
+        if(deptId != null) {
+            updateEntity.setDeptId(deptId);
+        }
         updateEntity.setId(dataId);
+
         interfacePerformanceConfigMapper.updateById(updateEntity);
 
         // 同步更改流程和场景的归属人

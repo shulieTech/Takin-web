@@ -397,6 +397,9 @@
         <if test="param.updateEndTime != null">
             and a.UPDATE_TIME  <![CDATA[ <= ]]> #{param.updateEndTime}
         </if>
+        <if test="param.deptId != null">
+            and (a.dept_id = #{param.deptId} or a.dept_id is null)
+        </if>
 
         ORDER BY a.id DESC
     </select>

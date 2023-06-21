@@ -32,4 +32,6 @@ public class QueryApplicationParam extends PageBaseDTO {
     private String updateStartTime;
     private String updateEndTime;
 
+    private Long deptId;
+
 }

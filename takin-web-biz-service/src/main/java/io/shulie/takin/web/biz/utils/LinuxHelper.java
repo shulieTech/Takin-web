@@ -101,7 +101,6 @@ public class LinuxHelper {
             String lineTxt;
             while ((lineTxt = in.readLine()) != null) {
                 comm.onLine(lineTxt + "\n");
-                System.out.println(3);
             }
             if (timeout == null || timeout <= 0) {
                 status = process.waitFor();

@@ -129,7 +129,7 @@ public class PtsProcessServiceImpl implements PtsProcessService{
     public ResponseResult debugProcess(Long id) {
         //调试中，
         String key = String.format(PTS_DEBUG_KEY, id);
-        if(!redisTemplate.opsForValue().setIfAbsent(key, "1", 3, TimeUnit.MINUTES)) {
+        if(!redisTemplate.opsForValue().setIfAbsent(key, "1", 65, TimeUnit.SECONDS)) {
             return ResponseResult.fail("发起调试失败：业务活动已在调试中", "");
         }
         //调用jmeter命令，运行jmx脚本；
@@ -150,6 +150,8 @@ public class PtsProcessServiceImpl implements PtsProcessService{
             command.append(" && \\cp *.jar " + apacheJmeterPath +"/lib/ext/");
         }
         command.append(" && jmeter -n -t " + fileName);
+        File file = new File(cmdDir + "/" + fileName);
+        log.info("Check File Exist={}",  file.exists());
         ptsDebugAsync.runJmeterCommand(command.toString());
         log.info("PTS调试，执行启动jmeter命令={}", command);
         return ResponseResult.success(command.toString());
@@ -157,53 +159,58 @@ public class PtsProcessServiceImpl implements PtsProcessService{
 
     @Override
     public PtsDebugResponse getDebugRecord(Long id) {
-        BusinessFlowDetailResponse businessFlowDetail = getJmxPathById(id);
-        String uploadPath = businessFlowDetail.getScriptFile().getUploadPath();
         PtsDebugResponse response = new PtsDebugResponse();
-        //判断文件是否已存在
-        String cmdDir = uploadPath.substring(0, uploadPath.lastIndexOf("/"));
-        File resultFile = new File(cmdDir + "/result.xml");
-        boolean hasResult = false;
-        long startTime = System.currentTimeMillis();
-        //最多查询3min
-        while(!hasResult && (System.currentTimeMillis() - startTime) < 3 * 60 * 1000) {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
+        try {
+            BusinessFlowDetailResponse businessFlowDetail = getJmxPathById(id);
+            String uploadPath = businessFlowDetail.getScriptFile().getUploadPath();
+            //判断文件是否已存在
+            String cmdDir = uploadPath.substring(0, uploadPath.lastIndexOf("/"));
+            File resultFile = new File(cmdDir + "/result.xml");
+            boolean hasResult = false;
+            long startTime = System.currentTimeMillis();
+            //最多查询2min
+            while (!hasResult && (System.currentTimeMillis() - startTime) < 2 * 60 * 1000) {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
 
-            }
-            File logFile = new File(cmdDir + "/jmeter.log");
-            if (logFile.exists()) {
-                //读取日志文件，如果出现结尾关键字 "Summariser: summary =]"  标识已结束
-                Map<String, String> readMap = FileUtils.readTextFileContentAndException(logFile);
-                String exception = readMap.get("exception");
-                if (StringUtils.isNotBlank(exception)) {
-                    response.setHasException(true);
-                    response.setExceptionMessage("调试存在异常：" + exception + "，点击【查看日志】看详情");
                 }
-                hasResult = Boolean.parseBoolean(readMap.get("hasSummary"));
+                File logFile = new File(cmdDir + "/jmeter.log");
+                if (logFile.exists()) {
+                    //读取日志文件，如果出现结尾关键字 "Summariser: summary =]"  标识已结束
+                    Map<String, String> readMap = FileUtils.readTextFileContentAndException(logFile);
+                    String exception = readMap.get("exception");
+                    if (StringUtils.isNotBlank(exception)) {
+                        response.setHasException(true);
+                        response.setExceptionMessage("调试存在异常：" + exception + "，点击【查看日志】看详情");
+                    }
+                    hasResult = Boolean.parseBoolean(readMap.get("hasSummary"));
+                }
             }
+            response.setHasResult(true);
+            List<PtsDebugRecordResponse> recordList = new ArrayList<>();
+            List<PtsDebugRecordDetailResponse> detailList = PtsParseResultToObjectTools.parseResultFile(resultFile, 0);
+            for (PtsDebugRecordDetailResponse detail : detailList) {
+                PtsDebugRecordResponse record = new PtsDebugRecordResponse();
+                record.setApiName(StringUtils.isNotBlank(detail.getGeneral().getRequestUrl()) ? detail.getGeneral().getRequestUrl() : detail.getApiName());
+                record.setRequestTime(detail.getRequestTime());
+                record.setRequestCost(detail.getRequestCost() != null ? detail.getRequestCost() + "ms" : "-");
+                record.setResponseStatus(detail.getResponseStatus());
+                record.setResponseCode(detail.getGeneral().getResponseCode());
+                record.setDetail(detail);
+                recordList.add(record);
+            }
+            //如果解析result.xml有数据，标识无异常
+            if (CollectionUtils.isNotEmpty(detailList)) {
+                response.setHasException(false);
+            }
+            response.setRecords(recordList);
+        } catch (Exception e) {
+            log.error("getDebugRecord Error={}", e.getMessage());
+        } finally {
+            String key = String.format(PTS_DEBUG_KEY, id);
+            redisTemplate.opsForValue().set(key, "1", 1, TimeUnit.SECONDS);
         }
-        response.setHasResult(true);
-        List<PtsDebugRecordResponse> recordList = new ArrayList<>();
-        List<PtsDebugRecordDetailResponse> detailList = PtsParseResultToObjectTools.parseResultFile(resultFile, 0);
-        for (PtsDebugRecordDetailResponse detail : detailList) {
-            PtsDebugRecordResponse record = new PtsDebugRecordResponse();
-            record.setApiName(StringUtils.isNotBlank(detail.getGeneral().getRequestUrl()) ? detail.getGeneral().getRequestUrl() : detail.getApiName());
-            record.setRequestTime(detail.getRequestTime());
-            record.setRequestCost(detail.getRequestCost() != null ? detail.getRequestCost() + "ms" : "-");
-            record.setResponseStatus(detail.getResponseStatus());
-            record.setResponseCode(detail.getGeneral().getResponseCode());
-            record.setDetail(detail);
-            recordList.add(record);
-        }
-        //如果解析result.xml有数据，标识无异常
-        if(CollectionUtils.isNotEmpty(detailList)) {
-            response.setHasException(false);
-        }
-        String key = String.format(PTS_DEBUG_KEY, id);
-        redisTemplate.opsForValue().set(key, "1", 3, TimeUnit.SECONDS);
-        response.setRecords(recordList);
         return response;
     }
 

@@ -234,6 +234,11 @@ public class PtsProcessController {
                 } else {
                     List<JavaParamRequest> paramRequestList = apiRequest.getParam().getParams();
                     for(JavaParamRequest paramRequest : paramRequestList) {
+                        //前端可能bug，导致requestUrl传不过来，这里做个兜底
+                        if(StringUtils.isBlank(apiRequest.getBase().getRequestUrl())) {
+                            JmeterJavaRequestResponse requestResponse = getJavaRequestConfig("IB2");
+                            apiRequest.getBase().setRequestUrl(requestResponse.getClassName());
+                        }
                         paramRequest.setParamValue(PtsXmlContentUtils.replace2Jmx(paramRequest.getParamValue()));
                     }
                 }

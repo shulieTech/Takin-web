@@ -9,4 +9,6 @@ public interface ReportApplicationSummaryMapper extends BaseMapper<ReportApplica
     int insertOrUpdate(ReportApplicationSummaryEntity entity);
 
     Map<String, Object> selectCountByReportId(Long reportId);
+
+    int insertOrUpdateTargetTps(ReportApplicationSummaryEntity entity);
 }

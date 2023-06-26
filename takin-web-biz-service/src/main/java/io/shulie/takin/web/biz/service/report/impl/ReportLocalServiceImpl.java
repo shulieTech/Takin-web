@@ -180,11 +180,21 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Autowired
     private ReportTaskService reportTaskService;
 
-    private static final String reportCompareData = "report:vlt:compareData:%s:%s";
+    private static final String reportCompareData = "report:vlt:compareDataV2:%s:%s";
 
     private static final String reportMessageCodeData = "report:vlt:messageCodeData:%s:%s";
 
     private static final String reportMessageDetailData = "report:vlt:messageDetailData:%s:%s:%s";
+
+    private static List<Pair<Integer, Integer>> costList = new ArrayList<>();
+
+    static {
+        costList.add(new Pair<>(0, 200));
+        costList.add(new Pair<>(200, 500));
+        costList.add(new Pair<>(500, 1000));
+        costList.add(new Pair<>(1000, 2000));
+        costList.add(new Pair<>(2000, 9999999));
+    }
 
     @Override
     public ReportCountDTO getReportCount(Long reportId) {
@@ -407,8 +417,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             return output;
         }
         Map<Long, ReportDetailOutput> reportOutputMap = new HashMap<>();
-        Integer minRt = 0;
-        Integer maxRt = 0;
         String bindRef = null;
         for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
@@ -477,19 +485,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 trendOut.setRt(trendResp.getRt());
                 trendOut.setSuccessRate(trendResp.getSuccessRate());
                 trendOut.setSa(trendResp.getSa());
-                Pair<Integer, Integer> pair = getMinMaxRt(trendResp.getRt());
-                if (pair != null) {
-                    if (minRt == 0) {
-                        minRt = pair.getKey();
-                    } else {
-                        minRt = Math.min(minRt, pair.getKey());
-                    }
-                    maxRt = Math.max(maxRt, pair.getValue());
-                }
             }
             output.getTrendData().add(trendOut);
         }
-        List<Pair<Integer, Integer>> costList = calcCostLevelByFive(minRt, maxRt);
         //按耗时取请求量
         for (int i = 0; i < reportIds.size(); i++) {
             Long reportId = reportIds.get(i);
@@ -1428,25 +1426,25 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return pair;
     }
 
-    public List<Pair<Integer, Integer>> calcCostLevelByFive(Integer minRt, Integer maxRt) {
-        log.info("calcCostLevelByFive, minRT={}, maxRt={}", minRt, maxRt);
-        List<Pair<Integer, Integer>> pairList = new ArrayList<>();
-        if (minRt == maxRt) {
-            return pairList;
-        }
-        int step = Math.max(1, ((maxRt - minRt) / 5));
-        for (int i = 0; i < 5; i++) {
-            if (i == 4) {
-                pairList.add(new Pair<>(minRt, maxRt));
-            } else {
-                if (minRt + step >= maxRt) {
-                    pairList.add(new Pair<>(minRt, maxRt));
-                    break;
-                }
-                pairList.add(new Pair<>(minRt, minRt + step));
-                minRt += step;
-            }
-        }
-        return pairList;
-    }
+//    public List<Pair<Integer, Integer>> calcCostLevelByFive(Integer minRt, Integer maxRt) {
+//        log.info("calcCostLevelByFive, minRT={}, maxRt={}", minRt, maxRt);
+//        List<Pair<Integer, Integer>> pairList = new ArrayList<>();
+//        if (minRt == maxRt) {
+//            return pairList;
+//        }
+//        int step = Math.max(1, ((maxRt - minRt) / 5));
+//        for (int i = 0; i < 5; i++) {
+//            if (i == 4) {
+//                pairList.add(new Pair<>(minRt, maxRt));
+//            } else {
+//                if (minRt + step >= maxRt) {
+//                    pairList.add(new Pair<>(minRt, maxRt));
+//                    break;
+//                }
+//                pairList.add(new Pair<>(minRt, minRt + step));
+//                minRt += step;
+//            }
+//        }
+//        return pairList;
+//    }
 }

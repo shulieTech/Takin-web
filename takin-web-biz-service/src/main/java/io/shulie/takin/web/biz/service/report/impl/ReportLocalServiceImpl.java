@@ -472,12 +472,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
             String redisKey = String.format(reportCompareData, reportId, businessActivityId);
             if (redisClientUtil.hasKey(redisKey)) {
-                String redisValue = redisClientUtil.getString(redisKey);
-                ReportCompareOutput tempOutput = JSON.parseObject(redisValue, ReportCompareOutput.class);
-                if (tempOutput != null && CollectionUtils.isNotEmpty(tempOutput.getTrendData())) {
-                    output.getTrendData().get(i).getXCost().addAll(tempOutput.getTrendData().get(0).getXCost());
-                    output.getTrendData().get(i).getCount().addAll(tempOutput.getTrendData().get(0).getCount());
-                }
                 continue;
             }
             ReportDetailOutput reportOutput = reportOutputMap.get(reportId);

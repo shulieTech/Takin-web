@@ -424,7 +424,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         }).collect(Collectors.toList());
 
         for (ReportApplicationSummaryEntity reportApplicationSummary : reportApplicationSummaryEntities) {
-            reportApplicationSummaryMapper.insertOrUpdate(reportApplicationSummary);
+            reportApplicationSummaryMapper.insertOrUpdateTargetTps(reportApplicationSummary);
         }
 
     }

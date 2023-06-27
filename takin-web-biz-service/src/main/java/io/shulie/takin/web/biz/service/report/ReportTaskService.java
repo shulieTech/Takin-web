@@ -26,7 +26,7 @@ public interface ReportTaskService {
 
     List<Long> nearlyHourReportIds(int minutes);
 
-    void calcMachineDate(Long reportId);
+    void calcMachineDate(Long reportId,int endTimeGap);
 
     void insertReportApplicationSummaryEntity(Long reportId);
 

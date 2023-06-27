@@ -24,6 +24,8 @@ public class CalcNearlyHourReportJob extends AbstractSceneTask {
     @Autowired
     private ReportTaskService reportTaskService;
 
+    public final static int END_TIME_GAP = 10;
+
     private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
     private static AtomicInteger EMPTY = new AtomicInteger();
 
@@ -40,7 +42,7 @@ public class CalcNearlyHourReportJob extends AbstractSceneTask {
     //取过去一个小时的report，计算水位数据
     public void execute_ext() {
         long start = System.currentTimeMillis();
-        List<Long> reportIds = reportTaskService.nearlyHourReportIds(20);
+        List<Long> reportIds = reportTaskService.nearlyHourReportIds(END_TIME_GAP);
         if (CollectionUtils.isEmpty(reportIds)) {
             log.warn("calcNearlyHourReportJob current not running pressure task!!!");
             return;
@@ -52,7 +54,7 @@ public class CalcNearlyHourReportJob extends AbstractSceneTask {
                 if (task == null) {
                     ThreadPoolUtil.getReportTpsThreadPool().execute(() -> {
                         try {
-                            reportTaskService.calcMachineDate(reportId);
+                            reportTaskService.calcMachineDate(reportId, END_TIME_GAP);
                         } catch (Throwable e) {
                             log.error("execute calcNearlyHourReportJob occured error. reportId={}", reportId, e);
                         } finally {

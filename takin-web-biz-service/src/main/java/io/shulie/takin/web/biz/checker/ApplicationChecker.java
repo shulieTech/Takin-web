@@ -120,11 +120,19 @@ public class ApplicationChecker implements StartConditionChecker {
             // 有其他错误，直接返回
             return false;
         }
-        boolean lockSuccess = redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
-        if (lockSuccess) {
-            redisClientUtil.expire(sceneRunningKey, 90);
+        if(redisClientUtil.hasLockKey(sceneRunningKey)){
+            return false;
         }
-        return !lockSuccess;
+        if(redisClientUtil.lockNoExpire(sceneRunningKey,context.getUniqueKey())){
+            redisClientUtil.expire(sceneRunningKey, 90);
+            return false;
+        }
+        return true;
+//        boolean lockSuccess = redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
+//        if (lockSuccess) {
+//            redisClientUtil.expire(sceneRunningKey, 90);
+//        }
+//        return !lockSuccess;
     }
 
     private void cacheAssociation(StartConditionCheckerContext context) {

@@ -22,13 +22,13 @@ import org.springframework.stereotype.Component;
  * @author 无涯
  * @date 2021/7/13 23:10
  */
-@Component
-@ElasticSchedulerJob(jobName = "calcTpsTargetJob",
-        // 分片序列号和参数用等号分隔 不需要参数可以不加
-        //shardingItemParameters = "0=0,1=1,2=2",
-        isSharding = true,
-        cron = "*/10 * * * * ?",
-        description = "获取tps指标图")
+//@Component
+//@ElasticSchedulerJob(jobName = "calcTpsTargetJob",
+//        // 分片序列号和参数用等号分隔 不需要参数可以不加
+//        //shardingItemParameters = "0=0,1=1,2=2",
+//        isSharding = true,
+//        cron = "*/10 * * * * ?",
+//        description = "获取tps指标图")
 @Slf4j
 public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
 

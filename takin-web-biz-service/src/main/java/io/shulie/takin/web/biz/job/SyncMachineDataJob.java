@@ -24,13 +24,13 @@ import org.springframework.stereotype.Component;
  * @author 无涯
  * @date 2021/7/13 23:10
  */
-@Component
-@ElasticSchedulerJob(jobName = "syncMachineDataJob",
-        // 分片序列号和参数用等号分隔 不需要参数可以不加
-        isSharding = true,
-        //shardingItemParameters = "0=0,1=1,2=2",
-        cron = "*/10 * * * * ?",
-        description = "同步应用基础信息")
+//@Component
+//@ElasticSchedulerJob(jobName = "syncMachineDataJob",
+//        // 分片序列号和参数用等号分隔 不需要参数可以不加
+//        isSharding = true,
+//        //shardingItemParameters = "0=0,1=1,2=2",
+//        cron = "*/10 * * * * ?",
+//        description = "同步应用基础信息")
 @Slf4j
 public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
 

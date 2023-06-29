@@ -11,9 +11,11 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import io.shulie.takin.web.common.constant.CacheConstants;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +47,10 @@ public class RedisConfig implements CacheConstants {
     @Bean(CACHE_KEY_GENERATOR_BY_TENANT_INFO)
     public KeyGenerator cacheKeyGeneratorByTenantInfo() {
         return (target, method, params) -> target.getClass().getName()
-            + method.getName()
-            + ":"
-            + Arrays.toString(DigestUtil.md5(
-            JSONUtil.toJsonStr(params) + WebPluginUtils.traceEnvCode() + WebPluginUtils.traceTenantId()));
+                + method.getName()
+                + ":"
+                + Arrays.toString(DigestUtil.md5(
+                JSONUtil.toJsonStr(params) + WebPluginUtils.traceEnvCode() + WebPluginUtils.traceTenantId()));
     }
 
     @Bean
@@ -56,9 +58,9 @@ public class RedisConfig implements CacheConstants {
         // 自定义 redisCache 管理，指定key，带有过期时间，10分钟
         // @Cacheable 使用
         return new RedisCacheManager(
-            RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory),
-            this.getRedisCacheConfigurationWithTtl(600),
-            CACHE_KEY_AGENT_CONFIG, CACHE_KEY_AGENT_APPLICATION_NODE, CACHE_KEY_ANNUAL_REPORT
+                RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory),
+                this.getRedisCacheConfigurationWithTtl(600),
+                CACHE_KEY_AGENT_CONFIG, CACHE_KEY_AGENT_APPLICATION_NODE, CACHE_KEY_ANNUAL_REPORT
         );
     }
 
@@ -89,7 +91,7 @@ public class RedisConfig implements CacheConstants {
         RedisTemplate<String, Object> template = new RedisTemplate<String, Object>();
         template.setConnectionFactory(factory);
         Jackson2JsonRedisSerializer jackson2JsonRedisSerializer
-            = getJackson2JsonRedisSerializer();
+                = getJackson2JsonRedisSerializer();
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         // key采用String的序列化方式
         template.setKeySerializer(stringRedisSerializer);
@@ -138,20 +140,17 @@ public class RedisConfig implements CacheConstants {
      */
     private RedisCacheConfiguration getRedisCacheConfigurationWithTtl(Integer seconds) {
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig();
-        redisCacheConfiguration = redisCacheConfiguration.serializeValuesWith(
-            RedisSerializationContext
-                .SerializationPair
-                .fromSerializer(this.getJackson2JsonRedisSerializer())
+        redisCacheConfiguration = redisCacheConfiguration.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(this.getJackson2JsonRedisSerializer())
         ).entryTtl(Duration.ofSeconds(seconds));
         return redisCacheConfiguration;
     }
 
     private Jackson2JsonRedisSerializer<Object> getJackson2JsonRedisSerializer() {
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(
-            Object.class);
+                Object.class);
         ObjectMapper om = new ObjectMapper();
         om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+        om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
         om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         jackson2JsonRedisSerializer.setObjectMapper(om);
         return jackson2JsonRedisSerializer;

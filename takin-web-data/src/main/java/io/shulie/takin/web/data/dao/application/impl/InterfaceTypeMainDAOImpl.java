@@ -1,9 +1,6 @@
 package io.shulie.takin.web.data.dao.application.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,6 +18,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class InterfaceTypeMainDAOImpl extends ServiceImpl<InterfaceTypeMainMapper, InterfaceTypeMainEntity>
     implements InterfaceTypeMainDAO, MPUtil<InterfaceTypeMainEntity> {
+    
+    
+    Map<Integer,InterfaceTypeMainEntity> InterfaceTypeMap = new HashMap<>();
+    
+    
 
     @Override
     public InterfaceTypeMainEntity selectByName(String typeName) {
@@ -34,7 +36,16 @@ public class InterfaceTypeMainDAOImpl extends ServiceImpl<InterfaceTypeMainMappe
 
     @Override
     public InterfaceTypeMainEntity selectByOrder(Integer order) {
-        return selectByOrder(order, true);
+        /**
+         * fix: 顺丰2023/03/09邮件中提到改sql查询将频繁
+         * 先从map中查询，如果map中没有就查询数据库,然后将查到的数据再放入到map中
+         */
+        InterfaceTypeMainEntity entity = InterfaceTypeMap.get(order);
+        if(entity == null){
+            entity = selectByOrder(order, true);
+            InterfaceTypeMap.put(order,entity);
+        }
+        return entity;
     }
 
     @Override
@@ -72,6 +83,7 @@ public class InterfaceTypeMainDAOImpl extends ServiceImpl<InterfaceTypeMainMappe
     @Override
     public void addEntity(InterfaceTypeMainEntity entity) {
         this.save(entity);
+        InterfaceTypeMap.put(entity.getValueOrder(),entity);
     }
 
     @Override

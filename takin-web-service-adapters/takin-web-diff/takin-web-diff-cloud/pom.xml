@@ -63,5 +63,9 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-sdk</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
     </dependencies>
 </project>

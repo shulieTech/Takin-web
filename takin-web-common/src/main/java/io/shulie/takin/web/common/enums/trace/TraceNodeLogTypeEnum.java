@@ -1,6 +1,5 @@
 package io.shulie.takin.web.common.enums.trace;
 
-import com.pamirs.pradar.Pradar;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -13,10 +12,14 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum TraceNodeLogTypeEnum {
+
     //LOG_TYPE_RPC_CLIENT(0,"客户端"),
     //LOG_TYPE_RPC_SERVER(1,"服务端");
     LOG_TYPE_RPC_CLIENT(0, "被调用方"),
     LOG_TYPE_RPC_SERVER(1, "调用方");
+
+    protected static final int PRADAR_LOG_TYPE_RPC_CLIENT = 2;
+
     private Integer logType;
     private String desc;
 
@@ -36,7 +39,7 @@ public enum TraceNodeLogTypeEnum {
      * @return amdb日志类型枚举
      */
     public static TraceNodeLogTypeEnum judgeTraceNodeLogType(Integer amdbLogType) {
-        return amdbLogType == Pradar.LOG_TYPE_INVOKE_CLIENT ? TraceNodeLogTypeEnum.LOG_TYPE_RPC_CLIENT
+        return amdbLogType == PRADAR_LOG_TYPE_RPC_CLIENT ? TraceNodeLogTypeEnum.LOG_TYPE_RPC_CLIENT
             : TraceNodeLogTypeEnum.LOG_TYPE_RPC_SERVER;
     }
 

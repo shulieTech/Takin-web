@@ -230,18 +230,18 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 return;
             }
             WebPluginUtils.setTraceTenantContext(commonExt);
-            try {
-                // 检查风险机器
-                problemAnalysisService.checkRisk(reportId);
-            } catch (Exception e) {
-                log.error("reportId = {}: Check the risk machine,errorMsg= {} ", reportId, e.getMessage());
-            }
-            try {
-                // 瓶颈处理
-                problemAnalysisService.processBottleneck(reportId);
-            } catch (Exception e) {
-                log.error("reportId = {}: Bottleneck handling,errorMsg= {} ", reportId, e.getMessage());
-            }
+//            try {
+//                // 检查风险机器
+//                problemAnalysisService.checkRisk(reportId);
+//            } catch (Exception e) {
+//                log.error("reportId = {}: Check the risk machine,errorMsg= {} ", reportId, e.getMessage());
+//            }
+//            try {
+//                // 瓶颈处理
+//                problemAnalysisService.processBottleneck(reportId);
+//            } catch (Exception e) {
+//                log.error("reportId = {}: Bottleneck handling,errorMsg= {} ", reportId, e.getMessage());
+//            }
             try {
                 //then 报告汇总接口
                 summaryService.calcReportSummay(reportId);

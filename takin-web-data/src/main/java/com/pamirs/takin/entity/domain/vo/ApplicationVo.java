@@ -82,4 +82,7 @@ public class ApplicationVo extends AuthQueryResponseCommonExt implements Seriali
 
     @ApiModelProperty(name = "clusterName", value = "应用所在集群名称")
     private String clusterName;
+
+    @ApiModelProperty(name = "confCheckStatus", value = "接入状态； 0：下发中 ； 1；已生效")
+    private Integer confCheckStatus;
 }

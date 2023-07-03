@@ -31,4 +31,6 @@ public class ApplicationListResult {
      */
     private Integer nodeNum;
 
+    private Integer confCheckStatus;
+
 }

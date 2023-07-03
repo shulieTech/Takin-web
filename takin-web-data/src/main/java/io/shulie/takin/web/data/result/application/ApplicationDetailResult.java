@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.result.application;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -38,4 +39,9 @@ public class ApplicationDetailResult extends TenantCommonExt {
     private String md5;
     private Long deptId;
     private String clusterName;
+    private Integer confCheckVersion;
+    /**
+     * 0已下发，1已生效
+     */
+    private Integer confCheckStatus;
 }

@@ -535,35 +535,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return Response.success(new ApplicationVo());
         }
 
-        //判断是否有异常信息来获取状态，t_application_mnt中的不准
-        ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
-        queryInput.setApplicationId(tApplicationMnt.getApplicationId());
-
-        List<ApplicationErrorOutput> errors = applicationErrorService.list(queryInput);
-        // 判断下时间
-        if (CollectionUtil.isNotEmpty(errors)) {
-            // 错误信息已被倒序排序，这里去第一个错误信息,超过1分半的则忽略 2022-09-01 18:11:31
-            String time = errors.get(0).getTime();
-            DateTime dateTime = DateUtil.parse(time, DatePattern.NORM_DATETIME_FORMAT);
-            if (DateUtil.between(DateTime.now(), dateTime, DateUnit.SECOND) < errorExpireTime) {
-                tApplicationMnt.setAccessStatus(3);
-            }
-        }
-
-        // 取应用节点数信息
-        List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(
-                Collections.singletonList(tApplicationMnt.getApplicationName()));
-        ApplicationResult applicationResult = CollectionUtils.isEmpty(applicationResultList)
-                ? null : applicationResultList.get(0);
-
-        // 取应用节点版本信息
-        ApplicationNodeQueryParam queryParam = new ApplicationNodeQueryParam();
-        queryParam.setCurrent(0);
-        queryParam.setPageSize(99999);
-        queryParam.setApplicationNames(Collections.singletonList(tApplicationMnt.getApplicationName()));
-        PagingList<ApplicationNodeResult> applicationNodes = applicationNodeDAO.pageNodes(queryParam);
-        List<ApplicationNodeResult> applicationNodeResultList = applicationNodes.getList();
-        ApplicationVo vo = this.appEntryToVo(tApplicationMnt, applicationResult, applicationNodeResultList);
+        ApplicationVo vo = this.appEntryToVo(tApplicationMnt, null, null, false);
         return Response.success(vo);
     }
 
@@ -1368,15 +1340,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
             response.setId(result.getApplicationId().toString());
             WebPluginUtils.fillQueryResponse(response);
-
-            // 非全量查询的时候，增加不需要处理状态
-            if (!request.isAll()) {
-                // 跟应用详情再对比下,同步下状态,这个接口真慢
-                Response<ApplicationVo> vo = this.getApplicationInfo(response.getId());
-                if (vo.getSuccess() && vo.getData() != null) {
-                    response.setAccessStatus(vo.getData().getAccessStatus());
-                }
-            }
             return response;
         }).collect(Collectors.toList());
         return PagingList.of(responseList, applicationListResultPage.getTotal());
@@ -2590,7 +2553,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 for (ApplicationDetailResult param : tApplicationMntList) {
                     List<ApplicationNodeResult> applicationNodeResults = applicationNodeResultMap.get(
                             param.getApplicationId());
-                    voList.add(appEntryToVo(param, null, applicationNodeResults));
+                    voList.add(appEntryToVo(param, null, applicationNodeResults, true));
                 }
             } else {
                 for (ApplicationDetailResult param : tApplicationMntList) {
@@ -2600,9 +2563,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     List<ApplicationNodeResult> applicationNodeResults = applicationNodeResultMap.get(
                             param.getApplicationId());
                     if (optional.isPresent()) {
-                        voList.add(appEntryToVo(param, optional.get(), applicationNodeResults));
+                        voList.add(appEntryToVo(param, optional.get(), applicationNodeResults,true));
                     } else {
-                        voList.add(appEntryToVo(param, null, applicationNodeResults));
+                        voList.add(appEntryToVo(param, null, applicationNodeResults, true));
                     }
                 }
             }
@@ -2611,7 +2574,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     ApplicationVo appEntryToVo(ApplicationDetailResult param, ApplicationResult applicationResult,
-                               List<ApplicationNodeResult> applicationNodeResultList) {
+                               List<ApplicationNodeResult> applicationNodeResultList, boolean status) {
         ApplicationVo vo = new ApplicationVo();
         vo.setPrimaryKeyId(param.getId());
         vo.setId(String.valueOf(param.getApplicationId()));
@@ -2626,29 +2589,35 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         vo.setNodeNum(param.getNodeNum());
         vo.setSwitchStutus(param.getSwitchStatus());
         vo.setUserId(param.getUserId());
-        if (Objects.isNull(applicationResult)
-                || !applicationResult.getInstanceInfo().getInstanceOnlineAmount().equals(param.getNodeNum())
-                || CollectionUtils.isEmpty(applicationNodeResultList)
-                || applicationNodeResultList.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count() > 1) {
-            vo.setAccessStatus(3);
-            vo.setExceptionInfo("agent状态:" + param.getAccessStatus() + ",节点状态: 3");
+        vo.setConfCheckStatus(param.getConfCheckStatus());
+        if (status) {
+            if (Objects.isNull(applicationResult)
+                    || !applicationResult.getInstanceInfo().getInstanceOnlineAmount().equals(param.getNodeNum())
+                    || CollectionUtils.isEmpty(applicationNodeResultList)
+                    || applicationNodeResultList.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count() > 1) {
+                vo.setAccessStatus(3);
+                vo.setExceptionInfo("agent状态:" + param.getAccessStatus() + ",节点状态: 3");
+            } else {
+                vo.setAccessStatus(param.getAccessStatus());
+                String exceptionMsg = "agent状态:" + param.getAccessStatus();
+                if (!applicationResult.getInstanceInfo().getInstanceOnlineAmount().equals(param.getNodeNum())
+                        || CollectionUtils.isEmpty(applicationNodeResultList)
+                        || applicationNodeResultList.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count()
+                        > 1) {
+                    exceptionMsg = exceptionMsg + ",节点状态: 3";
+                }
+                vo.setExceptionInfo(exceptionMsg);
+            }
+            // 设置下在线节点数
+            if (Objects.isNull(applicationResult) || applicationResult.getInstanceInfo() == null) {
+                vo.setOnlineNodeNum(0);
+            } else {
+                vo.setOnlineNodeNum(applicationResult.getInstanceInfo().getInstanceOnlineAmount());
+            }
         } else {
             vo.setAccessStatus(param.getAccessStatus());
-            String exceptionMsg = "agent状态:" + param.getAccessStatus();
-            if (!applicationResult.getInstanceInfo().getInstanceOnlineAmount().equals(param.getNodeNum())
-                    || CollectionUtils.isEmpty(applicationNodeResultList)
-                    || applicationNodeResultList.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count()
-                    > 1) {
-                exceptionMsg = exceptionMsg + ",节点状态: 3";
-            }
-            vo.setExceptionInfo(exceptionMsg);
         }
-        // 设置下在线节点数
-        if (Objects.isNull(applicationResult) || applicationResult.getInstanceInfo() == null) {
-            vo.setOnlineNodeNum(0);
-        } else {
-            vo.setOnlineNodeNum(applicationResult.getInstanceInfo().getInstanceOnlineAmount());
-        }
+
         vo.setUserId(param.getUserId());
         vo.setDeptId(param.getDeptId());
         WebPluginUtils.fillQueryResponse(vo);

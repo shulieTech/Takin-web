@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AgentReportDAOImpl extends ServiceImpl<AgentReportMapper, AgentReportEntity>
-    implements AgentReportDAO, MPUtil<AgentReportEntity> {
+        implements AgentReportDAO, MPUtil<AgentReportEntity> {
 
     @Resource
     private AgentReportMapper agentReportMapper;
@@ -88,14 +88,16 @@ public class AgentReportDAOImpl extends ServiceImpl<AgentReportMapper, AgentRepo
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         // 删除3分钟前的数据
         List<Long> ids = agentReportMapper.selectIdsByUpdateTime(simpleDateFormat.format(System.currentTimeMillis() - 180 * 1000));
-        agentReportMapper.deleteBatchIds(ids);
+        if (CollectionUtils.isNotEmpty(ids)) {
+            agentReportMapper.deleteBatchIds(ids);
+        }
     }
 
     @Override
     public AgentReportDetailResult queryAgentReportDetail(Long applicationId, String agentId) {
         AgentReportEntity entity = agentReportMapper.selectOne(this.getLambdaQueryWrapper()
-            .eq(AgentReportEntity::getApplicationId, applicationId)
-            .eq(AgentReportEntity::getAgentId, agentId));
+                .eq(AgentReportEntity::getApplicationId, applicationId)
+                .eq(AgentReportEntity::getAgentId, agentId));
         if (entity == null) {
             return null;
         }

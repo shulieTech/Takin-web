@@ -154,4 +154,13 @@ public class ApplicationMntEntity extends UserBaseEntity {
     @TableField("cluster_name")
     private String clusterName;
 
+    @TableField(value = "conf_check_version")
+    private Integer confCheckVersion;
+
+    /**
+     * 0已下发，1已生效
+     */
+    @TableField(value = "conf_check_status")
+    private Integer confCheckStatus;
+
 }

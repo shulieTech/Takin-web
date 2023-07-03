@@ -781,4 +781,13 @@ public class ApplicationDAOImpl
             .eq(ApplicationMntEntity::getEnvCode, envCode);
         return SqlHelper.retBool(applicationMntMapper.selectCount(wrapper));
     }
+
+    @Override
+    public void updateConfCheckVersion(Long id, Integer version) {
+        ApplicationMntEntity applicationMntEntity = new ApplicationMntEntity();
+        applicationMntEntity.setId(id);
+        applicationMntEntity.setConfCheckVersion(version);
+        applicationMntEntity.setConfCheckStatus(0);
+        applicationMntMapper.updateById(applicationMntEntity);
+    }
 }

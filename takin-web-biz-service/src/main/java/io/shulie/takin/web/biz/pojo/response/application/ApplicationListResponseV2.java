@@ -34,4 +34,6 @@ public class ApplicationListResponseV2 extends AuthQueryResponseCommonExt {
     @ApiModelProperty("应用名称")
     private String applicationName;
 
+    @ApiModelProperty("配置状态； 0：下发中； 1：已生效")
+    private Integer confCheckStatus;
 }

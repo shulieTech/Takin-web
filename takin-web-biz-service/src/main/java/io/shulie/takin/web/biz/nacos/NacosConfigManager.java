@@ -289,7 +289,12 @@ public class NacosConfigManager {
     }
 
     private void refreshShadowConfigs(String appName, ConfigService configService) {
-
+        ApplicationDetailResult detailResult = applicationDAO.getByName(appName);
+        if (detailResult == null){
+            return;
+        }
+        int confCheckVersion = detailResult.getConfCheckVersion() + 1;
+        applicationDAO.updateConfCheckVersion(detailResult.getId(), confCheckVersion);
         Map<String, Object> configs = new HashMap<>();
         configs.put("datasource", agentConfigCacheManager.getShadowDb(appName));
         configs.put("job", agentConfigCacheManager.getShadowJobs(appName));
@@ -303,6 +308,7 @@ public class NacosConfigManager {
         configs.put("trace_rule", values == null ? new HashMap<>() : values);
         configs.put("dynamic_config", buildApplicationDynamicConfigs(appName, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), WebPluginUtils.traceTenantAppKey()));
         configs.put("redis-expire", agentConfigCacheManager.getAppPluginConfig(CommonUtil.generateRedisKey(appName, "redis_expire")));
+        configs.put("confCheckVersion", confCheckVersion);
         this.pushNacosConfigs(appName, "APP", configService, new Gson().toJson(configs));
     }
 

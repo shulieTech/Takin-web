@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.shulie.takin.web.data.model.mysql.AgentReportEntity;
 
+import java.util.List;
+
 /**
  * 探针心跳数据(AgentReport)表数据库 mapper
  *
@@ -27,5 +29,13 @@ public interface AgentReportMapper extends BaseMapper<AgentReportEntity> {
      */
     @InterceptorIgnore(tenantLine = "true")
     void selfDelete(String date);
+
+    /**
+     * 直接删除偶尔会有锁表问题，所以先查询，再删除
+     * @param date
+     * @return
+     */
+    @InterceptorIgnore(tenantLine = "true")
+    List<Long> selectIdsByUpdateTime(String date);
 }
 

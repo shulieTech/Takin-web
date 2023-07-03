@@ -20,4 +20,8 @@
     <delete id="selfDelete">
         DELETE FROM t_agent_report WHERE gmt_update &lt;= #{date}
     </delete>
+
+    <select id="selectIdsByUpdateTime" resultType="long">
+        select id from t_agent_report WHERE gmt_update &lt;= #{date}
+    </select>
 </mapper>

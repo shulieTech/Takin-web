@@ -44,17 +44,17 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ApplicationEntranceClientImpl implements ApplicationEntranceClient {
 
-    //public static final String APPLICATION_ENTRANCES_PATH = "/amdb/link/getEntranceList";
-    public static final String APPLICATION_ENTRANCES_PATH = "/amdb/link/getServiceList";
+    //public static final String APPLICATION_ENTRANCES_PATH = "/link/getEntranceList";
+    public static final String APPLICATION_ENTRANCES_PATH = "/link/getServiceList";
 
-    public static final String APPLICATION_ENTRANCES_TOPOLOGY_PATH = "/amdb/link/getLinkTopology";
-    public static final String APPLICATION_ENTRANCES_TOPOLOGY_PATH_TEMP = "/amdb/link/getLinkTopologyForTemp";
+    public static final String APPLICATION_ENTRANCES_TOPOLOGY_PATH = "/link/getLinkTopology";
+    public static final String APPLICATION_ENTRANCES_TOPOLOGY_PATH_TEMP = "/link/getLinkTopologyForTemp";
 
-    public static final String APPLICATION_ENTRANCES_UNKNOWN_UPDATE_TO_OUTER = "/amdb/link/updateUnKnowNode";
+    public static final String APPLICATION_ENTRANCES_UNKNOWN_UPDATE_TO_OUTER = "/link/updateUnKnowNode";
 
-    public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP1 = "/amdb/db/api/metrics/entranceFromChickHouse";
-    public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP2 = "/amdb/db/api/metrics/metricFromChickHouse";
-    public static final String QUERY_METRICS = "/amdb/db/api/metrics/metricFromInfluxdb";
+    public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP1 = "/db/api/metrics/entranceFromChickHouse";
+    public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP2 = "/db/api/metrics/metricFromChickHouse";
+    public static final String QUERY_METRICS = "/db/api/metrics/metricFromInfluxdb";
 
 
     @Value("${takin.metrics.edgeId.count:50}")

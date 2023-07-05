@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.mapper.mysql;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.shulie.takin.web.data.model.mysql.AgentReportEntity;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -40,6 +41,6 @@ public interface AgentReportMapper extends BaseMapper<AgentReportEntity> {
 
 
     @InterceptorIgnore(tenantLine = "true")
-    void deleteByIds(List<Long> ids);
+    void deleteByIds(@Param("ids") List<Long> ids);
 }
 

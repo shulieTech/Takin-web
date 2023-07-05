@@ -392,6 +392,9 @@
         <if test="param.accessStatus != null">
             AND a.ACCESS_STATUS = #{param.accessStatus}
         </if>
+        <if test="param.confCheckStatus != null">
+            AND a.conf_check_status = #{confCheckStatus}
+        </if>
 
         <if test="param.deptId != null">
             AND a.dept_id = #{deptId}

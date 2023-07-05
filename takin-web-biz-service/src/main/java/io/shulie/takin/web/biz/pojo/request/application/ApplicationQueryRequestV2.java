@@ -32,6 +32,9 @@ public class ApplicationQueryRequestV2 extends PageBaseDTO {
     @ApiModelProperty("部门id")
     private Long deptId;
 
+    @ApiModelProperty("配置状态； 0：下发中； 1：已生效")
+    private Integer confCheckStatus;
+
     @ApiModelProperty("全量操作的时候，不要状态")
     private boolean all = false;
 }

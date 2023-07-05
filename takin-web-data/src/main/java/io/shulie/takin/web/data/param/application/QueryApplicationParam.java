@@ -24,6 +24,8 @@ public class QueryApplicationParam extends PageBaseDTO {
      */
     private Integer accessStatus;
 
+    private Integer confCheckStatus;
+
     private List<Long> userIds;
 
     private List<Long> deptIds;

@@ -37,5 +37,9 @@ public interface AgentReportMapper extends BaseMapper<AgentReportEntity> {
      */
     @InterceptorIgnore(tenantLine = "true")
     List<Long> selectIdsByUpdateTime(String date);
+
+
+    @InterceptorIgnore(tenantLine = "true")
+    void deleteByIds(List<Long> ids);
 }
 

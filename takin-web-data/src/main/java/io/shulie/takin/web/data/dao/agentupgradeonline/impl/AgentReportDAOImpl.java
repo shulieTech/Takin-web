@@ -89,7 +89,7 @@ public class AgentReportDAOImpl extends ServiceImpl<AgentReportMapper, AgentRepo
         // 删除3分钟前的数据
         List<Long> ids = agentReportMapper.selectIdsByUpdateTime(simpleDateFormat.format(System.currentTimeMillis() - 180 * 1000));
         if (CollectionUtils.isNotEmpty(ids)) {
-            agentReportMapper.deleteBatchIds(ids);
+            agentReportMapper.deleteByIds(ids);
         }
     }
 

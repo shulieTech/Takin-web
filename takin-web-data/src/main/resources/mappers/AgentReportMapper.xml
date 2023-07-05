@@ -24,4 +24,11 @@
     <select id="selectIdsByUpdateTime" resultType="java.lang.Long">
         select id from t_agent_report WHERE gmt_update &lt;= #{date}
     </select>
+
+    <delete id="deleteByIds">
+        DELETE FROM t_agent_report WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>

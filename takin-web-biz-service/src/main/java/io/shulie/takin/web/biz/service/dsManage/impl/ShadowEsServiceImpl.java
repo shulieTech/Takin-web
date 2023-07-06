@@ -229,7 +229,7 @@ public class ShadowEsServiceImpl extends AbstractDsService {
     }
 
     private void clearCache(String applicationName) {
-        agentConfigCacheManager.evictShadowEsServers(applicationName);
+        agentConfigCacheManager.evictShadowEsServers(applicationName, true);
     }
 
     private ApplicationDsResult getApplicationDsResult(Long id) {

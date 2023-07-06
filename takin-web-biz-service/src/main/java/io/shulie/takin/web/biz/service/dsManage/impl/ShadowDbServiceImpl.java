@@ -111,7 +111,7 @@ public class ShadowDbServiceImpl extends AbstractDsService {
         applicationService.modifyAccessStatus(String.valueOf(applicationId),
             AppAccessTypeEnum.UNUPLOAD.getValue(), null);
 
-        agentConfigCacheManager.evictShadowDb(applicationName);
+        agentConfigCacheManager.evictShadowDb(applicationName, true);
     }
 
     private ApplicationDsCreateParam addParseConfig(ApplicationDsCreateInput createRequest) {

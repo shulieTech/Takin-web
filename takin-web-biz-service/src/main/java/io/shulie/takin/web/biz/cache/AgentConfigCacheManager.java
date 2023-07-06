@@ -127,16 +127,16 @@ public class AgentConfigCacheManager {
         return shadowServerConfigCache.get(appName);
     }
 
-    public void evictShadowServer(String appName) {
-        shadowServerConfigCache.evict(appName, true);
+    public void evictShadowServer(String appName, boolean isPublish) {
+        shadowServerConfigCache.evict(appName, isPublish);
     }
 
     public List<DsAgentVO> getShadowDb(String appName) {
         return shadowDbConfigCache.get(appName);
     }
 
-    public void evictShadowDb(String appName) {
-        shadowDbConfigCache.evict(appName, true);
+    public void evictShadowDb(String appName, boolean isPublish) {
+        shadowDbConfigCache.evict(appName, isPublish);
     }
 
     public List<LinkGuardVo> getGuards(String appName) {
@@ -197,8 +197,8 @@ public class AgentConfigCacheManager {
      *
      * @param appName 应用名称
      */
-    public void evictShadowEsServers(String appName) {
-        shadowEsServerConfigAgentCache.evict(appName, true);
+    public void evictShadowEsServers(String appName, boolean isPublish) {
+        shadowEsServerConfigAgentCache.evict(appName, isPublish);
     }
 
     /**
@@ -206,8 +206,8 @@ public class AgentConfigCacheManager {
      *
      * @param appName 应用名称
      */
-    public void evictShadowKafkaCluster(String appName) {
-        shadowKafkaClusterConfigAgentCache.evict(appName, true);
+    public void evictShadowKafkaCluster(String appName, boolean isPublish) {
+        shadowKafkaClusterConfigAgentCache.evict(appName, isPublish);
     }
 
     /**
@@ -225,8 +225,8 @@ public class AgentConfigCacheManager {
      * @param applicationName 应用名称
      * @return
      */
-    public void evictShadowHbase(String applicationName) {
-        shadowHbaseConfigAgentCache.evict(applicationName, true);
+    public void evictShadowHbase(String applicationName, boolean isPublish) {
+        shadowHbaseConfigAgentCache.evict(applicationName, isPublish);
     }
 
     /**

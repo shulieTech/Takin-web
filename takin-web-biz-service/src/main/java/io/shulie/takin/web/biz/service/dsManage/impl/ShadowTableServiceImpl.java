@@ -120,7 +120,7 @@ public class ShadowTableServiceImpl extends AbstractDsService {
         applicationService.modifyAccessStatus(String.valueOf(applicationId),
                 AppAccessTypeEnum.UNUPLOAD.getValue(), null);
 
-        agentConfigCacheManager.evictShadowDb(applicationName);
+        agentConfigCacheManager.evictShadowDb(applicationName, true);
     }
 
     private Response validator(

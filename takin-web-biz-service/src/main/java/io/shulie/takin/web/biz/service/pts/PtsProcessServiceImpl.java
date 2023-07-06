@@ -160,8 +160,8 @@ public class PtsProcessServiceImpl implements PtsProcessService{
             File resultFile = new File(cmdDir + "/result.xml");
             boolean hasResult = false;
             long startTime = System.currentTimeMillis();
-            //最多查询2min
-            while (!hasResult && (System.currentTimeMillis() - startTime) < 2 * 60 * 1000) {
+            //最多查询35s，前端1min超时，要小于前端超时时间
+            while (!hasResult && (System.currentTimeMillis() - startTime) < 35 * 1000) {
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {

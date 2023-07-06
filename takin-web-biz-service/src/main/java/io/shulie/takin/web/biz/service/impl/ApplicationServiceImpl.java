@@ -2590,6 +2590,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         vo.setSwitchStutus(param.getSwitchStatus());
         vo.setUserId(param.getUserId());
         vo.setConfCheckStatus(param.getConfCheckStatus());
+        vo.setConfCheckVersion(param.getConfCheckVersion());
         if (status) {
             if (Objects.isNull(applicationResult)
                     || !applicationResult.getInstanceInfo().getInstanceOnlineAmount().equals(param.getNodeNum())

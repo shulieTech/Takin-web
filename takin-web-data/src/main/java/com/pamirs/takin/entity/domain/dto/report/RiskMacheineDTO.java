@@ -30,4 +30,7 @@ public class RiskMacheineDTO implements Serializable {
     @ApiModelProperty(value = "风险")
     private String riskContent;
 
+    @ApiModelProperty(value = "应用名称")
+    private String appName;
+
 }

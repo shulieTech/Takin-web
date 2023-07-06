@@ -111,7 +111,7 @@ public class ApplicationDAOImpl
 
     @Override
     public List<ApplicationResult> listAmdbApplicationByAppNames(List<String> appNames) {
-        return this.getApplicationByName(appNames);
+        return getApplicationByName(appNames);
     }
 
     @Override
@@ -407,8 +407,7 @@ public class ApplicationDAOImpl
     public ApplicationDetailResult getApplicationById(Long appId) {
         // 修改原因 ：分页插件与 mybatis-plus 污染线程
         ApplicationMntEntity applicationMntEntity =
-            applicationMntMapper.selectOne(
-                this.getLambdaQueryWrapper().eq(ApplicationMntEntity::getApplicationId, appId));
+            applicationMntMapper.selectOne(getLambdaQueryWrapper().eq(ApplicationMntEntity::getApplicationId, appId));
         if (!Objects.isNull(applicationMntEntity)) {
             ApplicationDetailResult detailResult = new ApplicationDetailResult();
             BeanUtils.copyProperties(applicationMntEntity, detailResult);
@@ -461,7 +460,7 @@ public class ApplicationDAOImpl
 
     @Override
     public List<ApplicationMntEntity> listByApplicationNamesAndTenantId(List<String> applicationNames) {
-        LambdaQueryWrapper<ApplicationMntEntity> wrapper = this.getLambdaQueryWrapper().select(
+        LambdaQueryWrapper<ApplicationMntEntity> wrapper = getLambdaQueryWrapper().select(
                 ApplicationMntEntity::getApplicationId, ApplicationMntEntity::getApplicationName,
                 ApplicationMntEntity::getAccessStatus, ApplicationMntEntity::getSwitchStatus,
                 ApplicationMntEntity::getNodeNum)
@@ -471,7 +470,7 @@ public class ApplicationDAOImpl
 
     @Override
     public ApplicationDetailResult getByName(String applicationName) {
-        ApplicationMntEntity applicationMntEntity = applicationMntMapper.selectOne(this.getLimitOneLambdaQueryWrapper()
+        ApplicationMntEntity applicationMntEntity = applicationMntMapper.selectOne(getLimitOneLambdaQueryWrapper()
             .eq(ApplicationMntEntity::getApplicationName, applicationName));
         if (applicationMntEntity == null) {
             return null;
@@ -497,7 +496,7 @@ public class ApplicationDAOImpl
         ApplicationMntEntity entity = new ApplicationMntEntity();
         entity.setApplicationId(applicationId);
         entity.setAccessStatus(status);
-        LambdaUpdateWrapper<ApplicationMntEntity> wrapper = this.getLambdaUpdateWrapper();
+        LambdaUpdateWrapper<ApplicationMntEntity> wrapper = getLambdaUpdateWrapper();
 
         wrapper.set(ApplicationMntEntity::getAccessStatus, status)
             .eq(ApplicationMntEntity::getApplicationId, applicationId);
@@ -533,7 +532,7 @@ public class ApplicationDAOImpl
 
     @Override
     public List<Long> listIdsByNameListAndCustomerId(List<String> applicationNameList) {
-        return CommonUtil.list2list(applicationMntMapper.selectObjs(this.getCustomerLambdaQueryWrapper()
+        return CommonUtil.list2list(applicationMntMapper.selectObjs(getCustomerLambdaQueryWrapper()
             .select(ApplicationMntEntity::getApplicationId)
             .in(ApplicationMntEntity::getApplicationName, applicationNameList)), Long.class);
     }
@@ -710,13 +709,13 @@ public class ApplicationDAOImpl
     @Override
     public IPage<ApplicationListResult> pageByParam(QueryApplicationParam param) {
         param.setDeptId(WebPluginUtils.traceDeptId());
-        return applicationMntMapper.selectApplicationPageByParam(this.setPage(param), param);
+        return applicationMntMapper.selectApplicationPageByParam(setPage(param), param);
     }
 
     @Override
     public List<ApplicationListResult> pageFromSync(PageBaseDTO pageBaseDTO) {
-        IPage<ApplicationMntEntity> applicationMntEntityPage = applicationMntMapper.selectPage(this.setPage(pageBaseDTO),
-            this.getLambdaQueryWrapper().select(ApplicationMntEntity::getApplicationId,
+        IPage<ApplicationMntEntity> applicationMntEntityPage = applicationMntMapper.selectPage(setPage(pageBaseDTO),
+            getLambdaQueryWrapper().select(ApplicationMntEntity::getApplicationId,
                 ApplicationMntEntity::getApplicationName, ApplicationMntEntity::getAccessStatus,
                 ApplicationMntEntity::getNodeNum));
         return DataTransformUtil.list2list(applicationMntEntityPage.getRecords(), ApplicationListResult.class);
@@ -725,7 +724,7 @@ public class ApplicationDAOImpl
     @Override
     public boolean updateStatusByApplicationIds(Collection<Long> applicationIds, Integer status) {
         return CollectionUtil.isNotEmpty(applicationIds)
-            && SqlHelper.retBool(applicationMntMapper.update(null, this.getLambdaUpdateWrapper()
+            && SqlHelper.retBool(applicationMntMapper.update(null, getLambdaUpdateWrapper()
             .set(ApplicationMntEntity::getAccessStatus, status)
             .in(ApplicationMntEntity::getApplicationId, applicationIds)));
     }
@@ -742,12 +741,12 @@ public class ApplicationDAOImpl
 
     @Override
     public IPage<ApplicationListResultByUpgrade> getApplicationList(QueryApplicationByUpgradeParam param) {
-        return applicationMntMapper.selectApplicationListByUpgrade(this.setPage(param), param);
+        return applicationMntMapper.selectApplicationListByUpgrade(setPage(param), param);
     }
 
     @Override
     public List<ApplicationListResult> listByApplicationNamesAndUserId(Collection<String> applicationNames, Long userId) {
-        return DataTransformUtil.list2list(applicationMntMapper.selectList(this.getWrapperByApplicationNamesAndUserId(applicationNames, userId)), ApplicationListResult.class);
+        return DataTransformUtil.list2list(applicationMntMapper.selectList(getWrapperByApplicationNamesAndUserId(applicationNames, userId)), ApplicationListResult.class);
     }
 
     /**
@@ -758,7 +757,7 @@ public class ApplicationDAOImpl
      * @return 应用列表
      */
     private LambdaQueryWrapper<ApplicationMntEntity> getWrapperByApplicationNamesAndUserId(Collection<String> applicationNames, Long userId) {
-        return this.getLambdaQueryWrapper()
+        return getLambdaQueryWrapper()
             .select(ApplicationMntEntity::getApplicationId, ApplicationMntEntity::getApplicationName)
             .in(ApplicationMntEntity::getApplicationName, applicationNames)
             .eq(userId != null, ApplicationMntEntity::getUserId, userId);
@@ -767,8 +766,8 @@ public class ApplicationDAOImpl
     @Override
     public PagingList<ApplicationListResult> pageByApplicationNamesAndUserId(Collection<String> applicationNames,
         PageBaseDTO pageBaseDTO) {
-        Page<ApplicationMntEntity> page = applicationMntMapper.selectPage(this.setPage(pageBaseDTO),
-            this.getWrapperByApplicationNamesAndUserId(applicationNames, null));
+        Page<ApplicationMntEntity> page = applicationMntMapper.selectPage(setPage(pageBaseDTO),
+            getWrapperByApplicationNamesAndUserId(applicationNames, null));
         if (page.getTotal() == 0) {
             return PagingList.empty();
         }
@@ -784,7 +783,7 @@ public class ApplicationDAOImpl
 
     @Override
     public void updateStatus(Long applicationId, String e) {
-        LambdaUpdateWrapper<ApplicationMntEntity> wrapper = this.getLambdaUpdateWrapper();
+        LambdaUpdateWrapper<ApplicationMntEntity> wrapper = getLambdaUpdateWrapper();
 
         wrapper.set(ApplicationMntEntity::getAccessStatus, 3)
                 .set(ApplicationMntEntity::getExceptionInfo,e)
@@ -794,7 +793,7 @@ public class ApplicationDAOImpl
 
     @Override
     public void updateStatus(Long applicationId) {
-        LambdaUpdateWrapper<ApplicationMntEntity> wrapper = this.getLambdaUpdateWrapper();
+        LambdaUpdateWrapper<ApplicationMntEntity> wrapper = getLambdaUpdateWrapper();
 
         wrapper.set(ApplicationMntEntity::getAccessStatus, 0)
                 .set(ApplicationMntEntity::getExceptionInfo,"")
@@ -804,7 +803,7 @@ public class ApplicationDAOImpl
 
     @Override
     public boolean existsApplication(Long tenantId, String envCode) {
-        LambdaQueryWrapper<ApplicationMntEntity> wrapper = this.getLambdaQueryWrapper()
+        LambdaQueryWrapper<ApplicationMntEntity> wrapper = getLambdaQueryWrapper()
             .eq(ApplicationMntEntity::getTenantId, tenantId)
             .eq(ApplicationMntEntity::getEnvCode, envCode);
         return SqlHelper.retBool(applicationMntMapper.selectCount(wrapper));
@@ -820,7 +819,7 @@ public class ApplicationDAOImpl
      */
     @Override
     public long getAppCountByStatus(Long tenantId, String envCode, Integer status) {
-        LambdaQueryWrapper<ApplicationMntEntity> wrapper = this.getLambdaQueryWrapper()
+        LambdaQueryWrapper<ApplicationMntEntity> wrapper = getLambdaQueryWrapper()
             .eq(ApplicationMntEntity::getTenantId, tenantId)
             .eq(ApplicationMntEntity::getEnvCode, envCode)
             .eq(ApplicationMntEntity::getAccessStatus, status);

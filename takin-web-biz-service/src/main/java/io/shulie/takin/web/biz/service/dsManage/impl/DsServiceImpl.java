@@ -45,6 +45,7 @@ import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeAgentDTO;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.convert.db.parser.*;
 import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
+import io.shulie.takin.web.biz.nacos.event.ShadowConfigRefreshEvent;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
@@ -88,6 +89,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -160,6 +162,9 @@ public class DsServiceImpl implements DsService {
 
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
+
+    @Resource
+    private ApplicationContext applicationContext;
 
     @Autowired
     private ConnectpoolConfigTemplateDAO connectpoolConfigTemplateDAO;
@@ -497,11 +502,12 @@ public class DsServiceImpl implements DsService {
             r.setDeptId(detailResult.getDeptId());
             WebPluginUtils.fillQueryResponse(r);
         });
-        agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName(), false);
+        applicationContext.publishEvent(new ShadowConfigRefreshEvent(detailResult.getApplicationName()));
         return response;
     }
 
@@ -658,11 +664,12 @@ public class DsServiceImpl implements DsService {
         }
         service.updateShadowProgramme(updateRequestV2);
 
-        agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName(), false);
+        applicationContext.publishEvent(new ShadowConfigRefreshEvent(detailResult.getApplicationName()));
         return Response.success();
     }
 
@@ -748,11 +755,6 @@ public class DsServiceImpl implements DsService {
     @Override
     public Response dsDeleteV2(Long id, String middlewareType, Boolean isNewData, Long applicationId) {
         ApplicationDetailResult detailResult = applicationDAO.getApplicationById(applicationId);
-        agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName());
         if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
             //删除老数据
             ApplicationDsDeleteParam deleteParam = new ApplicationDsDeleteParam();
@@ -762,6 +764,13 @@ public class DsServiceImpl implements DsService {
         }
         AbstractTemplateParser templateParser = templateParserMap.get(Type.MiddleWareType.ofKey(middlewareType));
         templateParser.deletedRecord(id);
+
+        agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName(), false);
+        applicationContext.publishEvent(new ShadowConfigRefreshEvent(detailResult.getApplicationName()));
         return Response.success();
     }
 
@@ -778,11 +787,12 @@ public class DsServiceImpl implements DsService {
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
         service.createShadowProgramme(createRequestV2, true);
 
-        agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName());
-        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName(), false);
+        applicationContext.publishEvent(new ShadowConfigRefreshEvent(detailResult.getApplicationName()));
         return Response.success();
     }
 
@@ -1205,11 +1215,6 @@ public class DsServiceImpl implements DsService {
     @Override
     public Response enableConfigV2(Long id, String middlewareType, Boolean isNewData, Long applicationId, Integer status) {
         ApplicationDetailResult result = applicationDAO.getApplicationById(applicationId);
-        agentConfigCacheManager.evictShadowDb(result.getApplicationName());
-        agentConfigCacheManager.evictShadowServer(result.getApplicationName());
-        agentConfigCacheManager.evictShadowEsServers(result.getApplicationName());
-        agentConfigCacheManager.evictShadowHbase(result.getApplicationName());
-        agentConfigCacheManager.evictShadowKafkaCluster(result.getApplicationName());
         if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
             //更新老数据
             ApplicationDsEnableParam enableParam = new ApplicationDsEnableParam();
@@ -1220,6 +1225,13 @@ public class DsServiceImpl implements DsService {
         }
         AbstractTemplateParser templateParser = templateParserMap.get(Type.MiddleWareType.ofKey(middlewareType));
         templateParser.enable(id, status);
+
+        agentConfigCacheManager.evictShadowDb(result.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowServer(result.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowEsServers(result.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowHbase(result.getApplicationName(), false);
+        agentConfigCacheManager.evictShadowKafkaCluster(result.getApplicationName(), false);
+        applicationContext.publishEvent(new ShadowConfigRefreshEvent(result.getApplicationName()));
         return Response.success();
     }
 

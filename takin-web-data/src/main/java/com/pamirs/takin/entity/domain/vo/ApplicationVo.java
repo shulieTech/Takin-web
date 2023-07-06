@@ -85,4 +85,7 @@ public class ApplicationVo extends AuthQueryResponseCommonExt implements Seriali
 
     @ApiModelProperty(name = "confCheckStatus", value = "接入状态； 0：下发中 ； 1；已生效")
     private Integer confCheckStatus;
+
+    @ApiModelProperty(name = "confCheckVersion", value = "配置版本")
+    private Integer confCheckVersion;
 }

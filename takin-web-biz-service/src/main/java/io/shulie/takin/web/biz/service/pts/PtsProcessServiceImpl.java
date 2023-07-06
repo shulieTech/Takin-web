@@ -137,19 +137,11 @@ public class PtsProcessServiceImpl implements PtsProcessService{
         String uploadPath = businessFlowDetail.getScriptFile().getUploadPath();
         String cmdDir = uploadPath.substring(0, uploadPath.lastIndexOf("/"));
         String fileName = uploadPath.substring(uploadPath.lastIndexOf("/") + 1);
-        Boolean containsJar = false;
-        List<FileManageResponse> fileManageResponseList = businessFlowDetail.getFileManageResponseList();
-        if(CollectionUtils.isNotEmpty(fileManageResponseList)) {
-            if(CollectionUtils.isNotEmpty(fileManageResponseList.stream().filter(data -> data.getFileName().endsWith(".jar")).collect(Collectors.toList()))) {
-                containsJar = true;
-            }
-        }
         StringBuffer command = new StringBuffer("cd " + cmdDir);
-        command.append(" && rm -rf jmeter.log result.xml");
-        if(containsJar) {
-            command.append(" && \\cp *.jar " + apacheJmeterPath +"/lib/ext/");
-        }
-        command.append(" && jmeter -n -t " + fileName);
+        command.append(" && rm -rf jmeter.log");
+        command.append(" && rm -rf result.xml");
+        command.append(" && \\cp * " + apacheJmeterPath +"/lib/ext");
+        command.append(" && "+apacheJmeterPath+"/bin/jmeter -n -t " + cmdDir+"/"+fileName);
         File file = new File(cmdDir + "/" + fileName);
         log.info("Check File Exist={}",  file.exists());
         ptsDebugAsync.runJmeterCommand(command.toString());

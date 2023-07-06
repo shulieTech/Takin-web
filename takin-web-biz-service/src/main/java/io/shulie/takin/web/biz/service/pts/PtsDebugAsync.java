@@ -15,10 +15,14 @@ public class PtsDebugAsync {
 
     @Async(value = "foreachQueryThreadPool")
     public void runJmeterCommand(String command) {
+        log.info("begin execute command!!!!!!!!!!!!!!!");
         AtomicReference<Process> shellProcess = new AtomicReference<>();
-        LinuxHelper.runShell(command, 60L,
+        int state = LinuxHelper.runShell(command, 30L,
                 process -> shellProcess.set(process),
-                message -> {}
+                message -> {
+                    log.info("执行返回结果:{}", message);
+                }
         );
+        log.info("end execute command, result={}!!!!!!!!!!!!!!!", state);
     }
 }

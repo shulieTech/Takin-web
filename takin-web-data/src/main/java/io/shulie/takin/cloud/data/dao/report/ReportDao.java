@@ -1,8 +1,5 @@
 package io.shulie.takin.cloud.data.dao.report;
 
-import java.util.Date;
-import java.util.List;
-
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.param.report.ReportInsertParam;
@@ -11,6 +8,9 @@ import io.shulie.takin.cloud.data.param.report.ReportUpdateConclusionParam;
 import io.shulie.takin.cloud.data.param.report.ReportUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author 无涯
@@ -143,4 +143,7 @@ public interface ReportDao {
     List<ReportEntity> queryReportBySceneIds(List<Long> sceneIds);
 
     List<ReportBusinessActivityDetailEntity> getActivityByReportIds(List<Long> reportIds) ;
+
+    List<Long> nearlyHourReportIds(int minutes);
+
 }

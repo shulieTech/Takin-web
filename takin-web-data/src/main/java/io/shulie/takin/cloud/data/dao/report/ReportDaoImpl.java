@@ -1,13 +1,5 @@
 package io.shulie.takin.cloud.data.dao.report;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -31,7 +23,15 @@ import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author 无涯
@@ -300,5 +300,16 @@ public class ReportDaoImpl implements ReportDao {
         LambdaQueryWrapper<ReportBusinessActivityDetailEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(ReportBusinessActivityDetailEntity::getReportId, reportIds);
         return detailMapper.selectList(wrapper);
+    }
+
+    @Override
+    public List<Long> nearlyHourReportIds(int minutes) {
+        LambdaQueryWrapper<ReportEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.select(ReportEntity::getId);
+        //取近一小时的数据
+        Date date = new Date();
+        lambdaQueryWrapper.ge(ReportEntity::getEndTime, DateUtils.addMinutes(date, minutes * -1));
+        lambdaQueryWrapper.eq(ReportEntity::getStatus, 2);
+        return reportMapper.selectList(lambdaQueryWrapper).stream().map(ReportEntity::getId).collect(Collectors.toList());
     }
 }

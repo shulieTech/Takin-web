@@ -1,8 +1,5 @@
 package io.shulie.takin.web.data.dao.activity;
 
-import java.util.List;
-import java.util.Map;
-
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
@@ -12,6 +9,9 @@ import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityUpdateParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author shiyajian
@@ -95,4 +95,7 @@ public interface ActivityDAO {
     List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace);
 
     boolean existsActivity(Long tenantId, String envCode);
+
+    ActivityResult getActivityServiceById(Long activityId);
+
 }

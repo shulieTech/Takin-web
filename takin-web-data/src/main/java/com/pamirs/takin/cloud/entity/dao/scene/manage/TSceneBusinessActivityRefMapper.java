@@ -1,14 +1,16 @@
 package com.pamirs.takin.cloud.entity.dao.scene.manage;
 
-import java.util.List;
-
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneBusinessActivityRef;
+import io.shulie.takin.cloud.data.model.mysql.SceneBusinessActivityRefEntity;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author -
  */
-public interface TSceneBusinessActivityRefMapper {
+public interface TSceneBusinessActivityRefMapper extends BaseMapper<SceneBusinessActivityRefEntity> {
 
     /**
      * 依据主键删除
@@ -73,7 +75,7 @@ public interface TSceneBusinessActivityRefMapper {
      * @return 关联关系
      */
     SceneBusinessActivityRef querySceneBusinessActivityRefByActivityId(@Param("sceneId") Long sceneId,
-        @Param("businessActivityId") Long businessActivityId);
+                                                                       @Param("businessActivityId") Long businessActivityId);
 
     SceneBusinessActivityRef selectByBindRef(@Param("bindRef") String bindRef, @Param("sceneId") Long sceneId);
 }

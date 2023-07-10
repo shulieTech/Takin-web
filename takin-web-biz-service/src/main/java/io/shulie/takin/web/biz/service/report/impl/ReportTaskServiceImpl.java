@@ -1,39 +1,55 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.fastjson.JSON;
-
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.common.collect.Lists;
+import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneBusinessActivityRefMapper;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.adapter.api.model.request.report.UpdateReportConclusionReq;
-import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
-import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.biz.pojo.output.report.ReportAppMapOut;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.pojo.response.report.ReportApplicationSummary;
 import io.shulie.takin.web.biz.service.DistributedLock;
+import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
+import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
+import io.shulie.takin.web.data.mapper.mysql.ReportApplicationSummaryMapper;
+import io.shulie.takin.web.data.model.mysql.ReportApplicationSummaryEntity;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 1、查询生成中状态的报告（只取一条）
@@ -85,6 +101,15 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 
     @Autowired
     private DistributedLock distributedLock;
+
+    @Resource
+    private TSceneBusinessActivityRefMapper tSceneBusinessActivityRefMapper;
+
+    @Resource
+    private ReportApplicationSummaryMapper reportApplicationSummaryMapper;
+
+    @Autowired
+    private ReportLocalService reportLocalService;
 
     @Override
     public Boolean finishReport(Long reportId, TenantCommonExt commonExt) {
@@ -262,7 +287,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         reportDataCache.readyCloudReportData(reportId);
         //first 同步应用基础信息
         long startTime = System.currentTimeMillis();
-        problemAnalysisService.syncMachineData(reportId);
+        problemAnalysisService.syncMachineData(reportId, null);
         log.debug("reportId={} syncMachineData success，cost time={}s", reportId,
                 (System.currentTimeMillis() - startTime) / 1000);
     }
@@ -287,5 +312,99 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         summaryService.calcApplicationSummary(reportId);
         log.debug("reportId={} calcApplicationSummary success，cost time={}s", reportId,
                 (System.currentTimeMillis() - startTime) / 1000);
+    }
+
+    /**
+     * 汇总实况数据，包括应用基础信息、tps指标图、应用机器数和风险机器
+     *
+     * @param reportId
+     */
+    @Override
+    public void calcTmpReportData(Long reportId) {
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        //Ready 数据准备
+        reportDataCache.readyCloudReportData(reportId);
+        //first 同步应用基础信息
+        executorService.execute(() -> {
+            problemAnalysisService.syncMachineData(reportId, null);
+        });
+        //then tps指标图
+//        executorService.execute(() -> {
+//            summaryService.calcTpsTarget(reportId, null);
+//        });
+        //end汇总应用 机器数 风险机器数
+        executorService.execute(() -> {
+            summaryService.calcApplicationSummary(reportId);
+        });
+        //存储应用信息到数据库
+        executorService.execute(() -> {
+            insertReportApplicationSummaryEntity(reportId);
+        });
+    }
+
+    @Override
+    public List<Long> nearlyHourReportIds(int minutes) {
+        return reportService.nearlyHourReportIds(minutes);
+    }
+
+    @Override
+    public void calcMachineDate(Long reportId) {
+        try {
+            List<ReportEntity> reportEntities = reportService.getReportListByReportIds(Lists.newArrayList(reportId));
+            if (CollectionUtils.isEmpty(reportEntities)) {
+                return;
+            }
+            ReportEntity reportEntity = reportEntities.get(0);
+
+            //Ready 数据准备
+            reportDataCache.readyCloudReportData(reportId);
+
+            ExecutorService executorService = Executors.newFixedThreadPool(4);
+            Long endTime = System.currentTimeMillis();
+            if (reportEntity.getEndTime() != null) {
+                endTime = DateUtils.addMinutes(reportEntity.getEndTime(), 15).getTime();
+            }
+            //first 同步应用基础信息
+            Long finalEndTime = endTime;
+            executorService.execute(() -> {
+                problemAnalysisService.syncMachineData(reportId, finalEndTime);
+            });
+            //then tps指标图
+//            executorService.execute(() -> {
+//                summaryService.calcTpsTarget(reportId, finalEndTime);
+//            });
+
+            //存储应用信息到数据库
+            executorService.execute(() -> {
+                insertReportApplicationSummaryEntity(reportId);
+            });
+        } catch (Exception e) {
+            log.error("calcNearlyHourReportService error,reportId={}", reportId, e);
+        }
+    }
+
+    @Override
+    public void insertReportApplicationSummaryEntity(Long reportId) {
+
+        LambdaQueryWrapper<ReportApplicationSummaryEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ReportApplicationSummaryEntity::getReportId, reportId);
+        List<ReportApplicationSummaryEntity> dbSummaryEntityList = reportApplicationSummaryMapper.selectList(lambdaQueryWrapper);
+
+        Map<String, ReportApplicationSummaryEntity> map = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(dbSummaryEntityList)) {
+            map = dbSummaryEntityList.stream().collect(Collectors.toMap(ReportApplicationSummaryEntity::getApplicationName, summary -> summary, (k1, k2) -> k2));
+        }
+
+        Map<String, ReportApplicationSummaryEntity> finalMap = map;
+        List<ReportAppMapOut> list = reportLocalService.getReportAppTrendMapToReportApplication(reportId);
+        List<ReportApplicationSummaryEntity> reportApplicationSummaryEntities = list.parallelStream().map(a -> {
+            ReportApplicationSummaryEntity dbReportApplicationSummaryEntity = finalMap.get(a.getAppName());
+            Long id = dbReportApplicationSummaryEntity != null ? dbReportApplicationSummaryEntity.getId() : null;
+            return ReportApplicationSummary.genReportApplicationSummaryEntity(a, reportId, id);
+        }).collect(Collectors.toList());
+
+        for (ReportApplicationSummaryEntity reportApplicationSummary : reportApplicationSummaryEntities) {
+            reportApplicationSummaryMapper.insertOrUpdateTargetTps(reportApplicationSummary);
+        }
     }
 }

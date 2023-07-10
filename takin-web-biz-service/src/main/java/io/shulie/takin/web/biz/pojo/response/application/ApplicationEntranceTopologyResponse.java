@@ -1,15 +1,15 @@
 package io.shulie.takin.web.biz.pojo.response.application;
 
-import java.util.List;
-import java.util.Set;
-import java.util.HashMap;
-
 import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
 import io.shulie.amdb.common.enums.NodeTypeGroupEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.Getter;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 import static io.shulie.takin.web.biz.service.LinkTopologyService.INIT;
 
@@ -99,17 +99,25 @@ public class ApplicationEntranceTopologyResponse {
         private List<NodeDetailDatasourceInfo> nodes;
 
         // <<<<< 节点中 某个服务的 4 个性能指标
-            @ApiModelProperty("服务总调用量")
-            private Double serviceAllTotalCount;
+        @ApiModelProperty("服务总调用量")
+        private Double serviceAllTotalCount;
 
-            @ApiModelProperty("服务总成功率")
-            private Double serviceAllSuccessRate;
+        @ApiModelProperty("服务总成功率")
+        private Double serviceAllSuccessRate;
 
-            @ApiModelProperty("服务总Tps")
-            private Double serviceAllTotalTps;
+        @ApiModelProperty("服务总Tps")
+        private Double serviceAllTotalTps;
 
-            @ApiModelProperty("服务Rt")
-            private Double serviceRt;
+        @ApiModelProperty("服务Rt")
+        private Double serviceRt;
+        // >>>>> 节点中 某个服务的 4 个性能指标
+
+        @ApiModelProperty("maxRt")
+        private Double serviceMaxRt;
+        // >>>>> 节点中 某个服务的 4 个性能指标
+
+        @ApiModelProperty("minRt")
+        private Double serviceMinRt;
         // >>>>> 节点中 某个服务的 4 个性能指标
 
         // 一般瓶颈 [false 没有瓶颈 | true 有一般瓶颈]

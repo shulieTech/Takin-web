@@ -19,57 +19,57 @@
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-app</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-entrypoint</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-biz-service</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-ext-api</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-ext-jmeter</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-diff-cloud</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-config-common</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-config-sync-api</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-config-sync-zk-common</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-data</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-common</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
@@ -79,37 +79,37 @@
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-config-sync-http-impl</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-diff-api</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-config-sync-http-common</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-amdb-accessor</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-adapter-api</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-adapter-cloud</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-eventcenter</artifactId>
-                <version>${parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <!--内部module 业务依赖-->
 

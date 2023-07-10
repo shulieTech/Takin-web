@@ -1,21 +1,8 @@
 package io.shulie.takin.web.biz.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import com.alibaba.fastjson.JSON;
-
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
@@ -23,15 +10,14 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
-import io.shulie.takin.cloud.common.constants.SceneManageConstant;
-import io.shulie.takin.web.common.util.RedisClientUtil;
-import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.adapter.api.entrypoint.scenetask.CloudTaskApi;
-import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.adapter.api.model.request.engine.EnginePluginsRefOpen;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageWrapperReq;
 import io.shulie.takin.adapter.api.model.request.scenetask.TaskFlowDebugStartReq;
+import io.shulie.takin.cloud.common.constants.SceneManageConstant;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
@@ -44,21 +30,9 @@ import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.convert.activity.ActivityServiceConvert;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ListApplicationRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.*;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.BusinessApplicationListResponse;
+import io.shulie.takin.web.biz.pojo.response.activity.*;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
@@ -83,6 +57,7 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
@@ -109,6 +84,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -1083,6 +1063,23 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public boolean existsActivity(Long tenantId, String envCode) {
         return activityDAO.existsActivity(tenantId, envCode);
+    }
+
+    @Override
+    public ActivityResponse getActivityServiceById(Long id) {
+        ActivityResult result = activityDAO.getActivityServiceById(id);
+        if(result == null) {
+            return null;
+        }
+        ActivityResponse response = new ActivityResponse();
+        response.setActivityId(id);
+        response.setEntranceName(result.getEntranceName());
+        response.setServiceName(result.getServiceName());
+        response.setMethod(result.getMethod());
+        response.setRpcType(result.getRpcType());
+        response.setApplicationName(result.getApplicationName());
+        response.setExtend(result.getExtend());
+        return response;
     }
 }
 

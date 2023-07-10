@@ -1,52 +1,63 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneBusinessActivityRefMapper;
 import com.pamirs.takin.entity.domain.dto.report.*;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
+import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
+import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
+import io.shulie.takin.adapter.api.model.request.report.ReportMessageCodeReq;
+import io.shulie.takin.adapter.api.model.request.report.ReportMessageDetailReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.biz.utils.ReportLtDetailOutputUtils;
 import io.shulie.takin.cloud.common.pojo.Pair;
 import io.shulie.takin.cloud.common.utils.TestTimeUtil;
+import io.shulie.takin.cloud.data.mapper.mysql.ReportBusinessActivityDetailMapper;
+import io.shulie.takin.cloud.data.mapper.mysql.ReportMapper;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.model.mysql.SceneBusinessActivityRefEntity;
 import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.amdb.api.TraceClient;
+import io.shulie.takin.web.amdb.bean.query.trace.TraceMetricsRequest;
+import io.shulie.takin.web.amdb.bean.result.trace.TraceMetricsAll;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
 import io.shulie.takin.web.biz.pojo.input.report.NodeCompareTargetInput;
 import io.shulie.takin.web.biz.pojo.output.report.*;
+import io.shulie.takin.web.biz.pojo.request.activity.ReportActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
+import io.shulie.takin.web.biz.pojo.response.activity.ReportActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
-import io.shulie.takin.web.biz.service.report.ReportLocalService;
-import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
+import io.shulie.takin.web.biz.pojo.response.report.ReportApplicationSummary;
+import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.report.*;
+import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
+import io.shulie.takin.web.common.util.DataTransformUtil;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
 import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
+import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
+import io.shulie.takin.web.data.mapper.mysql.ReportApplicationSummaryMapper;
+import io.shulie.takin.web.data.mapper.mysql.ReportMachineMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.model.mysql.ReportApplicationSummaryEntity;
+import io.shulie.takin.web.data.model.mysql.ReportMachineEntity;
 import io.shulie.takin.web.data.param.report.ReportApplicationSummaryQueryParam;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 import io.shulie.takin.web.data.result.report.ReportApplicationSummaryResult;
@@ -62,6 +73,17 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -83,6 +105,60 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Autowired
     private ReportRealTimeService reportRealTimeService;
+
+    @Autowired
+    private ActivityService activityService;
+
+    @Resource
+    private RedisClientUtil redisClientUtil;
+
+    @Resource
+    private ReportService reportService;
+
+    private static final String reportCompareData = "report:vlt:compareDataV3:%s:%s";
+
+    private static final String reportMessageCodeData = "report:vlt:messageCodeData:%s:%s";
+
+    private static final String reportMessageDetailData = "report:vlt:messageDetailData:%s:%s:%s";
+
+    private static List<Pair<Integer, Integer>> costList = new ArrayList<>();
+
+    @Autowired
+    private ReportMessageService reportMessageService;
+
+    @Resource
+    private ReportMapper reportMapper;
+    @Resource
+    private TSceneBusinessActivityRefMapper tSceneBusinessActivityRefMapper;
+
+    @Autowired
+    private ReportDataCache reportDataCache;
+    @Resource
+    private ApplicationMntMapper applicationMntMapper;
+
+    @Resource
+    private ReportBusinessActivityDetailMapper detailMapper;
+
+    @Autowired
+    private TraceClient traceClient;
+
+    @Resource
+    private ReportMachineMapper reportMachineMapper;
+
+    @Autowired
+    private ReportTaskService reportTaskService;
+
+    @Resource
+    private ReportApplicationSummaryMapper reportApplicationSummaryMapper;
+
+
+    static {
+        costList.add(new Pair<>(0, 200));
+        costList.add(new Pair<>(200, 500));
+        costList.add(new Pair<>(500, 1000));
+        costList.add(new Pair<>(1000, 2000));
+        costList.add(new Pair<>(2000, 999999));
+    }
 
     public static void main(String[] args) {
         String data1
@@ -367,7 +443,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 costReq.setMaxCost(costPair.getValue());
                 costReq.setTransaction(bindRef);
                 Long costCount = reportMessageService.getRequestCountByCost(costReq);
-                if(costPair.getKey() < 1000) {
+                if (costPair.getKey() < 1000) {
                     output.getTrendData().get(i).getXCost().add(costPair.getKey() + "-" + costPair.getValue() + "ms");
                 } else {
                     output.getTrendData().get(i).getXCost().add(costPair.getKey() / 1000 + "-" + costPair.getValue() / 1000 + "s");
@@ -399,8 +475,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         //缓存明细数据
         ReportLtDetailOutput detailOutput = ReportLtDetailOutputUtils.convertToLt(reportDetailOutput);
-        for(BusinessActivityReportOutput activityOutput : detailOutput.getBusinessActivities()) {
-            if(StringUtils.isBlank(activityOutput.getServiceName())) {
+        for (BusinessActivityReportOutput activityOutput : detailOutput.getBusinessActivities()) {
+            if (StringUtils.isBlank(activityOutput.getServiceName())) {
                 continue;
             }
             try {
@@ -479,6 +555,86 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
     }
 
+    private static ReportActivityInfoQueryRequest genActivityInfo(long activityId, ReportEntity reportEntity) {
+        ReportActivityInfoQueryRequest request = new ReportActivityInfoQueryRequest();
+        request.setActivityId(activityId);
+        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
+        request.setStartTime(reportEntity.getStartTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        request.setEndTime(reportEntity.getEndTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plus(5, ChronoUnit.MINUTES));
+        request.setReportId(reportEntity.getId());
+        return request;
+    }
+
+    private static Map<String, NodeCompareTargetOut.TopologyNode> genNodeCompareTargetOut(List<ReportActivityResponse> activityResponseList) {
+        NodeCompareTargetOut.TopologyNode topologyNode = new NodeCompareTargetOut.TopologyNode();
+        List<Map<String, NodeCompareTargetOut.TopologyNode>> list = new ArrayList<>();
+        for (ReportActivityResponse activityResponse : activityResponseList) {
+            topologyNode.setId(activityResponse.getLinkId());
+            topologyNode.setMethodName(activityResponse.getMethod());
+            topologyNode.setService(activityResponse.getServiceName());
+            topologyNode.setLabel(activityResponse.getApplicationName());
+            Map<String, NodeCompareTargetOut.TopologyNode> map = new HashMap<>();
+            if (activityResponse.getTopology() != null && CollectionUtils.isNotEmpty(activityResponse.getTopology().getNodes())) {
+                for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponse.getTopology().getNodes()) {
+                    NodeCompareTargetOut.TopologyNode topologyNodeTree = new NodeCompareTargetOut.TopologyNode();
+                    topologyNodeTree.setId(node.getId());
+                    topologyNodeTree.setLabel(node.getLabel());
+                    topologyNodeTree.setService1Rt(node.getServiceRt());
+                    topologyNodeTree.setService(activityResponse.getServiceName());
+                    topologyNodeTree.setMethodName(activityResponse.getMethod());
+                    if (CollectionUtils.isEmpty(node.getUpAppNames())) {
+                        map.put(node.getLabel(), topologyNodeTree);
+                    }
+                    for (String upAppName : node.getUpAppNames()) {
+                        map.put(node.getLabel() + "&&&&&&" + upAppName, topologyNodeTree);
+                    }
+                }
+            }
+            list.add(map);
+        }
+        //合并数据
+        Set<String> keys1 = list.get(0).keySet();
+        Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap1 = list.get(0);
+        Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap2 = list.get(1);
+        Map<String, NodeCompareTargetOut.TopologyNode> newNodeMap = new HashMap<>();
+        for (String s : keys1) {
+            NodeCompareTargetOut.TopologyNode topologyNode1 = topologyNodeMap1.get(s);
+            NodeCompareTargetOut.TopologyNode topologyNode2 = topologyNodeMap2.get(s);
+            if (topologyNode1 == null || topologyNode2 == null) {
+                continue;
+            }
+            topologyNode1.setService2Rt(topologyNode2.getService1Rt());
+            newNodeMap.put(s, topologyNode1);
+        }
+        return newNodeMap;
+    }
+
+    private static NodeCompareTargetOut.TopologyNode genNodeTree(NodeCompareTargetOut.TopologyNode root, Map<String, NodeCompareTargetOut.TopologyNode> map) {
+        Iterator<String> iterator = map.keySet().iterator();
+        while (iterator.hasNext()) {
+            String key = iterator.next();
+            String[] split = key.split("&&&&&&");
+            if (split.length != 2) {
+                continue;
+            }
+            if (root.getLabel().equals(split[1])) {
+                if (CollectionUtils.isEmpty(root.getNodes())) {
+                    List<NodeCompareTargetOut.TopologyNode> list = new ArrayList<>();
+                    list.add(map.get(key));
+                    root.setNodes(list);
+                } else {
+                    root.getNodes().add(map.get(key));
+                }
+                genNodeTree(map.get(key), map);
+            } else if (root.getLabel().equals(split[0])) {
+                NodeCompareTargetOut.TopologyNode topologyNode = map.get(key);
+                root.setService1Rt(topologyNode.getService1Rt());
+                root.setService2Rt(topologyNode.getService2Rt());
+            }
+        }
+        return root;
+    }
+
     /**
      * 获取报告应用性能列表
      *
@@ -538,6 +694,15 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             log.error("getReortAppPerformanceList error:", e);
         }
         return Response.success(Collections.EMPTY_LIST);
+    }
+
+
+    private ReportEntity getReportEntity(long reportId) {
+        return reportMapper.selectOne(new LambdaQueryWrapper<ReportEntity>().eq(ReportEntity::getId, reportId).eq(ReportEntity::getIsDeleted, 0).select(ReportEntity::getId, ReportEntity::getSceneName, ReportEntity::getSceneId, ReportEntity::getEndTime, ReportEntity::getStartTime));
+    }
+
+    private List<SceneBusinessActivityRefEntity> getSceneBusinessActivityRefEntities(Long sceneId) {
+        return tSceneBusinessActivityRefMapper.selectList(new LambdaQueryWrapper<SceneBusinessActivityRefEntity>().eq(SceneBusinessActivityRefEntity::getSceneId, sceneId));
     }
 
     /**
@@ -635,6 +800,54 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             log.error("getReortAppInstancePerformanceList error:", e);
         }
         return Response.success(Collections.EMPTY_LIST);
+    }
+
+    private BigDecimal getAvg(List<BigDecimal> num) {
+        BigDecimal total = BigDecimal.valueOf(num.size());
+        BigDecimal count = num.stream().reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+        if (count.compareTo(new BigDecimal(0)) == 0) {
+            return new BigDecimal(0);
+        }
+        return count.divide(total, 2, RoundingMode.HALF_UP);
+    }
+
+    private Map<String, BigDecimal> getNodeTps(ReportEntity reportEntity, List<Long> activityIds) {
+        // 首先获取到业务活动id
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> reportWrapper = new LambdaQueryWrapper<>();
+        reportWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportEntity.getId());
+        reportWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, reportEntity.getSceneId());
+        reportWrapper.in(ReportBusinessActivityDetailEntity::getBusinessActivityId, activityIds);
+        List<ReportBusinessActivityDetailEntity> reportBusinessActivityDetailEntities = detailMapper.selectList(reportWrapper);
+        if (CollectionUtils.isEmpty(reportBusinessActivityDetailEntities)) {
+            return Collections.EMPTY_MAP;
+        }
+
+        List<ActivityResponse> activityResponses = reportBusinessActivityDetailEntities.stream().map(reportBusinessActivityDetailEntity -> {
+            ActivityResponse activityResponse = JSON.parseObject(reportBusinessActivityDetailEntity.getReportJson(), ActivityResponse.class);
+            return activityResponse;
+        }).collect(Collectors.toList());
+        Map<String, BigDecimal> map = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(activityResponses)) {
+            for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponses.get(0).getTopology().getNodes()) {
+                //非app节点就跳过去
+                if (!node.getNodeType().getType().equalsIgnoreCase("app")) {
+                    continue;
+                }
+                map.put(node.getLabel(), new BigDecimal(Optional.ofNullable(node.getServiceAllTotalTps()).orElse(0D)));
+            }
+        }
+        return map;
+    }
+
+    private List<MachineDetailDTO> listMachineDetailByReportId(ReportLocalQueryParam queryParam) {
+        QueryWrapper<ReportMachineEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("report_id", queryParam.getReportId()).eq("application_name", queryParam.getApplicationName());
+        List<ReportMachineEntity> dataList = reportMachineMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(dataList)) {
+            return Lists.newArrayList();
+        }
+        List<MachineDetailDTO> resultList = convert2MachineDetailDTO(DataTransformUtil.list2list(dataList, ReportMachineResult.class));
+        return resultList;
     }
 
     /**
@@ -795,6 +1008,79 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             log.error("getReportAppTrendMap error:", e);
         }
         return Collections.EMPTY_LIST;
+    }
+
+    private List<String> getApplicationEntranceTopologyResponse(Long reportId, Long activityId) {
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
+        lambdaQueryWrapper.eq(ReportBusinessActivityDetailEntity::getBusinessActivityId, activityId);
+        lambdaQueryWrapper.select(ReportBusinessActivityDetailEntity::getReportJson);
+        List<ReportBusinessActivityDetailEntity> detailEntityList = detailMapper.selectList(lambdaQueryWrapper);
+
+        if (CollectionUtils.isEmpty(detailEntityList)) {
+            return Collections.EMPTY_LIST;
+        }
+        List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> allNodes = new ArrayList<>();
+        for (ReportBusinessActivityDetailEntity detail : detailEntityList) {
+            if (Objects.isNull(detail)) {
+                continue;
+            }
+            String reportJson = detail.getReportJson();
+            if (reportJson != null && StringUtils.isNotBlank(reportJson.trim())) {
+                io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = JSON.parseObject(reportJson, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
+                if (Objects.isNull(activityResponse) || Objects.isNull(activityResponse.getTopology())
+                        || Objects.isNull(activityResponse.getTopology().getNodes())) {
+                    continue;
+                }
+                allNodes.addAll(activityResponse.getTopology().getNodes());
+            }
+        }
+        if (CollectionUtils.isEmpty(allNodes)) {
+            return Collections.EMPTY_LIST;
+        }
+        allNodes = allNodes.stream().distinct().collect(Collectors.toList());
+        return getAllEagleIds(allNodes);
+    }
+
+    /**
+     * 获取拓扑图中所有边ID
+     *
+     * @param allNodes
+     * @return
+     */
+    private List<String> getAllEagleIds(List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> allNodes) {
+        List<String> allEagleIds = allNodes.stream()
+                .filter(node -> node.getProviderService() != null)
+                .flatMap(node -> node.getProviderService().stream())
+                .flatMap(appProviderInfo -> appProviderInfo.getDataSource().stream())
+                .map(ApplicationEntranceTopologyResponse.AppProvider::getContainEdgeList)
+                .filter(CollectionUtils::isNotEmpty)
+                .flatMap(List::stream)
+                .map(LinkEdgeDTO::getEagleId)
+                .collect(Collectors.toList());
+        return allEagleIds;
+    }
+
+    /**
+     * 从rt的最大值和最小值中取出5个区间
+     *
+     * @param start    最小值
+     * @param end      最大值
+     * @param interval 区间间隔
+     * @return
+     */
+    private static List<String> getInterval(int start, int end, int interval) {
+        if (start >= end || interval == 0) {
+            return Collections.EMPTY_LIST;
+        }
+        double intervalNum = BigDecimal.valueOf(end).subtract(BigDecimal.valueOf(start)).divide(BigDecimal.valueOf(interval)).doubleValue();
+        List<String> list = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            int startNum = (int) (start + i * intervalNum);
+            int endNum = (int) (start + (i + 1) * intervalNum);
+            list.add(startNum + "-" + endNum);
+        }
+        return list;
     }
 
     /**
@@ -994,7 +1280,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 continue;
             }
 
-            if(min == null || min.length > array.getTime().length) {
+            if (min == null || min.length > array.getTime().length) {
                 min = array.getTime();
             }
         }

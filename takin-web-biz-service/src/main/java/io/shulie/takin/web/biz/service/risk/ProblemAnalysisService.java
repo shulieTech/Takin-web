@@ -1,9 +1,9 @@
 package io.shulie.takin.web.biz.service.risk;
 
-import java.util.List;
-
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
 import io.shulie.takin.web.data.result.risk.BaseRiskResult;
+
+import java.util.List;
 
 /**
  * @author xingchen
@@ -14,7 +14,7 @@ public interface ProblemAnalysisService {
     /**
      * 同步机器数据到表
      */
-    void syncMachineData(Long reportId);
+    void syncMachineData(Long reportId,Long endTime);
 
     /**
      * 检查风险机器，并保存

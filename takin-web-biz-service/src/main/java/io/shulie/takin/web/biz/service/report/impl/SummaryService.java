@@ -1,22 +1,14 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import com.alibaba.fastjson.JSON;
-
 import com.google.common.collect.Lists;
+import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneBusinessActivityRefMapper;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.entity.report.TpsTarget;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import com.pamirs.takin.entity.domain.risk.Metrices;
+import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
@@ -24,6 +16,7 @@ import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
 import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
+import io.shulie.takin.web.data.mapper.mysql.ReportApplicationSummaryMapper;
 import io.shulie.takin.web.data.param.report.ReportApplicationSummaryCreateParam;
 import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
 import io.shulie.takin.web.data.param.report.ReportSummaryCreateParam;
@@ -35,6 +28,14 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 报告汇总接口
@@ -66,6 +67,15 @@ public class SummaryService {
 
     @Autowired
     private InfluxDatabaseManager influxDatabaseManager;
+
+    @Resource
+    private TSceneBusinessActivityRefMapper tSceneBusinessActivityRefMapper;
+
+    @Autowired
+    private ReportLocalService reportLocalService;
+
+    @Resource
+    private ReportApplicationSummaryMapper reportApplicationSummaryMapper;
 
     public void calcApplicationSummary(Long reportId) {
         List<Map<String, Object>> dataList = reportMachineDAO.selectCountByReport(reportId);

@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.9.1.2</version>
+        <version>5.9.2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-app</artifactId>
@@ -116,11 +116,13 @@
                     <groupId>com.github.jsqlparser</groupId>
                 </exclusion>
             </exclusions>
+            <version>${parent.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-entrypoint</artifactId>
+            <version>${parent.version}</version>
         </dependency>
 
         <dependency>
@@ -136,6 +138,7 @@
                     <artifactId>log4j-api</artifactId>
                 </exclusion>
             </exclusions>
+            <version>${parent.version}</version>
         </dependency>
         <!--内部module 业务依赖-->
 
@@ -143,6 +146,7 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-adapter-cloud</artifactId>
+            <version>${parent.version}</version>
         </dependency>
         <!--cloud 依赖-->
         <dependency>
@@ -319,6 +323,7 @@
                     <artifactId>pagehelper-spring-boot-autoconfigure</artifactId>
                 </exclusion>
             </exclusions>
+            <version>${parent.version}</version>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
@@ -329,6 +334,7 @@
                     <groupId>log4j</groupId>
                 </exclusion>
             </exclusions>
+            <version>${parent.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.alibaba/transmittable-thread-local -->

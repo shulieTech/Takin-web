@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.common.util.FileUtils;
 import io.shulie.takin.adapter.api.entrypoint.file.CloudFileApi;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
+import io.shulie.takin.cloud.common.utils.PtsXmlContentUtils;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
@@ -84,6 +85,7 @@ public class PtsProcessServiceImpl implements PtsProcessService{
         UploadResponse uploadResponse;
         try {
             String jmxString = PtsBuildJsonToJmxTextTools.parseJmxString(jsonApi);
+            jmxString = PtsXmlContentUtils.replaceAndSymbol(jmxString);
             //将jmxstring写入文件，并返回地址
             uploadResponse = cloudFileApi.saveJmxStringToFile(request.getProcessName(), jmxString);
         } catch (Exception e) {

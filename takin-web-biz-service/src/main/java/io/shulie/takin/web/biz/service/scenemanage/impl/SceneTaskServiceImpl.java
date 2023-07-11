@@ -331,7 +331,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             if (byZkPath != null) {
                 int limit = Integer.parseInt(byZkPath.getValue());
                 if (limit < totalNodeNum) {
-                    throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, String.format("脚本里http请求数量超过开关配置:%s的值%d的限制", SCRIPT_HTTP_REQUEST_MAX_NUM_KEY, limit));
+                    throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, String.format("脚本里http请求数量超过限制，不要超过%d个。", limit));
                 }
             }
         }

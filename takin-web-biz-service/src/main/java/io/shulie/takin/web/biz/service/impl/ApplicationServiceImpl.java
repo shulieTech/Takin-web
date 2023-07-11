@@ -3,10 +3,6 @@ package io.shulie.takin.web.biz.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUnit;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.NumberUtil;
 import com.alibaba.fastjson.JSON;
@@ -62,6 +58,7 @@ import io.shulie.takin.web.biz.pojo.vo.application.ApplicationDsManageExportVO;
 import io.shulie.takin.web.biz.service.*;
 import io.shulie.takin.web.biz.service.application.ApplicationErrorService;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
+import io.shulie.takin.web.biz.service.application.impl.ApplicationErrorServiceImpl;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
 import io.shulie.takin.web.biz.service.linkmanage.WhiteListService;
@@ -77,6 +74,7 @@ import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.WhiteListConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
+import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
@@ -124,6 +122,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
@@ -132,10 +131,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static io.shulie.takin.web.common.common.Response.PAGE_TOTAL_HEADER;
 
 /**
  * @author mubai<chengjiacai.shulie.io>
@@ -266,11 +264,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Qualifier("agentDataThreadPool")
     private ThreadPoolExecutor agentDataThreadPool;
 
-    @Autowired
-    private ApplicationErrorService applicationErrorService;
-
-    @Value("${takin.redis.error.expire:90}")
-    private Integer errorExpireTime;
 
     @PostConstruct
     public void init() {
@@ -481,23 +474,20 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public Response<List<ApplicationVo>> getApplicationList(ApplicationQueryRequestV2 request) {
-        PagingList<ApplicationListResponseV2> paging = pageApplication(request);
-        List<ApplicationListResponseV2> applications = paging.getList();
-        List<ApplicationVo> resultList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(applications)) {
-            resultList = applications.stream().map(application -> {
-                ApplicationVo vo = new ApplicationVo();
-                vo.setId(application.getId());
-                vo.setApplicationName(application.getApplicationName());
-                return vo;
+    public Response<List<ApplicationVo>> getApplicationList() {
+        List<ApplicationVo> applicationVoList = Lists.newArrayList();
+        List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
+        List<ApplicationDetailResult> applicationDetailResultList = applicationDAO.getApplicationListByUserIds(
+                userIdList);
+        if (CollectionUtils.isNotEmpty(applicationDetailResultList)) {
+            applicationVoList = applicationDetailResultList.stream().map(applicationDetailResult -> {
+                ApplicationVo applicationVo = new ApplicationVo();
+                applicationVo.setId(String.valueOf(applicationDetailResult.getApplicationId()));
+                applicationVo.setApplicationName(applicationDetailResult.getApplicationName());
+                return applicationVo;
             }).collect(Collectors.toList());
         }
-        Response.setHeaders(
-                new HashMap<String, String>(1) {{
-                    put(PAGE_TOTAL_HEADER, String.valueOf(paging.getTotal()));
-                }});
-        return Response.success(resultList);
+        return Response.success(applicationVoList);
     }
 
     @Override
@@ -509,27 +499,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (tApplicationMnt == null) {
             return Response.success(new ApplicationVo());
         }
-
-        //判断是否有异常信息来获取状态，t_application_mnt中的不准
-        ApplicationErrorQueryInput queryInput = new ApplicationErrorQueryInput();
-        queryInput.setApplicationId(tApplicationMnt.getApplicationId());
-
-        List<ApplicationErrorOutput> errors = applicationErrorService.list(queryInput);
-        // 判断下时间
-        if (CollectionUtil.isNotEmpty(errors)) {
-            // 错误信息已被倒序排序，这里去第一个错误信息,超过1分半的则忽略 2022-09-01 18:11:31
-            String time = errors.get(0).getTime();
-            DateTime dateTime = DateUtil.parse(time, DatePattern.NORM_DATETIME_FORMAT);
-            if (DateUtil.between(DateTime.now(), dateTime, DateUnit.SECOND) < errorExpireTime) {
-                tApplicationMnt.setAccessStatus(3);
-            }
-        }
-
         // 取应用节点数信息
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(
                 Collections.singletonList(tApplicationMnt.getApplicationName()));
         ApplicationResult applicationResult = CollectionUtils.isEmpty(applicationResultList)
                 ? null : applicationResultList.get(0);
+
         // 取应用节点版本信息
         ApplicationNodeQueryParam queryParam = new ApplicationNodeQueryParam();
         queryParam.setCurrent(0);
@@ -663,7 +638,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     // 上报应用状态数据
     public void uploadAppStatus(NodeUploadDataDTO param) {
         // 补充header
-        param.setSource(ContextSourceEnum.AGENT.getCode());
         WebPluginUtils.setTraceTenantContext(param);
         if (param == null || StringUtil.isEmpty(param.getApplicationName()) || StringUtil.isEmpty(param.getNodeKey())) {
             throw new TakinWebException(TakinWebExceptionEnum.AGENT_PUSH_APPLICATION_STATUS_VALIDATE_ERROR,
@@ -712,19 +686,16 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
             PageBaseDTO pageBaseDTO = new PageBaseDTO();
             pageBaseDTO.setPageSize(pageSize);
-
             do {
                 // 分页查询数据库应用列表
                 List<ApplicationListResult> applicationList = applicationDAO.pageFromSync(pageBaseDTO);
                 if (applicationList.isEmpty()) {
                     return;
                 }
-
                 // 下一页
                 pageBaseDTO.setCurrent(pageBaseDTO.getCurrent() + 1);
                 // 赋值查询出的应用数量
                 applicationNumber = applicationList.size();
-
                 // 收集应用名称
                 List<String> appNames = applicationList.stream()
                         .map(ApplicationListResult::getApplicationName)
@@ -801,7 +772,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 long n = (long) result.get("n");
                 if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
                     String e = (String) result.get("e");
-                    //不知道异常和Ip就别展示出来误导了
+
                     if (StringUtils.isBlank(e)) {
                         String a = (String) result.get("a");
                         if (StringUtils.isEmpty(a)) {
@@ -834,6 +805,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 } else {
                     applicationDAO.updateStatus(app.getApplicationId());
                 }
+
             }
         }
     }
@@ -1346,6 +1318,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return applicationDAO.getAllTenantApp(commonExtList);
     }
 
+    @Resource
+    ApplicationErrorServiceImpl applicationErrorService;
+
     @Override
     public PagingList<ApplicationListResponseV2> pageApplication(ApplicationQueryRequestV2 request) {
         QueryApplicationParam queryApplicationParam = BeanUtil.copyProperties(request, QueryApplicationParam.class);
@@ -1355,8 +1330,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         queryApplicationParam.setUpdateStartTime(request.getUpdateStartTime());
         queryApplicationParam.setUpdateEndTime(request.getUpdateEndTime());
         IPage<ApplicationListResult> applicationListResultPage = applicationDAO.pageByParam(queryApplicationParam);
-
-        if (org.springframework.util.CollectionUtils.isEmpty(applicationListResultPage.getRecords())) {
+        if (applicationListResultPage.getTotal() == 0) {
             return PagingList.empty();
         }
 
@@ -1376,8 +1350,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public PagingList<ApplicationListByUpgradeResponse> listApplicationByUpgrade(ApplicationListByUpgradeRequest
-                                                                                         request) {
+    public PagingList<ApplicationListByUpgradeResponse> listApplicationByUpgrade(ApplicationListByUpgradeRequest request) {
         QueryApplicationByUpgradeParam param = BeanUtil.copyProperties(request, QueryApplicationByUpgradeParam.class);
         param.setTenantId(WebPluginUtils.traceTenantId());
         param.setEnvCode(WebPluginUtils.traceEnvCode());
@@ -1552,8 +1525,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(
-            List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize,
-            int current,
+            List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current,
             int total, String nameActivity) {
         if (CollectionUtils.isEmpty(data)) {
             return null;
@@ -2269,8 +2241,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      * @param shadowMqConsumers 影子消费者实例列表
      * @return 导出实例列表
      */
-    private List<ShadowConsumerExcelVO> shadowConsumer2ExcelModel
-    (List<ShadowMqConsumerEntity> shadowMqConsumers) {
+    private List<ShadowConsumerExcelVO> shadowConsumer2ExcelModel(List<ShadowMqConsumerEntity> shadowMqConsumers) {
         if (CollectionUtils.isEmpty(shadowMqConsumers)) {
             return Collections.emptyList();
         }
@@ -2797,8 +2768,4 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return appSwitchEnum.getCode().equals(status);
     }
 
-    @Override
-    public boolean existsApplication(Long tenantId, String envCode) {
-        return applicationDAO.existsApplication(tenantId, envCode);
-    }
 }

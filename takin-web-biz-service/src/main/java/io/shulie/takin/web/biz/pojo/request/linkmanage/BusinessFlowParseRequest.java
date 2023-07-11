@@ -29,7 +29,4 @@ public class BusinessFlowParseRequest {
     @NotNull(message = "插件信息 不能为空")
     @ApiModelProperty(name = "pluginConfigs", value = "插件信息")
     List<PluginConfigCreateRequest> pluginList;
-
-    // 单接口压测入口
-    private Integer source;
 }

@@ -1,8 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller;
 
-import java.util.Map;
-import java.util.Properties;
-
 import javax.annotation.Resource;
 
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -20,8 +17,6 @@ public class VersionController {
     @Resource
     private VersionService versionService;
 
-    private static Map<String, Properties> VERSIONS = null;
-
     @GetMapping("version")
     public ResponseResult<Object> version() {
         return ResponseResult.success(versionService.selectVersion());
@@ -31,14 +26,5 @@ public class VersionController {
     public ResponseResult<Boolean> confirm() {
         versionService.confirm();
         return ResponseResult.success(true);
-    }
-
-    @GetMapping("codeVersion")
-    public ResponseResult<Map<String, Properties>> gitVersions() {
-        if (VERSIONS != null) {
-            return ResponseResult.success(VERSIONS);
-        }
-        VERSIONS = versionService.gitVersions();
-        return ResponseResult.success(VERSIONS);
     }
 }

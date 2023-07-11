@@ -54,8 +54,4 @@ public class SceneLinkRelateRequest implements Serializable {
     private Integer businessType;
 
     /*****业务活动相关*******/
-    @ApiModelProperty("请求ptah")
-    private String path;
-    @ApiModelProperty("入口ptah")
-    private String entracePath;
 }

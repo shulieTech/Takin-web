@@ -20,7 +20,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,9 +57,6 @@ public class ScriptDebugController {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DEBUG);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCRIPT_MANAGE_DEPLOY_ID,
             String.valueOf(request.getScriptDeployId()));
-        if (StringUtils.isBlank(request.getMachineId())) {
-            throw new RuntimeException("请选择压力机集群");
-        }
         return scriptDebugService.debug(request);
     }
 

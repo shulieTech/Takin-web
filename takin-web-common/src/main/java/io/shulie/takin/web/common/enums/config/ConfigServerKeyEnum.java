@@ -26,7 +26,7 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 是否执行添加linux用户的操作
      */
     TAKIN_FILE_OPS_SCRIPT_DEPLOY_USER_ENABLE("file.ops_script.deploy_user_enable",
-        "takin.file.ops_script.deploy_user_enable", NO),
+            "takin.file.ops_script.deploy_user_enable", NO),
 
     /**
      * 白名单长度校验
@@ -37,7 +37,7 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 是否开启白名单重名校验
      */
     TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK("whitelist.duplicate.name.check", "takin.white_list.duplicate.name.check",
-        YES),
+            YES),
     /**
      * 白名单文件
      */
@@ -122,7 +122,7 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 压测引擎上传时间间隔 单位毫秒
      */
     TAKIN_PRESSURE_MACHINE_UPLOAD_INTERVAL_TIME("pressure.machine.upload.interval.time",
-        "takin.pressure.machine.upload.interval.time", NO),
+            "takin.pressure.machine.upload.interval.time", NO),
 
     /**
      * 脚本调试支持的 rpcType mq 下的
@@ -146,7 +146,7 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 等待时间 单位秒
      */
     TAKIN_PRADAR_SWITCH_PROCESSING_WAIT_TIME("pradar.switch.processing.wait.time",
-        "takin.pradar.switch.processing.wait.time", NO),
+            "takin.pradar.switch.processing.wait.time", NO),
 
     /**
      * 租户 id
@@ -282,16 +282,6 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 是否同步数据到zk
      */
     TAKIN_ENABLE_SYN_CONFIG("", "takin.enable.syn.config", NO),
-
-    /**
-     * 升级文档地址
-     */
-    TAKIN_UPGRADE_DOCUMENT_URL("", "takin.upgrade.document.url", NO),
-
-    /**
-     * 租户集群选择策略
-     */
-    TAKIN_ENGINE_SELECTOR_STRATEGY("", "takin.engine.selector.strategy", YES),
     ;
 
     /**

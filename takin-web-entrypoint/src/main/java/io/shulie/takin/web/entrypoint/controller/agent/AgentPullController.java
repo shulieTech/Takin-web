@@ -3,7 +3,6 @@ package io.shulie.takin.web.entrypoint.controller.agent;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.websocket.server.PathParam;
 
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
@@ -134,19 +133,4 @@ public class AgentPullController {
         @ApiParam(name = "appName", value = "应用名") @RequestParam("appName") String appName) {
         return ResponseResult.success(agentConfigCacheManager.getRemoteCallConfig(appName));
     }
-
-    /**
-     * agent1.0的白名单获取方式，兼容当前的白名单方式
-     * @param appName -
-     * @param userAppKey -
-     * @return
-     */
-    @ApiOperation(value = "白名单获取")
-    @RequestMapping(value = "/confcenter/wbmnt/query/{userAppKey}", method = RequestMethod.GET)
-    public ResponseResult<AgentRemoteCallVO> wbmntQuery(
-            @ApiParam(name = "appName", value = "应用名") @RequestParam("appName") String appName,
-            @PathParam("userAppKey") String userAppKey) {
-        return ResponseResult.success(agentConfigCacheManager.getRemoteCallConfig(appName));
-    }
-
 }

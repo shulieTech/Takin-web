@@ -20,7 +20,6 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.SupportJmeterPluginNam
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.SupportJmeterPluginVersionResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.WebPartResponse;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
-import io.shulie.takin.web.data.model.mysql.FileManageEntity;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 
 /**
@@ -189,10 +188,5 @@ public interface ScriptManageService {
      * @return 压缩文件名称
      */
     String getZipFileNameByScriptDeployId(Long scriptDeployId);
-
-    /**
-     * 查询所有有签名值的文件
-     */
-    List<FileManageEntity> getAllFile();
 
 }

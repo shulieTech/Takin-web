@@ -2,7 +2,7 @@ package io.shulie.takin.web.biz.pojo.request.scene;
 
 import java.util.List;
 
-import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,8 +16,7 @@ import lombok.Setter;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SceneDetailResponse extends io.shulie.takin.adapter.api.model.response.scenemanage.SceneDetailV2Response {
-    private Long id;
+public class SceneDetailResponse extends io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Response {
     /**
      * 基础信息
      */
@@ -30,7 +29,7 @@ public class SceneDetailResponse extends io.shulie.takin.adapter.api.model.respo
 
     @Data
     @EqualsAndHashCode(callSuper = true)
-    public static class BasicInfo extends io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.BasicInfo {
+    public static class BasicInfo extends io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest.BasicInfo {
         @ApiModelProperty(value = "是否定时执行")
         private Boolean isScheduler;
         @ApiModelProperty(name = "executeTime", value = "定时执行时间")

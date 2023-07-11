@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.shulie.takin.web.data.mapper.mysql.LinkGuardMapper">
-
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.LinkGuardEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_link_guard-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="application_name" jdbcType="VARCHAR" property="applicationName"/>
+        <result column="application_id" jdbcType="BIGINT" property="applicationId"/>
+        <result column="method_info" jdbcType="VARCHAR" property="methodInfo"/>
+        <result column="groovy" jdbcType="LONGVARCHAR" property="groovy"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="is_deleted" jdbcType="TINYINT" property="isDeleted"/>
+        <result column="is_enable" jdbcType="TINYINT" property="isEnable"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id, application_name, application_id, method_info, groovy, create_time, update_time,
+        is_deleted, is_enable
+    </sql>
 </mapper>

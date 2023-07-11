@@ -1,6 +1,6 @@
 package io.shulie.takin.web.biz.pojo.response.scenemanage;
 
-import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageListResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageListResp;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;

@@ -1,22 +1,22 @@
 package io.shulie.takin.web.common.common;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.List;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.github.pagehelper.PageInfo;
-import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
+import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiModelProperty;
+import io.shulie.takin.web.common.domain.ErrorInfo;
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
@@ -143,9 +143,6 @@ public class Response<T> {
     public static Response fail(String code, String msgTemplate, Object... args) {
         OperationLogContextHolder.ignoreLog();
         ErrorInfo errorInfo = ErrorInfo.build(code, msgTemplate, args);
-        HttpServletResponse response = ((ServletRequestAttributes)Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
-        assert response != null;
-        response.setStatus(Integer.parseInt(code));
         return new Response<>(errorInfo, false);
     }
 
@@ -155,9 +152,6 @@ public class Response<T> {
     public static Response fail(String msgTemplate, Object... args) {
         OperationLogContextHolder.ignoreLog();
         ErrorInfo errorInfo = ErrorInfo.build("500", msgTemplate, args);
-        HttpServletResponse response = ((ServletRequestAttributes)Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
-        assert response != null;
-        response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
         return new Response<>(errorInfo, false);
     }
 

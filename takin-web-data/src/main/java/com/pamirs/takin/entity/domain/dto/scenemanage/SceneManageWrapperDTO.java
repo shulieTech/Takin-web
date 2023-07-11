@@ -2,7 +2,6 @@ package com.pamirs.takin.entity.domain.dto.scenemanage;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -86,7 +85,5 @@ public class SceneManageWrapperDTO implements Serializable {
      * 是否是绝对脚本路径
      */
     private Boolean isAbsoluteScriptPath = false;
-
-    private List<String> watchmanIdList = new ArrayList<>();
 
 }

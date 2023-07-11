@@ -6,13 +6,13 @@ import javax.annotation.Resource;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
-import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
-import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
-import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
-import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
-import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
-import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportTrendQueryReq;
+import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
+import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
+import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportTrendResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -165,16 +165,6 @@ public class ReportController {
         ReportJtlDownloadResponse response = new ReportJtlDownloadResponse();
         BeanUtils.copyProperties(output,response);
         return response;
-    }
-
-    @GetMapping("/report/export")
-    @ApiOperation("导出压测报告pdf")
-    @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
-            needAuth = ActionTypeEnum.DOWNLOAD
-    )
-    public ResponseResult<String> getExportDownLoadUrl(Long reportId) {
-        return ResponseResult.success(reportService.downloadPDFPath(reportId));
     }
 
 }

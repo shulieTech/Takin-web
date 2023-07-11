@@ -1,16 +1,16 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import com.baomidou.mybatisplus.annotation.*;
-import io.shulie.takin.utils.PathFormatForTest;
-import io.shulie.takin.web.data.annocation.EnableSign;
+import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
-import java.util.Date;
-
 @Data
 @TableName(value = "t_file_manage")
-@EnableSign
 public class FileManageEntity extends TenantBaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
@@ -68,10 +68,6 @@ public class FileManageEntity extends TenantBaseEntity {
     @TableField(value = "upload_path")
     private String uploadPath;
 
-    public String getUploadPath() {
-        return PathFormatForTest.format(uploadPath);
-    }
-
     @TableField(value = "is_deleted")
     private Integer isDeleted;
 
@@ -80,13 +76,4 @@ public class FileManageEntity extends TenantBaseEntity {
 
     @TableField(value = "gmt_update")
     private Date gmtUpdate;
-
-    @TableField(value = "sign",fill = FieldFill.INSERT)
-    private String sign;
-
-    /**
-     * customerId
-     */
-    @TableField(value = "customer_id")
-    private Long customerId;
 }

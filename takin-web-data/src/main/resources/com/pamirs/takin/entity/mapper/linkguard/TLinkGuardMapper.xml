@@ -13,7 +13,7 @@
         <result column="is_enable" jdbcType="BIT" property="isEnable"></result>
         <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
         <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
-        <result column="sign" jdbcType="VARCHAR" property="sign"/>
+
         <result column="user_id" jdbcType="BIGINT" property="userId"/>
         <result column="remark" jdbcType="VARCHAR" property="remark"/>
     </resultMap>
@@ -159,7 +159,13 @@
         <if test="param.applicationName != null">and application_name = #{param.applicationName,jdbcType=VARCHAR}</if>
     </select>
     <select id="getAllEnabledGuard" resultType="com.pamirs.takin.entity.domain.entity.LinkGuardEntity">
-        select *
+        select id,
+               application_name,
+               application_id,
+               method_info,
+               groovy,
+               remark,
+               is_enable
         from t_link_guard
         where application_id = #{applicationId}
           and is_deleted = 0

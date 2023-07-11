@@ -1,10 +1,5 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -12,12 +7,13 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.cloud.common.utils.CommonUtil;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.adapter.api.entrypoint.scene.mix.SceneMixApi;
+import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
-import io.shulie.takin.adapter.api.model.request.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptAnalyzeRequest;
-import io.shulie.takin.adapter.api.model.response.scenemanage.SynchronizeRequest;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SynchronizeRequest;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
@@ -25,11 +21,7 @@ import io.shulie.takin.web.biz.convert.linkmanage.LinkManageConvert;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
@@ -44,7 +36,6 @@ import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
-import io.shulie.takin.web.biz.utils.FileEncoder;
 import io.shulie.takin.web.common.constant.ScriptManageConstant;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.scene.SceneTypeEnum;
@@ -59,6 +50,7 @@ import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
+import io.shulie.takin.web.data.dao.pradar.PradarZkConfigDAO;
 import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
@@ -76,6 +68,7 @@ import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
+import io.shulie.takin.web.data.result.pradarzkconfig.PradarZkConfigResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
@@ -91,6 +84,10 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author liyuanba
@@ -134,6 +131,10 @@ public class SceneServiceImpl implements SceneService {
     private ApplicationBusinessActivityService applicationBusinessActivityService;
     @Resource
     private ApplicationDAO applicationDAO;
+    @Resource
+    private PradarZkConfigDAO pradarZkConfigDAO;
+
+    private static final String SCRIPT_HTTP_REQUEST_MAX_NUM_KEY = "/pradar/config/jmx/http/limit";
 
     @Override
     public List<SceneLinkRelateResult> nodeLinkToBusinessActivity(List<ScriptNode> nodes, Long sceneId) {
@@ -255,7 +256,6 @@ public class SceneServiceImpl implements SceneService {
             fileManageCreateRequest.setId(null);
             fileManageCreateRequest.setScriptContent(null);
         }
-        boolean encoded = false;
         ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
         analyzeRequest.setScriptFile(tmpFilePath + "/" + fileManageCreateRequest.getUploadId() + "/" + fileManageCreateRequest.getFileName());
         if (businessFlowParseRequest.getScriptFile().getId() != null) {
@@ -265,23 +265,27 @@ public class SceneServiceImpl implements SceneService {
                 throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "没有根据脚本id找到对应脚本！");
             }
             analyzeRequest.setScriptFile(fileManageResult.getUploadPath());
-            encoded = FileEncoder.fileEncoded(analyzeRequest.getScriptFile());
         }
         //解析脚本
-        List<ScriptNode> data = new ArrayList<>();
-        String testPlanName = "";
-        if (!encoded) {
-            //解析脚本
-            data = sceneManageApi.scriptAnalyze(analyzeRequest);
-            List<ScriptNode> testPlan = JmxUtil.getScriptNodeByType(NodeTypeEnum.TEST_PLAN, data);
-            if (CollectionUtils.isEmpty(testPlan)) {
-                throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
+        List<ScriptNode> data = sceneManageApi.scriptAnalyze(analyzeRequest);
+        // 限制脚本里http请求个数
+        List<ScriptNode> nodes = getNodes(data);
+        int httpNodeNum = nodes.stream().filter(scriptNode -> scriptNode.getSamplerType() == SamplerTypeEnum.HTTP).collect(Collectors.toSet()).size();
+        PradarZkConfigResult byZkPath = pradarZkConfigDAO.getByZkPath(SCRIPT_HTTP_REQUEST_MAX_NUM_KEY);
+        if (byZkPath != null) {
+            int limit = Integer.parseInt(byZkPath.getValue());
+            if (limit < httpNodeNum) {
+                throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, String.format("脚本里http请求数量超过开关配置:%s的值%d的限制", SCRIPT_HTTP_REQUEST_MAX_NUM_KEY, limit));
             }
-            testPlanName = testPlan.get(0).getTestName();
+        }
+
+        List<ScriptNode> testPlan = JmxUtil.getScriptNodeByType(NodeTypeEnum.TEST_PLAN, data);
+        if (CollectionUtils.isEmpty(testPlan)) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
         }
         String businessFlowName = null;
         if (businessFlowParseRequest.getId() == null) {
-            SceneCreateParam createParam = saveBusinessFlow(businessFlowParseRequest.getSource(), testPlanName, data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
+            SceneCreateParam createParam = saveBusinessFlow(testPlan.get(0).getTestName(), data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
             businessFlowParseRequest.setId(createParam.getId());
             businessFlowName = createParam.getSceneName();
         } else {
@@ -295,8 +299,9 @@ public class SceneServiceImpl implements SceneService {
         return result;
     }
 
+
     @Transactional(rollbackFor = Exception.class)
-    public SceneCreateParam saveBusinessFlow(Integer source, String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
+    public SceneCreateParam saveBusinessFlow(String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
                                              List<PluginConfigCreateRequest> pluginList) {
         SceneQueryParam sceneQueryParam = new SceneQueryParam();
         sceneQueryParam.setSceneName(testName);
@@ -310,11 +315,7 @@ public class SceneServiceImpl implements SceneService {
         sceneCreateParam.setLinkRelateNum(0);
         sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
         sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
-        if (source != null) {
-            sceneCreateParam.setType(source);
-        } else {
-            sceneCreateParam.setType(SceneTypeEnum.JMETER_UPLOAD_SCENE.getType());
-        }
+        sceneCreateParam.setType(SceneTypeEnum.JMETER_UPLOAD_SCENE.getType());
         WebPluginUtils.fillCloudUserData(sceneCreateParam);
         sceneDao.insert(sceneCreateParam);
 
@@ -638,8 +639,6 @@ public class SceneServiceImpl implements SceneService {
         queryParam.setCurrent(queryRequest.getCurrent());
         queryParam.setPageSize(queryRequest.getPageSize());
         WebPluginUtils.fillQueryParam(queryParam);
-        queryParam.setIgnoreType(SceneTypeEnum.PERFORMANCE_AUTO_SCENE.getType());
-
         PagingList<SceneResult> pageList = sceneDao.selectPageList(queryParam);
         List<BusinessFlowListResponse> responses = LinkManageConvert.INSTANCE.ofSceneResultList(pageList.getList());
         List<Long> userIds = CommonUtil.getList(responses, BusinessFlowListResponse::getUserId);
@@ -852,13 +851,6 @@ public class SceneServiceImpl implements SceneService {
             for (ScriptJmxNode scriptJmxNode : scriptJmxNodes) {
                 //默认不匹配
                 scriptJmxNode.setStatus(0);
-                // 支持beanshell,默认匹配
-                if (scriptJmxNode.getName().equals("BeanShellSampler")) {
-                    scriptJmxNode.setEntrace("|beanshell");
-                    scriptJmxNode.setRequestPath("|beanshell");
-                    scriptJmxNode.setIdentification("takin|beanshell");
-                    scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
-                }
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {
                     ActivityListResult activityListResult = activityMap.get(xpathMd5Map.get(scriptJmxNode.getXpathMd5()));
                     if (activityListResult != null) {
@@ -910,15 +902,5 @@ public class SceneServiceImpl implements SceneService {
         // 根据应用名称, 用户id, 获得应用列表
         List<ApplicationDetailResult> applicationPage = applicationDAO.getApplicationList(new ArrayList<>(applicationNames));
         return applicationPage;
-    }
-
-    @Override
-    public boolean existsScene(Long tenantId, String envCode) {
-        return sceneDao.existsScene(tenantId, envCode);
-    }
-
-    @Override
-    public void update(SceneUpdateParam param) {
-        sceneDao.update(param);
     }
 }

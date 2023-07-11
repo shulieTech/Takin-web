@@ -26,14 +26,4 @@ public interface CacheConstants {
      */
     String CACHE_KEY_ANNUAL_REPORT = "annualReport";
 
-    /**
-     * 缓存键,租户数据签名配置
-     */
-    String CACHE_KEY_TENANT_DATA_SIGN = "tenantDataSign";
-
-    /**
-     * 清理数据
-     */
-    String CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS = "tenantDataSignCleanStatus";
-
 }

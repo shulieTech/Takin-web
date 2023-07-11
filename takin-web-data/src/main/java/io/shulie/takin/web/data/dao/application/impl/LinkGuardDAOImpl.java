@@ -80,11 +80,9 @@ public class LinkGuardDAOImpl extends ServiceImpl<LinkGuardMapper, LinkGuardEnti
 
     @Override
     public List<LinkGuardEntity> listFromExportByApplicationId(Long applicationId) {
-//        return this.list(this.getLambdaQueryWrapper().select(LinkGuardEntity::getId, LinkGuardEntity::getMethodInfo,
-//                LinkGuardEntity::getGroovy, LinkGuardEntity::getIsEnable, LinkGuardEntity::getRemark)
-//            .eq(LinkGuardEntity::getApplicationId, applicationId));
-//       数据签名必须全部字段返回,不然签名计算结果对不上
-        return this.list(this.getLambdaQueryWrapper().eq(LinkGuardEntity::getApplicationId, applicationId));
+        return this.list(this.getLambdaQueryWrapper().select(LinkGuardEntity::getId, LinkGuardEntity::getMethodInfo,
+                LinkGuardEntity::getGroovy, LinkGuardEntity::getIsEnable, LinkGuardEntity::getRemark)
+            .eq(LinkGuardEntity::getApplicationId, applicationId));
     }
 
     @Override
@@ -93,6 +91,27 @@ public class LinkGuardDAOImpl extends ServiceImpl<LinkGuardMapper, LinkGuardEnti
         wrapper.eq(LinkGuardEntity::getApplicationId, applicationId);
         wrapper.set(LinkGuardEntity::getApplicationName, appName);
         this.update(wrapper);
+    }
+
+    @Override
+    public List<LinkGuardResult> selectByAppNameUnderCurrentUser(Long appId) {
+        List<LinkGuardResult> results = new ArrayList<>();
+        LambdaQueryWrapper<LinkGuardEntity> wrapper = new LambdaQueryWrapper<>();
+        if (WebPluginUtils.checkUserPlugin()) {
+            wrapper.eq(LinkGuardEntity::getTenantId, WebPluginUtils.traceTenantId());
+        }
+        wrapper.eq(LinkGuardEntity::getApplicationId, appId);
+        List<LinkGuardEntity> linkGuardEntities = this.getBaseMapper().selectList(wrapper);
+        if (CollectionUtils.isEmpty(linkGuardEntities)) {
+            return results;
+        }
+        return linkGuardEntities.stream().map(item -> {
+            LinkGuardResult target = new LinkGuardResult();
+            BeanUtils.copyProperties(item, target);
+            // 启动
+            target.setIsEnable(item.getIsEnable() == GuardEnableConstants.GUARD_ENABLE);
+            return target;
+        }).collect(Collectors.toList());
     }
 
 }

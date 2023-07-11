@@ -93,6 +93,4 @@ public interface ActivityDAO {
     BusinessLinkManageTableEntity getActivityByName(String activityName);
 
     List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace);
-
-    boolean existsActivity(Long tenantId, String envCode);
 }

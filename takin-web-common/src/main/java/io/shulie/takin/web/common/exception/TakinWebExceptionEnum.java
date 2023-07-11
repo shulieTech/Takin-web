@@ -22,9 +22,7 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     SCENE_START_VALIDATE_ERROR("0101-" + ErrorConstant.VALIDATE_ERROR, "压测场景启动模块参数校验"),
     SCENE_REPORT_THIRD_PARTY_ERROR("0102-" + ErrorConstant.THIRD_PARTY_ERROR, "压测场景报告第三方返回异常"),
     SCENE_REPORT_VALIDATE_ERROR("0102-" + ErrorConstant.VALIDATE_ERROR, "压测报告数据校验异常"),
-    SCENE_REPORT_EXPORT_ERROR("0102-" + ErrorConstant.FILE_UPLOAD_ERROR, "压测报告数据下载异常"),
     SCENE_REPORT_LINK_DETAIL_THIRD_PARTY_ERROR("0103-" + ErrorConstant.THIRD_PARTY_ERROR, "压测场景报告流量明细第三方返回异常"),
-    SCENE_REPORT_DATA_CALIBRATION("0103-" + ErrorConstant.THIRD_PARTY_ERROR, "压测报告数据校准第三方返回异常"),
 
     /**
      * 脚本
@@ -144,57 +142,36 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 影子配置
      */
     SHADOW_CONFIG_CREATE_ERROR("1400-" + ErrorConstant.VALIDATE_ERROR, "新增影子配置异常"),
-    SHADOW_CONFIG_URL_CREATE_ERROR("1401-" + ErrorConstant.VALIDATE_ERROR, "新增影子配置数据源异常"),
 
     /**
      * 业务域管理
      */
     BUSINESS_DOMAIN_ADD_ERROR("1500-" + ErrorConstant.ADD_ERROR, "新增业务域异常"),
-    BUSINESS_DOMAIN_UPDATE_ERROR("1500-" + ErrorConstant.UPDATE_ERROR, "更新业务域异常"),
+    BUSINESS_DOMAIN_UPDATE_ERROR("1500-"+ErrorConstant.UPDATE_ERROR,"更新业务域异常"),
     BUSINESS_DOMAIN_DELETE_ERROR("1500-" + ErrorConstant.DELETE_ERROR, "删除业务域异常"),
 
 
     /**
-     * agent指令操作
+     *  agent指令操作
      */
-    AGENT_COMMAND_VALID_ERROR("1500-" + ErrorConstant.VALIDATE_ERROR, "Agent 指令操作 数据校验异常"),
+    AGENT_COMMAND_VALID_ERROR("1500-"+ErrorConstant.VALIDATE_ERROR,"Agent 指令操作 数据校验异常"),
 
     /**
      * 插件根目录
      */
-    PLUGIN_PATH_VALID_ERROR("1600-" + ErrorConstant.VALIDATE_ERROR, "探针根目录数据校验异常"),
+    PLUGIN_PATH_VALID_ERROR("1600-"+ErrorConstant.VALIDATE_ERROR,"探针根目录数据校验异常"),
 
     /**
      * 升级
      */
-    PLUGIN_UPGRADE_VALID_ERROR("1700-" + ErrorConstant.VALIDATE_ERROR, "升级包数据异常"),
+    PLUGIN_UPGRADE_VALID_ERROR("1700-"+ErrorConstant.VALIDATE_ERROR,"升级包数据异常"),
 
     /**
      * 应用标签
      */
-    APPLICATION_TAG_CREATE_ERROR("1800-" + ErrorConstant.ADD_ERROR, "应用标签创建异常"),
+    APPLICATION_TAG_CREATE_ERROR("1800-"+ErrorConstant.ADD_ERROR,"应用标签创建异常"),
 
     REDIS_CMD_EXECUTE_ERROR("cloud-009-s0209", "REDIS命令执行异常"),
-
-    /**
-     * 数据签名
-     */
-    DATA_SIGN_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据签名异常"),
-
-	DATA_SIGN_CLEAR_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据正在清理中,暂时无法开启"),
-
-	/**
-     * 接口压测
-     */
-    INTERFACE_PERFORMANCE_PARAM_ERROR("1900-" + ErrorConstant.DELETE_ERROR, "接口压测删除异常"),
-    INTERFACE_PERFORMANCE_CREATE_ERROR("1901-" + ErrorConstant.ADD_ERROR, "接口压测新增异常"),
-    INTERFACE_PERFORMANCE_QUERY_ERROR("1902-" + ErrorConstant.QUERY_ERROR, "接口压测查询异常"),
-    INTERFACE_PERFORMANCE_FILE_TYPE_ERROR("1903-" + ErrorConstant.ADD_ERROR, "不支持的文件类型"),
-    INTERFACE_PERFORMANCE_DEBUG_ERROR("1904-" + ErrorConstant.STATUS_ERROR, "当前场景已在调试中"),
-    INTERFACE_PERFORMANCE_FILE_PARAM_ERROR("1905-" + ErrorConstant.VALIDATE_ERROR, "参数存在重复"),
-    INTERFACE_PERFORMANCE_QUERY_PARAM_ERROR("1906-" + ErrorConstant.QUERY_ERROR, "获取入口参数异常"),
-    INTERFACE_PERFORMANCE_SCRIPT_CREATE_ERROR("1907-" + ErrorConstant.ADD_ERROR, "生成脚本异常"),
-    INTERFACE_PERFORMANCE_SCENE_OP_ERROR("1908-" + ErrorConstant.ADD_ERROR, "场景操作异常"),
 
     ;
     private final String errorCode;

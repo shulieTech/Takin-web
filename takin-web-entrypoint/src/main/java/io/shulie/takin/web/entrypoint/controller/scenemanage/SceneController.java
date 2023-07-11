@@ -14,14 +14,14 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.adapter.api.entrypoint.scene.mix.SceneMixApi;
+import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageQueryReq;
-import io.shulie.takin.adapter.api.model.response.scenemanage.SceneDetailV2Response;
-import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
-import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Response;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
+import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
@@ -117,7 +117,6 @@ public class SceneController {
                 setExecuteTime(request.getBasicInfo().getExecuteTime());
             }});
         }
-
         // 忽略检测的应用
         sceneManageService.createSceneExcludedApplication(sceneId, request.getDataValidation().getExcludedApplicationIds());
 

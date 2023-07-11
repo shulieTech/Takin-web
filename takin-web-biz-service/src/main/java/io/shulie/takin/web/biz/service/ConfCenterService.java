@@ -99,6 +99,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -149,6 +150,10 @@ public class ConfCenterService extends CommonService {
     private RedisTemplate redisTemplate;
 
     public static final String APPLICATION_CACHE_PREFIX = "application:cache";
+
+    // 是否默认初始化白名单
+    @Value("${takin.enable.initWhiteList:false}")
+    private boolean initWhiteList;
 
     @PostConstruct
     public void init() {
@@ -244,6 +249,10 @@ public class ConfCenterService extends CommonService {
 
     @PostConstruct
     public void initWhiteList() {
+        if (!initWhiteList) {
+            log.info("不初始化白名单到文件");
+            return;
+        }
         writeWhiteListFile();
     }
 

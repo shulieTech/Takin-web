@@ -4,10 +4,9 @@ import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
-import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
-import io.shulie.takin.adapter.api.model.response.scenetask.SceneJobStateResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneJobStateResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.biz.pojo.request.scenemanage.TaskPreStopRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.UpdateTpsRequest;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 
@@ -82,9 +81,4 @@ public interface SceneTaskService {
      */
     ResponseResult<String> stop(Long sceneId);
 
-    CheckResultVo preCheck(SceneActionParam param);
-
-    void cacheReportKey(Long reportId, Long pressureTestSecond);
-
-    void forceStop(String resourceId);
 }

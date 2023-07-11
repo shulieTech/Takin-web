@@ -41,4 +41,6 @@ public interface LinkGuardDAO extends IService<LinkGuardEntity> {
      */
     void updateAppName(Long applicationId, String appName);
 
+    List<LinkGuardResult> selectByAppNameUnderCurrentUser(Long appId);
+
 }

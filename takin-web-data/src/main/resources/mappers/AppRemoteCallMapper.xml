@@ -20,7 +20,6 @@
     <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
     <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified" />
     <result column="manual_tag" jdbcType="TINYINT" property="manualTag" />
-    <result column="sign" jdbcType="VARCHAR" property="sign" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->

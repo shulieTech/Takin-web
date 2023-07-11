@@ -1,6 +1,5 @@
 package io.shulie.takin.web.app.conf;
 
-import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -18,8 +18,6 @@ public class UserExt {
 
     private String name;
 
-    private String key;
-    
     private String nick;
 
     private String salt;
@@ -63,14 +61,6 @@ public class UserExt {
     private Map<String, Boolean> permissionAction;
 
     private Map<String, List<Integer>> permissionData;
-
-    /**
-     * 账号体系下：每个公司有一个管理账号，我们称为租户管理员账号，或者主账号
-     * 其他账号，我们称为子账号
-     * 子账号和主账号，根据管理员对应的key，将数据进行隔离
-     */
-    private Long customerId;
-    private String customerKey;
 
     /**
      * 登录渠道

@@ -15,22 +15,17 @@
 
 package com.pamirs.takin.common.util.parse;
 
-import cn.hutool.core.util.URLUtil;
 import io.shulie.amdb.common.enums.RpcType;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 
-import java.net.URL;
-
 /**
  * @author qianshui
  * @date 2020/4/20 下午2:56
  */
-@Slf4j
 public class UrlUtil {
     public static String convertUrl(ActivityUtil.EntranceJoinEntity entranceJoinEntity) {
         // 虚拟入口
@@ -103,19 +98,6 @@ public class UrlUtil {
         }
         index = str.indexOf("/");
         return str.substring(index + 1);
-    }
-
-    public static String parseUrl(String requestUrl) {
-        if (StringUtils.isBlank(requestUrl)) {
-            return requestUrl;
-        } else {
-            try {
-                URL u = new URL(requestUrl);
-                requestUrl = u.getPath();
-            } catch (Exception e) {
-            }
-        }
-        return requestUrl;
     }
 
     @SuppressWarnings("SpellCheckingInspection")

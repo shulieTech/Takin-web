@@ -1,5 +1,11 @@
 package io.shulie.takin.web.biz.job;
 
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Resource;
+
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
@@ -16,11 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author 无涯
  * @date 2021/6/15 5:30 下午
@@ -30,8 +31,7 @@ import java.util.concurrent.TimeUnit;
         // 时效转移
         misfire = true,
         // 重新执行
-        failover = true,
-        isSharding = true)
+        failover = true)
 public class AppAccessStatusJob implements SimpleJob {
 
     @Autowired
@@ -50,6 +50,7 @@ public class AppAccessStatusJob implements SimpleJob {
             applicationService.syncApplicationAccessStatus();
             return;
         }
+
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         for (TenantInfoExt ext : tenantInfoExts) {
             if (CollectionUtils.isEmpty(ext.getEnvs())) {
@@ -57,29 +58,29 @@ public class AppAccessStatusJob implements SimpleJob {
             }
             // 根据环境 分线程
             for (TenantEnv e : ext.getEnvs()) {
-                int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
-                if (shardKey % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
-                    if (distributedLock.checkLock(lockKey)) {
-                        continue;
-                    }
-                    syncAppStatusThreadPool.execute(() -> {
-                        boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
-                        if (!tryLock) {
-                            return;
-                        }
-                        try {
-                            WebPluginUtils.setTraceTenantContext(
-                                    new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                                            ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
-                            applicationService.syncApplicationAccessStatus();
-                            WebPluginUtils.removeTraceContext();
-                        } finally {
-                            distributedLock.unLockSafely(lockKey);
-                        }
-                    });
+                // 开始数据层分片
+                // 分布式锁
+                String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
+                if (distributedLock.checkLock(lockKey)) {
+                    continue;
                 }
+                syncAppStatusThreadPool.execute(() -> {
+                    boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
+                    if (!tryLock) {
+                        return;
+                    }
+                    try {
+                        WebPluginUtils.setTraceTenantContext(
+                                new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                        ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                        applicationService.syncApplicationAccessStatus();
+                        WebPluginUtils.removeTraceContext();
+                    } finally {
+                        distributedLock.unLockSafely(lockKey);
+                    }
+                });
             }
         }
     }
+
 }

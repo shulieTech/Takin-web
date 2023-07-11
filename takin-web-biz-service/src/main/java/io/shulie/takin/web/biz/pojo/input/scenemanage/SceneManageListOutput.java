@@ -50,7 +50,4 @@ public class SceneManageListOutput extends AuthQueryResponseCommonExt {
     @ApiModelProperty(value = "是否存在脚本解析结果")
     private Boolean hasAnalysisResult;
 
-    @ApiModelProperty(value = "单接口压测主键")
-    private Long configId;
-
 }

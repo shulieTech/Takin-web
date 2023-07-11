@@ -1,12 +1,18 @@
 package io.shulie.takin.web.biz.job;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.google.common.collect.Maps;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
-import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -14,22 +20,17 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * @author 无涯
  * @date 2021/7/13 23:10
  */
-@Component
-@ElasticSchedulerJob(jobName = "syncMachineDataJob",
-        // 分片序列号和参数用等号分隔 不需要参数可以不加
-        isSharding = true,
-        //shardingItemParameters = "0=0,1=1,2=2",
-        cron = "*/10 * * * * ?",
-        description = "同步应用基础信息")
+//@Component
+//@ElasticSchedulerJob(jobName = "syncMachineDataJob",
+//        // 分片序列号和参数用等号分隔 不需要参数可以不加
+//        isSharding = true,
+//        //shardingItemParameters = "0=0,1=1,2=2",
+//        cron = "*/10 * * * * ?",
+//        description = "同步应用基础信息")
 @Slf4j
 public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
 
@@ -38,6 +39,8 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
 
     private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
     private static AtomicInteger EMPTY = new AtomicInteger();
+
+    private Map<String, Semaphore> syncMacheineMap = Maps.newHashMap();
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -87,7 +90,6 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
         //将任务放入线程池
         ThreadPoolUtil.getSyncMachinePool().execute(() -> {
             try {
-                tenantTask.setSource(ContextSourceEnum.JOB.getCode());
                 WebPluginUtils.setTraceTenantContext(tenantTask);
                 reportTaskService.syncMachineData(tenantTask.getReportId());
             } catch (Throwable e) {

@@ -15,7 +15,6 @@ import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
-import io.shulie.takin.web.biz.checker.StartConditionChecker.CheckStatus;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
@@ -36,8 +35,8 @@ import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -51,8 +50,6 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
     private SceneTaskService sceneTaskService;
     @Resource
     private SceneSchedulerTaskDao sceneSchedulerTaskDao;
-    @Resource
-    private EngineClusterService engineClusterService;
     /**
      * 定时任务线程池
      * ps:只是为了消除黄色提醒
@@ -154,31 +151,19 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                 }
                 RedisHelper.setValue(lockKey,true);
                 threadPool.submit(() -> {
-                    // 补充租户信息
-                    TenantCommonExt ext = new TenantCommonExt();
-                    ext.setSource(ContextSourceEnum.JOB.getCode());
-                    ext.setTenantId(scheduler.getTenantId());
-                    ext.setEnvCode(scheduler.getEnvCode());
-                    TenantInfoExt infoExt = WebPluginUtils.getTenantInfo(scheduler.getTenantId());
-                    if(infoExt == null) {
-                        log.error("租户信息未找到【{}】",scheduler.getTenantId());
-                        return;
-                    }
-                    ext.setTenantAppKey(infoExt.getTenantAppKey());
                     try {
-                        WebPluginUtils.setTraceTenantContext(ext);
-                        // 默认选择集群
-                        SceneActionParam param = new SceneActionParam();
-                        param.setSceneId(scheduler.getSceneId());
-                        param.setMachineId(engineClusterService.selectOne().getId());
-                        CheckResultVo resultVo;
-                        do {
-                            resultVo = sceneTaskService.preCheck(param);
-                            param.setResourceId(resultVo.getResourceId());
-                        } while (CheckStatus.PENDING.ordinal() == resultVo.getStatus());
-                        if (CheckStatus.FAIL.ordinal() == resultVo.getStatus()) { // 失败
-                            throw new RuntimeException(StringUtils.join(resultVo.getCheckList(), ","));
+                        // 补充租户信息
+                        TenantCommonExt ext = new TenantCommonExt();
+                        ext.setSource(ContextSourceEnum.JOB.getCode());
+                        ext.setTenantId(scheduler.getTenantId());
+                        ext.setEnvCode(scheduler.getEnvCode());
+                        TenantInfoExt infoExt = WebPluginUtils.getTenantInfo(scheduler.getTenantId());
+                        if(infoExt == null) {
+                            log.error("租户信息未找到【{}】",scheduler.getTenantId());
+                            return;
                         }
+                        ext.setTenantAppKey(infoExt.getTenantAppKey());
+                        WebPluginUtils.setTraceTenantContext(ext);
                         //执行
                         SceneActionParam startParam = new SceneActionParam();
                         startParam.setSceneId(scheduler.getSceneId());

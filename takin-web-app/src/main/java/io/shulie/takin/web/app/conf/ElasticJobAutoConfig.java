@@ -1,17 +1,26 @@
 package io.shulie.takin.web.app.conf;
 
 import com.dangdang.ddframe.job.event.JobEventConfiguration;
+
+import com.dangdang.ddframe.job.lite.lifecycle.api.JobOperateAPI;
+import com.dangdang.ddframe.job.lite.lifecycle.api.JobStatisticsAPI;
+import com.dangdang.ddframe.job.lite.lifecycle.internal.operate.JobOperateAPIImpl;
+import com.dangdang.ddframe.job.lite.lifecycle.internal.statistics.JobStatisticsAPIImpl;
+import com.dangdang.ddframe.job.reg.base.CoordinatorRegistryCenter;
+import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperConfiguration;
+import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+
+import io.shulie.takin.job.parser.JobConfParser;
 import io.shulie.takin.job.ElasticJobProperties;
 import io.shulie.takin.job.ElasticRegCenterConfig;
 import io.shulie.takin.job.config.ElasticJobConfig;
 import io.shulie.takin.job.config.zk.ZkClientConfig;
 import io.shulie.takin.job.factory.SpringJobSchedulerFactory;
-import io.shulie.takin.job.parser.JobConfParser;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * @author 无涯
@@ -42,5 +51,25 @@ public class ElasticJobAutoConfig {
     @Bean
     public JobConfParser jobConfParser(SpringJobSchedulerFactory springJobSchedulerFactory) {
         return new JobConfParser(springJobSchedulerFactory);
+    }
+
+    // 初始化elasticJob页面操作类
+    @Bean
+    public CoordinatorRegistryCenter zkCenter() {
+        ZookeeperConfiguration configuration = new
+                ZookeeperConfiguration(zkAddress, "takin-web-job-" + env);
+        CoordinatorRegistryCenter center = new ZookeeperRegistryCenter(configuration);
+        center.init();
+        return center;
+    }
+
+    @Bean
+    public JobStatisticsAPI jobStatisticsAPI(CoordinatorRegistryCenter zkCenter) {
+        return new JobStatisticsAPIImpl(zkCenter);
+    }
+
+    @Bean
+    public JobOperateAPI jobOperateAPI(CoordinatorRegistryCenter zkCenter) {
+        return new JobOperateAPIImpl(zkCenter);
     }
 }

@@ -2,7 +2,7 @@ package io.shulie.takin.web.biz.pojo.response.scenemanage;
 
 import java.util.List;
 
-import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

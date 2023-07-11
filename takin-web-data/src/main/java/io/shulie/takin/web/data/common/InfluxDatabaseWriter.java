@@ -4,12 +4,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.common.util.JsonUtil;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -182,48 +180,6 @@ public class InfluxDatabaseWriter {
             return data.get(0);
         }
         return null;
-    }
-	
-	/**
-     * 封装查询结果
-     *
-     * @param command
-     * @param clazz
-     * @param <T>
-     * @return
-     */
-    public <T> List<T> query(String command, Class<T> clazz, String database) {
-        if (StrUtil.isBlank(database)) {
-            database = this.database;
-        }
-
-        List<QueryResult.Result> results = getInfluxDatabase().query(new Query(command, database)).getResults();
-        JSONArray resultArr = new JSONArray();
-        for (QueryResult.Result result : results) {
-            List<QueryResult.Series> series = result.getSeries();
-            if (series == null) {
-                continue;
-            }
-            for (QueryResult.Series serie : series) {
-                List<List<Object>> values = serie.getValues();
-                List<String> colums = serie.getColumns();
-                Map<String, String> tags = serie.getTags();
-
-                // 封装查询结果
-                for (List<Object> value : values) {
-                    JSONObject jsonData = new JSONObject();
-                    if (tags != null && tags.keySet().size() > 0) {
-                        tags.forEach(jsonData::put);
-                    }
-
-                    for (int j = 0; j < colums.size(); ++j) {
-                        jsonData.put(colums.get(j), value.get(j));
-                    }
-                    resultArr.add(jsonData);
-                }
-            }
-        }
-        return JsonUtil.json2List(resultArr.toJSONString(), clazz);
     }
 
     /**

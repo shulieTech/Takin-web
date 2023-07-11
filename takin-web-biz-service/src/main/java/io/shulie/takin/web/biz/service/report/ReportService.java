@@ -5,15 +5,14 @@ import java.util.Map;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
-import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
-import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
-import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
-import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
-import io.shulie.takin.adapter.api.model.response.report.MetricesResponse;
-import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
-import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
-import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportTrendQueryReq;
+import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
+import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
+import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
+import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportTrendResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
@@ -103,10 +102,11 @@ public interface ReportService {
      * avgTps
      * 两个 key
      *
-     * @param req 查询条件
+     * @param reportId 报告 id
+     * @param sceneId  场景 id
      * @return 指标列表
      */
-    List<MetricesResponse> queryMetrics(TrendRequest req);
+    List<MetricesResponse> queryMetrics(Long reportId, Long sceneId);
 
     /**
      * 查询报告的警告数量
@@ -164,7 +164,5 @@ public interface ReportService {
      * @return 报告详情
      */
     ReportDetailOutput getReportById(Long id);
-
-    String downloadPDFPath(Long reportId);
 
 }

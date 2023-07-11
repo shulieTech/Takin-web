@@ -2,10 +2,10 @@ package io.shulie.takin.web.diff.api.statistics;
 
 import java.util.List;
 
-import io.shulie.takin.adapter.api.model.request.statistics.PressureTotalReq;
-import io.shulie.takin.adapter.api.model.response.statistics.PressureListTotalResp;
-import io.shulie.takin.adapter.api.model.response.statistics.PressurePieTotalResp;
-import io.shulie.takin.adapter.api.model.response.statistics.ReportTotalResp;
+import io.shulie.takin.cloud.sdk.model.request.statistics.PressureTotalReq;
+import io.shulie.takin.cloud.sdk.model.response.statistics.PressureListTotalResp;
+import io.shulie.takin.cloud.sdk.model.response.statistics.PressurePieTotalResp;
+import io.shulie.takin.cloud.sdk.model.response.statistics.ReportTotalResp;
 
 /**
  * @author 无涯

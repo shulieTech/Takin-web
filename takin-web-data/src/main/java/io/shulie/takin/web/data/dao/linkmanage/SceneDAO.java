@@ -38,6 +38,4 @@ public interface SceneDAO {
      * @return
      */
     PagingList<SceneResult> selectPageList(ScenePageQueryParam queryParam);
-
-    boolean existsScene(Long tenantId, String envCode);
 }

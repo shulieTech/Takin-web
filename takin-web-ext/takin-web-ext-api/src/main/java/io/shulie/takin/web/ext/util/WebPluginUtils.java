@@ -41,7 +41,6 @@ public class WebPluginUtils {
     /**
      * 默认 userAppKey 解决zk PATH 问题
      */
-	public static Long CUSTOMER_ID = -1L;
     public static String DEFAULT_TENANT_APP_KEY = "default";
     public static Long DEFAULT_TENANT_ID = 1L;
     public static String DEFAULT_ENV_CODE = "test";
@@ -280,21 +279,7 @@ public class WebPluginUtils {
         }
         return Lists.newArrayList();
     }
-	
-	/**
-     * 返回租户id
-     *
-     * @return 租户主键
-     */
-    public static Long getCustomerId() {
-        if (userApi != null) {
-            if (userApi.getUser() != null) {
-                return userApi.getUser().getCustomerId();
-            }
-        }
-        return CUSTOMER_ID;
-    }
-	
+
     public static List<Long> getStartStopAllowUserIdList() {
         if (Objects.nonNull(dataAuthApi)) {
             return dataAuthApi.getStartStopAllowUserIdList();
@@ -549,7 +534,6 @@ public class WebPluginUtils {
             traceContextExt.setEnvCode(DEFAULT_ENV_CODE);
             traceContextExt.setTenantId(DEFAULT_TENANT_ID);
             traceContextExt.setTenantCode(DEFAULT_TENANT_CODE);
-            traceContextExt.setUserAppKey(DEFAULT_TENANT_APP_KEY);
         }
     }
 

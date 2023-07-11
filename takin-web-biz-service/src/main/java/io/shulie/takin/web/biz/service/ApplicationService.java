@@ -77,7 +77,7 @@ public interface ApplicationService {
      *
      * @return -
      */
-    Response getApplicationList(ApplicationQueryRequestV2 request);
+    Response getApplicationList();
 
     /**
      * 获取应用信息
@@ -309,6 +309,4 @@ public interface ApplicationService {
      * @return
      */
     List<String> filterAppIds(List<String> appIds, String operate);
-
-    boolean existsApplication(Long tenantId, String envCode);
 }

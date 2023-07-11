@@ -17,11 +17,6 @@ import javax.validation.constraints.NotNull;
 @Valid
 @ApiModel
 public class ApplicationDsTemplateQueryInputV2 {
-    @ApiModelProperty(value = "applicationName",name = "应用名",required = true)
-    private String applicationName;
-
-    @ApiModelProperty(value = "applicationId",name = "应用Id",required = true)
-    private String applicationId;
 
     @ApiModelProperty(name = "数据版本", value = "isNewData")
     private Boolean isNewData = true;

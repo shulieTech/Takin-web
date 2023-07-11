@@ -433,6 +433,4 @@ public interface ApplicationDAO {
     void updateStatus(Long applicationId, String e);
 
     void updateStatus(Long applicationId);
-
-    boolean existsApplication(Long tenantId, String envCode);
 }

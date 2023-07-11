@@ -106,10 +106,4 @@ public interface ErrorConstant {
      */
     String THIRD_PARTY_ERROR = "T0102";
 
-    /**
-     * 数据签名异常
-     */
-
-    String DATA_SIGN_ERROR = "T0103";
-
 }

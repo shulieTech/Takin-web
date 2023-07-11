@@ -3,17 +3,17 @@ package io.shulie.takin.web.biz.service.report.impl;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson.JSON;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
-import io.shulie.takin.adapter.api.model.request.report.UpdateReportConclusionReq;
-import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
-import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.cloud.common.constants.ReportConstants;
+import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.report.ReportService;
@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -71,7 +72,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     private ReportClearService reportClearService;
 
     @Autowired
-    private RedisClientUtil redisClientUtil;
+    private RedisClientUtils redisClientUtils;
 
     @Autowired
     private LeakVerifyResultDAO leakVerifyResultDAO;
@@ -118,6 +119,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             if (status == null || status != 1) {
                 return false;
             }
+            log.info("开始处理报告完成,reportId={},报告状态{}", reportId, status);
             ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
             if (reportDetailDTO == null) {
                 log.error("未查到报告明细！reportId={}", reportId);
@@ -130,16 +132,16 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             }
 
             // 解除 场景锁
-            redisClientUtil.delete(SceneTaskUtils.getSceneTaskKey(reportDetailDTO.getSceneId()));
+            redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(reportDetailDTO.getSceneId()));
             try {
                 // 前置删除
                 //删除redis数据
-                redisClientUtil.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
+                redisClientUtils.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
                 // 删除key
                 String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
                         WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
                         String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
-                redisClientUtil.del(redisKey);
+                redisClientUtils.del(redisKey);
                 long startTime = System.currentTimeMillis();
                 Boolean lockResponse = reportService.lockReport(reportId);
                 if (!lockResponse) {
@@ -164,7 +166,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                     ResponseResult<String> responseResult = sceneTaskApi.updateReportStatus(conclusionReq);
                     log.info("修改压测报告的结果:[{}]", JSON.toJSONString(responseResult));
                 }
-
                 reportDataCache.clearDataCache(reportId);
                 log.info("报告id={}汇总成功，花费时间={}", reportId, (System.currentTimeMillis() - startTime));
             } catch (Throwable e) {
@@ -176,10 +177,10 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 log.error("Unlock Report Success, reportId={} ,unLockReportResult= {}...", reportId, unLockReportResult,
                         e);
             } finally {
+                log.info("报告完成,移除报告缓存,reportId={},报告状态{}", reportId, status);
                 removeReportKey(reportId, commonExt);
             }
-
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());
         }
         return true;
@@ -229,19 +230,18 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 return;
             }
             WebPluginUtils.setTraceTenantContext(commonExt);
-
-            try {
-                // 检查风险机器
-                problemAnalysisService.checkRisk(reportId);
-            } catch (Exception e) {
-                log.error("reportId = {}: Check the risk machine,errorMsg= {} ", reportId, e.getMessage());
-            }
-            try {
-                // 瓶颈处理
-                problemAnalysisService.processBottleneck(reportId);
-            } catch (Exception e) {
-                log.error("reportId = {}: Bottleneck handling,errorMsg= {} ", reportId, e.getMessage());
-            }
+//            try {
+//                // 检查风险机器
+//                problemAnalysisService.checkRisk(reportId);
+//            } catch (Exception e) {
+//                log.error("reportId = {}: Check the risk machine,errorMsg= {} ", reportId, e.getMessage());
+//            }
+//            try {
+//                // 瓶颈处理
+//                problemAnalysisService.processBottleneck(reportId);
+//            } catch (Exception e) {
+//                log.error("reportId = {}: Bottleneck handling,errorMsg= {} ", reportId, e.getMessage());
+//            }
             try {
                 //then 报告汇总接口
                 summaryService.calcReportSummay(reportId);

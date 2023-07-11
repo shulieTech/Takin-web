@@ -22,7 +22,7 @@ public abstract class AbstractTemplateParser implements TemplateParser, StyleTem
      * @return
      */
     @Override
-    public ShadowDetailResponse convertDetailByTemplate(Long recordId,String appName) {
+    public ShadowDetailResponse convertDetailByTemplate(Long recordId) {
         return null;
     }
 
@@ -33,7 +33,7 @@ public abstract class AbstractTemplateParser implements TemplateParser, StyleTem
      * @return
      */
     @Override
-    public abstract List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum,ShadowTemplateSelect select);
+    public abstract List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum);
 
     /**
      * 删除记录

@@ -181,10 +181,10 @@ public class WhiteListFileService {
         Map<String, List<WhitelistResult>> whitelistMap;
 
         boolean isCheckDuplicateName = Boolean.parseBoolean(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK));
+                ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK));
         if (isCheckDuplicateName) {
             List<String> armdString = agentWhiteLists.stream().map(AgentWhiteList::getInterfaceName).collect(
-                Collectors.toList());
+                    Collectors.toList());
             existWhite = whiteListService.getExistWhite(armdString, Lists.newArrayList());
             // todo 这里再获取一次，感觉很多余，但是不改上面的逻辑，所有这里数据再次从新获取，之后可以重构下
             WhitelistSearchParam param = new WhitelistSearchParam();
@@ -192,7 +192,7 @@ public class WhiteListFileService {
             param.setUseYn(1);
             List<WhitelistResult> results = whiteListDAO.getList(param);
             whitelistMap = results.stream().collect(
-                Collectors.groupingBy(e -> e.getInterfaceName() + "@@" + e.getType()));
+                    Collectors.groupingBy(e -> e.getInterfaceName() + "@@" + e.getType()));
         } else {
             // 获取所有白名单，是否有全局属性
             WhitelistSearchParam param = new WhitelistSearchParam();
@@ -201,7 +201,7 @@ public class WhiteListFileService {
             param.setUseYn(1);
             List<WhitelistResult> results = whiteListDAO.getList(param);
             whitelistMap = results.stream()
-                .collect(Collectors.groupingBy(e -> WhitelistUtil.buildWhiteId(e.getType(), e.getInterfaceName())));
+                    .collect(Collectors.groupingBy(e -> WhitelistUtil.buildWhiteId(e.getType(), e.getInterfaceName())));
         }
 
         // 获取所有生效效应，是否有局部应用
@@ -211,7 +211,7 @@ public class WhiteListFileService {
         searchParam.setWlistIds(ids);
         List<WhitelistEffectiveAppResult> appResults = whitelistEffectiveAppDao.getList(searchParam);
         Map<String, List<WhitelistEffectiveAppResult>> appResultsMap = appResults.stream()
-            .collect(Collectors.groupingBy(e -> WhitelistUtil.buildWhiteId(e.getType(), e.getInterfaceName())));
+                .collect(Collectors.groupingBy(e -> WhitelistUtil.buildWhiteId(e.getType(), e.getInterfaceName())));
 
         List<Map<String, Object>> wListsResult = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(agentWhiteLists)) {
@@ -250,9 +250,9 @@ public class WhiteListFileService {
                 //生效应用
                 List<WhitelistEffectiveAppResult> appLists = appResultsMap.get(id);
                 whiteItemNew.put("appNames", CollectionUtils.isNotEmpty(appLists) ?
-                    appLists.stream().map(WhitelistEffectiveAppResult::getEffectiveAppName).distinct()
-                        .collect(Collectors.toList())
-                    : Lists.newArrayList());
+                        appLists.stream().map(WhitelistEffectiveAppResult::getEffectiveAppName).distinct()
+                                .collect(Collectors.toList())
+                        : Lists.newArrayList());
                 wListsResult.add(whiteItemNew);
             }
         }
@@ -269,7 +269,7 @@ public class WhiteListFileService {
 
     private List<Map<String, Object>> getBlackList(TenantCommonExt tenantCommonExt) {
         List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList(tenantCommonExt.getTenantId(),
-            tenantCommonExt.getEnvCode());
+                tenantCommonExt.getEnvCode());
         if (CollectionUtils.isEmpty(tbLists)) {
             return Lists.newArrayList();
         }
@@ -291,10 +291,10 @@ public class WhiteListFileService {
         List<ApplicationDetailResult> detailResults = applicationDAO.getApplicationList(param);
 
         Map<Long, List<BlacklistResult>> redisMap = results.stream()
-            .collect(Collectors.groupingBy(BlacklistResult::getApplicationId));
+                .collect(Collectors.groupingBy(BlacklistResult::getApplicationId));
 
         Map<Long, List<ApplicationDetailResult>> detailResultMap = detailResults.stream()
-            .collect(Collectors.groupingBy(ApplicationDetailResult::getApplicationId));
+                .collect(Collectors.groupingBy(ApplicationDetailResult::getApplicationId));
         List<AgentBlacklistVO> vos = Lists.newArrayList();
         for (Long id : redisMap.keySet()) {
             List<ApplicationDetailResult> app = detailResultMap.get(id);
@@ -317,20 +317,20 @@ public class WhiteListFileService {
     private List<AgentWhiteList> agentListWhitelist(TenantCommonExt ext) {
 
         List<String> list = applicationDAO.queryIdsByNameAndTenant(Lists.newArrayList(),
-            ext != null ? ext.getTenantId() : null, ext != null ? ext.getEnvCode() : null);
+                ext != null ? ext.getTenantId() : null, ext != null ? ext.getEnvCode() : null);
         if (CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }
         List<Map<String, Object>> maps = whiteListDAO.getWhiteListByAppIds(list);
         return maps.stream().map(it -> {
-                AgentWhiteList whiteListDTO = new AgentWhiteList();
-                whiteListDTO.setInterfaceName((String)it.get("interfaceName"));
-                whiteListDTO.setType(getType(Integer.parseInt((String)it.get("type"))));
-                whiteListDTO.setSourceType((String)it.get("type"));
-                // 过滤生效应用用
-                whiteListDTO.setWlistId((Long)it.get("wlistId"));
-                return whiteListDTO;
-            }
+                    AgentWhiteList whiteListDTO = new AgentWhiteList();
+                    whiteListDTO.setInterfaceName((String) it.get("interfaceName"));
+                    whiteListDTO.setType(getType(Integer.parseInt((String) it.get("type"))));
+                    whiteListDTO.setSourceType((String) it.get("type"));
+                    // 过滤生效应用用
+                    whiteListDTO.setWlistId((Long) it.get("wlistId"));
+                    return whiteListDTO;
+                }
         ).collect(Collectors.toList());
     }
 

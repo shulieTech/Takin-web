@@ -15,9 +15,9 @@ public interface PressureService {
     /**
      * 根据报告id, 获得应用入口相关列表
      *
-     * @param jobId 任务id
+     * @param reportId 报告id
      * @return 应用入口相关列表
      */
-    List<ApplicationEntryResponse> getApplicationEntriesByJobId(Long jobId);
+    List<ApplicationEntryResponse> getApplicationEntriesByReportId(Long reportId);
 
 }

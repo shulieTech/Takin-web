@@ -2,11 +2,8 @@ package io.shulie.takin.web.biz.job;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
@@ -14,27 +11,24 @@ import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
-import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 /**
  * @author 无涯
  * @date 2021/7/13 23:10
  */
-@Component
-@ElasticSchedulerJob(jobName = "calcApplicationSummaryJob",
-        // 分片序列号和参数用等号分隔 不需要参数可以不加
-        isSharding = true,
-        //shardingItemParameters = "0=0,1=1,2=2",
-        cron = "*/10 * * * * ?",
-        description = "汇总应用 机器数 风险机器数")
+//@Component
+//@ElasticSchedulerJob(jobName = "calcApplicationSummaryJob",
+//        // 分片序列号和参数用等号分隔 不需要参数可以不加
+//        isSharding = true,
+//        //shardingItemParameters = "0=0,1=1,2=2",
+//        cron = "*/10 * * * * ?",
+//        description = "汇总应用 机器数 风险机器数")
 @Slf4j
 public class CalcApplicationSummaryJob extends AbstractSceneTask implements SimpleJob {
 
@@ -94,7 +88,6 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
         //将任务放入线程池
         ThreadPoolUtil.getReportSummaryThreadPool().execute(() -> {
             try {
-                tenantTask.setSource(ContextSourceEnum.JOB.getCode());
                 WebPluginUtils.setTraceTenantContext(tenantTask);
                 reportTaskService.calcApplicationSummary(tenantTask.getReportId());
             } catch (Throwable e) {

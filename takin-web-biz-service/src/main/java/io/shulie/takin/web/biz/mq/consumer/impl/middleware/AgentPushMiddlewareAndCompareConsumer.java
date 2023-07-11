@@ -18,6 +18,7 @@ import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
@@ -39,6 +40,10 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
     @Autowired
     private ApplicationMiddlewareDAO applicationMiddlewareDAO;
 
+    //默认不处理中间件信息
+    @Value("${takin.enable.middlewareFlag:false}")
+    private boolean middlewareFlag;
+
     @Autowired
     @Lazy
     private ApplicationMiddlewareService applicationMiddlewareService;
@@ -46,6 +51,9 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
     @Transactional(rollbackFor = Throwable.class)
     @Override
     public void onMessage(Message message, byte[] pattern) {
+        if (!middlewareFlag) {
+            return;
+        }
         String messageBody = new String(message.getBody());
         if (StringUtils.isEmpty(messageBody)) {
             return;
@@ -53,7 +61,7 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
 
         messageBody = messageBody.substring(1, messageBody.length() - 1).replace("\\", "");
         MqApplicationMiddlewareCompareDTO mqApplicationMiddlewareCompareDTO = JsonUtil.json2Bean(messageBody,
-            MqApplicationMiddlewareCompareDTO.class);
+                MqApplicationMiddlewareCompareDTO.class);
         if (mqApplicationMiddlewareCompareDTO == null) {
             return;
         }
@@ -69,15 +77,15 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
 
         try {
             TenantCommonExt tenantCommonExt = new TenantCommonExt(mqApplicationMiddlewareCompareDTO.getTenantId(),
-                null, mqApplicationMiddlewareCompareDTO.getEnvCode(),
-                null, ContextSourceEnum.JOB.getCode());
+                    null, mqApplicationMiddlewareCompareDTO.getEnvCode(),
+                    null, ContextSourceEnum.JOB.getCode());
             WebPluginUtils.setTraceTenantContext(tenantCommonExt);
 
             // 根据 applicationId 查询应用中间件
             log.info("应用中间件上报 --> 异步消息处理 --> 应用中间件查询");
             PageUtils.clearPageHelper();
             List<ApplicationMiddlewareListResult> applicationMiddlewareList =
-                applicationMiddlewareDAO.listByApplicationId(applicationId);
+                    applicationMiddlewareDAO.listByApplicationId(applicationId);
             if (applicationMiddlewareList.isEmpty()) {
                 return;
             }
@@ -85,7 +93,7 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
             // 比对
             log.info("应用中间件上报 --> 异步消息处理 --> 应用中间件比对");
             List<UpdateApplicationMiddlewareParam> updateParamList =
-                applicationMiddlewareService.doCompare(applicationMiddlewareList);
+                    applicationMiddlewareService.doCompare(applicationMiddlewareList);
 
             log.info("应用中间件上报 --> 异步消息处理 --> 应用中间件更新");
             applicationMiddlewareDAO.updateBatchById(updateParamList);
@@ -103,7 +111,7 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
      * @return 相应数据
      */
     private MqApplicationMiddlewareCompareDTO getMqApplicationMiddlewareCompareDTO(
-        Message message) {
+            Message message) {
         String messageBody = new String(message.getBody());
         if (StringUtils.isEmpty(messageBody)) {
             return null;

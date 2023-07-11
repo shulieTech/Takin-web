@@ -25,7 +25,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T> {
 
     private final String cacheName;
-    protected final RedisTemplate redisTemplate;
+    private final RedisTemplate redisTemplate;
 
     // 默认不清除redis缓存
     @Value("${takin.enable.clearDsDataConfig:false}")
@@ -69,8 +69,8 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
      * 这里暂时用这个方式
      */
     public T getLock(String namespace, int count) {
-        // 增加一个计数器,防止线程一直读取不到,递归退出,10s就退出，等待下次处理
-        if (count > 50) {
+        // 增加一个计数器,防止线程一直读取不到,递归退出,1s就退出，等待下次处理
+        if (count > 100) {
             log.warn("已超过递归次数,但还是未获取到值,namespace:{}", namespace);
             // 返回失败,agent不会认为是失效的情况
             throw new RuntimeException("数据获取超时,等待下次拉取！");
@@ -81,7 +81,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
             // 单独走一个查询的分布式key
             String queryLockKey = "t:data:query:" + cacheKey;
             // 多等待下再去获取值,读取数据也不是那么快
-            boolean isLock = distributedLock.tryLock(queryLockKey, 200L, 1000L, TimeUnit.MILLISECONDS);
+            boolean isLock = distributedLock.tryLock(queryLockKey, 100L, 1000L, TimeUnit.MILLISECONDS);
             if (isLock) {
                 try {
                     result = queryValue(namespace);
@@ -129,10 +129,9 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
      * @param namespace
      * @return
      */
-    protected String getCacheKey(String namespace) {
+    private String getCacheKey(String namespace) {
         return CommonUtil.generateRedisKey(cacheName,
                 WebPluginUtils.traceTenantCode(), WebPluginUtils.traceEnvCode(), namespace);
-
     }
 
     /**

@@ -100,7 +100,4 @@ public class SceneEntity extends UserBaseEntity {
      */
     @TableField(value = "total_node_num")
     private Integer totalNodeNum;
-
-    @TableField(value = "features")
-    private String features;
 }

@@ -18,4 +18,5 @@ public class TaskPreStopRequest {
     @ApiModelProperty(value = "场景id", required = true)
     @NotNull(message = "场景id" + AppConstants.MUST_BE_NOT_NULL)
     private Long sceneId;
+
 }

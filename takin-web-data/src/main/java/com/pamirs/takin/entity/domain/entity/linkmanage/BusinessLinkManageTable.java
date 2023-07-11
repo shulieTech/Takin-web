@@ -66,10 +66,4 @@ public class BusinessLinkManageTable extends TenantCommonExt implements Serializ
      * 是否能删除
      */
     private Integer canDelete;
-
-    private Integer type;
-
-    private String applicationName;
-
-    private Long applicationId;
 }

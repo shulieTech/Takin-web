@@ -13,6 +13,8 @@ import java.util.List;
  * @Date: 2021/9/13 2:19 下午
  */
 public interface StyleTemplate {
+
+
     String PREFIX = "pt_";
 
     String INPUT_FILE_NAME_USER_NAME = "shadowUserName";
@@ -21,7 +23,7 @@ public interface StyleTemplate {
 
     String PWD_FILE_NAME = "shadowPwd";
 
-    String INPUT_FILE_NAME_USER_NAME_CONTEXT = "影子数据源用户名";
+    String INPUT_FILE_NAME_USER_NAME_CONTEXT= "影子数据源用户名";
 
     String INPUT_FILE_NAME_URL_CONTEXT = "影子数据源";
 
@@ -49,24 +51,26 @@ public interface StyleTemplate {
 
     String key6 = "SHADOW_REDIS_";
 
-    String key7 = "PT_业务连接用户名";
-
-    String key8 = "PT_业务连接密码";
-
-    String key9 = "三方key";
-
 
     @AllArgsConstructor
     @Getter
     enum StyleEnums {
         INPUT(1, "输入框"),
+
+
         PWD_INPUT(2, "密码框"),
+
+
         SELECT_WITH_INPUT(3, "下拉选择后输入"),
+
         TABLE(4, "表单"),
-        TEXT_INPUT(5, "文本框"),
-        SELECT_WITH_INPUT_PWD(7, "下拉选择后输入密码");
+
+        TEXT_INPUT(5,"文本框");
+
+
 
         private final Integer code;
+
         private final String desc;
 
         /**
@@ -113,10 +117,14 @@ public interface StyleTemplate {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    class InputStyle extends AbstractStyleTemplate {
+    class InputStyle extends AbstractStyleTemplate{
+
         private String key;
+
         private String label;
+
         private Integer nodeType;
+
         private Boolean required;
 
         public InputStyle(String key, String label, Integer nodeType) {
@@ -133,26 +141,37 @@ public interface StyleTemplate {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    class InputWithSelectStyle extends AbstractStyleTemplate {
+    class InputWithSelectStyle extends AbstractStyleTemplate{
+
+
         private String key;
+
         private String label;
+
         private Integer nodeType;
+
         private InputWithSelectStyle.NodeInfo nodeInfo;
+
         private Boolean required;
 
         @Data
         @AllArgsConstructor
         @NoArgsConstructor
-        public static class NodeInfo {
+        public static class NodeInfo{
+
             private List<String> keys;
+
             private List<InputWithSelectStyle.NodeDetail> dataSource;
         }
 
         @Data
         @AllArgsConstructor
         @NoArgsConstructor
-        public static class NodeDetail {
+        public static class NodeDetail{
+
+
             private String label;
+
             private String value;
         }
 
@@ -170,15 +189,21 @@ public interface StyleTemplate {
      */
     @Data
     @AllArgsConstructor
-    class ListStyle extends AbstractStyleTemplate {
+    class ListStyle extends AbstractStyleTemplate{
+
+
         private String key;
+
         private String label;
+
         private Integer nodeType;
+
         private Boolean required;
+
 
         public ListStyle() {
             this.key = "shaDowTaleInfo";
-            this.label = "";
+            this.label ="";
             this.nodeType = StyleEnums.TABLE.getCode();
             this.required = true;
         }
@@ -191,6 +216,7 @@ public interface StyleTemplate {
     @AllArgsConstructor
     @NoArgsConstructor
     class TipsInputStyle extends InputStyle {
+
         private String tips;
 
         public TipsInputStyle(String key, String label, Integer nodeType, String tips) {

@@ -60,10 +60,4 @@ public interface LockKeyConstants {
      */
     String LOCK_SCRIPT_DEBUG_STOP = String.format(LOCK_PREFIX, "SCRIPT_DEBUG_STOP:%d");
 
-    /**
-     * 压测报告下载
-     * 锁压测报告id
-     */
-    String LOCK_REPORT_EXPORT = String.format(LOCK_PREFIX, "REPORT:%d");
-
 }

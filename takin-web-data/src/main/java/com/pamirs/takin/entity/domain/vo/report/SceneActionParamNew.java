@@ -29,9 +29,4 @@ public class SceneActionParamNew extends ContextExt {
     private Boolean leakSqlEnable;
 
     private Boolean continueRead = false;
-
-    /**
-     * 资源Id
-     */
-    private String pressureResourceId;
 }

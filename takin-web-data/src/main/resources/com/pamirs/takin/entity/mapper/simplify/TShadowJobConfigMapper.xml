@@ -6,25 +6,23 @@
         <result column="application_id" jdbcType="BIGINT" property="applicationId"/>
         <result column="name" jdbcType="VARCHAR" property="name"/>
         <result column="type" jdbcType="VARCHAR" property="type"/>
-        <result column="status" jdbcType="TINYINT" property="status"/>
+        <result column="status" jdbcType="BIT" property="status"/>
         <result column="config_code" jdbcType="VARCHAR" property="configCode"/>
-        <result column="active" jdbcType="TINYINT" property="active"/>
+        <result column="active" jdbcType="BIT" property="active"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
         <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
         <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
         <result column="user_id" jdbcType="BIGINT" property="userId"/>
         <result column="remark" jdbcType="VARCHAR" property="remark"/>
-        <result column="customer_id" jdbcType="BIGINT" property="customerId"/>
-        <result column="is_deleted" jdbcType="TINYINT" property="isDeleted"/>
-        <result column="sign" jdbcType="VARCHAR" property="sign"/>
     </resultMap>
     <sql id="Base_Column_List">
-        id, application_id, `name`, `type`, status,config_code, active,create_time, update_time,tenant_id,env_code,user_id,remark,customer_id,is_deleted,sign
+        id, application_id, `name`, `type`, status,config_code, active,create_time, update_time,tenant_id,env_code,user_id,remark
     </sql>
     <select id="selectList" parameterType="com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery"
             resultMap="BaseResultMap">
         select
+        'false' as QUERYID,
         <include refid="Base_Column_List"/>
         from t_shadow_job_config
         <include refid="Data_Where_Clause"/>
@@ -33,11 +31,13 @@
     </select>
     <select id="selectListCount" parameterType="com.pamirs.takin.entity.domain.entity.simplify.TShadowJobConfig"
             resultMap="BaseResultMap">
+        'false' as QUERYID,
         select count (*) from t_shadow_job_config
         <include refid="Data_Where_Clause"/>
     </select>
     <select id="selectOneById" parameterType="com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery" resultMap="BaseResultMap">
         select
+        'false' as QUERYID,
         <include refid="Base_Column_List"/>
         from t_shadow_job_config where id = #{id,jdbcType=BIGINT} and is_deleted = 0
     </select>

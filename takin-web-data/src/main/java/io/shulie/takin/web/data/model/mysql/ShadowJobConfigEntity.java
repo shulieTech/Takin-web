@@ -1,17 +1,15 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
+import java.util.Date;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.util.Date;
 
 /**
  * 影子JOB任务配置
@@ -19,13 +17,12 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName(value = "t_shadow_job_config")
-@EnableSign
 public class ShadowJobConfigEntity extends UserBaseEntity {
 
     /**
      * 主键
      */
-    @TableId(type = IdType.AUTO,value = "id")
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -89,10 +86,5 @@ public class ShadowJobConfigEntity extends UserBaseEntity {
      */
     @TableField(value = "remark")
     private String remark;
-
-    @TableField(value = "sign", fill = FieldFill.INSERT)
-    private String sign;
-
-    private Long customerId;
 
 }

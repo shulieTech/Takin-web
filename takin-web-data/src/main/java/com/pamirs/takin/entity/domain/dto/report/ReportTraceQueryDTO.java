@@ -25,9 +25,6 @@ public class ReportTraceQueryDTO extends PageBaseDTO {
     @ApiModelProperty("报告id，如果是压测报告中有此参数")
     private Long reportId;
 
-    @ApiModelProperty("压测引擎任务Id，对应大数据taskId")
-    private Long taskId;
-
     @ApiModelProperty("开始压测的时间戳")
     private Long startTime;
 

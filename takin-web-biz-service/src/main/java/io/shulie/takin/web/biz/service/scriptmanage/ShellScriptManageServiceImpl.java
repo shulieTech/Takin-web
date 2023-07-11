@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
@@ -96,7 +96,7 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
     @Autowired
     private TagManageDAO tagManageDAO;
     @Autowired
-    private RedisClientUtil redisClientUtil;
+    private RedisClientUtils redisClientUtils;
 
     @Override
     public Long createScriptManage(ShellScriptManageCreateInput input) {
@@ -450,8 +450,8 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
         if (!isStop(scriptManageDeployId)) {
             // 正在执行中
             log.info("执行结果：{}", JsonHelper.bean2Json(
-                redisClientUtil.hmget(ScriptManageConstant.SHELL_EXECUTE_KEY, String.valueOf(scriptManageDeployId))));
-            return (ShellScriptManageExecuteOutput)redisClientUtil.hmget(ScriptManageConstant.SHELL_EXECUTE_KEY,
+                redisClientUtils.hmget(ScriptManageConstant.SHELL_EXECUTE_KEY, String.valueOf(scriptManageDeployId))));
+            return (ShellScriptManageExecuteOutput)redisClientUtils.hmget(ScriptManageConstant.SHELL_EXECUTE_KEY,
                 String.valueOf(scriptManageDeployId));
         }
         ShellScriptManageExecuteOutput output = new ShellScriptManageExecuteOutput();
@@ -484,21 +484,21 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
                 executeOutput.setIsStop(false);
                 executeOutput.setMessage(data);
                 map.put(String.valueOf(scriptManageDeployId), executeOutput);
-                redisClientUtil.hmset(ScriptManageConstant.SHELL_EXECUTE_KEY, map);
+                redisClientUtils.hmset(ScriptManageConstant.SHELL_EXECUTE_KEY, map);
                 // 执行
                 AtomicReference<Process> shellProcess = new AtomicReference<>();
                 int state = LinuxHelper.runShell(sb.toString(), 60L,
                     process -> shellProcess.set(process),
                     message -> {
                         log.info("执行返回结果:{}", message);
-                        ShellScriptManageExecuteOutput temp = (ShellScriptManageExecuteOutput)redisClientUtil.hmget
+                        ShellScriptManageExecuteOutput temp = (ShellScriptManageExecuteOutput)redisClientUtils.hmget
                             (ScriptManageConstant.SHELL_EXECUTE_KEY, String.valueOf(scriptManageDeployId));
                         temp.getMessage().add(message);
                         map.put(String.valueOf(scriptManageDeployId), temp);
-                        redisClientUtil.hmset(ScriptManageConstant.SHELL_EXECUTE_KEY, map);
+                        redisClientUtils.hmset(ScriptManageConstant.SHELL_EXECUTE_KEY, map);
                     }
                 );
-                ShellScriptManageExecuteOutput temp = (ShellScriptManageExecuteOutput)redisClientUtil.hmget(
+                ShellScriptManageExecuteOutput temp = (ShellScriptManageExecuteOutput)redisClientUtils.hmget(
                     ScriptManageConstant.SHELL_EXECUTE_KEY,
                     String.valueOf(scriptManageDeployId));
                 // 执行完先存下redis;
@@ -506,7 +506,7 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
                 temp.setSuccess(state == 0 ? true : false);
                 map.put(String.valueOf(scriptManageDeployId), temp);
                 // 存三天
-                redisClientUtil.hmset(ScriptManageConstant.SHELL_EXECUTE_KEY, map, 60 * 60 * 24 * 3);
+                redisClientUtils.hmset(ScriptManageConstant.SHELL_EXECUTE_KEY, map, 60 * 60 * 24 * 3);
                 //进行落库
                 ScriptExecuteResultCreateParam param = new ScriptExecuteResultCreateParam();
                 // 获取版本
@@ -534,9 +534,9 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
     }
 
     private Boolean isStop(Long scriptManageDeployId) {
-        if (redisClientUtil.hmget(ScriptManageConstant.SHELL_EXECUTE_KEY, String.valueOf(scriptManageDeployId))
+        if (redisClientUtils.hmget(ScriptManageConstant.SHELL_EXECUTE_KEY, String.valueOf(scriptManageDeployId))
             != null) {
-            ShellScriptManageExecuteOutput output = (ShellScriptManageExecuteOutput)redisClientUtil.hmget(
+            ShellScriptManageExecuteOutput output = (ShellScriptManageExecuteOutput)redisClientUtils.hmget(
                 ScriptManageConstant.SHELL_EXECUTE_KEY,
                 String.valueOf(scriptManageDeployId));
             return output.getIsStop();
@@ -562,7 +562,7 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
     public PagingList<ScriptExecuteOutput> getExecuteResult(ShellExecuteInput input) {
 
         if ("0".equals(input.getType())) {
-            ShellScriptManageExecuteOutput output = (ShellScriptManageExecuteOutput)redisClientUtil.hmget(
+            ShellScriptManageExecuteOutput output = (ShellScriptManageExecuteOutput)redisClientUtils.hmget(
                 ScriptManageConstant.SHELL_EXECUTE_KEY,
                 String.valueOf(input.getScriptDeployId()));
             List<ScriptExecuteOutput> outputs = Lists.newArrayList();

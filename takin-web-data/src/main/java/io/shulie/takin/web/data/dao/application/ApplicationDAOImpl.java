@@ -744,11 +744,4 @@ public class ApplicationDAOImpl
         applicationMntMapper.update(null, wrapper);
     }
 
-    @Override
-    public boolean existsApplication(Long tenantId, String envCode) {
-        LambdaQueryWrapper<ApplicationMntEntity> wrapper = this.getLambdaQueryWrapper()
-            .eq(ApplicationMntEntity::getTenantId, tenantId)
-            .eq(ApplicationMntEntity::getEnvCode, envCode);
-        return SqlHelper.retBool(applicationMntMapper.selectCount(wrapper));
-    }
 }

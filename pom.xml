@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-5.10.0</version>
+    <version>takin-web-5.5.0</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -41,7 +41,9 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
-        <takin.web.version>takin-web-5.10.0</takin.web.version>
+        <takin.web.version>takin-web-5.5.0</takin.web.version>
+        <takin.cloud.sdk.version>5.2.2</takin.cloud.sdk.version>
+        <takin.cloud.version>5.2.2</takin.cloud.version>
         <takin.common.version>common-2.0.2-SNAPSHOT</takin.common.version>
         <command.channel>common-2.0.0-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.6.2</pardar.log.protocol.version>
@@ -64,7 +66,7 @@
         <jedis.version>3.1.0</jedis.version>
         <!--版本升级 3.4.0 -> 3.4.3.4-->
         <mybatis.plus.version>3.4.3.4</mybatis.plus.version>
-        <freemarker.version>2.3.31</freemarker.version>
+        <freemarker.version>2.3.30</freemarker.version>
         <mybatis.version>3.5.5</mybatis.version>
         <druid.stater.version>1.1.22</druid.stater.version>
 
@@ -75,9 +77,8 @@
 
         <easypoi-base.version>4.4.0</easypoi-base.version>
         <easypoi-annotation.version>4.3.0</easypoi-annotation.version>
-        <openpdf.version>9.1.22</openpdf.version>
-        <transmittable-thread-local>2.12.4</transmittable-thread-local>
-        <cloud.version>5.4.0.12</cloud.version>
+        <!-- 升级文档 -->
+        <upgrade.doc>https://shulietech.feishu.cn/docs/doccnvTvNxzVrH29Xvm60l7kgHc</upgrade.doc>
     </properties>
 
     <modules>
@@ -90,7 +91,6 @@
         <module>takin-web-ext</module>
         <module>takin-web-entrypoint</module>
         <module>takin-web-biz-service</module>
-        <module>takin-web-eventcenter</module>
     </modules>
     <dependencyManagement>
         <dependencies>
@@ -108,12 +108,6 @@
                 <groupId>io.springfox</groupId>
                 <artifactId>springfox-spring-webmvc</artifactId>
                 <version>2.10.5</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.github.classgraph</groupId>
-                        <artifactId>classgraph</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.springfox</groupId>
@@ -193,6 +187,21 @@
                 <type>pom</type>
             </dependency>
 
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-sdk</artifactId>
+                <version>${takin.cloud.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-ext</artifactId>
+                <version>${takin.cloud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-common</artifactId>
+                <version>${takin.cloud.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-common-bom</artifactId>
@@ -425,24 +434,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
-            <dependency>
-                <groupId>org.xhtmlrenderer</groupId>
-                <artifactId>flying-saucer-pdf-openpdf</artifactId>
-                <version>${openpdf.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.freemarker</groupId>
-                <artifactId>freemarker</artifactId>
-                <version>${freemarker.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>transmittable-thread-local</artifactId>
-                <version>${transmittable-thread-local}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -565,35 +556,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-                <version>4.0.2</version>
-                <executions>
-                    <execution>
-                        <id>get-the-git-infos</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>revision</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <skipPoms>false</skipPoms>
-                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                    <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
-                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
-                    <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
-                    <includeOnlyProperties>
-                        <includeOnlyProperty>^git.branch$</includeOnlyProperty>
-                        <includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
-                        <includeOnlyProperty>^git.commit.(id|message|time).*$</includeOnlyProperty>
-                    </includeOnlyProperties>
-                    <gitDescribe>
-                        <skip>true</skip>
-                    </gitDescribe>
-                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>

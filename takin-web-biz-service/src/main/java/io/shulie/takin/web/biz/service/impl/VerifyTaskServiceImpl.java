@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -26,12 +25,10 @@ import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
-import io.shulie.takin.adapter.api.model.common.SlaBean;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
-import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
-import io.shulie.takin.web.common.util.RedisClientUtil;
-import io.shulie.takin.cloud.data.util.PressureStartCache;
+import io.shulie.takin.cloud.sdk.model.common.SlaBean;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
@@ -96,8 +93,6 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
     private TransactionTemplate transactionTemplate;
     @Resource
     private CoordinatorRegistryCenterService registryCenterService;
-    @Resource
-    private RedisClientUtil redisClientUtil;
 
     @Autowired
     @Qualifier("showdownVerifyThreadPool")
@@ -129,7 +124,6 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
                             JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(), createJobConfiguration(jobParameter));
                             jobScheduler.getSchedulerFacade().shutdownInstance();
                             serviceMap.remove(mapKey);
-                            RedisHelper.hashDelete(jobSchedulerRedisKey, mapKey);
                             //漏数验证兜底检测
                             log.info("漏数验证兜底检测，场景ID[{}]", sceneId);
                             LeakVerifyTaskRunWithSaveRequest runRequest = new LeakVerifyTaskRunWithSaveRequest();
@@ -418,9 +412,6 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
                                     slaBean.setRule("存在漏数");
                                     stopReq.setSlaBean(slaBean);
                                     stopReq.setId(refId);
-                                    stopReq.setReportId(reportId);
-                                    redisClientUtil.setString(PressureStartCache.getStopTaskMessageKey(refId),
-                                        "SLA熔断：存在漏数", 2, TimeUnit.MINUTES);
                                     sceneTaskApi.stopTask(stopReq);
                                     log.warn("存在漏数，触发SLA终止压测，sceneId={}, sql={}", refId, sql);
                                 }

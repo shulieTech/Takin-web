@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.common;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -61,7 +60,7 @@ public abstract class AbstractSceneTask {
             return allowedTenantThreadMax;
         }
         allowedTenantThreadMax = ConfigServerHelper.getIntegerValueByKey(
-            ConfigServerKeyEnum.PER_TENANT_ALLOW_TASK_THREADS_MAX);
+                ConfigServerKeyEnum.PER_TENANT_ALLOW_TASK_THREADS_MAX);
         return allowedTenantThreadMax;
     }
 
@@ -70,7 +69,7 @@ public abstract class AbstractSceneTask {
             if (CollectionUtils.isNotEmpty(taskDtoList)) {
                 final LocalDateTime now = LocalDateTime.now();
                 taskDtoList.stream().filter(t -> t.getEndTime() != null && now.compareTo(t.getEndTime()) > 0).forEach(
-                    t -> removeReportKey(t.getReportId()));
+                        t -> removeReportKey(t.getReportId()));
             }
         } catch (Exception e) {
             log.error("清理过期任务时发生错误！", e);
@@ -94,7 +93,7 @@ public abstract class AbstractSceneTask {
         int allowedThreadMax = this.getAllowedTenantThreadMax();
         //筛选出租户的任务
         final Map<Long, List<SceneTaskDto>> listMap = taskDtoList.stream().filter(t ->
-            t.getReportId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()
+                t.getReportId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()
         ).collect(Collectors.groupingBy(SceneTaskDto::getTenantId));
         if (org.springframework.util.CollectionUtils.isEmpty(listMap)) {
             return taskAlreadyRun;
@@ -109,7 +108,7 @@ public abstract class AbstractSceneTask {
              * 取最值。当前租户的任务数和允许的最大线程数
              */
             AtomicInteger allowRunningThreads = new AtomicInteger(
-                Math.min(allowedThreadMax, tenantTasks.size()));
+                    Math.min(allowedThreadMax, tenantTasks.size()));
 
             /**
              * 已经运行的任务数
@@ -126,7 +125,7 @@ public abstract class AbstractSceneTask {
                  * allow running threads calculated by capacity
                  */
                 int permitsThreads = Math.min(allowedThreadMax - oldRunningThreads.get(),
-                    allowRunningThreads.get());
+                        allowRunningThreads.get());
                 // add new threads to capacity
                 oldRunningThreads.addAndGet(permitsThreads);
                 // adjust allow current running threads

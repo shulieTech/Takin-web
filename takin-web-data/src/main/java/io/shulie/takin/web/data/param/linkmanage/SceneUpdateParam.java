@@ -72,6 +72,4 @@ public class SceneUpdateParam extends UserCommonExt {
      * 脚本总节点数
      */
     private Integer totalNodeNum;
-
-    private String features;
 }

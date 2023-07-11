@@ -2,7 +2,6 @@ package io.shulie.takin.web.app.conf.mybatis;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class MyMetaObjectHandler implements MetaObjectHandler {
 
 
-    @SneakyThrows
+
     @Override
     public void insertFill(MetaObject metaObject) {
         // 判断下 环境字段是否存在
@@ -34,13 +33,13 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         if (metaObject.hasSetter(TenantField.FIELD_TENANT_APP_KEY.getFieldName())) {
             this.strictInsertFill(metaObject, TenantField.FIELD_TENANT_APP_KEY.getFieldName(), String.class, WebPluginUtils.traceTenantAppKey());
         }
-        
+
+
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
 
     }
-
 
 }

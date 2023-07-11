@@ -1,10 +1,12 @@
 package io.shulie.takin.web.diff.api;
 
-import io.shulie.takin.adapter.api.model.request.filemanager.FileContentParamReq;
-import io.shulie.takin.adapter.api.model.request.filemanager.FileCopyParamReq;
-import io.shulie.takin.adapter.api.model.request.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.adapter.api.model.request.filemanager.FileDeleteParamReq;
-import io.shulie.takin.adapter.api.model.request.filemanager.FileZipParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileContentParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCopyParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileDeleteParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileZipParamReq;
+
+import java.util.List;
 
 /**
  * @author shiyajian
@@ -46,4 +48,11 @@ public interface DiffFileApi {
      * @return 文件的MD5值
      */
     String createFileByPathAndString(FileCreateByStringParamReq req);
+
+    /**
+     * 判断文件是否存在,这里只校验file,不管path
+     * @param pathList
+     * @return
+     */
+    boolean isExist(List<String> pathList);
 }

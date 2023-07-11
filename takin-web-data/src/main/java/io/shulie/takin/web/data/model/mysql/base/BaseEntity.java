@@ -23,7 +23,7 @@ public class BaseEntity extends TenantBaseEntity implements Serializable {
     /**
      * 主键
      */
-    @TableId(type = IdType.AUTO,value = "id")
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**

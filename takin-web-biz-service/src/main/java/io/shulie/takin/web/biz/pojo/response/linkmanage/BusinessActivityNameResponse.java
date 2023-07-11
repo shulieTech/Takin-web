@@ -37,12 +37,4 @@ public class BusinessActivityNameResponse implements Serializable {
     @ApiModelProperty(name = "targetSA", value = "目标SA")
     @NotNull(message = "目标SA不能为空")
     private BigDecimal targetSA;
-
-    private Integer type;
-
-    private String applicationName;
-
-    private Long applicationId;
-
-    private String entrace;
 }

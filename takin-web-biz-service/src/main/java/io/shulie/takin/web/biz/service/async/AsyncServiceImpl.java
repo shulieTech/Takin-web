@@ -6,26 +6,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
-import io.shulie.takin.adapter.api.model.common.RuleBean;
-import io.shulie.takin.adapter.api.model.common.SlaBean;
-import io.shulie.takin.web.common.util.RedisClientUtil;
-import io.shulie.takin.adapter.api.model.request.report.WarnCreateReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
-import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp.SceneSlaRefResp;
-import io.shulie.takin.cloud.data.util.PressureStartCache;
+import io.shulie.takin.cloud.sdk.model.common.RuleBean;
+import io.shulie.takin.cloud.sdk.model.common.SlaBean;
+import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.cloud.sdk.model.request.report.WarnCreateReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp.SceneSlaRefResp;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.common.common.Separator;
-import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
-import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.baseserver.BaseServerDao;
 import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceBaseDataDAO;
@@ -61,13 +57,12 @@ public class AsyncServiceImpl implements AsyncService {
     private SceneTaskApi sceneTaskApi;
 
     @Autowired
-    private RedisClientUtil redisClientUtil;
+    private RedisClientUtils redisClientUtils;
 
     @Async("agentDataThreadPool")
     @Override
     public void savePerformanceBaseData(PerformanceBaseDataParam param) {
         // 补充header
-        param.setSource(ContextSourceEnum.AGENT.getCode());
         WebPluginUtils.setTraceTenantContext(param);
         String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
             String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, "*"));
@@ -165,7 +160,7 @@ public class AsyncServiceImpl implements AsyncService {
                             break;
                         } else {
                             String value = prefix + "|" + baseList.get(i).getExtTime();
-                            if (redisClientUtil.zsetAdd(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId, value) == 0) {
+                            if (redisClientUtils.zsetAdd(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId, value) == 0) {
                                 continue;
                             }
                             //发起warn
@@ -190,7 +185,7 @@ public class AsyncServiceImpl implements AsyncService {
                             break;
                         } else {
                             String value = prefix + "|" + baseList.get(i).getExtTime();
-                            if (redisClientUtil.zsetAdd(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId, value) == 0) {
+                            if (redisClientUtils.zsetAdd(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId, value) == 0) {
                                 continue;
                             }
                             //发起warn
@@ -260,8 +255,6 @@ public class AsyncServiceImpl implements AsyncService {
         slaBean.setRule(createReq.getWarnContent());
         req.setSlaBean(slaBean);
         req.setReportId(reportId);
-        redisClientUtil.setString(PressureStartCache.getStopTaskMessageKey(sceneId),
-            "SLA熔断：" + type, 2, TimeUnit.MINUTES);
         sceneTaskApi.stopTask(req);
         log.warn("触发SLA终止压测，sceneId={}, appName={}, appIp={}", sceneId, baseData.getAppName(), baseData.getAppIp());
     }

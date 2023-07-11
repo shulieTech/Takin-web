@@ -2,11 +2,6 @@ package com.pamirs.takin.entity.domain.entity;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import io.shulie.takin.web.data.annocation.EnableSign;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -19,10 +14,8 @@ import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@EnableSign
 public class LinkGuardEntity extends UserBaseEntity {
 
-    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     private String applicationName;
     private Long applicationId;
@@ -30,11 +23,8 @@ public class LinkGuardEntity extends UserBaseEntity {
     private String groovy;
     private Date createTime;
     private Date updateTime;
-    private Integer isDeleted;
-    private Integer isEnable;
+    private Boolean isDeleted;
+    private Boolean isEnable;
 
     private String remark;
-
-    @TableField(value = "sign",fill = FieldFill.INSERT)
-    private String sign;
 }

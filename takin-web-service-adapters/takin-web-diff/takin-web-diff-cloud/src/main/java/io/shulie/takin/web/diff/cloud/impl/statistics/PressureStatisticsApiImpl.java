@@ -2,11 +2,11 @@ package io.shulie.takin.web.diff.cloud.impl.statistics;
 
 import java.util.List;
 
-import io.shulie.takin.adapter.api.entrypoint.statistics.CloudPressureStatisticsApi;
-import io.shulie.takin.adapter.api.model.request.statistics.PressureTotalReq;
-import io.shulie.takin.adapter.api.model.response.statistics.PressureListTotalResp;
-import io.shulie.takin.adapter.api.model.response.statistics.PressurePieTotalResp;
-import io.shulie.takin.adapter.api.model.response.statistics.ReportTotalResp;
+import io.shulie.takin.cloud.entrypoint.statistics.CloudPressureStatisticsApi;
+import io.shulie.takin.cloud.sdk.model.request.statistics.PressureTotalReq;
+import io.shulie.takin.cloud.sdk.model.response.statistics.PressureListTotalResp;
+import io.shulie.takin.cloud.sdk.model.response.statistics.PressurePieTotalResp;
+import io.shulie.takin.cloud.sdk.model.response.statistics.ReportTotalResp;
 import io.shulie.takin.web.diff.api.statistics.PressureStatisticsApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

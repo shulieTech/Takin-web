@@ -87,8 +87,12 @@ import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.common.vo.scene.BaffleAppVO;
 import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
+import io.shulie.takin.web.data.dao.pradar.PradarZkConfigDAO;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
+import io.shulie.takin.web.data.result.pradarzkconfig.PradarZkConfigResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
@@ -115,6 +119,7 @@ import org.springframework.stereotype.Service;
 public class SceneTaskServiceImpl implements SceneTaskService {
 
     public static final String PRESSURE_REPORT_ID_SCENE_PREFIX = "pressure:reportId:scene:";
+    private static final String SCRIPT_HTTP_REQUEST_MAX_NUM_KEY = "/pradar/config/jmx/http/limit";
 
     @Value("${file.upload.script.path:/nfs/takin/script/}")
     private String scriptFilePath;
@@ -160,6 +165,11 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     @Resource
     private ReportApi reportApi;
+    @Autowired
+    private SceneDAO sceneDAO;
+    @Autowired
+    private PradarZkConfigDAO pradarZkConfigDAO;
+
 
     /**
      * 是否是预发环境
@@ -243,6 +253,12 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         }
         sceneData.setIsAbsoluteScriptPath(FileUtils.isAbsoluteUploadPath(sceneData.getUploadFile(), scriptFilePath));
 
+        // 场景启动前校验脚本中http采样器数量
+        String businessFlowId = resp.getData().getBusinessFlowId();
+        if(StringUtils.isNotEmpty(businessFlowId)){ //兼容的老脚本数据结构没有这个字段，直接放过
+            checkTotalNodeNum(Long.parseLong(businessFlowId));
+        }
+
         // 校验该场景是否正在压测中
         if (!SceneManageStatusEnum.ifFinished(sceneData.getStatus())) {
             //        if (redisClientUtils.hasKey(SceneTaskUtils.getSceneTaskKey(param.getSceneId()))) {
@@ -305,6 +321,20 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         pushTaskToRedis(startResult, sceneData);
 
         return startResult;
+    }
+
+    private void checkTotalNodeNum(Long businessFlowId){
+        if(null!=businessFlowId){
+            SceneResult result = sceneDAO.getSceneDetail(businessFlowId);
+            int totalNodeNum = result.getTotalNodeNum();
+            PradarZkConfigResult byZkPath = pradarZkConfigDAO.getByZkPath(SCRIPT_HTTP_REQUEST_MAX_NUM_KEY);
+            if (byZkPath != null) {
+                int limit = Integer.parseInt(byZkPath.getValue());
+                if (limit < totalNodeNum) {
+                    throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, String.format("脚本里http请求数量超过开关配置:%s的值%d的限制", SCRIPT_HTTP_REQUEST_MAX_NUM_KEY, limit));
+                }
+            }
+        }
     }
 
     private void pushTaskToRedis(SceneActionResp startResult, SceneManageWrapperDTO sceneData) {

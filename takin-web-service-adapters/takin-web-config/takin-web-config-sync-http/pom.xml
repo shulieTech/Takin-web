@@ -20,7 +20,7 @@
     <parent>
         <artifactId>takin-web-service-adapters</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>5.9.2</version>
+        <version>5.9.3</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>

@@ -1,34 +1,16 @@
 package io.shulie.takin.cloud.biz.service.report.impl;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -89,13 +71,7 @@ import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
-import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
-import io.shulie.takin.cloud.common.utils.CommonUtil;
-import io.shulie.takin.cloud.common.utils.GsonUtil;
-import io.shulie.takin.cloud.common.utils.JsonPathUtil;
-import io.shulie.takin.cloud.common.utils.JsonUtil;
-import io.shulie.takin.cloud.common.utils.NumberUtil;
-import io.shulie.takin.cloud.common.utils.TestTimeUtil;
+import io.shulie.takin.cloud.common.utils.*;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
@@ -130,6 +106,17 @@ import org.influxdb.impl.TimeUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author 莫问
@@ -331,7 +318,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         reportDetail.setStopReasons(getStopReasonBean(sceneId, detailOutput));
         // 查询sla熔断数据
         reportDetail.setSlaMsg(detailOutput.getSlaMsg());
-        String testPlanXpathMd5 = getTestPlanXpathMd5(reportResult.getScriptNodeTree());
+        String testPlanXpathMd5 = getTestPlanXpathMd5V2(reportResult.getScriptNodeTree());
         String transaction = StringUtils.isBlank(testPlanXpathMd5) ? ReportConstants.ALL_BUSINESS_ACTIVITY
                 : testPlanXpathMd5;
         Long jobId = reportResult.getJobId();
@@ -440,6 +427,28 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
         return null;
     }
+
+    private String getTestPlanXpathMd5V2(String scriptNodeTree) {
+        if (StringUtils.isBlank(scriptNodeTree)) {
+            return null;
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            ScriptNode[] scriptNodes = objectMapper.readValue(scriptNodeTree, ScriptNode[].class);
+            if (scriptNodes != null && scriptNodes.length > 0) {
+                for (ScriptNode scriptNode : scriptNodes) {
+                    if (NodeTypeEnum.TEST_PLAN.equals(scriptNode.getType())) {
+                        return scriptNode.getXpathMd5();
+                    }
+                }
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
 
     /**
      * 组装停止原因
@@ -816,7 +825,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             if (reportResult == null) {
                 return new ReportTrendResp();
             }
-            String testPlanXpathMd5 = getTestPlanXpathMd5(reportResult.getScriptNodeTree());
+            String testPlanXpathMd5 = getTestPlanXpathMd5V2(reportResult.getScriptNodeTree());
             String transaction = StringUtils.isBlank(testPlanXpathMd5) ? ReportConstants.ALL_BUSINESS_ACTIVITY
                     : testPlanXpathMd5;
             if (StringUtils.isNotBlank(reportTrendQuery.getXpathMd5())) {
@@ -1085,7 +1094,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         boolean updateVersion = System.currentTimeMillis() >= 0;
         log.info("ReportId={}, tenantId={}, CompareResult={}", reportId, reportResult.getTenantId(), updateVersion);
 
-        String testPlanXpathMd5 = getTestPlanXpathMd5(reportResult.getScriptNodeTree());
+        String testPlanXpathMd5 = getTestPlanXpathMd5V2(reportResult.getScriptNodeTree());
         String transaction = StringUtils.isBlank(testPlanXpathMd5) ? ReportConstants.ALL_BUSINESS_ACTIVITY
                 : testPlanXpathMd5;
         //汇总所有业务活动数据
@@ -1448,23 +1457,21 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     }
 
     private List<DistributeBean> getDistributes(String distributes) {
-        List<DistributeBean> result;
-        if (StringUtils.isNoneBlank(distributes)) {
-            Map<String, String> distributeMap = JsonHelper.string2Obj(distributes,
-                    new TypeReference<Map<String, String>>() {
-                    });
-            List<DistributeBean> distributeBeans = Lists.newArrayList();
-            distributeMap.forEach((key, value) -> {
-                DistributeBean distribute = new DistributeBean();
-                distribute.setLable(key);
-                distribute.setValue(COMPARE + value);
-                distributeBeans.add(distribute);
-            });
-            distributeBeans.sort(((o1, o2) -> -o1.getLable().compareTo(o2.getLable())));
-            result = distributeBeans;
-        } else {
-            result = Lists.newArrayList();
+        List<DistributeBean> result = new ArrayList<>();
+        Map<String, String> distributeMap = JSON.parseObject(distributes, Map.class);
+        Iterator<String> iterator = distributeMap.keySet().iterator();
+        while (iterator.hasNext()) {
+            String key = iterator.next();
+            if (key.equals("stepData")) {
+                continue;
+            }
+            String value = distributeMap.get(key);
+            DistributeBean distribute = new DistributeBean();
+            distribute.setLable(key);
+            distribute.setValue(COMPARE + value);
+            result.add(distribute);
         }
+        result.sort(((o1, o2) -> -o1.getLable().compareTo(o2.getLable())));
         return result;
     }
 

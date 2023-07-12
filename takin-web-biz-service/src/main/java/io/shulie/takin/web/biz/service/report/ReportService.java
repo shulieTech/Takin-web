@@ -176,4 +176,7 @@ public interface ReportService {
      * @return
      */
     List<ReportEntity> getReportListByReportIds(List<Long> reportIds);
+
+    void buildReportTestData(Long jobId, Long sceneId, Long reportId, Long tenantId);
+
 }

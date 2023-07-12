@@ -12,6 +12,7 @@ import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
 import io.shulie.takin.adapter.api.model.request.report.*;
 import io.shulie.takin.adapter.api.model.response.report.*;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.mapper.mysql.ReportMapper;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
@@ -77,6 +78,9 @@ public class ReportServiceImpl implements ReportService {
     private ReportDao reportDao;
     @Resource
     private ReportMapper reportMapper;
+
+    @Autowired
+    private CloudReportService cloudReportService;
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -346,4 +350,8 @@ public class ReportServiceImpl implements ReportService {
         return reportMapper.selectList(queryWrapper);
     }
 
+    @Override
+    public void buildReportTestData(Long jobId, Long sceneId, Long reportId, Long tenantId) {
+        cloudReportService.updateReportBusinessActivity(jobId, sceneId, reportId, tenantId);
+    }
 }

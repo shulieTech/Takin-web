@@ -779,11 +779,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (CollectionUtils.isNotEmpty(applicationList)) {
             for (ApplicationListResult app : applicationList) {
                 if (errorApplicationIdSet.contains(app.getApplicationId())) {
-                    if (CollectionUtils.isNotEmpty(errorInfo)) {
+                    if (CollectionUtils.isNotEmpty(errorInfo) && errorInfo.containsKey(app.getApplicationId())) {
                         String e = errorInfo.get(app.getApplicationId());
                         applicationDAO.updateStatus(app.getApplicationId(), e);
                     }
-                    if (CollectionUtils.isNotEmpty(errorAgentIdInfo)) {
+                    if (CollectionUtils.isNotEmpty(errorAgentIdInfo) && errorAgentIdInfo.containsKey(app.getApplicationId())) {
                         Map<String, String> stringMap = errorAgentIdInfo.get(app.getApplicationId());
                         StringBuilder e = new StringBuilder();
                         stringMap.forEach((agentId, errorMessage) -> {

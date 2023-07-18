@@ -125,7 +125,9 @@ public class JmxUtil {
         if (null == element) {
             return true;
         }
-        return !Boolean.parseBoolean(element.attributeValue("enabled"));
+
+        String enabledAttribute = element.attributeValue("enabled");
+        return enabledAttribute != null && !Boolean.parseBoolean(enabledAttribute);
     }
 
     /**

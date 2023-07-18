@@ -1,1 +1,1 @@
-insert into t_agent_config values (null,now(),now(),0,'superadmin',0,'k8s容器cpu核心数','k8s.containers.resources.limits.cpu','-1','k8s容器cpu核心数，帮助准确计算容器内应用的CPU使用率，默认值-1未配置',0,1,'5.1.1.1',1074790400,null,null,0,0,null,null,null,-1,'system',null);
+insert into trodb.t_agent_config values (null,now(),now(),0,'superadmin',0,'k8s容器cpu核心数','k8s.containers.resources.limits.cpu','-1','k8s容器cpu核心数，帮助准确计算容器内应用的CPU使用率，默认值-1未配置',0,1,'5.1.1.1',1074790400,null,null,0,0,null,null,null,-1,'system',null);

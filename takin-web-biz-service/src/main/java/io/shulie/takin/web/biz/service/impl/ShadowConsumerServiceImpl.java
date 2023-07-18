@@ -281,7 +281,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             .map(mqTopicGroup -> {
                 ShadowMqConsumerOutput shadowMqConsumerOutput = new ShadowMqConsumerOutput();
                 shadowMqConsumerOutput.setTopicGroup(
-                    mqTopicGroup.getServiceName() + "#" + mqTopicGroup.getMethodName());
+                    mqTopicGroup.getServiceName() + "#" + ("".equals(mqTopicGroup.getMethodName()) ? "null" : mqTopicGroup.getMethodName()));
                 shadowMqConsumerOutput.setType(
                     MiddlewareTypeGroupEnum.getMiddlewareGroupType(mqTopicGroup.getMiddlewareName()).getType());
                 shadowMqConsumerOutput.setApplicationId(request.getApplicationId());

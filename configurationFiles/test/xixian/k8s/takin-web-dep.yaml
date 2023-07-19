@@ -23,7 +23,7 @@ spec:
               command:
                 - "/bin/sh"
                 - "-c"
-                - "mkdir -p /data/nfs_dir && mount -o rw,intr,soft,timeo=30,retry=3,nolock -t nfs 10.125.18.246:/data/share /data/nfs_dir"
+                - "mkdir -p /data/nfs_dir && mount -o rw,intr,soft,timeo=30,retry=3,nolock -t nfs 10.125.86.233:/data/share /data/nfs_dir"
         securityContext:
           capabilities:
             add: ["SYS_ADMIN"]

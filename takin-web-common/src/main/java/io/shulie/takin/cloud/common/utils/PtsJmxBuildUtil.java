@@ -6,6 +6,7 @@ import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import io.shulie.takin.cloud.common.bean.HttpUrlBean;
 import io.shulie.takin.cloud.common.enums.pts.PtsThreadGroupTypeEnum;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonAssert;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonProcessor;
@@ -20,7 +21,6 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 
 /**
@@ -653,7 +653,7 @@ public class PtsJmxBuildUtil {
         return element;
     }
 
-    public static Element buildHttpSampler(Element element, String apiName, Boolean enabled, URL queryUrl, String method, String formData, String postData, Map<String, String> paramMap) {
+    public static Element buildHttpSampler(Element element, String apiName, Boolean enabled, HttpUrlBean queryUrl, String method, String formData, String postData, Map<String, String> paramMap) {
         Element sampler = element.addElement("HTTPSamplerProxy");
         sampler.addAttribute(GUI_CLASS, "HttpTestSampleGui");
         sampler.addAttribute(TEST_CLASS, "HTTPSamplerProxy");
@@ -733,7 +733,7 @@ public class PtsJmxBuildUtil {
 
         Element port = sampler.addElement(STRING_PROP);
         port.addAttribute(NAME, "HTTPSampler.port");
-        port.setText(queryUrl.getPort() != -1 ? String.valueOf(queryUrl.getPort()) : "");
+        port.setText(queryUrl.getPort() != null && queryUrl.getPort() != -1 ? String.valueOf(queryUrl.getPort()) : "");
 
         Element protocol = sampler.addElement(STRING_PROP);
         protocol.addAttribute(NAME, "HTTPSampler.protocol");

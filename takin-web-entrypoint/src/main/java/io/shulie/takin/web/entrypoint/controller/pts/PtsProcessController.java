@@ -187,48 +187,48 @@ public class PtsProcessController {
              */
             PtsGlobalHttpRequest globalHttp = request.getGlobalHttp();
             //填写的有值，但非http https，默认http
-            if(StringUtils.isNotBlank(globalHttp.getProtocol()) && !StringUtils.equalsAny(globalHttp.getProtocol(), "http", "https")) {
+            if(StringUtils.isNotBlank(globalHttp.getProtocol()) && !StringUtils.equalsAnyIgnoreCase(globalHttp.getProtocol(), "http", "https")) {
                 globalHttp.setProtocol("http");
             }
-            //如果有域名，无协议，默认http协议
-            if(StringUtils.isNotBlank(globalHttp.getDomain()) && StringUtils.isBlank(globalHttp.getProtocol())) {
-                globalHttp.setProtocol("http");
-            }
+
             for (PtsApiRequest apiRequest : apiList) {
                 apiRequest.getBase().setRequestUrl(StringUtils.replace(apiRequest.getBase().getRequestUrl(), " ", ""));
                 if (apiRequest.getApiType().equals(SamplerTypeEnum.HTTP.getType())) {
-                    if(StringUtils.isNotBlank(apiRequest.getBase().getRequestUrl())
-                            && !apiRequest.getBase().getRequestUrl().startsWith("http://")
-                            && !apiRequest.getBase().getRequestUrl().startsWith("https://")) {
-                        return ResponseResult.fail( "保存失败：URL格式不正确,接口名称=" + apiRequest.getApiName(), "");
-                    }
-
                     if(StringUtils.isBlank(apiRequest.getBase().getRequestUrl())) {
-                        //取默认的
-                       if(StringUtils.isBlank(globalHttp.getDomain())) {
-                           return ResponseResult.fail( "保存失败：URL不能为空,接口名称=" + apiRequest.getApiName(), "");
-                       } else {
-                           StringBuffer requestUrl = new StringBuffer();
-                           requestUrl.append(globalHttp.getProtocol());
-                           requestUrl.append("://");
-                           requestUrl.append(globalHttp.getDomain());
-                           if(StringUtils.isNotBlank(globalHttp.getPort())) {
-                               requestUrl.append(":");
-                               requestUrl.append(globalHttp.getPort());
-                           }
-                           if(StringUtils.isNotBlank(globalHttp.getPath())) {
-                                if(StringUtils.startsWith(globalHttp.getPath(), "/")) {
-                                    requestUrl.append(globalHttp.getPath());
-                                } else {
-                                    requestUrl.append("/");
-                                    requestUrl.append(globalHttp.getPath());
-                                }
-                           } else {
-                               requestUrl.append("/");
-                           }
-                           apiRequest.getBase().setRequestUrl(requestUrl.toString());
-                       }
+                        return ResponseResult.fail( "保存失败：压测URL不能为空,接口名称=" + apiRequest.getApiName(), "");
                     }
+//                    if(StringUtils.isNotBlank(apiRequest.getBase().getRequestUrl())
+//                            && !apiRequest.getBase().getRequestUrl().startsWith("http://")
+//                            && !apiRequest.getBase().getRequestUrl().startsWith("https://")) {
+//                        return ResponseResult.fail( "保存失败：URL格式不正确,接口名称=" + apiRequest.getApiName(), "");
+//                    }
+
+//                    if(StringUtils.isBlank(apiRequest.getBase().getRequestUrl())) {
+//                        //取默认的
+//                       if(StringUtils.isBlank(globalHttp.getDomain())) {
+//                           return ResponseResult.fail( "保存失败：URL不能为空,接口名称=" + apiRequest.getApiName(), "");
+//                       } else {
+//                           StringBuffer requestUrl = new StringBuffer();
+//                           requestUrl.append(globalHttp.getProtocol());
+//                           requestUrl.append("://");
+//                           requestUrl.append(globalHttp.getDomain());
+//                           if(StringUtils.isNotBlank(globalHttp.getPort())) {
+//                               requestUrl.append(":");
+//                               requestUrl.append(globalHttp.getPort());
+//                           }
+//                           if(StringUtils.isNotBlank(globalHttp.getPath())) {
+//                                if(StringUtils.startsWith(globalHttp.getPath(), "/")) {
+//                                    requestUrl.append(globalHttp.getPath());
+//                                } else {
+//                                    requestUrl.append("/");
+//                                    requestUrl.append(globalHttp.getPath());
+//                                }
+//                           } else {
+//                               requestUrl.append("/");
+//                           }
+//                           apiRequest.getBase().setRequestUrl(requestUrl.toString());
+//                       }
+//                    }
                     PtsApiBodyRequest bodyRequest = apiRequest.getBody();
                     bodyRequest.setRawData(PtsXmlContentUtils.replace2Jmx(bodyRequest.getRawData()));
                 } else {
@@ -269,7 +269,7 @@ public class PtsProcessController {
         JmeterJavaRequestResponse javaConfig = getJavaRequestConfig("IB2");
         PtsSceneResponse sceneResponse = ptsProcessService.detailProcess(id);
         //处理Get请求，拼参数到url里
-        dealLinks((sceneResponse.getPreLink()), javaConfig);
+        dealLinks(sceneResponse.getPreLink(), javaConfig);
         for(PtsLinkRequest linkRequest : sceneResponse.getLinks()) {
             dealLinks(linkRequest, javaConfig);
         }

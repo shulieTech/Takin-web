@@ -162,9 +162,9 @@ public class PtsJmxParseUtil {
                 if ("HTTPSamplerProxy".equals(name) || "AjpSampler".equals(name)) {
                     Map<String, String> props = buildProps(element, BASE_PROP_ELEMENTS);
                     //找到http请求默认值
-                    Element configElement = findConfigElement(element, "ConfigTestElement", "HttpDefaultsGui");
-                    Map<String, String> configProps = buildProps(configElement, BASE_PROP_ELEMENTS);
-                    props = mergeProps(props, configProps);
+//                    Element configElement = findConfigElement(element, "ConfigTestElement", "HttpDefaultsGui");
+//                    Map<String, String> configProps = buildProps(configElement, BASE_PROP_ELEMENTS);
+//                    props = mergeProps(props, configProps);
                     node.setProps(props);
                     //protocol+#+path+method, 即第一个#号前是protocol，最后一个#之后是method，中间的#可能是path自带
                     node.setSamplerType(SamplerTypeEnum.HTTP);

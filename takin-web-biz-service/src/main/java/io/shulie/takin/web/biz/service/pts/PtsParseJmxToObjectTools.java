@@ -432,14 +432,16 @@ public class PtsParseJmxToObjectTools {
     private static String concatRequestUrl(Map<String, String> props) {
         StringBuffer requestUrl = new StringBuffer();
         String protocol = props.get(JmxConstant.httpSamplerProtocol);
-        if(StringUtils.isBlank(protocol)) {
-            protocol = JmxConstant.defaultProtocol;
+        if(StringUtils.isNotBlank(protocol)) {
+            requestUrl.append(protocol);
+            requestUrl.append("://");
         }
-        requestUrl.append(protocol);
-        requestUrl.append("://");
-        requestUrl.append(props.get(JmxConstant.httpSamplerDomain));
+        String domain = props.get(JmxConstant.httpSamplerDomain);
+        if(StringUtils.isNotBlank(domain)) {
+            requestUrl.append(domain);
+        }
         String port = props.get(JmxConstant.httpSamplerPort);
-        if(StringUtils.isNotBlank(port)) {
+        if(StringUtils.isNotBlank(port) && !"-1".equals(port)) {
             requestUrl.append(":");
             requestUrl.append(port);
         }

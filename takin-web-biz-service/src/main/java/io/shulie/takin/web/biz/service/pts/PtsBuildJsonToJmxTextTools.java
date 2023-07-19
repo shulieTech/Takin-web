@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.pts;
 import cn.hutool.core.util.XmlUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import io.shulie.takin.cloud.common.bean.HttpUrlBean;
 import io.shulie.takin.cloud.common.enums.pts.*;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonAssert;
 import io.shulie.takin.cloud.common.script.jmeter.ScriptJsonProcessor;
@@ -75,7 +76,7 @@ public class PtsBuildJsonToJmxTextTools {
                             continue;
                         }
                         //创建http请求
-                        java.net.URL url = new java.net.URL(apiRequest.getBase().getRequestUrl());
+                        HttpUrlBean urlBean = HttpUrlBean.convertRequestUrl2Bean(apiRequest.getBase().getRequestUrl());
                         Map<String, String> paramMap = new HashMap<>();
                         paramMap.put("requestTimeout", apiRequest.getBase().getRequestTimeout() != null ? String.valueOf(apiRequest.getBase().getRequestTimeout()) : "");
                         paramMap.put("allowForward", apiRequest.getBase().getAllowForward().toString());
@@ -83,7 +84,7 @@ public class PtsBuildJsonToJmxTextTools {
                         String contentType = apiRequest.getBody().getContentType();
                         paramMap.put("doMultipartPost", StringUtils.equals(contentType, PtsContentTypeEnum.FORM.getType()) ? "true" : "false");
                         org.dom4j.Element sampler = PtsJmxBuildUtil.buildHttpSampler(threadGroupHashEle, apiRequest.getApiName(),
-                                apiRequest.getEnabled(), url, apiRequest.getBase().getRequestMethod(),
+                                apiRequest.getEnabled(), urlBean, apiRequest.getBase().getRequestMethod(),
                                 JSON.toJSONString(apiRequest.getBody().getForms()),
                                 apiRequest.getBody().getRawData(),
                                 paramMap);

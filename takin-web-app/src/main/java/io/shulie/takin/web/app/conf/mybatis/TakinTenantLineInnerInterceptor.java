@@ -216,7 +216,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_business_link_manage_table",
         "t_scene_manage",
         "t_report",
-        "t_application_mnt",
+//        "t_application_mnt",
         "t_scene",
         "t_script_manage",
         "t_application_api_manage",

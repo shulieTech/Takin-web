@@ -133,12 +133,11 @@ public class LinkTopologyService extends CommonService {
      */
     public ApplicationEntranceTopologyResponse getApplicationEntrancesTopology(
             ApplicationEntranceTopologyQueryRequest request, boolean tempActivity) {
-
         // 大数据查询拓扑图
         LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
                 tempActivity,
                 request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
-                request.getRpcType(), request.getExtend());
+                RpcTypeEnum.valueOf(request.getType().getType()).getValue(), request.getExtend());
 
         // final result
         ApplicationEntranceTopologyResponse applicationEntranceTopologyResponse

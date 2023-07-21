@@ -34,11 +34,11 @@ import org.springframework.stereotype.Component;
 
 /**
  * maven 拉取新版本job
- *
+ * 
  * @author liqiyu
  */
-@Component
-@ElasticSchedulerJob(jobName = "MavenNewVersionPullJob", cron = "0 0 3 * * ? *", description = "定时查询阿里云maven仓库是否有新的maven版本")
+//@Component   客户不需要拉取maven版本直接注释，私有化部署内网会无法连接导致报错
+//@ElasticSchedulerJob(jobName = "MavenNewVersionPullJob", cron = "0 0 3 * * ? *", description = "定时查询阿里云maven仓库是否有新的maven版本")
 @Slf4j
 public class MavenNewVersionPullJob implements SimpleJob {
 

@@ -48,7 +48,7 @@ CREATE TABLE aiops_shard_m.t_trace_expand (
         `userAppKey` String,
         `envCode` String,
         `userId` String,
-        `logType` String
+        `logType` Int8
 )
     ENGINE = ReplicatedMergeTree('/clickhouse/tables/cluster-aiops/t_trace_expand/{m_shard}', '{replica}')
 PARTITION BY toYYYYMMDD(startDate)

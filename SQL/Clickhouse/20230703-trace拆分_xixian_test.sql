@@ -48,7 +48,7 @@ CREATE TABLE stresstest.t_trace_expand (
                                         `userAppKey` String,
                                         `envCode` String,
                                         `userId` String,
-                                        `logType` String
+                                        `logType` Int8
 )
     ENGINE = ReplicatedMergeTree('/clickhouse/tables/stresstest/t_trace_expand/{shard}', '{replica}')
 PARTITION BY toYYYYMMDD(startDate)

@@ -48,7 +48,7 @@ CREATE TABLE default.t_trace_expand (
         `userAppKey` String,
         `envCode` String,
         `userId` String,
-        `logType` String
+        `logType` Int8
 )
     ENGINE = ReplicatedMergeTree('/clickhouse/tables/cluster-1/t_trace_expand/{shard}', '{replica}')
 PARTITION BY toYYYYMMDD(startDate)

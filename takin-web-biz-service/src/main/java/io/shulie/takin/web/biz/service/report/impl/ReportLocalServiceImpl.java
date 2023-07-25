@@ -669,7 +669,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
             ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
             List<ReportAppPerformanceOut> list = new ArrayList<>();
-            if (CollectionUtils.isEmpty(activityResponses)) {
+            if (CollectionUtils.isEmpty(activityResponses) || activityResponses.stream().filter(a -> Objects.nonNull(a)).count() <= 0) {
                 return Response.success(Collections.EMPTY_LIST);
             }
             for (ActivityResponse activityResponse : activityResponses) {
@@ -830,7 +830,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             return activityResponse;
         }).collect(Collectors.toList());
         Map<String, BigDecimal> map = new HashMap<>();
-        if (CollectionUtils.isNotEmpty(activityResponses)) {
+        if (CollectionUtils.isNotEmpty(activityResponses) && activityResponses.stream().filter(a -> Objects.nonNull(a)).count() > 0) {
             for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponses.get(0).getTopology().getNodes()) {
                 //非app节点就跳过去
                 if (!node.getNodeType().getType().equalsIgnoreCase("app")) {

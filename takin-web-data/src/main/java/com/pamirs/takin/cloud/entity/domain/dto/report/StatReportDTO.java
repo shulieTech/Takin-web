@@ -1,9 +1,9 @@
 package com.pamirs.takin.cloud.entity.domain.dto.report;
 
-import java.math.BigDecimal;
-
 import io.shulie.takin.cloud.common.utils.NumberUtil;
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 /**
  * @author 莫问
@@ -77,6 +77,7 @@ public class StatReportDTO {
      */
     private Long recordCount;
 
+    private BigDecimal minTps;
     /**
      * 获取SA
      * sa总数/总请求*100

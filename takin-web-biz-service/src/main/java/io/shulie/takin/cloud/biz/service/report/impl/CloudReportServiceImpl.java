@@ -28,6 +28,7 @@ import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import com.pamirs.takin.cloud.entity.domain.entity.report.Report;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.WarnDetail;
+import com.pamirs.takin.entity.domain.dto.report.PressureTestTimeDTO;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.common.DistributeBean;
@@ -96,15 +97,26 @@ import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
+import io.shulie.takin.web.amdb.bean.common.AmdbResult;
+import io.shulie.takin.web.amdb.util.AmdbHelper;
+import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
+import io.shulie.takin.web.biz.utils.ParsePressureTimeByModeUtils;
+import io.shulie.takin.web.biz.utils.ReportTimeUtils;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.influxdb.impl.TimeUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -163,6 +175,12 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private String pressureEngineLogPath;
 
     public static final String COMPARE = "<=";
+
+    @Autowired
+    private AmdbClientProperties properties;
+
+    private static final String AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH = "/amdb/db/api/enginePressure/queryListMap";
+
 
     @Override
     public PageInfo<CloudReportDTO> listReport(ReportQueryReq param) {
@@ -1247,7 +1265,153 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 totalPassFlag = false;
             }
         }
+
+        //联通版新报告 根据压测时间段，统计性能指标明细、RT分位明细
+        Report dbReport = tReportMapper.selectByPrimaryKey(reportId);
+        if (dbReport.getStartTime() != null && dbReport.getEndTime() != null) {
+            Map<String, List<PressureTestTimeDTO>> timeMap = ParsePressureTimeByModeUtils.parsePtConfig2Map(dbReport.getStartTime(), dbReport.getEndTime(), dbReport.getPtConfig());
+            List<ScriptNodeSummaryBean> refList = JSON.parseArray(dbReport.getScriptNodeTree(), ScriptNodeSummaryBean.class);
+            //key=业务活动, value=线程组
+            Map<String, String> httpThreadGroupMap = new HashMap<>();
+            calcHttpAndThreadGroupRef(refList, httpThreadGroupMap);
+            for (ReportBusinessActivityDetail detail : reportBusinessActivityDetails) {
+                if (StringUtils.isBlank(detail.getBindRef())) {
+                    continue;
+                }
+                List<PressureTestTimeDTO> timeList = timeMap.get(httpThreadGroupMap.get(detail.getBindRef()));
+                if (CollectionUtils.isEmpty(timeList)) {
+                    continue;
+                }
+                List<Map<String, Object>> stepList = new ArrayList<>();
+                for (int i = 0; i < timeList.size(); i++) {
+                    //统计某个业务活动的数据
+                    long startTime = timeList.get(i).getStartTime().getTime();
+                    long calcStartTime = startTime;
+                    //查询>= <=，所以这里要+1
+                    if (i > 0) {
+                        calcStartTime = startTime + 1L;
+                    } else {
+                        calcStartTime = ReportTimeUtils.beforeStartTime(startTime);
+                    }
+                    long endTime = timeList.get(i).getEndTime().getTime();
+                    long calcEndime = endTime;
+                    if (i == timeList.size() - 1) {
+                        calcEndime = ReportTimeUtils.afterEndTime(endTime);
+                    }
+                    Map<String, Object> stepMap = new HashMap<>();
+                    StatReportDTO reportData = statReportByTimes(calcStartTime, calcEndime, jobId, sceneId, reportId, tenantId, detail.getBindRef());
+                    Map<String, Integer> rtMap = reportEventService.queryAndCalcRtDistributeByTime(calcStartTime, calcEndime, jobId, detail.getBindRef());
+                    stepMap.put("startTime", DateUtil.formatDateTime(DateUtil.date(startTime)));
+                    stepMap.put("endTime", DateUtil.formatDateTime(DateUtil.date(endTime)));
+                    if (reportData != null) {
+                        stepMap.put("totalRequest", reportData.getTotalRequest());
+                        stepMap.put("concurrent", reportData.getAvgConcurrenceNum());
+                        stepMap.put("avgTps", reportData.getTps());
+                        stepMap.put("minTps", reportData.getMinTps());
+                        stepMap.put("maxTps", reportData.getMaxTps());
+                        stepMap.put("avgRt", reportData.getAvgRt());
+                        stepMap.put("minRt", reportData.getMinRt());
+                        stepMap.put("maxRt", reportData.getMaxRt());
+                        stepMap.put("successRate", reportData.getSuccessRate());
+                        stepMap.put("sa", reportData.getSa());
+                    }
+                    if (MapUtils.isNotEmpty(rtMap)) {
+                        stepMap.putAll(rtMap);
+                    }
+                    stepList.add(stepMap);
+                }
+                ReportBusinessActivityDetail updateDetail = new ReportBusinessActivityDetail();
+                updateDetail.setId(detail.getId());
+                Map<String, Object> targetMap = JSON.parseObject(detail.getRtDistribute(), Map.class);
+                if (MapUtils.isEmpty(targetMap)) {
+                    targetMap = new HashMap<>();
+                }
+                targetMap.put("stepData", stepList);
+                updateDetail.setRtDistribute(JSON.toJSONString(targetMap));
+                tReportBusinessActivityDetailMapper.updateByPrimaryKeySelective(updateDetail);
+
+            }
+        }
         return totalPassFlag;
+    }
+
+    private void calcHttpAndThreadGroupRef(List<ScriptNodeSummaryBean> dataList, Map<String, String> dataMap) {
+        if (CollectionUtils.isEmpty(dataList)) {
+            return;
+        }
+        dataList.forEach(data -> {
+            if (data.getType().equals(NodeTypeEnum.THREAD_GROUP.name())) {
+                String key = data.getXpathMd5();
+                List<String> sampleList = new ArrayList<>();
+                calcHttp(data.getChildren(), sampleList);
+                if (CollectionUtils.isNotEmpty(sampleList)) {
+                    sampleList.stream().forEach(sampler -> dataMap.put(sampler, key));
+                }
+            }
+            calcHttpAndThreadGroupRef(data.getChildren(), dataMap);
+        });
+    }
+
+    private void calcHttp(List<ScriptNodeSummaryBean> dataList, List<String> sampleList) {
+        if (CollectionUtils.isEmpty(dataList)) {
+            return;
+        }
+        dataList.forEach(data -> {
+            if (data.getType().equals(NodeTypeEnum.SAMPLER.name())) {
+                sampleList.add(data.getXpathMd5());
+            }
+            calcHttp(data.getChildren(), sampleList);
+        });
+    }
+
+    public StatReportDTO statReportByTimes(Long startTime, Long endTime, Long jobId, Long sceneId, Long reportId, Long customerId, String transaction) {
+        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("sum(count)", "totalRequest");
+        fieldAndAlias.put("sum(fail_count)", "failRequest");
+        fieldAndAlias.put("avg(avg_tps)", "tps");
+        fieldAndAlias.put("sum(sum_rt)", "sumRt");
+        fieldAndAlias.put("sum(sa_count)", "saCount");
+        fieldAndAlias.put("min(avg_tps)", "minTps");
+        fieldAndAlias.put("max(avg_tps)", "maxTps");
+        fieldAndAlias.put("min(min_rt)", "minRt");
+        fieldAndAlias.put("max(max_rt)", "maxRt");
+        fieldAndAlias.put("count(avg_rt)", "recordCount");
+        fieldAndAlias.put("max(active_threads)", "maxConcurrenceNum");
+        fieldAndAlias.put("avg(active_threads)", "avgConcurrenceNum");
+        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+        enginePressureQuery.setTransaction(transaction);
+        enginePressureQuery.setJobId(jobId);
+        enginePressureQuery.setStartTime(startTime);
+        enginePressureQuery.setEndTime(endTime);
+        List<StatReportDTO> statReportDTOList = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
+        if (CollectionUtils.isNotEmpty(statReportDTOList)) {
+            statReportDTOList.forEach(statReportDTO -> {
+                statReportDTO.setTempRequestCount(statReportDTO.getTotalRequest());
+            });
+        }
+        return CollectionUtils.isNotEmpty(statReportDTOList) ? statReportDTOList.get(0) : null;
+    }
+
+    public <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
+        try {
+            if (query == null || query.getJobId() == null) {
+                return new ArrayList<>();
+            }
+            query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
+            query.setEnvCode(WebPluginUtils.traceEnvCode());
+
+            HttpMethod httpMethod = HttpMethod.POST;
+            AmdbResult<List<T>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
+                    .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
+                    .param(query)
+                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                    .eventName("查询enginePressure数据")
+                    .list(tClass);
+            return amdbResponse.getData();
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
+        }
     }
 
     @Override
@@ -1686,7 +1850,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     public List<ReportDetailOutput> getReportListBySceneId(Long sceneId) {
         List<ReportResult> resultList = reportDao.selectBySceneId(sceneId);
         List<ReportDetailOutput> outputList = new ArrayList<>();
-        if(CollectionUtils.isEmpty(resultList)) {
+        if (CollectionUtils.isEmpty(resultList)) {
             return outputList;
         }
         resultList.stream().forEach(result -> {

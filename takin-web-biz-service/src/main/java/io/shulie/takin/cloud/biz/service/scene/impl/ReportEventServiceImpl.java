@@ -1,20 +1,28 @@
 package io.shulie.takin.cloud.biz.service.scene.impl;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Maps;
 import io.shulie.takin.cloud.biz.output.statistics.RtDataOutput;
 import io.shulie.takin.cloud.biz.service.scene.ReportEventService;
 import io.shulie.takin.cloud.common.bean.collector.Metrics;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
+import io.shulie.takin.web.amdb.bean.common.AmdbResult;
+import io.shulie.takin.web.amdb.util.AmdbHelper;
+import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -29,6 +37,12 @@ public class ReportEventServiceImpl implements ReportEventService {
     private static final String MS = "ms";
     @Autowired
     private InfluxWriter influxWriter;
+
+    @Autowired
+    private AmdbClientProperties properties;
+
+    private static final String AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH = "/amdb/db/api/enginePressure/queryListMap";
+
 
     @Override
     public Map<String, String> queryAndCalcRtDistribute(String tableName, String bindRef) {
@@ -140,5 +154,56 @@ public class ReportEventServiceImpl implements ReportEventService {
             index = size - 1;
         }
         return index;
+    }
+
+    @Override
+    public Map<String, Integer> queryAndCalcRtDistributeByTime(Long startTime, Long endTime, Long jobId, String bindRef) {
+        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("sa_percent", "percentData");
+        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+        enginePressureQuery.setTransaction(bindRef);
+        enginePressureQuery.setJobId(jobId);
+        enginePressureQuery.setStartTime(startTime);
+        enginePressureQuery.setEndTime(endTime);
+        List<Metrics> metricsList = this.listEnginePressure(enginePressureQuery, Metrics.class);
+        if (null == metricsList) {
+            return null;
+        }
+        List<String> percentDataList = metricsList.stream().map(Metrics::getPercentData).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(percentDataList)){
+            return null;
+        }
+        Map<Integer, RtDataOutput> percentMap = calcRtDistribution(resolvingPercentData(percentDataList));
+        if(Objects.isNull(percentMap)){
+            return null;
+        }
+
+        Map<String, Integer> resultMap = Maps.newLinkedHashMap();
+        INDEXS.forEach(percent -> {
+            resultMap.put("rt"+percent, percentMap.get(percent).getTime());
+        });
+        return resultMap;
+    }
+
+    private <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
+        try {
+            if (query == null || query.getJobId() == null){
+                return new ArrayList<>();
+            }
+            query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
+            query.setEnvCode(WebPluginUtils.traceEnvCode());
+
+            HttpMethod httpMethod = HttpMethod.POST;
+            AmdbResult<List<T>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
+                    .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
+                    .param(query)
+                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                    .eventName("查询enginePressure数据")
+                    .list(tClass);
+            return amdbResponse.getData();
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
+        }
     }
 }

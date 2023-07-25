@@ -1457,6 +1457,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     }
 
     private List<DistributeBean> getDistributes(String distributes) {
+        if (StringUtils.isBlank(distributes)) {
+            return Lists.newArrayList();
+        }
         List<DistributeBean> result = new ArrayList<>();
         Map<String, String> distributeMap = JSON.parseObject(distributes, Map.class);
         Iterator<String> iterator = distributeMap.keySet().iterator();
@@ -1677,5 +1680,22 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             calibration = 1;
         }
         detail.setCalibration(calibration);
+    }
+
+    @Override
+    public List<ReportDetailOutput> getReportListBySceneId(Long sceneId) {
+        List<ReportResult> resultList = reportDao.selectBySceneId(sceneId);
+        List<ReportDetailOutput> outputList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(resultList)) {
+            return outputList;
+        }
+        resultList.stream().forEach(result -> {
+            ReportDetailOutput output = new ReportDetailOutput();
+            output.setId(result.getId());
+            output.setStartTime(DateUtil.formatDateTime(result.getStartTime()));
+            output.setConcurrent(result.getConcurrent());
+            outputList.add(output);
+        });
+        return outputList;
     }
 }

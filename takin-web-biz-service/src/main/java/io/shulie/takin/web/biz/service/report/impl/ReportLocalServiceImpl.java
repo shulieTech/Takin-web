@@ -669,6 +669,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
             ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
             List<ReportAppPerformanceOut> list = new ArrayList<>();
+            if (CollectionUtils.isEmpty(activityResponses)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
             for (ActivityResponse activityResponse : activityResponses) {
                 for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponse.getTopology().getNodes()) {
                     //非app节点就跳过去

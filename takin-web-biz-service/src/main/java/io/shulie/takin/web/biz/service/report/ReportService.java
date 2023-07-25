@@ -12,6 +12,8 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 
 import java.util.List;
@@ -157,6 +159,7 @@ public interface ReportService {
     /**
      * 用于finishjob判断报告的状态
      * 根据报告主键查询报告详情
+     *
      * @param id 报告主键
      * @return 报告详情
      */
@@ -166,17 +169,29 @@ public interface ReportService {
 
     /**
      * 获取最近多少分钟的报告ids
+     *
      * @return
      */
     List<Long> nearlyHourReportIds(int minutes);
 
     /**
      * 根据报告ids查询报告详情
+     *
      * @param reportIds
      * @return
      */
     List<ReportEntity> getReportListByReportIds(List<Long> reportIds);
 
     void buildReportTestData(Long jobId, Long sceneId, Long reportId, Long tenantId);
+
+    List<SceneReportListOutput> getReportListBySceneId(Long sceneId);
+
+    ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse> getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
+
+    io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse queryLinkDiagram(Long activityId, ReportLinkDiagramReq reportLinkDiagramReq);
+
+    void modifyLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
+
+    void modifyLinkDiagrams(ReportLinkDiagramReq reportLinkDiagramReq, List<String> pathMd5List);
 
 }

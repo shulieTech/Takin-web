@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.report.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
@@ -15,6 +16,7 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse
 import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.mapper.mysql.ReportMapper;
+import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -22,17 +24,21 @@ import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDownLoadOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
+import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.utils.PDFUtil;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -47,6 +53,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,9 +66,8 @@ import java.util.stream.Collectors;
 public class ReportServiceImpl implements ReportService {
     @Resource
     private ReportApi reportApi;
-    @Resource
-    private ActivityDAO activityDAO;
-    @Resource
+
+    @Autowired
     private CloudReportApi cloudReportApi;
     @Resource
     private VerifyTaskReportService verifyTaskReportService;
@@ -81,6 +87,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private CloudReportService cloudReportService;
+
+    @Autowired
+    private ActivityService activityService;
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -105,15 +114,15 @@ public class ReportServiceImpl implements ReportService {
             setFilterSql(String.join(",", userIdList));
         }});
         List<Long> userIds = reportResponseList.getData().stream().map(ContextExt::getUserId)
-            .filter(Objects::nonNull).collect(Collectors.toList());
+                .filter(Objects::nonNull).collect(Collectors.toList());
         //用户信息Map key:userId  value:user对象
         Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
         List<ReportDTO> dtoList = reportResponseList.getData().stream().map(t -> {
             Long userId = t.getUserId() == null ? null : Long.valueOf(t.getUserId().toString());
             //负责人名称
             String userName = Optional.ofNullable(userMap.get(userId))
-                .map(UserExt::getName)
-                .orElse("");
+                    .map(UserExt::getName)
+                    .orElse("");
             ReportDTO result = BeanUtil.copyProperties(t, ReportDTO.class);
             result.setUserName(userName);
             result.setUserId(userId);
@@ -132,7 +141,7 @@ public class ReportServiceImpl implements ReportService {
         ReportDetailResp detailResponse = cloudReportApi.detail(idReq);
         // sa超过100 显示100
         if (detailResponse.getSa() != null
-            && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
+                && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
             detailResponse.setSa(BigDecimal.valueOf(100));
         }
         ReportDetailOutput output = new ReportDetailOutput();
@@ -147,10 +156,14 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void fillExecuteMan(ReportDetailOutput output) {
-        if (output == null) {return;}
+        if (output == null) {
+            return;
+        }
         // 获取用户信息
         Map<Long, UserExt> userInfo = WebPluginUtils.getUserMapByIds(
-            new ArrayList<Long>(1) {{add(output.getUserId());}});
+                new ArrayList<Long>(1) {{
+                    add(output.getUserId());
+                }});
         // 填充用户信息
         if (userInfo.containsKey(output.getUserId())) {
             output.setOperateId(output.getUserId().toString());
@@ -164,7 +177,7 @@ public class ReportServiceImpl implements ReportService {
         LeakVerifyTaskReportQueryRequest queryRequest = new LeakVerifyTaskReportQueryRequest();
         queryRequest.setReportId(output.getId());
         LeakVerifyTaskResultResponse verifyTaskResultResponse = verifyTaskReportService.getVerifyTaskReport(
-            queryRequest);
+                queryRequest);
         if (Objects.isNull(verifyTaskResultResponse)) {
             return;
         }
@@ -269,10 +282,10 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public ResponseResult<List<ScriptNodeTreeResp>> queryNodeTree(ReportQueryRequest request) {
         List<ScriptNodeTreeResp> listResponseResult = reportApi.scriptNodeTree(
-            new ScriptNodeTreeQueryReq() {{
-                setSceneId(request.getSceneId());
-                setReportId(request.getReportId());
-            }});
+                new ScriptNodeTreeQueryReq() {{
+                    setSceneId(request.getSceneId());
+                    setReportId(request.getReportId());
+                }});
         return ResponseResult.success(listResponseResult);
     }
 
@@ -296,10 +309,10 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public String downloadPDFPath(Long reportId){
-        String lockKey = String.format(LockKeyConstants.LOCK_REPORT_EXPORT,reportId);
-        if(!distributedLock.tryLockSecondsTimeUnit(lockKey, 0L, 30L)){
-            throw  new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, "操作太频繁!");
+    public String downloadPDFPath(Long reportId) {
+        String lockKey = String.format(LockKeyConstants.LOCK_REPORT_EXPORT, reportId);
+        if (!distributedLock.tryLockSecondsTimeUnit(lockKey, 0L, 30L)) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, "操作太频繁!");
         }
         //获取需要导出的数据
         ReportDetailOutput detailOutput = this.getReportByReportId(reportId);
@@ -316,9 +329,9 @@ public class ReportServiceImpl implements ReportService {
                 //一直等待文件生成成功
             }
             return path;
-        }catch (IOException e){
-            throw  new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, e.getMessage(), e);
-        }finally {
+        } catch (IOException e) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, e.getMessage(), e);
+        } finally {
             distributedLock.unLock(lockKey);
         }
     }
@@ -354,4 +367,89 @@ public class ReportServiceImpl implements ReportService {
     public void buildReportTestData(Long jobId, Long sceneId, Long reportId, Long tenantId) {
         cloudReportService.updateReportBusinessActivity(jobId, sceneId, reportId, tenantId);
     }
+
+    @Override
+    public List<SceneReportListOutput> getReportListBySceneId(Long sceneId) {
+        ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
+        req.setSceneId(sceneId);
+        List<ReportDetailResp> respList = cloudReportApi.detailListBySceneId(req);
+        List<SceneReportListOutput> outputList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(respList)) {
+            return outputList;
+        }
+        respList.stream().forEach(resp -> {
+            SceneReportListOutput out = new SceneReportListOutput();
+            out.setReportId(resp.getId());
+            out.setStartTime(resp.getStartTime());
+            out.setMaxConcurrent(resp.getConcurrent());
+            outputList.add(out);
+        });
+        return outputList;
+    }
+
+    @Override
+    public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse> getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq) {
+        // 首先通过xpathMdt获取到业务活动id
+        ReportBusinessActivityDetailEntity detail = reportDao.getReportBusinessActivityDetail(reportLinkDiagramReq.getSceneId(), reportLinkDiagramReq.getXpathMd5(), reportLinkDiagramReq.getReportId());
+        if (detail == null) {
+            return ResponseResult.fail("400", "场景下不存在业务活动", "请检查后重试或联系管理员处理!");
+        }
+        io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = null;
+        if (reportLinkDiagramReq.getReportId() == null) {
+            // 实况查询
+            activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
+
+        } else {
+            String reportJson = detail.getReportJson();
+            if (reportJson != null && StringUtils.isNotBlank(reportJson.trim())) {
+                activityResponse = JSON.parseObject(reportJson, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
+            }
+        }
+        return ResponseResult.success(activityResponse);
+    }
+
+    /**
+     * @param activityId           业务活动Id
+     * @param reportLinkDiagramReq 查询条件
+     */
+    @Override
+    public io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse queryLinkDiagram(Long activityId, ReportLinkDiagramReq reportLinkDiagramReq) {
+        // 直接调用查询业务活动的拓扑图方法即可
+        ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
+        request.setActivityId(activityId);
+        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
+        request.setStartTime(reportLinkDiagramReq.getStartTime());
+        request.setEndTime(reportLinkDiagramReq.getEndTime());
+        request.setTempActivity(false);
+        return activityService.getActivityWithMetricsById(request);
+    }
+
+    @Override
+    public void modifyLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq) {
+        reportLinkDiagramReq.setEndTime(LocalDateTime.now());
+        ReportBusinessActivityDetailEntity detail = reportDao.getReportBusinessActivityDetail(reportLinkDiagramReq.getSceneId(), reportLinkDiagramReq.getXpathMd5(), reportLinkDiagramReq.getReportId());
+        if (detail == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_VALIDATE_ERROR, "重新生成拓扑图，没有获取到对应的数据!");
+        }
+        io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
+        // 将链路拓扑信息更新到表中
+        reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
+    }
+
+    @Override
+    public void modifyLinkDiagrams(ReportLinkDiagramReq reportLinkDiagramReq, List<String> pathMd5List) {
+        reportLinkDiagramReq.setEndTime(LocalDateTime.now());
+
+        List<ReportBusinessActivityDetailEntity> detailList = reportDao.getReportBusinessActivityDetails(reportLinkDiagramReq.getSceneId(), pathMd5List, reportLinkDiagramReq.getReportId());
+        if (CollectionUtils.isEmpty(detailList)) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_VALIDATE_ERROR, "重新生成拓扑图，没有获取到对应的数据!");
+        }
+        for (ReportBusinessActivityDetailEntity detailEntity : detailList) {
+            io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = queryLinkDiagram(detailEntity.getBusinessActivityId(), reportLinkDiagramReq);
+            if (activityResponse != null) {
+                reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), detailEntity.getBindRef(), JSON.toJSONString(activityResponse));
+            }
+        }
+    }
+
 }

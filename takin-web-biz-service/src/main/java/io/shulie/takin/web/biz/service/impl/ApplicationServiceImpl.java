@@ -1,40 +1,16 @@
 package io.shulie.takin.web.biz.service.impl;
 
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import cn.hutool.Hutool;
-import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.date.*;
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.NumberUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -101,7 +77,6 @@ import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.WhiteListConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
-import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
@@ -148,8 +123,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
-import static io.shulie.takin.web.common.common.Response.PAGE_TOTAL_HEADER;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -159,9 +132,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static io.shulie.takin.web.common.common.Response.PAGE_TOTAL_HEADER;
 
 /**
  * @author mubai<chengjiacai.shulie.io>
@@ -2832,5 +2806,21 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public boolean existsApplication(Long tenantId, String envCode) {
         return applicationDAO.existsApplication(tenantId, envCode);
+    }
+
+    @Override
+    public List<ApplicationListResponse> getApplicationListByAppIds(List<Long> appIds) {
+        List<ApplicationDetailResult> resultList = applicationDAO.getApplicationByAppIds(appIds);
+        List<ApplicationListResponse> responseList = new ArrayList<>();
+        if (org.apache.commons.collections4.CollectionUtils.isEmpty(resultList)) {
+            return responseList;
+        }
+        resultList.stream().forEach(result -> {
+            ApplicationListResponse response = new ApplicationListResponse();
+            response.setApplicationId(result.getApplicationId());
+            response.setApplicationName(result.getApplicationName());
+            responseList.add(response);
+        });
+        return responseList;
     }
 }

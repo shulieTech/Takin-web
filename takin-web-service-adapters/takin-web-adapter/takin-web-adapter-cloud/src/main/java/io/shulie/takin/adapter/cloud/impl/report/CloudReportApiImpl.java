@@ -1,24 +1,20 @@
 package io.shulie.takin.adapter.cloud.impl.report;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
-
 import cn.hutool.core.bean.BeanUtil;
-import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.pamirs.takin.cloud.entity.domain.dto.report.BusinessActivityDTO;
 import com.pamirs.takin.cloud.entity.domain.dto.report.CloudReportDTO;
 import com.pamirs.takin.cloud.entity.domain.dto.report.Metrices;
-import io.shulie.takin.adapter.api.constant.EntrypointUrl;
+import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
+import io.shulie.takin.adapter.api.model.request.WarnQueryParam;
+import io.shulie.takin.adapter.api.model.request.common.CloudCommonInfoWrapperReq;
+import io.shulie.takin.adapter.api.model.request.report.*;
 import io.shulie.takin.adapter.api.model.request.scenemanage.ReportActivityResp;
 import io.shulie.takin.adapter.api.model.request.scenemanage.ReportDetailByIdsReq;
+import io.shulie.takin.adapter.api.model.response.report.*;
+import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.adapter.cloud.convert.WarnDetailRespConvertor;
 import io.shulie.takin.cloud.biz.input.report.UpdateReportConclusionInput;
 import io.shulie.takin.cloud.biz.input.report.WarnCreateInput;
 import io.shulie.takin.cloud.biz.output.report.ReportDetailOutput;
@@ -26,34 +22,19 @@ import io.shulie.takin.cloud.biz.output.scene.manage.WarnDetailOutput;
 import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
-import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.adapter.cloud.convert.WarnDetailRespConvertor;
-import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
-import io.shulie.takin.adapter.api.model.request.WarnQueryParam;
-import io.shulie.takin.adapter.api.model.request.common.CloudCommonInfoWrapperReq;
-import io.shulie.takin.adapter.api.model.request.report.JtlDownloadReq;
-import io.shulie.takin.adapter.api.model.request.report.ReportDetailByIdReq;
-import io.shulie.takin.adapter.api.model.request.report.ReportDetailBySceneIdReq;
-import io.shulie.takin.adapter.api.model.request.report.ReportQueryReq;
-import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
-import io.shulie.takin.adapter.api.model.request.report.ScriptNodeTreeQueryReq;
-import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
-import io.shulie.takin.adapter.api.model.request.report.UpdateReportConclusionReq;
-import io.shulie.takin.adapter.api.model.request.report.WarnCreateReq;
-import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
-import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
-import io.shulie.takin.adapter.api.model.response.report.MetricesResponse;
-import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportDetailResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
-import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
-import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author 无涯
@@ -348,5 +329,22 @@ public class CloudReportApiImpl implements CloudReportApi {
     public ResponseResult<List<ReportActivityResp>> getActivities(ReportDetailByIdsReq req) {
         List<ReportActivityResp> result = cloudReportService.getActivities(req.getSceneIds());
         return ResponseResult.success(result);
+    }
+
+    @Override
+    public List<ReportDetailResp> detailListBySceneId(ReportDetailBySceneIdReq req) {
+        List<ReportDetailOutput> outputList = cloudReportService.getReportListBySceneId(req.getSceneId());
+        List<ReportDetailResp> respList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(outputList)) {
+            return respList;
+        }
+        outputList.stream().forEach(output -> {
+            ReportDetailResp resp = new ReportDetailResp();
+            resp.setId(output.getId());
+            resp.setStartTime(output.getStartTime());
+            resp.setConcurrent(output.getConcurrent());
+            respList.add(resp);
+        });
+        return respList;
     }
 }

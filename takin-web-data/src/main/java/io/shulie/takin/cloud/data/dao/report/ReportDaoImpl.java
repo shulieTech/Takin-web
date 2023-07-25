@@ -2,6 +2,7 @@ package io.shulie.takin.cloud.data.dao.report;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Lists;
 import io.shulie.takin.cloud.common.constants.ReportConstants;
@@ -27,10 +28,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -98,10 +96,12 @@ public class ReportDaoImpl implements ReportDao {
     @Override
     public ReportResult selectById(Long id) {
         List<ReportEntity> entityList = reportMapper.selectList(
-            Wrappers.lambdaQuery(ReportEntity.class)
-                .eq(ReportEntity::getId, id)
+                Wrappers.lambdaQuery(ReportEntity.class)
+                        .eq(ReportEntity::getId, id)
         );
-        if (entityList.size() != 1) {return null;}
+        if (entityList.size() != 1) {
+            return null;
+        }
         return BeanUtil.copyProperties(entityList.get(0), ReportResult.class);
     }
 
@@ -219,8 +219,10 @@ public class ReportDaoImpl implements ReportDao {
     @Override
     public int updateStatus(Long sceneId, Integer status) {
         return reportMapper.update(
-            new ReportEntity() {{setStatus(status);}},
-            Wrappers.lambdaQuery(ReportEntity.class).eq(ReportEntity::getSceneId, sceneId));
+                new ReportEntity() {{
+                    setStatus(status);
+                }},
+                Wrappers.lambdaQuery(ReportEntity.class).eq(ReportEntity::getSceneId, sceneId));
     }
 
     @Override
@@ -234,7 +236,9 @@ public class ReportDaoImpl implements ReportDao {
 
     @Override
     public ReportResult getById(Long resultId) {
-        if (resultId == null) {return null;}
+        if (resultId == null) {
+            return null;
+        }
         ReportEntity reportEntity = reportMapper.selectById(resultId);
         return BeanUtil.copyProperties(reportEntity, ReportResult.class);
     }
@@ -311,5 +315,54 @@ public class ReportDaoImpl implements ReportDao {
         lambdaQueryWrapper.ge(ReportEntity::getEndTime, DateUtils.addMinutes(date, minutes * -1));
         lambdaQueryWrapper.eq(ReportEntity::getStatus, 2);
         return reportMapper.selectList(lambdaQueryWrapper).stream().map(ReportEntity::getId).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public void modifyReportLinkDiagram(Long reportId, String xpathMd5, String linkDiagram) {
+        LambdaUpdateWrapper<ReportBusinessActivityDetailEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
+        updateWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5);
+        updateWrapper.set(ReportBusinessActivityDetailEntity::getReportJson, linkDiagram);
+        detailMapper.update(null, updateWrapper);
+    }
+
+    @Override
+    public List<ReportBusinessActivityDetailEntity> getReportBusinessActivityDetails(Long sceneId, List<String> xpathMd5List, Long reportId) {
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, sceneId);
+        queryWrapper.in(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5List);
+        queryWrapper.eq(null != reportId, ReportBusinessActivityDetailEntity::getReportId, reportId);
+        return detailMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public ReportBusinessActivityDetailEntity getReportBusinessActivityDetail(Long sceneId, String xpathMd5, Long reportId) {
+
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ReportBusinessActivityDetailEntity::getSceneId, sceneId);
+        queryWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5);
+        queryWrapper.eq(null != reportId, ReportBusinessActivityDetailEntity::getReportId, reportId);
+        queryWrapper.last(" limit 1");
+        return detailMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    public List<ReportResult> selectBySceneId(Long sceneId) {
+        List<ReportEntity> entityList = reportMapper.selectList(
+                Wrappers.lambdaQuery(ReportEntity.class)
+                        .eq(ReportEntity::getSceneId, sceneId)
+                        .eq(ReportEntity::getStatus, 2)
+                        .isNotNull(ReportEntity::getEndTime)
+        );
+        List<ReportResult> resultList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(entityList)) {
+            return resultList;
+        }
+        entityList.stream().forEach(entity -> {
+            ReportResult result = BeanUtil.copyProperties(entity, ReportResult.class);
+            resultList.add(result);
+        });
+        return resultList;
     }
 }

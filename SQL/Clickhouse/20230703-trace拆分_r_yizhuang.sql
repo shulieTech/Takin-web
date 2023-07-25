@@ -1,4 +1,4 @@
-CREATE TABLE default.t_trace_expand (
+CREATE TABLE stresstest_shard_m.t_trace_expand (
         `appName` String,
         `entranceId` Nullable(String),
         `entranceNodeId` Nullable(String),
@@ -50,10 +50,10 @@ CREATE TABLE default.t_trace_expand (
         `userId` String,
         `logType` Int8
 )
-    ENGINE = ReplicatedMergeTree('/clickhouse/tables/aiops/t_trace_expand/{r_shard}', '{replica}')
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/aiops/t_trace_expand/{r_shard}', '{replica}')
 PARTITION BY toYYYYMMDD(startDate)
 ORDER BY (appName,startDate,parsedServiceName,parsedMethod,rpcType,rpcId)
 TTL startDate + toIntervalDay(7)
 SETTINGS index_granularity = 8192;
 
-CREATE TABLE default.t_trace_expand_all as default.t_trace_expand ENGINE = Distributed('cluster-aiops', '', 't_trace_expand', sipHash64(traceId));
+CREATE TABLE stresstest_shard_m.t_trace_expand_all as stresstest_shard_m.t_trace_expand ENGINE = Distributed('cluster-aiops', '', 't_trace_expand', sipHash64(traceId));

@@ -50,7 +50,7 @@ CREATE TABLE default.t_trace_expand (
         `userId` String,
         `logType` Int8
 )
-    ENGINE = ReplicatedMergeTree('/clickhouse/tables/cluster-1/t_trace_expand/{shard}', '{replica}')
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/cluster-1/t_trace_expand/{shard}', '{replica}')
 PARTITION BY toYYYYMMDD(startDate)
 ORDER BY (appName,startDate,parsedServiceName,parsedMethod,rpcType,rpcId)
 TTL startDate + toIntervalDay(7)

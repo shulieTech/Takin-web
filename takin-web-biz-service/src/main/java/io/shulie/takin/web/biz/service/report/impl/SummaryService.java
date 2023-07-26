@@ -144,7 +144,7 @@ public class SummaryService {
         log.debug("Build ReportSummary Success, reportId={}", reportId);
     }
 
-    public void calcTpsTarget(Long reportId) {
+    public void calcTpsTarget(Long reportId, Long maxTime) {
         ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
         if(reportDetailDTO == null) {
             log.error("calcTpsTarget 未找到报告【{}】",reportId);
@@ -157,7 +157,9 @@ public class SummaryService {
         }
         //获取Min Max 压测时间 防止metrics 无数据
         long minTime = DateUtil.parseSecondFormatter(reportDetailDTO.getStartTime()).getTime();
-        long maxTime = System.currentTimeMillis();
+        if (maxTime == null) {
+            maxTime = System.currentTimeMillis();
+        }
         if(CollectionUtils.isNotEmpty(metrics)) {
             minTime = metrics.stream().map(Metrices::getTime).min((Long::compareTo)).orElse(0L);
             maxTime = metrics.stream().map(Metrices::getTime).max((Long::compareTo)).orElse(0L);

@@ -7,10 +7,12 @@ import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneBusinessActivityRefM
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.adapter.api.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
+import io.shulie.takin.cloud.data.model.mysql.SceneBusinessActivityRefEntity;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.output.report.ReportAppMapOut;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.response.report.ReportApplicationSummary;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
@@ -32,6 +34,7 @@ import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -281,39 +284,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 
     }
 
-    @Override
-    public void syncMachineData(Long reportId) {
-        //Ready 数据准备
-        reportDataCache.readyCloudReportData(reportId);
-        //first 同步应用基础信息
-        long startTime = System.currentTimeMillis();
-        problemAnalysisService.syncMachineData(reportId, null);
-        log.debug("reportId={} syncMachineData success，cost time={}s", reportId,
-                (System.currentTimeMillis() - startTime) / 1000);
-    }
-
-    @Override
-    public void calcTpsTarget(Long reportId) {
-        long startTime = System.currentTimeMillis();
-        //Ready 数据准备
-        reportDataCache.readyCloudReportData(reportId);
-        //then tps指标图
-        summaryService.calcTpsTarget(reportId);
-        log.debug("reportId={} calcTpsTarget success，cost time={}s", reportId,
-                (System.currentTimeMillis() - startTime) / 1000);
-    }
-
-    @Override
-    public void calcApplicationSummary(Long reportId) {
-        long startTime = System.currentTimeMillis();
-        //Ready 数据准备
-        reportDataCache.readyCloudReportData(reportId);
-        //汇总应用 机器数 风险机器数
-        summaryService.calcApplicationSummary(reportId);
-        log.debug("reportId={} calcApplicationSummary success，cost time={}s", reportId,
-                (System.currentTimeMillis() - startTime) / 1000);
-    }
-
     /**
      * 汇总实况数据，包括应用基础信息、tps指标图、应用机器数和风险机器
      *
@@ -329,9 +299,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             problemAnalysisService.syncMachineData(reportId, null);
         });
         //then tps指标图
-//        executorService.execute(() -> {
-//            summaryService.calcTpsTarget(reportId, null);
-//        });
+        executorService.execute(() -> {
+            summaryService.calcTpsTarget(reportId, null);
+        });
         //end汇总应用 机器数 风险机器数
         executorService.execute(() -> {
             summaryService.calcApplicationSummary(reportId);
@@ -370,13 +340,35 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 problemAnalysisService.syncMachineData(reportId, finalEndTime);
             });
             //then tps指标图
-//            executorService.execute(() -> {
-//                summaryService.calcTpsTarget(reportId, finalEndTime);
-//            });
+            executorService.execute(() -> {
+                summaryService.calcTpsTarget(reportId, finalEndTime);
+            });
 
             //存储应用信息到数据库
             executorService.execute(() -> {
                 insertReportApplicationSummaryEntity(reportId);
+            });
+
+            //重建链路图信息
+            ReportLinkDiagramReq reportLinkDiagramReq = new ReportLinkDiagramReq();
+            reportLinkDiagramReq.setReportId(reportId);
+            ZoneId zoneId = ZoneId.systemDefault();
+            reportLinkDiagramReq.setStartTime(LocalDateTime.ofInstant(reportEntity.getStartTime().toInstant(), zoneId));
+            reportLinkDiagramReq.setEndTime(LocalDateTime.ofInstant(reportEntity.getEndTime().toInstant(), zoneId));
+            reportLinkDiagramReq.setSceneId(reportEntity.getSceneId());
+
+            List<SceneBusinessActivityRefEntity> sceneBusinessActivityRefEntities = tSceneBusinessActivityRefMapper.selectList(new LambdaQueryWrapper<SceneBusinessActivityRefEntity>()
+                    .select(SceneBusinessActivityRefEntity::getBindRef)
+                    .eq(SceneBusinessActivityRefEntity::getSceneId, reportEntity.getSceneId()));
+            if (CollectionUtils.isEmpty(sceneBusinessActivityRefEntities)) {
+                return;
+            }
+            List<String> bindRefList = sceneBusinessActivityRefEntities.stream().filter(a -> StringUtils.isNotBlank(a.getBindRef())).map(SceneBusinessActivityRefEntity::getBindRef).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(bindRefList)) {
+                return;
+            }
+            executorService.execute(() -> {
+                reportService.modifyLinkDiagrams(reportLinkDiagramReq, bindRefList);
             });
         } catch (Exception e) {
             log.error("calcNearlyHourReportService error,reportId={}", reportId, e);

@@ -1094,7 +1094,29 @@ public class ReportLocalServiceImpl implements ReportLocalService {
      */
     @Override
     public Response<List<MachineDetailDTO>> getReportAppInstanceTrendMap(Long reportId) {
-        return null;
+        try {
+            ReportEntity reportEntity = getReportEntity(reportId);
+            if (reportEntity == null) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            List<MachineDetailDTO> list = getMachineDetailByAgentId(reportId);
+            return Response.success(list);
+        } catch (Exception e) {
+            log.error("getReportAppInstanceTrendMap error", e);
+        }
+        return Response.success(Collections.EMPTY_LIST);
+    }
+
+    private List<MachineDetailDTO> getMachineDetailByAgentId(Long reportId) {
+        QueryWrapper<ReportMachineEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("report_id", reportId);
+        List<ReportMachineEntity> reportMachineEntitys = reportMachineMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(reportMachineEntitys)) {
+            return Collections.EMPTY_LIST;
+        }
+        return reportMachineEntitys.stream()
+                .filter(a -> Objects.nonNull(a))
+                .map(machine -> convert2MachineDetailDTO(BeanUtil.copyProperties(machine, ReportMachineResult.class))).collect(Collectors.toList());
     }
 
     private ReportCountDTO convert2ReportCountDTO(ReportSummaryResult result) {

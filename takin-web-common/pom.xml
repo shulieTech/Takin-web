@@ -79,6 +79,7 @@
         <dependency>
             <groupId>io.shulie.amdb</groupId>
             <artifactId>amdb-common</artifactId>
+            <version>${amdb.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

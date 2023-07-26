@@ -88,7 +88,7 @@
         <dependency>
             <groupId>io.shulie.amdb</groupId>
             <artifactId>amdb-common</artifactId>
-            <scope>provided</scope>
+            <version>${amdb.version}</version>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>

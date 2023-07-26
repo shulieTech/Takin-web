@@ -265,6 +265,7 @@
         <dependency>
             <groupId>io.shulie.amdb</groupId>
             <artifactId>amdb-common</artifactId>
+            <version>${amdb.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.mapstruct</groupId>

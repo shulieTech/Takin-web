@@ -630,7 +630,7 @@ public class WebPluginUtils {
             UserExt userExt = userApi.traceUser();
             if(userExt != null) {
                 Integer userType = userExt.getUserType();
-                if(userType == 0 || userType == 2) {
+                if(userType == null || userType == 0 || userType == 2) {
                     return true;
                 }
                 return userExt.getIsProjectAdmin();

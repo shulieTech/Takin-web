@@ -56,7 +56,7 @@ CREATE TABLE stresstest.t_trace (
                                  `envCode` String,
                                  `userId` String
 )
-    ENGINE = ReplicatedMergeTree('/clickhouse/tables/stresstest/t_trace/{shard}', '{replica}')
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/stresstest/t_trace/{shard}', '{replica}')
 PARTITION BY toYYYYMMDD(startDate)
 ORDER BY (appName,startDate,parsedServiceName,parsedMethod,rpcType)
 TTL startDate + toIntervalDay(7)
@@ -126,7 +126,7 @@ CREATE TABLE stresstest.t_pressure (
                                     INDEX ix_parsedMethod parsedMethod TYPE set(0) GRANULARITY 5,
                                     INDEX ix_cost cost TYPE minmax GRANULARITY 5
 )
-    ENGINE = ReplicatedMergeTree('/clickhouse/tables/stresstest/t_pressure/{shard}', '{replica}')
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/stresstest/t_pressure/{shard}', '{replica}')
 PARTITION BY taskId
 ORDER BY (taskId, traceId, cost, startDate, appName, rpcId)
 PRIMARY KEY (taskId, traceId, cost, startDate, appName, rpcId)
@@ -156,32 +156,11 @@ CREATE TABLE stresstest.t_engine_metrics (
                                           `percent_data` String,
                                           `pod_no` String,
                                           `job_id` String,
-                                          `createDate` DateTime DEFAULT toDateTime (
-                                                  now())
+                                          `createDate` DateTime DEFAULT toDateTime (now())
 ) ENGINE = ReplicatedMergeTree ( '/clickhouse/tables/stresstest/t_engine_metrics/{shard}', '{replica}' ) PARTITION BY job_id PRIMARY KEY ( transaction, test_name, pod_no, time )
 ORDER BY( transaction, test_name, pod_no, time ) TTL createDate + toIntervalDay ( 3 );
 
-CREATE TABLE stresstest.t_engine_metrics_all (
-                                              `time` Int64,
-                                              `transaction` String,
-                                              `test_name` String,
-                                              `count` Int64,
-                                              `fail_count` Int64,
-                                              `sent_bytes` Int64,
-                                              `received_bytes` Int64,
-                                              `rt` Decimal64 ( 4 ),
-                                              `sum_rt` Decimal64 ( 4 ),
-                                              `sa_count` Int64,
-                                              `max_rt` Decimal64 ( 4 ),
-                                              `min_rt` Decimal64 ( 4 ),
-                                              `timestamp` Int64,
-                                              `active_threads` Int16,
-                                              `percent_data` String,
-                                              `pod_no` String,
-                                              `job_id` String,
-                                              `createDate` DateTime DEFAULT toDateTime (
-                                                      now())
-) ENGINE = Distributed ('cluster-1','stresstest','t_engine_metrics',sipHash64 ( job_id ));
+CREATE TABLE stresstest.t_engine_metrics_all as stresstest.t_engine_metrics ENGINE = Distributed ('cluster-1','stresstest','t_engine_metrics',sipHash64 ( job_id ));
 
 CREATE TABLE stresstest.t_engine_pressure (
                                            `time` Int64,
@@ -206,37 +185,11 @@ CREATE TABLE stresstest.t_engine_pressure (
                                            `status` Int16,
                                            `success_rate` Decimal64 ( 4 ),
                                            `job_id` String,
-                                           `createDate` DateTime DEFAULT toDateTime (
-                                                   now())
+                                           `createDate` DateTime DEFAULT toDateTime (now())
 ) ENGINE = ReplicatedMergeTree ( '/clickhouse/tables/stresstest/t_engine_pressure/{shard}', '{replica}' ) PARTITION BY job_id PRIMARY KEY ( transaction, test_name, time )
 ORDER BY( transaction, test_name, time ) TTL createDate + toIntervalDay ( 180 );
 
-CREATE TABLE stresstest.t_engine_pressure_all (
-                                               `time` Int64,
-                                               `transaction` String,
-                                               `avg_rt` Decimal64 ( 4 ),
-                                               `avg_tps` Decimal64 ( 4 ),
-                                               `test_name` String,
-                                               `count` Int64,
-                                               `create_time` Int64,
-                                               `data_num` Int16,
-                                               `data_rate` Decimal64 ( 4 ),
-                                               `fail_count` Int64,
-                                               `sent_bytes` Int64,
-                                               `received_bytes` Int64,
-                                               `sum_rt` Decimal64 ( 4 ),
-                                               `sa` Decimal64 ( 4 ),
-                                               `sa_count` Int64,
-                                               `max_rt` Decimal64 ( 4 ),
-                                               `min_rt` Decimal64 ( 4 ),
-                                               `active_threads` Int16,
-                                               `sa_percent` String,
-                                               `status` Int16,
-                                               `success_rate` Decimal64 ( 4 ),
-                                               `job_id` String,
-                                               `createDate` DateTime DEFAULT toDateTime (
-                                                       now())
-) ENGINE = Distributed ('cluster-1','stresstest','t_engine_pressure',sipHash64 ( job_id ));
+CREATE TABLE stresstest.t_engine_pressure_all as stresstest.t_engine_pressure ENGINE = Distributed ('cluster-1','stresstest','t_engine_pressure',sipHash64 ( job_id ));
 
 -- 基础数据表
 CREATE TABLE stresstest.t_app_base_data (
@@ -256,44 +209,14 @@ CREATE TABLE stresstest.t_app_base_data (
                                          `memory` Int64,
                                          `net_bandwidth` Decimal64 ( 2 ),
                                          `net_bandwidth_rate` Decimal64 ( 2 ),
-                                         `young_gc_count` Int64,
-                                         `young_gc_cost` Int64,
-                                         `old_gc_count` Int64,
-                                         `old_gc_cost` Int64,
                                          `tenant_app_key` String,
                                          `user_id` Int64,
-                                         `createDate` DateTime DEFAULT toDateTime (
-                                                 now())
+                                         `createDate` DateTime DEFAULT toDateTime (now())
 ) ENGINE = ReplicatedMergeTree ( '/clickhouse/tables/stresstest/t_app_base_data/{shard}', '{replica}' ) PARTITION BY intDiv(time,3600000) PRIMARY KEY ( time,agent_id, app_name, tenant_app_key, user_id )
 ORDER BY( time, agent_id, app_name, tenant_app_key, user_id ) TTL createDate + toIntervalDay ( 3 );
 
 
-CREATE TABLE stresstest.t_app_base_data_all (
-                                             `time` Int64,
-                                             `agent_id` String,
-                                             `app_ip` String,
-                                             `app_name` String,
-                                             `cpu_cores` Int16,
-                                             `cpu_load` Decimal64 ( 2 ),
-                                             `cpu_rate` Decimal64 ( 2 ),
-                                             `disk` Int64,
-                                             `env_code` String,
-                                             `iowait` Decimal64 ( 2 ),
-                                             `is_container_flag` Int16,
-                                             `log_time` Int64,
-                                             `mem_rate` Decimal64 ( 2 ),
-                                             `memory` Int64,
-                                             `net_bandwidth` Decimal64 ( 2 ),
-                                             `net_bandwidth_rate` Decimal64 ( 2 ),
-                                             `young_gc_count` Int64,
-                                             `young_gc_cost` Int64,
-                                             `old_gc_count` Int64,
-                                             `old_gc_cost` Int64,
-                                             `tenant_app_key` String,
-                                             `user_id` Int64,
-                                             `createDate` DateTime DEFAULT toDateTime (
-                                                     now())
-) ENGINE = Distributed ('cluster-1','stresstest','t_app_base_data',sipHash64 ( app_name ));
+CREATE TABLE stresstest.t_app_base_data_all as stresstest.t_app_base_data ENGINE = Distributed ('cluster-1','stresstest','t_app_base_data',sipHash64 ( app_name ));
 
 CREATE TABLE stresstest.t_performance_base_data (
                                                  `time` Int64,
@@ -325,33 +248,7 @@ CREATE TABLE stresstest.t_performance_base_data (
 ORDER BY( app_name,time  ) TTL createDate + toIntervalDay ( 7 );
 
 
-CREATE TABLE stresstest.t_performance_base_data_all (
-                                                     `time` Int64,
-                                                     `timestamp` Int64,
-                                                     `total_memory` Int64,
-                                                     `perm_memory` Int64,
-                                                     `young_memory` Int64,
-                                                     `old_memory` Int64,
-                                                     `young_gc_count` Int16,
-                                                     `full_gc_count` Int16,
-                                                     `young_gc_cost` Int64,
-                                                     `full_gc_cost` Int64,
-                                                     `cpu_use_rate` Decimal64 ( 2 ),
-                                                     `total_buffer_pool_memory` Int64,
-                                                     `total_no_heap_memory` Int64,
-                                                     `thread_count` Int16,
-                                                     `base_id` Int64,
-                                                     `agent_id` String,
-                                                     `app_name` String,
-                                                     `app_ip` String,
-                                                     `process_id` String,
-                                                     `process_name` String,
-                                                     `env_code` String,
-                                                     `tenant_app_key` String,
-                                                     `tenant_id` Int64,
-                                                     `createDate` DateTime DEFAULT toDateTime (
-                                                             now())
-) ENGINE = Distributed ('cluster-1','stresstest','t_performance_base_data',sipHash64 ( app_name ));
+CREATE TABLE stresstest.t_performance_base_data_all as stresstest.t_performance_base_data ENGINE = Distributed ('cluster-1','stresstest','t_performance_base_data',sipHash64 ( app_name ));
 
 -- trace_metrics相关表
 CREATE TABLE stresstest.trace_metrics (
@@ -385,35 +282,7 @@ CREATE TABLE stresstest.trace_metrics (
 ) ENGINE = ReplicatedMergeTree ( '/clickhouse/tables/stresstest/trace_metrics/{shard}', '{replica}' ) PARTITION BY intDiv(time,3600000) PRIMARY KEY (time, appName )
 ORDER BY( time, appName ) TTL createDate + toIntervalDay ( 3 );
 
-CREATE TABLE stresstest.trace_metrics_all (
-                                           `time` Int64,
-                                           `edgeId` String,
-                                           `clusterTest` String,
-                                           `service` String,
-                                           `method` String,
-                                           `appName` String,
-                                           `rpcType` String,
-                                           `middlewareName` String,
-                                           `tenantAppKey` String,
-                                           `envCode` String,
-                                           `totalCount` Int64,
-                                           `successCount` Int64,
-                                           `totalRt` Int64,
-                                           `errorCount` Int64,
-                                           `hitCount` Int64,
-                                           `totalTps` Int64,
-                                           `total` Int64,
-                                           `e2eSuccessCount` Int64,
-                                           `e2eErrorCount` Int64,
-                                           `maxRt` Int64,
-                                           `avgRt` Decimal64 ( 2 ),
-                                           `avgTps` Decimal64 ( 2 ),
-                                           `traceId` String,
-                                           `sqlStatement` String,
-                                           `log_time` String,
-                                           `createDate` DateTime DEFAULT toDateTime (
-                                                   now())
-) ENGINE = Distributed ('cluster-1','stresstest','trace_metrics',sipHash64 ( traceId ));
+CREATE TABLE stresstest.trace_metrics_all as stresstest.trace_metrics ENGINE = Distributed ('cluster-1','stresstest','trace_metrics',sipHash64 ( traceId ));
 
 CREATE TABLE stresstest.trace_e2e_assert_metrics (
                                                   `time` Int64,
@@ -439,25 +308,4 @@ CREATE TABLE stresstest.trace_e2e_assert_metrics (
 ) ENGINE = ReplicatedMergeTree ( '/clickhouse/tables/stresstest/trace_e2e_assert_metrics/{shard}', '{replica}' ) PARTITION BY traceId PRIMARY KEY ( traceId, nodeId, exceptionType )
 ORDER BY ( traceId, nodeId, exceptionType ) TTL createDate + toIntervalDay ( 3 );
 
-CREATE TABLE stresstest.trace_e2e_assert_metrics_all (
-                                                      `time` Int64,
-                                                      `nodeId` String,
-                                                      `exceptionType` String,
-                                                      `traceId` String,
-                                                      `parsedAppName` String,
-                                                      `parsedServiceName` String,
-                                                      `parsedMethod` String,
-                                                      `rpcType` String,
-                                                      `totalRt` Int32,
-                                                      `totalCount` Int32,
-                                                      `totalQps` Int32,
-                                                      `qps` Decimal64 ( 2 ),
-                                                      `rt` Decimal64 ( 2 ),
-                                                      `successCount` Int64,
-                                                      `errorCount` Int64,
-                                                      `clusterTest` String,
-                                                      `tenantAppKey` String,
-                                                      `envCode` String,
-                                                      `createDate` DateTime DEFAULT toDateTime (
-                                                              now())
-) ENGINE = Distributed ('cluster-1','stresstest','trace_e2e_assert_metrics',sipHash64 ( traceId ));
+CREATE TABLE stresstest.trace_e2e_assert_metrics_all as stresstest.trace_e2e_assert_metrics ENGINE = Distributed ('cluster-1','stresstest','trace_e2e_assert_metrics',sipHash64 ( traceId ));

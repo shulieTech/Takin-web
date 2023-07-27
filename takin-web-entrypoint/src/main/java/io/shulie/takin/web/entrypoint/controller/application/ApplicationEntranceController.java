@@ -82,15 +82,14 @@ public class ApplicationEntranceController {
             .map(item -> {
                 ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
                 applicationEntrancesResponse.setMethod(item.getMethodName());
-//                applicationEntrancesResponse.setRpcType(item.getRpcType());
-//                applicationEntrancesResponse.setExtend(item.getExtend());
+                applicationEntrancesResponse.setRpcType(item.getRpcType());
+                applicationEntrancesResponse.setExtend(item.getExtend());
                 applicationEntrancesResponse.setServiceName(item.getServiceName());
                 applicationEntrancesResponse.setLabel(
                     ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
                 applicationEntrancesResponse.setValue(
                     ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
                         item.getAppName(), item.getRpcType(), item.getExtend()));
-                applicationEntrancesResponse.setRpcType(item.getRpcType());
                 return applicationEntrancesResponse;
                 // 增加去重
             }).distinct().collect(Collectors.toList());

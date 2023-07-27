@@ -529,6 +529,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             List<ReportActivityResponse> activityResponses = reportBusinessActivityDetailEntities.stream().map(reportBusinessActivityDetailEntity -> {
                 ActivityResponse activityResponse = JSON.parseObject(reportBusinessActivityDetailEntity.getReportJson(), ActivityResponse.class);
                 ReportActivityResponse response = BeanUtil.copyProperties(activityResponse, ReportActivityResponse.class);
+                response.setReportId(reportBusinessActivityDetailEntity.getReportId());
                 return response;
             }).collect(Collectors.toList());
 
@@ -536,6 +537,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             if (CollectionUtils.isEmpty(activityResponses)) {
                 return Response.success(new NodeCompareTargetOut());
             }
+            //根据前端的报告Id顺序进行排序
+            Map<Long, List<ReportActivityResponse>> listMap = activityResponses.stream().collect(Collectors.groupingBy(ReportActivityResponse::getReportId));
+            List<ReportActivityResponse> activityResponseList = new ArrayList<>();
+            for (Long reportId : nodeCompareTargetInput.getReportIds()){
+                activityResponseList.add(listMap.get(reportId).get(0));
+            }
+
             NodeCompareTargetOut nodeCompareTargetOut = new NodeCompareTargetOut();
             nodeCompareTargetOut.setReportIds(nodeCompareTargetInput.getReportIds());
             NodeCompareTargetOut.TopologyNode root = new NodeCompareTargetOut.TopologyNode();
@@ -544,7 +552,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             root.setMethodName(response.getMethod());
             root.setService(response.getServiceName());
             root.setLabel(response.getApplicationName());
-            Map<String, NodeCompareTargetOut.TopologyNode> topologyNode = genNodeCompareTargetOut(activityResponses);
+            Map<String, NodeCompareTargetOut.TopologyNode> topologyNode = genNodeCompareTargetOut(activityResponseList);
             nodeCompareTargetOut.setNode(genNodeTree(root, topologyNode));
             return Response.success(nodeCompareTargetOut);
         } catch (Exception e) {

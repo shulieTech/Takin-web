@@ -1290,7 +1290,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             }
         }
         //联通版新报告 根据压测时间段，统计性能指标明细、RT分位明细
-        Report dbReport = tReportMapper.selectByPrimaryKey(reportId);
+        ReportResult dbReport = reportDao.selectById(reportId);
         if(dbReport.getStartTime() != null && dbReport.getEndTime() != null) {
             Map<String, List<PressureTestTimeDTO>> timeMap = ParsePressureTimeByModeUtils.parsePtConfig2Map(dbReport.getStartTime(), dbReport.getEndTime(), dbReport.getPtConfig());
             List<ScriptNodeSummaryBean> refList = JSON.parseArray(dbReport.getScriptNodeTree(), ScriptNodeSummaryBean.class);

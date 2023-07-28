@@ -420,8 +420,8 @@ public class ReportServiceImpl implements ReportService {
         ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
         request.setActivityId(activityId);
         request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
-        request.setStartTime(transferUTC(reportLinkDiagramReq.getStartTime()));
-        request.setEndTime(transferUTC(reportLinkDiagramReq.getEndTime()));
+        request.setStartTime(reportLinkDiagramReq.getStartTime());
+        request.setEndTime(reportLinkDiagramReq.getEndTime());
         request.setTempActivity(false);
         return activityService.getActivityWithMetricsById(request);
     }

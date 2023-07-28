@@ -1,13 +1,13 @@
 package io.shulie.takin.adapter.api.model;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.common.DistributeBean;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author moriarty
@@ -77,5 +77,10 @@ public class ScriptNodeSummaryBean {
     private String applicationIds;
 
     private List<ScriptNodeSummaryBean> children;
+
+    private String rtDistribute;
+
+    private String features;
+
 
 }

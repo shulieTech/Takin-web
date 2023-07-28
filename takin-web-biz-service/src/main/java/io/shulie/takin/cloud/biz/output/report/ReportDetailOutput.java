@@ -1,18 +1,18 @@
 package io.shulie.takin.cloud.biz.output.report;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
-import io.shulie.takin.cloud.common.bean.scenemanage.WarnBean;
-import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.SlaBean;
 import io.shulie.takin.adapter.api.model.common.StopReasonBean;
 import io.shulie.takin.adapter.api.model.response.scenemanage.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.common.bean.scenemanage.WarnBean;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author 无涯
@@ -122,4 +122,11 @@ public class ReportDetailOutput extends ContextExt {
     private Integer calibrationStatus;
     private String calibrationMessage;
     private List<String> ptlPath;
+
+    private BigDecimal maxTps;
+    private BigDecimal minTps;
+
+    private BigDecimal maxRt;
+
+    private BigDecimal minRt;
 }

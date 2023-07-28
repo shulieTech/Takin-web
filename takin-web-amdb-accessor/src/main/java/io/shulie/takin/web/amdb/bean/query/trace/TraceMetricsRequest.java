@@ -28,6 +28,21 @@ import java.util.List;
 @ApiModel("节点指标数据查询")
 public class TraceMetricsRequest extends AbstractAmdbBaseRequest {
 
+
+    @ApiModelProperty("开始时间,时间戳格式")
+    long startMilli = 0L;
+    @ApiModelProperty("结束时间,时间戳格式")
+    long endMilli = 0L;
+    @ApiModelProperty("真实时间间隔")
+    long realSeconds = 0L;      //秒数
+    @ApiModelProperty("是否压测流量")
+    Boolean metricsType = null; //流量类型
+    @ApiModelProperty("链路图唯一边ID")
+    String eagleId = "";        //边ID
+    @ApiModelProperty("链路图唯一边ID集合")
+    List<String> eagleIds;        //边ID集合
+
+
     /**
      * 起始时间
      */

@@ -34,6 +34,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import java.time.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -309,6 +310,21 @@ public class TraceClientImpl implements TraceClient {
 
     @Override
     public List<TraceMetricsAll> getSqlStatements(TraceMetricsRequest traceMetricsRequest) {
+        //将时间转到UTC时区
+        ZoneId utcZone = ZoneId.of("UTC");
+        Instant startTimestamp = Instant.ofEpochMilli(traceMetricsRequest.getStartTime());
+        ZonedDateTime startZdt = startTimestamp.atZone(utcZone);
+        LocalDateTime startTimeUseInInFluxDB = startZdt.toLocalDateTime();
+
+        Instant endTimestamp = Instant.ofEpochMilli(traceMetricsRequest.getEndTime());
+        ZonedDateTime endZdt = endTimestamp.atZone(utcZone);
+        LocalDateTime endTimeUseInInFluxDB = endZdt.toLocalDateTime();
+        //将时间转到UTC时区
+        long startMilliUseInInFluxDB = startTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+        traceMetricsRequest.setStartTime(startMilliUseInInFluxDB);
+        long endMilliUseInInFluxDB = endTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+        traceMetricsRequest.setEndTime(endMilliUseInInFluxDB);
+
         String url = properties.getUrl().getAmdb() + TRACE_METRIC_GET_SQL_STATEMENTS;
         List<TraceMetricsAll> traceMetrics = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
                 .param(traceMetricsRequest)

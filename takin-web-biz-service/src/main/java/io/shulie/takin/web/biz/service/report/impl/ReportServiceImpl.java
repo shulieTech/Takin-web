@@ -54,6 +54,8 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -374,7 +376,7 @@ public class ReportServiceImpl implements ReportService {
         req.setSceneId(sceneId);
         List<ReportDetailResp> respList = cloudReportApi.detailListBySceneId(req);
         List<SceneReportListOutput> outputList = new ArrayList<>();
-        if(CollectionUtils.isEmpty(respList)) {
+        if (CollectionUtils.isEmpty(respList)) {
             return outputList;
         }
         respList.stream().forEach(resp -> {
@@ -418,10 +420,21 @@ public class ReportServiceImpl implements ReportService {
         ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
         request.setActivityId(activityId);
         request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
-        request.setStartTime(reportLinkDiagramReq.getStartTime());
-        request.setEndTime(reportLinkDiagramReq.getEndTime());
+        request.setStartTime(transferUTC(reportLinkDiagramReq.getStartTime()));
+        request.setEndTime(transferUTC(reportLinkDiagramReq.getEndTime()));
         request.setTempActivity(false);
         return activityService.getActivityWithMetricsById(request);
+    }
+
+    private static LocalDateTime transferUTC(LocalDateTime ldt) {
+        if (ldt == null) {
+            return null;
+        }
+        ZoneId originalZone = ZoneId.systemDefault();
+        ZonedDateTime zdt = ldt.atZone(originalZone);
+        ZoneId utcZone = ZoneId.of("UTC");
+        ZonedDateTime utcZdt = zdt.withZoneSameInstant(utcZone);
+        return utcZdt.toLocalDateTime();
     }
 
     @Override

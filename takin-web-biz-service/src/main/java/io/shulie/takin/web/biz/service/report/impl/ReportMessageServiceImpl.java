@@ -25,6 +25,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -126,12 +129,20 @@ public class ReportMessageServiceImpl implements ReportMessageService {
 
     @Override
     public Long getRequestCountByCost(ReportCostTrendQueryReq queryParam) {
+        Instant startTimestampInstant = Instant.ofEpochSecond(queryParam.getStartTime());
+        LocalDateTime startUtcDateTime = LocalDateTime.ofInstant(startTimestampInstant, ZoneOffset.UTC);
+        long startTimeUseInInFluxDB = startUtcDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+
+        Instant endTimestampInstant = Instant.ofEpochSecond(queryParam.getEndTime());
+        LocalDateTime endUtcDateTime = LocalDateTime.ofInstant(endTimestampInstant, ZoneOffset.UTC);
+        long endTimeUseInInFluxDB = endUtcDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+
         String measurement = InfluxUtil.getMetricsMeasurement(queryParam.getJobId(), null, null, null);
         StringBuilder sql = new StringBuilder();
         sql.append("select sum(count) as count from ");
         sql.append(measurement);
-        sql.append(" where time>=" + queryParam.getStartTime());
-        sql.append(" and time<=" + queryParam.getEndTime());
+        sql.append(" where time>=" + startTimeUseInInFluxDB);
+        sql.append(" and time<=" + endTimeUseInInFluxDB);
         sql.append(" and job_id='" + queryParam.getJobId() + "'");
         sql.append(" and transaction='" + queryParam.getTransaction() + "'");
         sql.append(" and avg_rt>=" + queryParam.getMinCost());

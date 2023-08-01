@@ -1,11 +1,11 @@
 package com.pamirs.takin.entity.domain.dto.report;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 机器性能详情
@@ -51,6 +51,10 @@ public class MachineDetailDTO implements Serializable {
 
     private MachineTPSTargetDTO tpsTarget;
 
+    private BigDecimal gcCost;
+
+    private BigDecimal gcCount;
+
     @ApiModel
     @Data
     public class MachineTPSTargetDTO implements Serializable {
@@ -70,5 +74,17 @@ public class MachineDetailDTO implements Serializable {
         private BigDecimal[] io;
 
         private BigDecimal[] mbps;
+
+        private BigDecimal[] gcCost;
+
+        private BigDecimal[] gcCount;
+
+        private Long[] fullGcCount;
+
+        private Integer[] fullGcCost;
+
+        private Long[] youngGcCount;
+
+        private Integer[] youngGcCost;
     }
 }

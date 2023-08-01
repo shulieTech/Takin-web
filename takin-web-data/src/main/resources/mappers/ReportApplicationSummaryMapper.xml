@@ -35,4 +35,20 @@
         from t_report_application_summary
         where report_id = #{reportId,jdbcType=BIGINT}
     </select>
+
+    <insert id="insertOrUpdateTargetTps" >
+        insert into t_report_application_summary (report_id, application_name,
+        tenant_id, env_code, target_tps)
+        values (
+        #{reportId,jdbcType=BIGINT},
+        #{applicationName,jdbcType=VARCHAR},
+        #{tenantId,jdbcType=BIGINT},
+        #{envCode,jdbcType=VARCHAR},
+        #{targetTps,jdbcType=VARCHAR}
+        )
+        on duplicate key update
+        tenant_id=#{tenantId,jdbcType=BIGINT},
+        env_code=#{envCode,jdbcType=VARCHAR},
+        target_tps=#{targetTps,jdbcType=VARCHAR}
+    </insert>
 </mapper>

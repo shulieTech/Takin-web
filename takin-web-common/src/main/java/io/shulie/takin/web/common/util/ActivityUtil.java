@@ -1,13 +1,12 @@
 package io.shulie.takin.web.common.util;
 
-import java.util.UUID;
-
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
-import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.UUID;
 
 /**
  * @author shiyajian
@@ -167,6 +166,22 @@ public class ActivityUtil {
     public static EntranceJoinEntity getEntranceJoinEntityByEntranceAndType(String entrance, Integer type) {
         return ActivityUtil.isNormalBusiness(type) ? ActivityUtil.covertEntrance(entrance)
             : ActivityUtil.covertVirtualEntranceV2(entrance);
+    }
+
+    public static EntranceJoinEntity covertEntranceV2(String dbEntrance) {
+        String[] split = StringUtils.split(dbEntrance, "\\|");
+        EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
+        if(split.length == 3) {
+            entranceJoinEntity.setMethodName(split[0]);
+            entranceJoinEntity.setServiceName(split[1]);
+            entranceJoinEntity.setRpcType(split[2]);
+        } else if(split.length == 2) {
+            entranceJoinEntity.setServiceName(split[0]);
+            entranceJoinEntity.setRpcType(split[1]);
+        } else if(split.length == 1) {
+            entranceJoinEntity.setServiceName(split[0]);
+        }
+        return entranceJoinEntity;
     }
 
     @Data

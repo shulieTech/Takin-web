@@ -1,13 +1,14 @@
 package io.shulie.takin.cloud.ext.content.script;
 
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.shulie.takin.cloud.ext.content.AbstractEntry;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author liyuanba
@@ -62,4 +63,7 @@ public class ScriptNode extends AbstractEntry {
      * 子节点
      */
     private List<ScriptNode> children;
+
+    @JsonProperty("enabled")
+    private boolean enabled;
 }

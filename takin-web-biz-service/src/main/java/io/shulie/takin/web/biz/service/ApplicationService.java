@@ -1,11 +1,5 @@
 package io.shulie.takin.web.biz.service;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
@@ -26,6 +20,11 @@ import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
@@ -311,4 +310,7 @@ public interface ApplicationService {
     List<String> filterAppIds(List<String> appIds, String operate);
 
     boolean existsApplication(Long tenantId, String envCode);
+
+    List<ApplicationListResponse> getApplicationListByAppIds(List<Long> appIds);
+
 }

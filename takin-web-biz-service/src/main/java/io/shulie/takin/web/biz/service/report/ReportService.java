@@ -1,24 +1,23 @@
 package io.shulie.takin.web.biz.service.report;
 
-import java.util.List;
-import java.util.Map;
-
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
 import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
-import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
-import io.shulie.takin.adapter.api.model.response.report.MetricesResponse;
-import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
-import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.adapter.api.model.response.report.*;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author qianshui
@@ -160,11 +159,39 @@ public interface ReportService {
     /**
      * 用于finishjob判断报告的状态
      * 根据报告主键查询报告详情
+     *
      * @param id 报告主键
      * @return 报告详情
      */
     ReportDetailOutput getReportById(Long id);
 
     String downloadPDFPath(Long reportId);
+
+    /**
+     * 获取最近多少分钟的报告ids
+     *
+     * @return
+     */
+    List<Long> nearlyHourReportIds(int minutes);
+
+    /**
+     * 根据报告ids查询报告详情
+     *
+     * @param reportIds
+     * @return
+     */
+    List<ReportEntity> getReportListByReportIds(List<Long> reportIds);
+
+    void buildReportTestData(Long jobId, Long sceneId, Long reportId, Long tenantId);
+
+    List<SceneReportListOutput> getReportListBySceneId(Long sceneId);
+
+    ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse> getLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
+
+    io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse queryLinkDiagram(Long activityId, ReportLinkDiagramReq reportLinkDiagramReq);
+
+    void modifyLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
+
+    void modifyLinkDiagrams(ReportLinkDiagramReq reportLinkDiagramReq, List<String> pathMd5List);
 
 }

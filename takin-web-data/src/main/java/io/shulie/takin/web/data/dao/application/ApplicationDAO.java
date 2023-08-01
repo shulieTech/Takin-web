@@ -15,28 +15,23 @@
 
 package io.shulie.takin.web.data.dao.application;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
-import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
-import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
-import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
-import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
-import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
-import io.shulie.takin.web.data.param.application.QueryApplicationParam;
+import io.shulie.takin.web.data.param.application.*;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationListResult;
 import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * application_mnt dao 层
@@ -444,4 +439,7 @@ public interface ApplicationDAO {
      * @return
      */
     long getAppCountByStatus(Long tenantId, String envCode, Integer status);
+
+    List<ApplicationDetailResult> getApplicationByAppIds(List<Long> appIds);
+
 }

@@ -15,13 +15,6 @@
 
 package io.shulie.takin.web.data.dao.application;
 
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -45,18 +38,8 @@ import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
-import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
-import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
-import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
-import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
-import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
-import io.shulie.takin.web.data.param.application.QueryApplicationParam;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
-import io.shulie.takin.web.data.result.application.ApplicationResult;
-import io.shulie.takin.web.data.result.application.InstanceInfoResult;
-import io.shulie.takin.web.data.result.application.LibraryResult;
+import io.shulie.takin.web.data.param.application.*;
+import io.shulie.takin.web.data.result.application.*;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.data.util.RedisUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
@@ -69,6 +52,12 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -824,5 +813,22 @@ public class ApplicationDAOImpl
             .eq(ApplicationMntEntity::getEnvCode, envCode)
             .eq(ApplicationMntEntity::getAccessStatus, status);
         return applicationMntMapper.selectCount(wrapper);
+    }
+
+    @Override
+    public List<ApplicationDetailResult> getApplicationByAppIds(List<Long> appIds) {
+        LambdaQueryWrapper<ApplicationMntEntity> query = new LambdaQueryWrapper<>();
+        if (appIds != null && appIds.size() > 0) {
+            query.in(ApplicationMntEntity::getApplicationId, appIds);
+        }
+        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(query);
+        if (applicationMntEntities == null || applicationMntEntities.size() == 0) {
+            return Lists.newArrayList();
+        }
+        return applicationMntEntities.stream().map(entity -> {
+            ApplicationDetailResult result = new ApplicationDetailResult();
+            BeanUtils.copyProperties(entity, result);
+            return result;
+        }).collect(Collectors.toList());
     }
 }

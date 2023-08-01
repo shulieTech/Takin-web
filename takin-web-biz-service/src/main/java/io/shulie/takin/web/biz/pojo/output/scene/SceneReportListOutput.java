@@ -1,12 +1,12 @@
 package io.shulie.takin.web.biz.pojo.output.scene;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * @author liuchuan
@@ -30,5 +30,15 @@ public class SceneReportListOutput {
 
     @JsonIgnore
     private LocalDateTime datetime;
+
+    @ApiModelProperty(value = "压测报告id")
+    private Long reportId;
+
+
+    @ApiModelProperty(value = "最大并发数")
+    private Integer maxConcurrent;
+
+    @ApiModelProperty(value = "压测开始时间")
+    private String startTime;
 
 }

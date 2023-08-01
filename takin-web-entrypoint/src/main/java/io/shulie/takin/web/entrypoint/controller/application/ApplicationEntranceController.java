@@ -1,28 +1,22 @@
 package io.shulie.takin.web.entrypoint.controller.application;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.google.common.collect.Lists;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
-import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntrancesSampleTypeQueryRequest;
-import io.shulie.takin.web.biz.service.LinkTopologyService;
-import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntrancesQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntrancesSampleTypeQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntrancesResponse;
+import io.shulie.takin.web.biz.service.LinkTopologyService;
 import io.shulie.takin.web.common.exception.ExceptionCode;
+import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -32,6 +26,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -85,8 +82,8 @@ public class ApplicationEntranceController {
             .map(item -> {
                 ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
                 applicationEntrancesResponse.setMethod(item.getMethodName());
-//                applicationEntrancesResponse.setRpcType(item.getRpcType());
-//                applicationEntrancesResponse.setExtend(item.getExtend());
+                applicationEntrancesResponse.setRpcType(item.getRpcType());
+                applicationEntrancesResponse.setExtend(item.getExtend());
                 applicationEntrancesResponse.setServiceName(item.getServiceName());
                 applicationEntrancesResponse.setLabel(
                     ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));

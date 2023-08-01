@@ -1,13 +1,13 @@
 package io.shulie.takin.cloud.data.model.mysql;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * @author -
@@ -155,4 +155,7 @@ public class ReportBusinessActivityDetailEntity {
 
     @TableField(value = "gmt_update")
     private Date gmtUpdate;
+
+    @TableField(value = "report_json")
+    private String reportJson;
 }

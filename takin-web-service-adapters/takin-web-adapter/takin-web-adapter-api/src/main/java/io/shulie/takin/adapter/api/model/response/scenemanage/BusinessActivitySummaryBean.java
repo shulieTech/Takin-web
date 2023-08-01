@@ -1,12 +1,12 @@
 package io.shulie.takin.adapter.api.model.response.scenemanage;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.common.DistributeBean;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author 莫问
@@ -60,5 +60,8 @@ public class BusinessActivitySummaryBean {
     @ApiModelProperty(value = "通过标识")
     private Integer passFlag;
 
+    private String features;
+
+    private String rtDistribute;
 }
 

@@ -1,16 +1,7 @@
 package io.shulie.takin.web.data.dao.activity.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
-
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -48,6 +39,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -514,5 +512,22 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             .eq(BusinessLinkManageTableEntity::getEnvCode, envCode)
             .eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
         return SqlHelper.retBool(businessLinkManageTableMapper.selectCount(wrapper));
+    }
+
+    @Override
+    public ActivityResult getActivityServiceById(Long activityId) {
+        BusinessLinkManageTableEntity entity = businessLinkManageTableMapper.selectById(activityId);
+        if(entity == null) {
+            return null;
+        }
+        ActivityResult result = new ActivityResult();
+        result.setActivityId(activityId);
+        result.setEntranceName(entity.getEntrace());
+        EntranceJoinEntity entranceEntity = ActivityUtil.covertEntrance(entity.getEntrace());
+        result.setServiceName(entranceEntity.getServiceName());
+        result.setMethod(entranceEntity.getMethodName());
+        result.setRpcType(entranceEntity.getRpcType());
+        result.setApplicationName(entity.getApplicationName());
+        return result;
     }
 }

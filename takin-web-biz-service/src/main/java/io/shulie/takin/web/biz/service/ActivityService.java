@@ -1,28 +1,16 @@
 package io.shulie.takin.web.biz.service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ListApplicationRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.BusinessApplicationListResponse;
+import io.shulie.takin.web.biz.pojo.request.activity.*;
+import io.shulie.takin.web.biz.pojo.response.activity.*;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 业务活动
@@ -141,4 +129,6 @@ public interface ActivityService {
     PagingList<BusinessApplicationListResponse> listApplicationByBusinessFlowIds(ListApplicationRequest listApplicationRequest);
 
     boolean existsActivity(Long tenantId, String envCode);
+
+    ActivityResponse getActivityServiceById(Long id);
 }

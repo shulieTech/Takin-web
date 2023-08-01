@@ -1,34 +1,16 @@
 package io.shulie.takin.cloud.biz.service.report.impl;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -46,6 +28,7 @@ import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import com.pamirs.takin.cloud.entity.domain.entity.report.Report;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.WarnDetail;
+import com.pamirs.takin.entity.domain.dto.report.PressureTestTimeDTO;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.DataBean;
 import io.shulie.takin.adapter.api.model.common.DistributeBean;
@@ -89,13 +72,7 @@ import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
-import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
-import io.shulie.takin.cloud.common.utils.CommonUtil;
-import io.shulie.takin.cloud.common.utils.GsonUtil;
-import io.shulie.takin.cloud.common.utils.JsonPathUtil;
-import io.shulie.takin.cloud.common.utils.JsonUtil;
-import io.shulie.takin.cloud.common.utils.NumberUtil;
-import io.shulie.takin.cloud.common.utils.TestTimeUtil;
+import io.shulie.takin.cloud.common.utils.*;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
@@ -120,16 +97,38 @@ import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
+import io.shulie.takin.web.amdb.bean.common.AmdbResult;
+import io.shulie.takin.web.amdb.util.AmdbHelper;
+import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
+import io.shulie.takin.web.biz.utils.ParsePressureTimeByModeUtils;
+import io.shulie.takin.web.biz.utils.ReportTimeUtils;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.influxdb.impl.TimeUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author 莫问
@@ -176,6 +175,12 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private String pressureEngineLogPath;
 
     public static final String COMPARE = "<=";
+
+    @Autowired
+    private AmdbClientProperties properties;
+
+    private static final String AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH = "/amdb/db/api/enginePressure/queryListMap";
+
 
     @Override
     public PageInfo<CloudReportDTO> listReport(ReportQueryReq param) {
@@ -265,6 +270,10 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             if (StringUtils.isNotBlank(ptlPath)) {
                 detail.setPtlPath(Arrays.asList(ptlPath.split(",")));
             }
+            detail.setMaxTps(jsonObject.getBigDecimal("maxTps"));
+            detail.setMaxRt(jsonObject.getBigDecimal("maxRt"));
+            detail.setMinTps(jsonObject.getBigDecimal("minTps"));
+            detail.setMinRt(jsonObject.getBigDecimal("minRt"));
         }
         dealCalibrationStatus(detail);
         return detail;
@@ -291,6 +300,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 summaryBean.setSuccessRate(bean.getSuccessRate());
                 summaryBean.setTotalRequest(bean.getTotalRequest());
                 summaryBean.setTps(bean.getTps());
+                summaryBean.setFeatures(bean.getFeatures());
+                summaryBean.setRtDistribute(bean.getRtDistribute());
+                summaryBean.setDistribute(bean.getDistribute());
                 result.add(summaryBean);
             }
             if (CollectionUtils.isNotEmpty(bean.getChildren())) {
@@ -302,7 +314,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private List<ScriptNodeSummaryBean> getReportNodeDetail(String scriptNodeTree, Long reportId) {
         List<ReportBusinessActivityDetail> activities = tReportBusinessActivityDetailMapper
                 .queryReportBusinessActivityDetailByReportId(reportId);
-        return getScriptNodeSummaryBeans(scriptNodeTree, activities);
+        return getScriptNodeSummaryBeans(reportId, scriptNodeTree, activities);
     }
 
     @Override
@@ -331,7 +343,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         reportDetail.setStopReasons(getStopReasonBean(sceneId, detailOutput));
         // 查询sla熔断数据
         reportDetail.setSlaMsg(detailOutput.getSlaMsg());
-        String testPlanXpathMd5 = getTestPlanXpathMd5(reportResult.getScriptNodeTree());
+        String testPlanXpathMd5 = getTestPlanXpathMd5V2(reportResult.getScriptNodeTree());
         String transaction = StringUtils.isBlank(testPlanXpathMd5) ? ReportConstants.ALL_BUSINESS_ACTIVITY
                 : testPlanXpathMd5;
         Long jobId = reportResult.getJobId();
@@ -441,6 +453,28 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         return null;
     }
 
+    private String getTestPlanXpathMd5V2(String scriptNodeTree) {
+        if (StringUtils.isBlank(scriptNodeTree)) {
+            return null;
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            ScriptNode[] scriptNodes = objectMapper.readValue(scriptNodeTree, ScriptNode[].class);
+            if (scriptNodes != null && scriptNodes.length > 0) {
+                for (ScriptNode scriptNode : scriptNodes) {
+                    if (NodeTypeEnum.TEST_PLAN.equals(scriptNode.getType())) {
+                        return scriptNode.getXpathMd5();
+                    }
+                }
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+
     /**
      * 组装停止原因
      *
@@ -534,8 +568,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (Objects.isNull(reportResult)) {
             throw new TakinCloudException(TakinCloudExceptionEnum.REPORT_GET_ERROR, "未查询到报告" + reportId);
         }
-        resp.setScriptNodeSummaryBeans(getScriptNodeSummaryBeans(reportResult.getScriptNodeTree(),
-                reportBusinessActivityDetailList));
+        resp.setScriptNodeSummaryBeans(getScriptNodeSummaryBeans(reportId, reportResult.getScriptNodeTree(), reportBusinessActivityDetailList));
         return resp;
     }
 
@@ -546,17 +579,17 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      * @param details  业务活动详情
      * @return -
      */
-    private List<ScriptNodeSummaryBean> getScriptNodeSummaryBeans(String nodeTree,
-                                                                  List<ReportBusinessActivityDetail> details) {
+    private List<ScriptNodeSummaryBean> getScriptNodeSummaryBeans(Long reportId, String nodeTree, List<ReportBusinessActivityDetail> details) {
         Map<String, Map<String, Object>> resultMap = new HashMap<>(details.size());
+        Map<String, List<BigDecimal>> threadNumStages = getSummaryConcurrentStageThreadNum(reportId);
+
         if (StringUtils.isNotBlank(nodeTree)) {
-            details.stream().filter(Objects::nonNull)
-                    .forEach(detail -> {
-                        Map<String, Object> objectMap = fillReportMap(detail);
-                        if (Objects.nonNull(objectMap)) {
-                            resultMap.put(detail.getBindRef(), objectMap);
-                        }
-                    });
+            details.stream().filter(Objects::nonNull).forEach(detail -> {
+                Map<String, Object> objectMap = fillReportMap(detail, threadNumStages);
+                if (Objects.nonNull(objectMap)) {
+                    resultMap.put(detail.getBindRef(), objectMap);
+                }
+            });
             if (resultMap.size() > 0) {
                 String nodesToJson = JsonPathUtil.putNodesToJson(nodeTree, resultMap);
                 return JSONArray.parseArray(nodesToJson, ScriptNodeSummaryBean.class);
@@ -579,9 +612,43 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     bean.setDistribute(getDistributes(detail.getRtDistribute()));
                     bean.setApplicationIds(detail.getApplicationIds());
                     bean.setActivityId(detail.getBusinessActivityId());
+                    bean.setFeatures(detail.getFeatures());
+                    bean.setRtDistribute(detail.getRtDistribute());
                     bean.setSa(new DataBean(detail.getSa(), detail.getTargetSa()));
                     return bean;
                 }).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取阶梯递增的阶段线程数
+     *
+     * @param reportId
+     * @return
+     */
+    private Map<String, List<BigDecimal>> getSummaryConcurrentStageThreadNum(Long reportId) {
+        ReportOutput reportOutput = selectById(reportId);
+        PtConfigExt ext = JSON.parseObject(reportOutput.getPtConfig(), PtConfigExt.class);
+        Map<String, ThreadGroupConfigExt> configMap = ext.getThreadGroupConfigMap();
+        if (configMap == null || configMap.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, List<BigDecimal>> stages = new HashMap<>();
+        for (Map.Entry<String, ThreadGroupConfigExt> entry : configMap.entrySet()) {
+            ThreadGroupConfigExt value = entry.getValue();
+            if (value.getType() == null || value.getType() != 0 || value.getMode() == null || value.getMode() != 3) {
+                continue;
+            }
+            // 阶梯递增模式
+            Integer steps = value.getSteps();
+            Integer threadNum = value.getThreadNum();
+            List<BigDecimal> stepList = new ArrayList<>(steps);
+            for (Integer i = 1; i <= steps; i++) {
+                stepList.add(new BigDecimal(threadNum * i).divide(new BigDecimal(steps), 2, BigDecimal.ROUND_HALF_UP));
+            }
+            stages.put(entry.getKey(), stepList);
+        }
+        return stages;
+
     }
 
     @Override
@@ -816,7 +883,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             if (reportResult == null) {
                 return new ReportTrendResp();
             }
-            String testPlanXpathMd5 = getTestPlanXpathMd5(reportResult.getScriptNodeTree());
+            String testPlanXpathMd5 = getTestPlanXpathMd5V2(reportResult.getScriptNodeTree());
             String transaction = StringUtils.isBlank(testPlanXpathMd5) ? ReportConstants.ALL_BUSINESS_ACTIVITY
                     : testPlanXpathMd5;
             if (StringUtils.isNotBlank(reportTrendQuery.getXpathMd5())) {
@@ -1085,7 +1152,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         boolean updateVersion = System.currentTimeMillis() >= 0;
         log.info("ReportId={}, tenantId={}, CompareResult={}", reportId, reportResult.getTenantId(), updateVersion);
 
-        String testPlanXpathMd5 = getTestPlanXpathMd5(reportResult.getScriptNodeTree());
+        String testPlanXpathMd5 = getTestPlanXpathMd5V2(reportResult.getScriptNodeTree());
         String transaction = StringUtils.isBlank(testPlanXpathMd5) ? ReportConstants.ALL_BUSINESS_ACTIVITY
                 : testPlanXpathMd5;
         //汇总所有业务活动数据
@@ -1238,7 +1305,153 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 totalPassFlag = false;
             }
         }
+
+        //联通版新报告 根据压测时间段，统计性能指标明细、RT分位明细
+        Report dbReport = tReportMapper.selectByPrimaryKey(reportId);
+        if (dbReport.getStartTime() != null && dbReport.getEndTime() != null) {
+            Map<String, List<PressureTestTimeDTO>> timeMap = ParsePressureTimeByModeUtils.parsePtConfig2Map(dbReport.getStartTime(), dbReport.getEndTime(), dbReport.getPtConfig());
+            List<ScriptNodeSummaryBean> refList = JSON.parseArray(dbReport.getScriptNodeTree(), ScriptNodeSummaryBean.class);
+            //key=业务活动, value=线程组
+            Map<String, String> httpThreadGroupMap = new HashMap<>();
+            calcHttpAndThreadGroupRef(refList, httpThreadGroupMap);
+            for (ReportBusinessActivityDetail detail : reportBusinessActivityDetails) {
+                if (StringUtils.isBlank(detail.getBindRef())) {
+                    continue;
+                }
+                List<PressureTestTimeDTO> timeList = timeMap.get(httpThreadGroupMap.get(detail.getBindRef()));
+                if (CollectionUtils.isEmpty(timeList)) {
+                    continue;
+                }
+                List<Map<String, Object>> stepList = new ArrayList<>();
+                for (int i = 0; i < timeList.size(); i++) {
+                    //统计某个业务活动的数据
+                    long startTime = timeList.get(i).getStartTime().getTime();
+                    long calcStartTime = startTime;
+                    //查询>= <=，所以这里要+1
+                    if (i > 0) {
+                        calcStartTime = startTime + 1L;
+                    } else {
+                        calcStartTime = ReportTimeUtils.beforeStartTime(startTime);
+                    }
+                    long endTime = timeList.get(i).getEndTime().getTime();
+                    long calcEndime = endTime;
+                    if (i == timeList.size() - 1) {
+                        calcEndime = ReportTimeUtils.afterEndTime(endTime);
+                    }
+                    Map<String, Object> stepMap = new HashMap<>();
+                    StatReportDTO reportData = statReportByTimes(calcStartTime, calcEndime, jobId, sceneId, reportId, tenantId, detail.getBindRef());
+                    Map<String, Integer> rtMap = reportEventService.queryAndCalcRtDistributeByTime(calcStartTime, calcEndime, jobId, detail.getBindRef());
+                    stepMap.put("startTime", DateUtil.formatDateTime(DateUtil.date(startTime)));
+                    stepMap.put("endTime", DateUtil.formatDateTime(DateUtil.date(endTime)));
+                    if (reportData != null) {
+                        stepMap.put("totalRequest", reportData.getTotalRequest());
+                        stepMap.put("concurrent", reportData.getAvgConcurrenceNum());
+                        stepMap.put("avgTps", reportData.getTps());
+                        stepMap.put("minTps", reportData.getMinTps());
+                        stepMap.put("maxTps", reportData.getMaxTps());
+                        stepMap.put("avgRt", reportData.getAvgRt());
+                        stepMap.put("minRt", reportData.getMinRt());
+                        stepMap.put("maxRt", reportData.getMaxRt());
+                        stepMap.put("successRate", reportData.getSuccessRate());
+                        stepMap.put("sa", reportData.getSa());
+                    }
+                    if (MapUtils.isNotEmpty(rtMap)) {
+                        stepMap.putAll(rtMap);
+                    }
+                    stepList.add(stepMap);
+                }
+                ReportBusinessActivityDetail updateDetail = new ReportBusinessActivityDetail();
+                updateDetail.setId(detail.getId());
+                Map<String, Object> targetMap = JSON.parseObject(detail.getRtDistribute(), Map.class);
+                if (MapUtils.isEmpty(targetMap)) {
+                    targetMap = new HashMap<>();
+                }
+                targetMap.put("stepData", stepList);
+                updateDetail.setRtDistribute(JSON.toJSONString(targetMap));
+                tReportBusinessActivityDetailMapper.updateByPrimaryKeySelective(updateDetail);
+
+            }
+        }
         return totalPassFlag;
+    }
+
+    private void calcHttpAndThreadGroupRef(List<ScriptNodeSummaryBean> dataList, Map<String, String> dataMap) {
+        if (CollectionUtils.isEmpty(dataList)) {
+            return;
+        }
+        dataList.forEach(data -> {
+            if (data.getType().equals(NodeTypeEnum.THREAD_GROUP.name())) {
+                String key = data.getXpathMd5();
+                List<String> sampleList = new ArrayList<>();
+                calcHttp(data.getChildren(), sampleList);
+                if (CollectionUtils.isNotEmpty(sampleList)) {
+                    sampleList.stream().forEach(sampler -> dataMap.put(sampler, key));
+                }
+            }
+            calcHttpAndThreadGroupRef(data.getChildren(), dataMap);
+        });
+    }
+
+    private void calcHttp(List<ScriptNodeSummaryBean> dataList, List<String> sampleList) {
+        if (CollectionUtils.isEmpty(dataList)) {
+            return;
+        }
+        dataList.forEach(data -> {
+            if (data.getType().equals(NodeTypeEnum.SAMPLER.name())) {
+                sampleList.add(data.getXpathMd5());
+            }
+            calcHttp(data.getChildren(), sampleList);
+        });
+    }
+
+    public StatReportDTO statReportByTimes(Long startTime, Long endTime, Long jobId, Long sceneId, Long reportId, Long customerId, String transaction) {
+        EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
+        Map<String, String> fieldAndAlias = new HashMap<>();
+        fieldAndAlias.put("sum(count)", "totalRequest");
+        fieldAndAlias.put("sum(fail_count)", "failRequest");
+        fieldAndAlias.put("avg(avg_tps)", "tps");
+        fieldAndAlias.put("sum(sum_rt)", "sumRt");
+        fieldAndAlias.put("sum(sa_count)", "saCount");
+        fieldAndAlias.put("min(avg_tps)", "minTps");
+        fieldAndAlias.put("max(avg_tps)", "maxTps");
+        fieldAndAlias.put("min(min_rt)", "minRt");
+        fieldAndAlias.put("max(max_rt)", "maxRt");
+        fieldAndAlias.put("count(avg_rt)", "recordCount");
+        fieldAndAlias.put("max(active_threads)", "maxConcurrenceNum");
+        fieldAndAlias.put("avg(active_threads)", "avgConcurrenceNum");
+        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
+        enginePressureQuery.setTransaction(transaction);
+        enginePressureQuery.setJobId(jobId);
+        enginePressureQuery.setStartTime(startTime);
+        enginePressureQuery.setEndTime(endTime);
+        List<StatReportDTO> statReportDTOList = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
+        if (CollectionUtils.isNotEmpty(statReportDTOList)) {
+            statReportDTOList.forEach(statReportDTO -> {
+                statReportDTO.setTempRequestCount(statReportDTO.getTotalRequest());
+            });
+        }
+        return CollectionUtils.isNotEmpty(statReportDTOList) ? statReportDTOList.get(0) : null;
+    }
+
+    public <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
+        try {
+            if (query == null || query.getJobId() == null) {
+                return new ArrayList<>();
+            }
+            query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
+            query.setEnvCode(WebPluginUtils.traceEnvCode());
+
+            HttpMethod httpMethod = HttpMethod.POST;
+            AmdbResult<List<T>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
+                    .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
+                    .param(query)
+                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                    .eventName("查询enginePressure数据")
+                    .list(tClass);
+            return amdbResponse.getData();
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
+        }
     }
 
     @Override
@@ -1418,7 +1631,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 && StringUtils.isNotEmpty(jsonObject.getString(ReportConstants.SLA_ERROR_MSG));
     }
 
-    private Map<String, Object> fillReportMap(ReportBusinessActivityDetail detail) {
+    private Map<String, Object> fillReportMap(ReportBusinessActivityDetail detail, Map<String, List<BigDecimal>> threadNumStages) {
         if (Objects.nonNull(detail)) {
             Map<String, Object> resultMap = new HashMap<>(13);
             resultMap.put("avgRt", new DataBean(detail.getRt(), detail.getTargetRt()));
@@ -1434,6 +1647,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             } else {
                 resultMap.put("passFlag", 1);
             }
+            resultMap.put("rtDistribute", detail.getRtDistribute());
             resultMap.put("totalRequest", detail.getRequest());
             resultMap.put("successRate", new DataBean(detail.getSuccessRate(), detail.getTargetSuccessRate()));
             resultMap.put("avgConcurrenceNum", detail.getAvgConcurrenceNum());
@@ -1441,6 +1655,11 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             if (detail.getBusinessActivityId() > -1 && StringUtils.isNotBlank(detail.getApplicationIds())) {
                 resultMap.put("applicationIds", detail.getApplicationIds());
             }
+            String xpathMd5 = detail.getBindRef();
+            if (threadNumStages.containsKey(xpathMd5)) {
+                resultMap.put("concurrentStageThreadNum", threadNumStages.get(xpathMd5));
+            }
+            resultMap.put("features", detail.getFeatures());
             return resultMap;
         }
         return null;
@@ -1448,23 +1667,24 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     }
 
     private List<DistributeBean> getDistributes(String distributes) {
-        List<DistributeBean> result;
-        if (StringUtils.isNoneBlank(distributes)) {
-            Map<String, String> distributeMap = JsonHelper.string2Obj(distributes,
-                    new TypeReference<Map<String, String>>() {
-                    });
-            List<DistributeBean> distributeBeans = Lists.newArrayList();
-            distributeMap.forEach((key, value) -> {
-                DistributeBean distribute = new DistributeBean();
-                distribute.setLable(key);
-                distribute.setValue(COMPARE + value);
-                distributeBeans.add(distribute);
-            });
-            distributeBeans.sort(((o1, o2) -> -o1.getLable().compareTo(o2.getLable())));
-            result = distributeBeans;
-        } else {
-            result = Lists.newArrayList();
+        if (StringUtils.isBlank(distributes)) {
+            return Lists.newArrayList();
         }
+        List<DistributeBean> result = new ArrayList<>();
+        Map<String, String> distributeMap = JSON.parseObject(distributes, Map.class);
+        Iterator<String> iterator = distributeMap.keySet().iterator();
+        while (iterator.hasNext()) {
+            String key = iterator.next();
+            if (key.equals("stepData")) {
+                continue;
+            }
+            String value = distributeMap.get(key);
+            DistributeBean distribute = new DistributeBean();
+            distribute.setLable(key);
+            distribute.setValue(COMPARE + value);
+            result.add(distribute);
+        }
+        result.sort(((o1, o2) -> -o1.getLable().compareTo(o2.getLable())));
         return result;
     }
 
@@ -1670,5 +1890,22 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             calibration = 1;
         }
         detail.setCalibration(calibration);
+    }
+
+    @Override
+    public List<ReportDetailOutput> getReportListBySceneId(Long sceneId) {
+        List<ReportResult> resultList = reportDao.selectBySceneId(sceneId);
+        List<ReportDetailOutput> outputList = new ArrayList<>();
+        if (CollectionUtils.isEmpty(resultList)) {
+            return outputList;
+        }
+        resultList.stream().forEach(result -> {
+            ReportDetailOutput output = new ReportDetailOutput();
+            output.setId(result.getId());
+            output.setStartTime(DateUtil.formatDateTime(result.getStartTime()));
+            output.setConcurrent(result.getConcurrent());
+            outputList.add(output);
+        });
+        return outputList;
     }
 }

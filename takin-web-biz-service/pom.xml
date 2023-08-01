@@ -5,7 +5,7 @@
     <parent>
         <artifactId>takin-web</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.9.1.2</version>
+        <version>5.9.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -84,17 +84,20 @@
                     <groupId>com.alibaba</groupId>
                 </exclusion>
             </exclusions>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
 
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-diff-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <!-- 内部module 业务依赖-->
 
@@ -122,10 +125,12 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-ext-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-ext-jmeter</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <!--插件类-->
@@ -210,6 +215,7 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-config-sync-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -259,6 +265,7 @@
         <dependency>
             <groupId>io.shulie.amdb</groupId>
             <artifactId>amdb-common</artifactId>
+            <version>${amdb.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.mapstruct</groupId>
@@ -277,6 +284,7 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-eventcenter</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jaxen</groupId>
@@ -299,6 +307,12 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version>3.10.0</version>
+            <scope>compile</scope>
         </dependency>
 
 

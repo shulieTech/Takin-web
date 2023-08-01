@@ -1,28 +1,12 @@
 package io.shulie.takin.web.biz.service.risk.impl;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSON;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.pamirs.takin.common.zk.FormatUtils;
-
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.entity.linkmanage.structure.Category;
-
 import com.pamirs.takin.entity.domain.risk.BaseAppVo;
 import com.pamirs.takin.entity.domain.risk.LinkCount;
 import com.pamirs.takin.entity.domain.risk.Metrices;
@@ -42,11 +26,7 @@ import io.shulie.takin.web.data.dao.baseserver.BaseServerDao;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
 import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
-import io.shulie.takin.web.data.param.baseserver.BaseServerParam;
-import io.shulie.takin.web.data.param.baseserver.InfluxAvgParam;
-import io.shulie.takin.web.data.param.baseserver.ProcessBaseRiskParam;
-import io.shulie.takin.web.data.param.baseserver.TimeMetricsDetailParam;
-import io.shulie.takin.web.data.param.baseserver.TimeMetricsParam;
+import io.shulie.takin.web.data.param.baseserver.*;
 import io.shulie.takin.web.data.param.report.ReportBottleneckInterfaceCreateParam;
 import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
 import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
@@ -64,6 +44,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author xingchen
@@ -104,15 +89,23 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
      * 同步机器基础信息到表
      */
     @Override
-    public void syncMachineData(Long reportId) {
+    public void syncMachineData(Long reportId,Long endTime) {
         long startTime = System.currentTimeMillis();
-        long endTime = System.currentTimeMillis();
         ReportDetailDTO dto = reportDataCache.getReportDetailDTO(reportId);
         if (dto == null) {
             return;
         }
+        // 统计当前时间 前5分钟数据
         if (StringUtils.isNotBlank(dto.getStartTime())) {
             startTime = DateUtil.parseSecondFormatter(dto.getStartTime()).getTime();
+        }
+        // 统计当前时间 前5分钟数据
+        if (endTime == null) {
+            if (dto.getEndTime() != null) {
+                endTime = dto.getEndTime().getTime();
+            } else {
+                endTime = System.currentTimeMillis();
+            }
         }
         // 统计当前时间 前5分钟数据
         int riskTime = ConfigServerHelper.getIntegerValueByKey(ConfigServerKeyEnum.TAKIN_RISK_COLLECT_TIME);

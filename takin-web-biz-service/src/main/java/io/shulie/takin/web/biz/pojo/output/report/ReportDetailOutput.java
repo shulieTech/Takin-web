@@ -1,19 +1,19 @@
 package io.shulie.takin.web.biz.pojo.output.report;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
-import io.shulie.takin.cloud.common.bean.scenemanage.WarnBean;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.common.SlaBean;
 import io.shulie.takin.adapter.api.model.common.StopReasonBean;
 import io.shulie.takin.adapter.api.model.response.scenemanage.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.common.bean.scenemanage.WarnBean;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author 无涯
@@ -129,4 +129,9 @@ public class ReportDetailOutput extends UserCommonExt {
     private Integer calibrationStatus;
     private String calibrationMessage;
     private List<String> ptlPath;
+
+    @ApiModelProperty(value = "最大RT")
+    private BigDecimal maxRt;
+
+    private BigDecimal maxTps;
 }

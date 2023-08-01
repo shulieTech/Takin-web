@@ -1,9 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.report;
 
-import java.util.List;
-
-import javax.annotation.Resource;
-
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
@@ -13,26 +9,40 @@ import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
 import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
 import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.cloud.biz.utils.ReportLtDetailOutputUtils;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
+import io.shulie.takin.web.biz.pojo.output.report.ReportLtDetailOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
+import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.report.ReportJtlDownloadResponse;
+import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author 莫问
@@ -45,6 +55,9 @@ public class ReportController {
 
     @Resource
     private ReportService reportService;
+
+    @Autowired
+    private ApplicationService applicationService;
 
     @GetMapping("report/listReport")
     @ApiOperation("报告列表")
@@ -176,5 +189,57 @@ public class ReportController {
     public ResponseResult<String> getExportDownLoadUrl(Long reportId) {
         return ResponseResult.success(reportService.downloadPDFPath(reportId));
     }
+
+    @GetMapping(value = "vlt/report/getReportById")
+    @ApiOperation("LT版-压测报告基本信息")
+    @ApiImplicitParam(name = "reportId", value = "报告ID")
+    public ResponseResult<ReportLtDetailOutput> getReportById(Long reportId) {
+        ReportDetailOutput output = reportService.getReportByReportId(reportId);
+        ReportLtDetailOutput detailOutput = ReportLtDetailOutputUtils.convertToLt(output);
+        //根据appId，查询appName
+        if(CollectionUtils.isNotEmpty(detailOutput.getAppNames())) {
+            List<Long> appIds = new ArrayList<>();
+            for(String appName : detailOutput.getAppNames()) {
+                appIds.add(Long.parseLong(appName));
+            }
+            List<ApplicationListResponse> responseList = applicationService.getApplicationListByAppIds(appIds);
+            if(CollectionUtils.isNotEmpty(responseList)) {
+                detailOutput.setAppNames(responseList.stream().map(ApplicationListResponse::getApplicationName).collect(Collectors.toList()));
+                detailOutput.getAppNames().stream().sorted();
+            }
+        }
+        //查找场景的其他报告
+        List<SceneReportListOutput> scenReportList = reportService.getReportListBySceneId(output.getSceneId());
+        if(CollectionUtils.isNotEmpty(scenReportList)) {
+            //过滤本报告
+            List<SceneReportListOutput> filterReportList = scenReportList.stream().filter(data -> data.getReportId() != reportId).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(filterReportList)) {
+                //按照时间倒排
+                filterReportList.sort((o1, o2) -> {
+                    if(o1.getReportId() > o2.getReportId()) {
+                        return -1;
+                    } else if(o1.getReportId() < o2.getReportId()) {
+                        return 1;
+                    }
+                    return 0;
+                });
+                detailOutput.setReports(filterReportList);
+            }
+        }
+        return ResponseResult.success(detailOutput);
+    }
+
+    @GetMapping("vlt/report/getLinkDiagram")
+    @ApiOperation("LT版-业务活动链路图")
+    public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse> getLtLinkDiagram(@Validated ReportLinkDiagramReq reportLinkDiagramReq){
+        return reportService.getLinkDiagram(reportLinkDiagramReq);
+    }
+
+    @GetMapping("/report/modifyLinkDiagram")
+    public ResponseResult<String> modifyLinkDiagram(@Validated ReportLinkDiagramReq reportLinkDiagramReq){
+        reportService.modifyLinkDiagram(reportLinkDiagramReq);
+        return ResponseResult.success();
+    }
+
 
 }

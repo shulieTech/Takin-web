@@ -1,8 +1,5 @@
 package io.shulie.takin.cloud.data.dao.report;
 
-import java.util.Date;
-import java.util.List;
-
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.param.report.ReportInsertParam;
@@ -11,6 +8,9 @@ import io.shulie.takin.cloud.data.param.report.ReportUpdateConclusionParam;
 import io.shulie.takin.cloud.data.param.report.ReportUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author 无涯
@@ -100,10 +100,11 @@ public interface ReportDao {
 
     /**
      * 更新报告开始时间
-     * @param reportId 报告主键
+     *
+     * @param reportId  报告主键
      * @param startTime 开始时间
      */
-    void updateReportStartTime(Long reportId,Date startTime);
+    void updateReportStartTime(Long reportId, Date startTime);
 
     /**
      * 更新报告结束时间
@@ -142,5 +143,24 @@ public interface ReportDao {
 
     List<ReportEntity> queryReportBySceneIds(List<Long> sceneIds);
 
-    List<ReportBusinessActivityDetailEntity> getActivityByReportIds(List<Long> reportIds) ;
+    List<ReportBusinessActivityDetailEntity> getActivityByReportIds(List<Long> reportIds);
+
+    List<Long> nearlyHourReportIds(int minutes);
+
+    /**
+     * 更新链路拓扑图
+     *
+     * @param reportId    报告id
+     * @param xpathMd5    业务活动xpathMd5值
+     * @param linkDiagram 链路拓扑图json数据
+     */
+    void modifyReportLinkDiagram(Long reportId, String xpathMd5, String linkDiagram);
+
+    List<ReportBusinessActivityDetailEntity> getReportBusinessActivityDetails(Long sceneId, List<String> xpathMd5List, Long reportId);
+
+    ReportBusinessActivityDetailEntity getReportBusinessActivityDetail(Long sceneId, String xpathMd5, Long reportId);
+
+    List<ReportResult> selectBySceneId(Long sceneId);
+
+
 }

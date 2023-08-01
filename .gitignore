@@ -7,6 +7,7 @@
 ### IntelliJ IDEA ###
 .idea
 *.iml
+*.json
 
 ### Jrebel File ###
 *rebel.xml.bak

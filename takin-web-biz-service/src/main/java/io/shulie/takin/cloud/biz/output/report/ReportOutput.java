@@ -1,12 +1,11 @@
 package io.shulie.takin.cloud.biz.output.report;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * @author 无涯
@@ -134,4 +133,6 @@ public class ReportOutput extends ContextExt {
      * 压测引擎任务Id
      */
     private Long jobId;
+
+    private String ptConfig;
 }

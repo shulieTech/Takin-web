@@ -1,10 +1,11 @@
 package io.shulie.takin.web.data.result.baseserver;
 
-import java.time.Instant;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
+
+import java.time.Instant;
 
 /**
  * @author xingchen
@@ -97,6 +98,16 @@ public class BaseServerResult {
     private String tagAgentId;
 
     private Double tps;
+    @JsonProperty("young_gc_count")
+    private Double youngGcCount;
+
+    @JsonProperty("young_gc_cost")
+    private Double youngGcCost;
+
+    @JsonProperty("full_gc_count")
+    private Double fullGcCount;
+    @JsonProperty("full_gc_cost")
+    private Double fullGcCost;
 
     /**
      * 获取毫秒的时间

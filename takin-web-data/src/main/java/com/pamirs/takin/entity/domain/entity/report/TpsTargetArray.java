@@ -1,8 +1,8 @@
 package com.pamirs.takin.entity.domain.entity.report;
 
-import java.math.BigDecimal;
-
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 /**
 * @author qianshui
@@ -27,4 +27,16 @@ public class TpsTargetArray {
     private BigDecimal[] io;
 
     private BigDecimal[] network;
+
+    private BigDecimal[] youngGcCount;
+
+    private BigDecimal[] youngGcCost;
+
+    private BigDecimal[] fullGcCount;
+
+    private BigDecimal[] fullGcCost;
+
+    private BigDecimal[] gcCost;
+
+    private BigDecimal[] gcCount;
 }

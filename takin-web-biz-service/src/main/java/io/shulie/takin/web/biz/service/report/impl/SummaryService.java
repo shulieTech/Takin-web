@@ -35,6 +35,7 @@ import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -85,12 +86,12 @@ public class SummaryService {
 
         List<ReportApplicationSummaryCreateParam> applications = Lists.newArrayList();
         for (Map<String, Object> dataMap : dataList) {
-            String applicationName = (String)dataMap.get("application_name");
+            String applicationName = (String) dataMap.get("application_name");
             if (StringUtils.isBlank(applicationName)) {
                 continue;
             }
-            Integer totalCount = convertLong((Long)dataMap.get("count"));
-            Integer riskCount = convertBigDecimal((BigDecimal)dataMap.get("riskSum"));
+            Integer totalCount = convertLong((Long) dataMap.get("count"));
+            Integer riskCount = convertBigDecimal((BigDecimal) dataMap.get("riskSum"));
 
             ReportApplicationSummaryCreateParam application = new ReportApplicationSummaryCreateParam();
             application.setReportId(reportId);
@@ -113,20 +114,20 @@ public class SummaryService {
         Integer riskCount = 0;
         Map<String, Object> countMap = reportApplicationSummaryDAO.selectCountByReportId(reportId);
         if (MapUtils.isNotEmpty(countMap)) {
-            appCount = convertLong((Long)countMap.get("count"));
-            totalCount = convertBigDecimal((BigDecimal)countMap.get("totalSum"));
-            riskCount = convertBigDecimal((BigDecimal)countMap.get("riskSum"));
+            appCount = convertLong((Long) countMap.get("count"));
+            totalCount = convertBigDecimal((BigDecimal) countMap.get("totalSum"));
+            riskCount = convertBigDecimal((BigDecimal) countMap.get("riskSum"));
         }
 
         Integer warnCount = 0;
         Integer businessCount = 0;
         Integer passBusinessCount = 0;
         Map<String, Object> cloudMap = reportService.queryReportCount(reportId);
-        log.info("call cloud ReportSummary Success, reportId={},data={}", reportId,cloudMap.toString());
+        log.info("call cloud ReportSummary Success, reportId={},data={}", reportId, cloudMap.toString());
         if (MapUtils.isNotEmpty(cloudMap)) {
-            warnCount = convertLong((Long)cloudMap.get("warnCount"));
-            businessCount = convertLong((Long)cloudMap.get("count"));
-            passBusinessCount = convertBigDecimal((BigDecimal)cloudMap.get("passSum"));
+            warnCount = convertLong((Long) cloudMap.get("warnCount"));
+            businessCount = convertLong((Long) cloudMap.get("count"));
+            passBusinessCount = convertBigDecimal((BigDecimal) cloudMap.get("passSum"));
         }
 
         ReportSummaryCreateParam reportSummary = new ReportSummaryCreateParam();
@@ -146,8 +147,8 @@ public class SummaryService {
 
     public void calcTpsTarget(Long reportId, Long maxTime) {
         ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
-        if(reportDetailDTO == null) {
-            log.error("calcTpsTarget 未找到报告【{}】",reportId);
+        if (reportDetailDTO == null) {
+            log.error("calcTpsTarget 未找到报告【{}】", reportId);
             return;
         }
         List<Metrices> metrics = reportDataCache.listAllMetricsData(reportId);
@@ -160,15 +161,15 @@ public class SummaryService {
         if (maxTime == null) {
             maxTime = System.currentTimeMillis();
         }
-        if(CollectionUtils.isNotEmpty(metrics)) {
+        if (CollectionUtils.isNotEmpty(metrics)) {
             minTime = metrics.stream().map(Metrices::getTime).min((Long::compareTo)).orElse(0L);
             maxTime = metrics.stream().map(Metrices::getTime).max((Long::compareTo)).orElse(0L);
-        }else {
-            if(reportDetailDTO.getEndTime() != null) {
+        } else {
+            if (reportDetailDTO.getEndTime() != null) {
                 maxTime = reportDetailDTO.getEndTime().getTime();
-            }else if(maxTime - minTime >= 5*60*1000L){
+            } else if (maxTime - minTime >= 5 * 60 * 1000L) {
                 //追加最大时间查询 5分钟
-                maxTime = minTime + 5*60*1000;
+                maxTime = minTime + 5 * 60 * 1000;
             }
         }
 
@@ -181,10 +182,10 @@ public class SummaryService {
             //机器信息
             long startTime = System.currentTimeMillis();
             String searchAppIdSql = "select distinct(app_ip) as app_ip from app_base_data " +
-                "where time>=" + minTime + "ms and time <= " + maxTime + "ms and tag_app_name = '" + applicationName + "'" +
-                // 增加租户
-                " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
+                    "where time>=" + minTime + "ms and time <= " + maxTime + "ms and tag_app_name = '" + applicationName + "'" +
+                    // 增加租户
+                    " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
+                    " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
 
             Collection<BaseServerResult> appIds = influxDatabaseManager.query(BaseServerResult.class, searchAppIdSql);
             log.debug("search appIds :{},cost time : {}", searchAppIdSql, System.currentTimeMillis() - startTime);
@@ -194,12 +195,12 @@ public class SummaryService {
             List<String> hosts = appIds.stream().map(BaseServerResult::getAppIp).collect(Collectors.toList());
             for (String host : hosts) {
                 long baseTime = System.currentTimeMillis();
-                String searchBaseSql = "select time, app_ip, cpu_rate, cpu_load, mem_rate, iowait, net_bandwidth_rate" +
-                    " from app_base_data where time>=" + minTime + "ms and time <= " + maxTime
-                    + "ms and tag_app_name = '" + applicationName + "'" + " and tag_app_ip = '" + host + "'" +
-                    // 增加租户
-                    " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                    " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
+                String searchBaseSql = "select time, app_ip, cpu_rate,old_gc_cost as full_gc_cost,old_gc_count as full_gc_count,young_gc_cost,young_gc_count, cpu_load, mem_rate, iowait, net_bandwidth_rate" +
+                        " from app_base_data where time>=" + minTime + "ms and time <= " + maxTime
+                        + "ms and tag_app_name = '" + applicationName + "'" + " and tag_app_ip = '" + host + "'" +
+                        // 增加租户
+                        " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
+                        " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
                 Collection<BaseServerResult> bases = influxDatabaseManager.query(BaseServerResult.class, searchBaseSql);
                 log.debug("search baseSql :{},cost time = {} ", searchBaseSql, System.currentTimeMillis() - baseTime);
                 TpsTargetArray array = calcTpsTarget(metrics, bases);
@@ -221,7 +222,7 @@ public class SummaryService {
             return null;
         }
         // metric数据为空兼容
-        if(CollectionUtils.isEmpty(metrics)) {
+        if (CollectionUtils.isEmpty(metrics)) {
             // 展示原数据
             metrics = vos.stream().map(result -> {
                 Metrices metrices = new Metrices();
@@ -243,22 +244,33 @@ public class SummaryService {
                 }
                 if (currentIndex < j) {
                     double cpu = bases.subList(currentIndex, j).stream().filter(data -> data.getCpuRate() != null)
-                        .mapToDouble(BaseServerResult::getCpuRate).average().orElse(0D);
+                            .mapToDouble(BaseServerResult::getCpuRate).average().orElse(0D);
                     double loading = bases.subList(currentIndex, j).stream().filter(data -> data.getCpuLoad() != null)
-                        .mapToDouble(BaseServerResult::getCpuLoad).average().orElse(0D);
+                            .mapToDouble(BaseServerResult::getCpuLoad).average().orElse(0D);
                     double memory = bases.subList(currentIndex, j).stream().filter(data -> data.getMemRate() != null)
-                        .mapToDouble(BaseServerResult::getMemRate).average().orElse(0D);
+                            .mapToDouble(BaseServerResult::getMemRate).average().orElse(0D);
                     double io = bases.subList(currentIndex, j).stream().filter(data -> data.getIoWait() != null)
-                        .mapToDouble(BaseServerResult::getIoWait).average().orElse(0D);
+                            .mapToDouble(BaseServerResult::getIoWait).average().orElse(0D);
                     double mbps = bases.subList(currentIndex, j).stream().filter(
-                            data -> data.getNetBandWidthRate() != null).mapToDouble(BaseServerResult::getNetBandWidthRate)
-                        .average().orElse(0D);
+                                    data -> data.getNetBandWidthRate() != null).mapToDouble(BaseServerResult::getNetBandWidthRate)
+                            .average().orElse(0D);
+                    double youngGcCount = bases.subList(currentIndex, j).stream().filter(data -> data.getYoungGcCount() != null).mapToDouble(BaseServerResult::getYoungGcCount).reduce(0, Double::sum);
+                    double youngGcCost = bases.subList(currentIndex, j).stream().filter(data -> data.getYoungGcCost() != null).mapToDouble(BaseServerResult::getYoungGcCost).average().orElse(0D);
 
-                    target.setCpu(new BigDecimal((int)cpu));
+                    double fullGcCount = bases.subList(currentIndex, j).stream().filter(data -> data.getFullGcCount() != null).mapToDouble(BaseServerResult::getFullGcCount).reduce(0, Double::sum);
+                    double fullGcCost = bases.subList(currentIndex, j).stream().filter(data -> data.getFullGcCost() != null).mapToDouble(BaseServerResult::getFullGcCost).average().orElse(0D);
+
+                    target.setCpu(new BigDecimal((int) cpu));
                     target.setLoading(new BigDecimal(loading).setScale(2, RoundingMode.HALF_UP));
                     target.setMemory(new BigDecimal(memory).setScale(2, RoundingMode.HALF_UP));
                     target.setIo(new BigDecimal(io).setScale(2, RoundingMode.HALF_UP));
                     target.setNetwork(new BigDecimal(mbps).setScale(2, RoundingMode.HALF_UP));
+                    target.setYoungGcCount(new BigDecimal(Optional.ofNullable(youngGcCount).orElse(0D)).setScale(0, RoundingMode.HALF_UP));
+                    target.setYoungGcCost(new BigDecimal(Optional.ofNullable(youngGcCost).orElse(0D)).setScale(2, RoundingMode.HALF_UP));
+                    target.setFullGcCount(new BigDecimal(Optional.ofNullable(fullGcCount).orElse(0D)).setScale(0, RoundingMode.HALF_UP));
+                    target.setFullGcCost(new BigDecimal(Optional.ofNullable(fullGcCost).orElse(0D)).setScale(2, RoundingMode.HALF_UP));
+                    target.setGcCost(target.getYoungGcCost().add(target.getFullGcCost()));
+                    target.setGcCount(target.getYoungGcCount().add(target.getFullGcCount()));
                 }
                 currentIndex = j;
                 break;
@@ -308,6 +320,18 @@ public class SummaryService {
 
         BigDecimal[] network = new BigDecimal[tpsList.size()];
 
+        BigDecimal[] youngGcCount = new BigDecimal[tpsList.size()];
+
+        BigDecimal[] youngGcCost = new BigDecimal[tpsList.size()];
+
+        BigDecimal[] fullGcCount = new BigDecimal[tpsList.size()];
+
+        BigDecimal[] fullGcCost = new BigDecimal[tpsList.size()];
+
+        BigDecimal[] gcCount = new BigDecimal[tpsList.size()];
+
+        BigDecimal[] gcCost = new BigDecimal[tpsList.size()];
+
         for (int i = 0; i < tpsList.size(); i++) {
             time[i] = tpsList.get(i).getTime();
             tps[i] = tpsList.get(i).getTps();
@@ -316,6 +340,12 @@ public class SummaryService {
             memory[i] = tpsList.get(i).getMemory();
             io[i] = tpsList.get(i).getIo();
             network[i] = tpsList.get(i).getNetwork();
+            youngGcCount[i] = tpsList.get(i).getYoungGcCount();
+            youngGcCost[i] = tpsList.get(i).getYoungGcCost();
+            fullGcCount[i] = tpsList.get(i).getFullGcCount();
+            fullGcCost[i] = tpsList.get(i).getFullGcCost();
+            gcCount[i] = tpsList.get(i).getGcCount();
+            gcCost[i] = tpsList.get(i).getGcCost();
         }
         TpsTargetArray array = new TpsTargetArray();
         array.setTime(time);
@@ -325,6 +355,12 @@ public class SummaryService {
         array.setMemory(memory);
         array.setIo(io);
         array.setNetwork(network);
+        array.setYoungGcCount(youngGcCount);
+        array.setYoungGcCost(youngGcCost);
+        array.setFullGcCount(fullGcCount);
+        array.setFullGcCost(fullGcCost);
+        array.setGcCount(gcCount);
+        array.setGcCost(gcCost);
         return array;
     }
 

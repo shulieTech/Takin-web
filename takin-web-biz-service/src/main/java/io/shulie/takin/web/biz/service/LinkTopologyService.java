@@ -907,7 +907,7 @@ public class LinkTopologyService extends CommonService {
                 .startMilli(startMilli)
                 .endMilli(endMilli)
                 // 压测流量(true:1)，业务流量(false:0)，混合流量(null:-1)
-                .metricsType(metricsType)
+                .metricsType(null)
                 .eagleIds(eagleIds)
                 .tenantAppKey(WebPluginUtils.traceTenantAppKey())
                 .envCode(WebPluginUtils.traceEnvCode())

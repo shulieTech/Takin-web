@@ -3,18 +3,20 @@ package io.shulie.takin.web.biz.service.report.impl;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.common.enums.ResponseResultEnum;
 import com.pamirs.takin.common.enums.ResultCodeEnum;
-import com.pamirs.takin.entity.domain.dto.report.ReportCostDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageStatusCodeDTO;
 import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportMessageCodeReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportMessageDetailReq;
+import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
+import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.biz.service.report.ReportMessageService;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class ReportMessageServiceImpl implements ReportMessageService {
 
@@ -46,6 +49,9 @@ public class ReportMessageServiceImpl implements ReportMessageService {
 
     private static final String reportMessageDetailData = "report:vlt:messageDetailData:%s:%s:%s";
 
+    @Autowired
+    private InfluxWriter influxWriter;
+
     @Override
     public List<ReportMessageStatusCodeDTO> getStatusCodeList(ReportMessageCodeReq req) {
         String redisKey = String.format(reportMessageCodeData, req.getJobId(), req.getServiceName());
@@ -62,17 +68,17 @@ public class ReportMessageServiceImpl implements ReportMessageService {
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
                 .eventName("查询enginePressure数据")
                 .list(ReportMessageStatusCodeDTO.class);
-        List<ReportMessageStatusCodeDTO> codeList =  response.getData();
+        List<ReportMessageStatusCodeDTO> codeList = response.getData();
         //ResultCode转化为ResponseResult
         List<ReportMessageStatusCodeDTO> newCodeList = new ArrayList<>();
-        if(CollectionUtils.isNotEmpty(codeList)) {
+        if (CollectionUtils.isNotEmpty(codeList)) {
             Set<String> codeSet = new HashSet<>();
-            for(ReportMessageStatusCodeDTO dto : codeList) {
+            for (ReportMessageStatusCodeDTO dto : codeList) {
                 ResultCodeEnum codeEnum = ResultCodeEnum.getResultCodeEnumByCode(dto.getStatusCode());
-                if(codeEnum == null) {
+                if (codeEnum == null) {
                     continue;
                 }
-                if(codeSet.contains(codeEnum.getResult().getCode())) {
+                if (codeSet.contains(codeEnum.getResult().getCode())) {
                     continue;
                 }
                 codeSet.add(codeEnum.getResult().getCode());
@@ -82,7 +88,7 @@ public class ReportMessageServiceImpl implements ReportMessageService {
                 newCodeList.add(newDto);
             }
         }
-        if(CollectionUtils.isEmpty(newCodeList)) {
+        if (CollectionUtils.isEmpty(newCodeList)) {
             ReportMessageStatusCodeDTO defaultDTO = new ReportMessageStatusCodeDTO();
             defaultDTO.setStatusCode(ResponseResultEnum.RESP_SUCCESS.getCode());
             defaultDTO.setStatusName(ResponseResultEnum.RESP_SUCCESS.getDesc());
@@ -100,8 +106,8 @@ public class ReportMessageServiceImpl implements ReportMessageService {
         }
         List<String> resultCode = new ArrayList<>();
         //ResponseResult转化为ResultCode
-        for(ResultCodeEnum resultCodeEnum : ResultCodeEnum.values()) {
-            if(resultCodeEnum.getResult().getCode().equals(req.getStatusCode())) {
+        for (ResultCodeEnum resultCodeEnum : ResultCodeEnum.values()) {
+            if (resultCodeEnum.getResult().getCode().equals(req.getStatusCode())) {
                 resultCode.add(resultCodeEnum.getCode());
             }
         }
@@ -119,16 +125,18 @@ public class ReportMessageServiceImpl implements ReportMessageService {
     }
 
     @Override
-    public Long getRequestCountByCost(ReportCostTrendQueryReq req) {
-        HttpMethod httpMethod = HttpMethod.GET;
-        req.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
-        req.setEnvCode(WebPluginUtils.traceEnvCode());
-        AmdbResult<ReportCostDTO> response = AmdbHelper.builder().httpMethod(httpMethod)
-                .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_COSTCOUNT_PATH)
-                .param(req)
-                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                .eventName("查询enginePressure数据")
-                .one(ReportCostDTO.class);
-        return (response != null && response.getData() != null && response.getData().getCount() != null) ? response.getData().getCount() : 0L;
+    public Long getRequestCountByCost(ReportCostTrendQueryReq queryParam) {
+        String measurement = InfluxUtil.getMetricsMeasurement(queryParam.getJobId(), null, null, null);
+        StringBuilder sql = new StringBuilder();
+        sql.append("select sum(count) as count from ");
+        sql.append(measurement);
+        sql.append(" where time>=" + queryParam.getStartTime());
+        sql.append(" and time<=" + queryParam.getEndTime());
+        sql.append(" and job_id='" + queryParam.getJobId() + "'");
+        sql.append(" and transaction='" + queryParam.getTransaction() + "'");
+        sql.append(" and avg_rt>=" + queryParam.getMinCost());
+        sql.append(" and avg_rt<" + queryParam.getMaxCost());
+        log.info("TracePressureController#getCostCount execute sql={}", sql);
+        return influxWriter.querySingle(sql.toString(), Long.class);
     }
 }

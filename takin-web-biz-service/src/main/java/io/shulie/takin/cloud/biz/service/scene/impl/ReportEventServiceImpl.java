@@ -205,10 +205,6 @@ public class ReportEventServiceImpl implements ReportEventService {
         sql.append(" sa_percent as percentData ");
         sql.append(" from ").append(measurement);
         sql.append(" where transaction = '").append(query.getTransaction()).append("'");
-//        sql.append(" and time >= ").append(startTimeUseInInFluxDB);
-//        sql.append(" and time <= ").append(endTimeUseInInFluxDB);
-//        sql.append(" and envCode = '").append(WebPluginUtils.traceEnvCode()).append("'");
-//        sql.append(" and tenantAppKey = '").append(WebPluginUtils.traceTenantAppKey()).append("'");
         log.info("listEnginePressure查询压测数据SQL:{}", sql);
         return influxWriter.query(sql.toString(), tClass);
 

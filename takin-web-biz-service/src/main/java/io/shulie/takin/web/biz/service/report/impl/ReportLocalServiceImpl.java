@@ -399,6 +399,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 if (CollectionUtils.isNotEmpty(rtList)) {
                     rtList.stream().forEach(data -> {
                         data.setReportId(reportId);
+                        data.setAvgRt(reportOutput.getAvgRt());
                         data.setPressureTestTime(TestTimeUtil.format(DateUtil.parseDateTime(data.getStartTime()), DateUtil.parseDateTime(data.getEndTime())));
                     });
                     output.getRtData().addAll(rtList);

@@ -1551,6 +1551,21 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             reportResult.setId(reportResult.getId());
             reportResult.setAvgConcurrent(statReport.getAvgConcurrenceNum());
             reportResult.setConcurrent(statReport.getMaxConcurrenceNum());
+            reportResult.setAvgConcurrent(statReport.getAvgConcurrenceNum());
+            reportResult.setConcurrent(statReport.getMaxConcurrenceNum());
+            //保存最大 最小tps、最大、最小rt到features中
+            if (statReport.getMaxTps() != null) {
+                getReportFeatures(reportResult, "maxTps", statReport.getMaxTps().toString());
+            }
+            if (statReport.getMinTps() != null) {
+                getReportFeatures(reportResult, "minTps", statReport.getMinTps().toString());
+            }
+            if (statReport.getMaxRt() != null) {
+                getReportFeatures(reportResult, "maxRt", statReport.getMaxRt().toString());
+            }
+            if (statReport.getMinRt() != null) {
+                getReportFeatures(reportResult, "minRt", statReport.getMinRt().toString());
+            }
         }
         reportResult.setGmtUpdate(new Date());
 

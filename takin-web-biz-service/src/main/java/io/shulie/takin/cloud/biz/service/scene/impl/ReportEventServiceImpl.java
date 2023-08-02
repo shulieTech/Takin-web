@@ -4,12 +4,9 @@ import com.google.common.collect.Maps;
 import io.shulie.takin.cloud.biz.output.statistics.RtDataOutput;
 import io.shulie.takin.cloud.biz.service.scene.ReportEventService;
 import io.shulie.takin.cloud.common.bean.collector.Metrics;
+import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
-import io.shulie.takin.web.amdb.bean.common.AmdbResult;
-import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -17,10 +14,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,21 +47,21 @@ public class ReportEventServiceImpl implements ReportEventService {
     public Map<String, String> queryAndCalcRtDistribute(String tableName, String bindRef) {
         StringBuffer sql = new StringBuffer();
         sql.append("select sa_percent as percentData from ")
-            .append(tableName)
-            .append(" where transaction=")
-            .append("'")
-            .append(bindRef)
-            .append("'");
+                .append(tableName)
+                .append(" where transaction=")
+                .append("'")
+                .append(bindRef)
+                .append("'");
         List<Metrics> metricsList = influxWriter.query(sql.toString(), Metrics.class);
         if (null == metricsList) {
             return null;
         }
         List<String> percentDataList = metricsList.stream().map(Metrics::getPercentData).collect(Collectors.toList());
-        if(CollectionUtils.isEmpty(percentDataList)){
+        if (CollectionUtils.isEmpty(percentDataList)) {
             return null;
         }
         Map<Integer, RtDataOutput> percentMap = calcRtDistribution(resolvingPercentData(percentDataList));
-        if(Objects.isNull(percentMap)){
+        if (Objects.isNull(percentMap)) {
             return null;
         }
 
@@ -75,6 +74,7 @@ public class ReportEventServiceImpl implements ReportEventService {
 
     /**
      * 解析percentData字符串
+     *
      * @param percentDataList
      * @return
      */
@@ -108,6 +108,7 @@ public class ReportEventServiceImpl implements ReportEventService {
 
     /**
      * 重新计算Rt分布
+     *
      * @param dataOutputs
      * @return
      */
@@ -140,6 +141,7 @@ public class ReportEventServiceImpl implements ReportEventService {
         }
         return distributes;
     }
+
     private int calcIndex(int size, int percentage) {
         if (percentage <= 0) {
             return 0;
@@ -171,39 +173,45 @@ public class ReportEventServiceImpl implements ReportEventService {
             return null;
         }
         List<String> percentDataList = metricsList.stream().map(Metrics::getPercentData).collect(Collectors.toList());
-        if(CollectionUtils.isEmpty(percentDataList)){
+        if (CollectionUtils.isEmpty(percentDataList)) {
             return null;
         }
         Map<Integer, RtDataOutput> percentMap = calcRtDistribution(resolvingPercentData(percentDataList));
-        if(Objects.isNull(percentMap)){
+        if (Objects.isNull(percentMap)) {
             return null;
         }
 
         Map<String, Integer> resultMap = Maps.newLinkedHashMap();
         INDEXS.forEach(percent -> {
-            resultMap.put("rt"+percent, percentMap.get(percent).getTime());
+            resultMap.put("rt" + percent, percentMap.get(percent).getTime());
         });
         return resultMap;
     }
 
     private <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
-        try {
-            if (query == null || query.getJobId() == null){
-                return new ArrayList<>();
-            }
-            query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
-            query.setEnvCode(WebPluginUtils.traceEnvCode());
-
-            HttpMethod httpMethod = HttpMethod.POST;
-            AmdbResult<List<T>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
-                    .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
-                    .param(query)
-                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                    .eventName("查询enginePressure数据")
-                    .list(tClass);
-            return amdbResponse.getData();
-        } catch (Exception e) {
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
+        if (query == null || query.getJobId() == null) {
+            return new ArrayList<>();
         }
+        Instant startTimestampInstant = Instant.ofEpochSecond(query.getStartTime());
+        LocalDateTime startUtcDateTime = LocalDateTime.ofInstant(startTimestampInstant, ZoneOffset.UTC);
+        long startTimeUseInInFluxDB = startUtcDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+
+        Instant endTimestampInstant = Instant.ofEpochSecond(query.getEndTime());
+        LocalDateTime endUtcDateTime = LocalDateTime.ofInstant(endTimestampInstant, ZoneOffset.UTC);
+        long endTimeUseInInFluxDB = endUtcDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+
+        String measurement = InfluxUtil.getMeasurement(query.getJobId(), null, null, null);
+        StringBuilder sql = new StringBuilder();
+        sql.append(" select ");
+        sql.append(" sa_percent as percentData ");
+        sql.append(" from ").append(measurement);
+        sql.append(" where transaction = '").append(query.getTransaction()).append("'");
+        sql.append(" and time >= ").append(startTimeUseInInFluxDB);
+        sql.append(" and time <= ").append(endTimeUseInInFluxDB);
+        sql.append(" and envCode = '").append(WebPluginUtils.traceEnvCode()).append("'");
+        sql.append(" and tenantAppKey = '").append(WebPluginUtils.traceTenantAppKey()).append("'");
+        log.info("listEnginePressure查询压测数据SQL:{}", sql);
+        return influxWriter.query(sql.toString(), tClass);
+
     }
 }

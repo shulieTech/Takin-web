@@ -97,15 +97,10 @@ import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
-import io.shulie.takin.web.amdb.bean.common.AmdbResult;
-import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 import io.shulie.takin.web.biz.utils.ParsePressureTimeByModeUtils;
 import io.shulie.takin.web.biz.utils.ReportTimeUtils;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -116,16 +111,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -1307,7 +1299,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
 
         //联通版新报告 根据压测时间段，统计性能指标明细、RT分位明细
-        Report dbReport = tReportMapper.selectByPrimaryKey(reportId);
+        ReportResult dbReport = reportDao.selectById(reportId);
         if (dbReport.getStartTime() != null && dbReport.getEndTime() != null) {
             Map<String, List<PressureTestTimeDTO>> timeMap = ParsePressureTimeByModeUtils.parsePtConfig2Map(dbReport.getStartTime(), dbReport.getEndTime(), dbReport.getPtConfig());
             List<ScriptNodeSummaryBean> refList = JSON.parseArray(dbReport.getScriptNodeTree(), ScriptNodeSummaryBean.class);
@@ -1406,24 +1398,11 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     public StatReportDTO statReportByTimes(Long startTime, Long endTime, Long jobId, Long sceneId, Long reportId, Long customerId, String transaction) {
         EnginePressureQuery enginePressureQuery = new EnginePressureQuery();
-        Map<String, String> fieldAndAlias = new HashMap<>();
-        fieldAndAlias.put("sum(count)", "totalRequest");
-        fieldAndAlias.put("sum(fail_count)", "failRequest");
-        fieldAndAlias.put("avg(avg_tps)", "tps");
-        fieldAndAlias.put("sum(sum_rt)", "sumRt");
-        fieldAndAlias.put("sum(sa_count)", "saCount");
-        fieldAndAlias.put("min(avg_tps)", "minTps");
-        fieldAndAlias.put("max(avg_tps)", "maxTps");
-        fieldAndAlias.put("min(min_rt)", "minRt");
-        fieldAndAlias.put("max(max_rt)", "maxRt");
-        fieldAndAlias.put("count(avg_rt)", "recordCount");
-        fieldAndAlias.put("max(active_threads)", "maxConcurrenceNum");
-        fieldAndAlias.put("avg(active_threads)", "avgConcurrenceNum");
-        enginePressureQuery.setFieldAndAlias(fieldAndAlias);
-        enginePressureQuery.setTransaction(transaction);
         enginePressureQuery.setJobId(jobId);
-        enginePressureQuery.setStartTime(startTime);
         enginePressureQuery.setEndTime(endTime);
+        enginePressureQuery.setStartTime(startTime);
+        enginePressureQuery.setJobId(jobId);
+        enginePressureQuery.setTransaction(transaction);
         List<StatReportDTO> statReportDTOList = this.listEnginePressure(enginePressureQuery, StatReportDTO.class);
         if (CollectionUtils.isNotEmpty(statReportDTOList)) {
             statReportDTOList.forEach(statReportDTO -> {
@@ -1434,24 +1413,35 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     }
 
     public <T> List<T> listEnginePressure(EnginePressureQuery query, Class<T> tClass) {
-        try {
-            if (query == null || query.getJobId() == null) {
-                return new ArrayList<>();
-            }
-            query.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
-            query.setEnvCode(WebPluginUtils.traceEnvCode());
+//        Instant startTimestampInstant = Instant.ofEpochSecond(query.getStartTime());
+//        LocalDateTime startUtcDateTime = LocalDateTime.ofInstant(startTimestampInstant, ZoneOffset.UTC);
+//        long startTimeUseInInFluxDB = startUtcDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+//
+//        Instant endTimestampInstant = Instant.ofEpochSecond(query.getEndTime());
+//        LocalDateTime endUtcDateTime = LocalDateTime.ofInstant(endTimestampInstant, ZoneOffset.UTC);
+//        long endTimeUseInInFluxDB = endUtcDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
 
-            HttpMethod httpMethod = HttpMethod.POST;
-            AmdbResult<List<T>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
-                    .url(properties.getUrl().getAmdb() + AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH)
-                    .param(query)
-                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                    .eventName("查询enginePressure数据")
-                    .list(tClass);
-            return amdbResponse.getData();
-        } catch (Exception e) {
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
-        }
+        String measurement = InfluxUtil.getMeasurement(query.getJobId(), null, null, null);
+        StringBuilder sql = new StringBuilder();
+        sql.append(" select ");
+        sql.append(" sum(count) as totalRequest, ");
+        sql.append(" sum(fail_count) as failRequest, ");
+        sql.append(" avg(avg_tps) as tps, ");
+        sql.append(" sum(sum_rt) as sumRt, ");
+        sql.append(" sum(sa_count) as saCount, ");
+        sql.append(" min(avg_tps) as minTps, ");
+        sql.append(" max(avg_tps) as maxTps, ");
+        sql.append(" min(min_rt) as minRt, ");
+        sql.append(" max(max_rt) as maxRt, ");
+        sql.append(" count(avg_rt) as recordCount, ");
+        sql.append(" max(active_threads) as maxConcurrenceNum, ");
+        sql.append(" avg(active_threads) as avgConcurrenceNum ");
+        sql.append(" from ").append(measurement);
+        sql.append(" where transaction = '").append(query.getTransaction()).append("'");
+        sql.append(" and time >= ").append(query.getStartTime());
+        sql.append(" and time <= ").append(query.getEndTime());
+        log.info("listEnginePressure查询压测数据SQL:{}", sql);
+        return influxWriter.query(sql.toString(), tClass);
     }
 
     @Override

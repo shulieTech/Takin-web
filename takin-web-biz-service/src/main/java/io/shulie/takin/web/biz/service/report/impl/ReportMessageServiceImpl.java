@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.common.enums.ResponseResultEnum;
 import com.pamirs.takin.common.enums.ResultCodeEnum;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageDetailDTO;
+import com.pamirs.takin.entity.domain.dto.report.ReportMessageQueryDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportMessageStatusCodeDTO;
 import io.shulie.takin.adapter.api.model.request.report.ReportCostTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.ReportMessageCodeReq;
@@ -134,6 +135,10 @@ public class ReportMessageServiceImpl implements ReportMessageService {
         sql.append(" and avg_rt>=" + queryParam.getMinCost());
         sql.append(" and avg_rt<" + queryParam.getMaxCost());
         log.info("TracePressureController#getCostCount execute sql={}", sql);
-        return influxWriter.querySingle(sql.toString(), Long.class);
+        ReportMessageQueryDTO messageQueryDTO = influxWriter.querySingle(sql.toString(), ReportMessageQueryDTO.class);
+        if (messageQueryDTO == null) {
+            return 0L;
+        }
+        return messageQueryDTO.getCount();
     }
 }

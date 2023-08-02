@@ -7,7 +7,6 @@ import io.shulie.takin.cloud.common.bean.collector.Metrics;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -206,10 +205,10 @@ public class ReportEventServiceImpl implements ReportEventService {
         sql.append(" sa_percent as percentData ");
         sql.append(" from ").append(measurement);
         sql.append(" where transaction = '").append(query.getTransaction()).append("'");
-        sql.append(" and time >= ").append(startTimeUseInInFluxDB);
-        sql.append(" and time <= ").append(endTimeUseInInFluxDB);
-        sql.append(" and envCode = '").append(WebPluginUtils.traceEnvCode()).append("'");
-        sql.append(" and tenantAppKey = '").append(WebPluginUtils.traceTenantAppKey()).append("'");
+//        sql.append(" and time >= ").append(startTimeUseInInFluxDB);
+//        sql.append(" and time <= ").append(endTimeUseInInFluxDB);
+//        sql.append(" and envCode = '").append(WebPluginUtils.traceEnvCode()).append("'");
+//        sql.append(" and tenantAppKey = '").append(WebPluginUtils.traceTenantAppKey()).append("'");
         log.info("listEnginePressure查询压测数据SQL:{}", sql);
         return influxWriter.query(sql.toString(), tClass);
 

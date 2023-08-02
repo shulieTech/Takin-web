@@ -1426,7 +1426,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         sql.append(" select ");
         sql.append(" sum(count) as totalRequest, ");
         sql.append(" sum(fail_count) as failRequest, ");
-        sql.append(" avg(avg_tps) as tps, ");
+        sql.append(" mean(avg_tps) as tps, ");
         sql.append(" sum(sum_rt) as sumRt, ");
         sql.append(" sum(sa_count) as saCount, ");
         sql.append(" min(avg_tps) as minTps, ");
@@ -1435,11 +1435,11 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         sql.append(" max(max_rt) as maxRt, ");
         sql.append(" count(avg_rt) as recordCount, ");
         sql.append(" max(active_threads) as maxConcurrenceNum, ");
-        sql.append(" avg(active_threads) as avgConcurrenceNum ");
+        sql.append(" mean(active_threads) as avgConcurrenceNum ");
         sql.append(" from ").append(measurement);
         sql.append(" where transaction = '").append(query.getTransaction()).append("'");
-        sql.append(" and time >= ").append(query.getStartTime());
-        sql.append(" and time <= ").append(query.getEndTime());
+//        sql.append(" and time >= ").append(query.getStartTime());
+//        sql.append(" and time <= ").append(query.getEndTime());
         log.info("listEnginePressure查询压测数据SQL:{}", sql);
         return influxWriter.query(sql.toString(), tClass);
     }

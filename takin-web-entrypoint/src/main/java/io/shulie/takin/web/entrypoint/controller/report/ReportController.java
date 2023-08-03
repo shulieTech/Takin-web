@@ -26,6 +26,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -148,7 +150,9 @@ public class ReportController {
         needAuth = ActionTypeEnum.START_STOP
     )
     public ResponseResult<ReportTrendResp> queryTempReportTrend(ReportTrendQueryReq reportTrendQuery) {
-        return ResponseResult.success(reportService.queryTempReportTrend(reportTrendQuery));
+        ReportTrendResp reportTrendResp = reportService.queryTempReportTrend(reportTrendQuery);
+        formatReportTrendData(reportTrendResp);
+        return ResponseResult.success(reportTrendResp);
     }
 
     @GetMapping("report/queryReportTrend")
@@ -158,7 +162,9 @@ public class ReportController {
         needAuth = ActionTypeEnum.START_STOP
     )
     public ResponseResult<ReportTrendResp> queryReportTrend(ReportTrendQueryReq reportTrendQuery) {
-        return ResponseResult.success(reportService.queryReportTrend(reportTrendQuery));
+        ReportTrendResp reportTrendResp = reportService.queryReportTrend(reportTrendQuery);
+        formatReportTrendData(reportTrendResp);
+        return ResponseResult.success(reportTrendResp);
     }
 
     @GetMapping("report/queryReportTrendByThread")
@@ -261,5 +267,33 @@ public class ReportController {
     @ApiOperation("LT版-业务活动链路图")
     public io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse getLtLinkDiagram(@Validated ReportLinkDiagramReq2 linkDiagramReq){
         return reportService.getLinkDiagram2(linkDiagramReq);
+    }
+
+    /**
+     * 优化，如果接口响应耗时>5s,会引发指标呈现锯齿状，比如成功率看到的是：100% - 0% - 100% - 0
+     * 若果某时刻tps、rt都是0；则更新成功率、并发数为上一个节点的值
+     * @param reportTrendResp
+     */
+    private void formatReportTrendData(ReportTrendResp reportTrendResp) {
+        List<String> timeList = reportTrendResp.getTime();
+        if(CollectionUtils.isEmpty(timeList)) {
+            return;
+        }
+        for(int i = 0; i < timeList.size(); i++) {
+            if(i == 0) {
+                continue;
+            }
+            if(checkDataIsZero(reportTrendResp.getTps().get(i)) && checkDataIsZero(reportTrendResp.getRt().get(i))) {
+                reportTrendResp.getSuccessRate().set(i, reportTrendResp.getSuccessRate().get(i - 1));
+                reportTrendResp.getConcurrent().set(i, reportTrendResp.getConcurrent().get(i - 1));
+            }
+        }
+    }
+
+    private Boolean checkDataIsZero(String data) {
+        if(StringUtils.isBlank(data)) {
+            return true;
+        }
+        return BigDecimal.ZERO.compareTo(new BigDecimal(data)) == 0;
     }
 }

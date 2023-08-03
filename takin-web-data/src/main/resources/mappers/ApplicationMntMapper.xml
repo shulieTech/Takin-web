@@ -60,6 +60,16 @@
         where APPLICATION_ID = #{appId}
     </select>
 
+    <select id="getApplicationByIdsWithInterceptorIgnore"
+            resultMap="BaseResultMap">
+        select *
+        from t_application_mnt
+        where APPLICATION_ID in
+        <foreach collection="appIds" item="item" open="(" close=")" separator=",">
+            #{item,jdbcType=BIGINT}
+        </foreach>
+    </select>
+
     <select id="getApplicationById"  resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">
         select *
         from t_application_mnt

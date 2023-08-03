@@ -1036,14 +1036,17 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public List<String> getApplicationName() {
-        List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
-        List<ApplicationDetailResult> applicationDetailResultList = applicationDAO.getApplicationListByUserIds(
-                userIdList);
+        QueryApplicationParam queryApplicationParam = new QueryApplicationParam();
+        queryApplicationParam.setTenantId(WebPluginUtils.traceTenantId());
+        queryApplicationParam.setEnvCode(WebPluginUtils.traceEnvCode());
+        queryApplicationParam.setCurrentPage(0);
+        queryApplicationParam.setPageSize(2000);
+        List<ApplicationListResult> applicationDetailResultList = applicationDAO.pageByParam(queryApplicationParam).getRecords();
         if (CollectionUtils.isEmpty(applicationDetailResultList)) {
             return Lists.newArrayList();
         }
         return applicationDetailResultList.stream().map(
-                ApplicationDetailResult::getApplicationName).collect(
+                ApplicationListResult::getApplicationName).distinct().collect(
                 Collectors.toList());
     }
 
@@ -1444,6 +1447,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         queryApplicationParam.setUserIds(WebPluginUtils.getQueryAllowUserIdList());
         queryApplicationParam.setUpdateStartTime(request.getUpdateStartTime());
         queryApplicationParam.setUpdateEndTime(request.getUpdateEndTime());
+        queryApplicationParam.setDeptId(WebPluginUtils.traceDeptId());
         IPage<ApplicationListResult> applicationListResultPage = applicationDAO.pageByParam(queryApplicationParam);
 
         if (CollectionUtils.isEmpty(applicationListResultPage.getRecords())) {

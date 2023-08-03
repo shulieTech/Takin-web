@@ -295,9 +295,15 @@ public class ApplicationDAOImpl
         if (CollectionUtils.isEmpty(ids)) {
             return Lists.newArrayList();
         }
-        LambdaQueryWrapper<ApplicationMntEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(ApplicationMntEntity::getApplicationId, ids);
-        return getApplicationDetailResults(wrapper);
+        List<ApplicationMntEntity> entityList = applicationMntMapper.getApplicationByIdsWithInterceptorIgnore(ids);
+        if (CollectionUtils.isEmpty(entityList)) {
+            return Lists.newArrayList();
+        }
+        return entityList.stream().map(applicationMntEntity -> {
+            ApplicationDetailResult result = new ApplicationDetailResult();
+            BeanUtils.copyProperties(applicationMntEntity, result);
+            return result;
+        }).collect(Collectors.toList());
     }
 
     private List<ApplicationDetailResult> getApplicationDetailResults(
@@ -670,7 +676,6 @@ public class ApplicationDAOImpl
 
     @Override
     public IPage<ApplicationListResult> pageByParam(QueryApplicationParam param) {
-        param.setDeptId(WebPluginUtils.traceDeptId());
         return applicationMntMapper.selectApplicationPageByParam(this.setPage(param), param);
     }
 

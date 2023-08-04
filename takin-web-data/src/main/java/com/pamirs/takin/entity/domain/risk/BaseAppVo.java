@@ -1,8 +1,8 @@
 package com.pamirs.takin.entity.domain.risk;
 
-import java.math.BigDecimal;
-
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 /**
  * @author xingchen
@@ -20,4 +20,6 @@ public class BaseAppVo {
     private BigDecimal memory;
     private BigDecimal disk;
     private BigDecimal mbps;
+    private BigDecimal gcCount;
+    private BigDecimal gcTime;
 }

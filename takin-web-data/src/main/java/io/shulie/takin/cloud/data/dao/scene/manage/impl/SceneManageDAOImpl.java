@@ -58,7 +58,7 @@ public class SceneManageDAOImpl
 
     @Override
     public SceneManageEntity getSceneById(Long id) {
-        return this.getById(id);
+        return this.baseMapper.selectById(id);
     }
 
     @Override

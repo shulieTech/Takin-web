@@ -734,10 +734,11 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getApplicationName, appName);
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getDeleted, ShadowConsumerConstants.LIVED);
         List<ShadowMqConsumerEntity> dbResult = shadowMqConsumerMapper.selectList(lambdaQueryWrapper);
-        dbResult.forEach(shadowMqConsumerEntity -> {
-            shadowMqConsumerEntity.setDeleted(ShadowConsumerConstants.DELETED);
-            shadowMqConsumerMapper.updateById(shadowMqConsumerEntity);
-        });
+        if (CollectionUtils.isNotEmpty(dbResult)){
+            dbResult.forEach(shadowMqConsumerEntity -> {
+                shadowMqConsumerDAO.removeById(shadowMqConsumerEntity.getId());
+            });
+        }
     }
 
 }

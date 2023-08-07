@@ -76,10 +76,7 @@ import io.shulie.takin.web.data.dao.application.ApplicationDsDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
 import io.shulie.takin.web.data.dao.application.CacheConfigTemplateDAO;
 import io.shulie.takin.web.data.dao.application.ConnectpoolConfigTemplateDAO;
-import io.shulie.takin.web.data.param.application.ApplicationDsDeleteParam;
-import io.shulie.takin.web.data.param.application.ApplicationDsEnableParam;
-import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
-import io.shulie.takin.web.data.param.application.ApplicationDsUpdateParam;
+import io.shulie.takin.web.data.param.application.*;
 import io.shulie.takin.web.data.result.application.*;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -477,8 +474,8 @@ public class DsServiceImpl implements DsService {
         queryParam.setIsDeleted(0);
 //        WebPluginUtils.fillQueryParam(queryParam);
         //这里为了拿到id,先存后查
+        //这里补充的数据都不会同步到nacos，所以这里不清空缓存
         this.filterAndSave(shadowDataBaseInfos, applicationId, queryParam);
-
 
         List<ApplicationDsV2Response> response = new ArrayList<>();
         if (isCache) {
@@ -507,7 +504,6 @@ public class DsServiceImpl implements DsService {
         agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName(), false);
         agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName(), false);
         agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName(), false);
-        applicationContext.publishEvent(new ShadowConfigRefreshEvent(detailResult.getApplicationName()));
         return response;
     }
 
@@ -551,16 +547,19 @@ public class DsServiceImpl implements DsService {
 
         List<ApplicationDsCacheManageDetailResult> caches = dsCacheManageDAO.selectList(queryParam);
         List<ApplicationDsDbManageDetailResult> dbs = dsDbManageDAO.selectList(queryParam);
+        List<ApplicationDsResult> dsResults = oldMap.get(MiddleWareTypeEnum.DB.getCode());
 
-        List<AppShadowDatabaseDTO> amdbByDbs = amdbTemplateMap.get(Type.MiddleWareType.LINK_POOL.value());
+        List<AppShadowDatabaseDTO> amdbByLinkPools = amdbTemplateMap.get(Type.MiddleWareType.LINK_POOL.value());
         List<AppShadowDatabaseDTO> amdbByCaches = amdbTemplateMap.get(Type.MiddleWareType.CACHE.value());
+        List<AppShadowDatabaseDTO> amdbByDbs = amdbTemplateMap.get(Type.MiddleWareType.DB.value());
 
         List<ApplicationDsCacheManageDetailResult> saveCaches = Lists.newArrayList();
         List<ApplicationDsDbManageDetailResult> saveDbs = Lists.newArrayList();
+        List<ApplicationDsCreateParam> applicationDsCreateParams = Lists.newArrayList();
 
-        if (CollectionUtils.isNotEmpty(amdbByDbs)) {
+        if (CollectionUtils.isNotEmpty(amdbByLinkPools)) {
 
-            Map<String, AppShadowDatabaseDTO> amdbDbMap = amdbByDbs
+            Map<String, AppShadowDatabaseDTO> amdbDbMap = amdbByLinkPools
                     .stream()
                     .collect(Collectors.toMap(AppShadowDatabaseDTO::getFilterStr, Function.identity(), (key1, key2) -> key2));
 
@@ -612,6 +611,14 @@ public class DsServiceImpl implements DsService {
             }
         }
 
+        if (CollectionUtils.isNotEmpty(amdbByDbs)) {
+            if (CollectionUtils.isNotEmpty(dsResults)) {
+                List<String> strings = dsResults.stream().map(ApplicationDsResult::getConfig).collect(Collectors.toList());
+
+            }
+        }
+
+        applicationDsDAO.batchSave(applicationDsCreateParams);
         dsDbManageDAO.batchSave(saveDbs);
         dsCacheManageDAO.batchSave(saveCaches);
     }

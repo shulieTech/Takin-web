@@ -256,6 +256,11 @@ public class ReportDaoImpl implements ReportDao {
     }
 
     @Override
+    public void deleteReport(Long reportId) {
+        reportMapper.deleteReportById(reportId);
+    }
+
+    @Override
     public List<ReportBusinessActivityDetailEntity> getReportBusinessActivityDetailsByReportId(Long reportId,
                                                                                                NodeTypeEnum nodeType) {
         LambdaQueryWrapper<ReportBusinessActivityDetailEntity> queryWrapper = new LambdaQueryWrapper<>();

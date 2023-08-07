@@ -14,6 +14,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.report.*;
+import io.shulie.takin.web.biz.pojo.request.pts.IdRequest;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
@@ -29,10 +30,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -88,6 +86,17 @@ public class ReportController {
     @ApiImplicitParam(name = "reportId", value = "报告ID")
     public ResponseResult<ReportDetailOutput> getReportByReportId(Long reportId) {
         return ResponseResult.success(reportService.getReportByReportId(reportId));
+    }
+
+    @PostMapping(value = "report/delete")
+    @ApiOperation("删除报告")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.DELETE
+    )
+    public ResponseResult deleteReport(@RequestBody IdRequest idRequest) {
+        reportService.deleteReport(idRequest.getId());
+        return ResponseResult.success();
     }
 
     @GetMapping(value = "vlt/report/getReportById")

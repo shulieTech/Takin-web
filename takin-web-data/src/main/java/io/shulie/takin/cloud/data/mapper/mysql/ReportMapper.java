@@ -25,4 +25,6 @@ public interface ReportMapper extends BaseMapper<ReportEntity> {
     int updateById(@Param(Constants.ENTITY) ReportEntity entity);
 
     List<ReportEntity> queryBySceneIds(@Param("ids") List<Long> ids);
+
+    void deleteReportById(@Param(value = "id") Long id);
 }

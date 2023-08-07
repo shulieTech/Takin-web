@@ -123,6 +123,8 @@ public interface ReportDao {
      */
     ReportResult getById(Long resultId);
 
+    void deleteReport(Long reportId);
+
     /**
      * 查询报告关联的节点信息
      *

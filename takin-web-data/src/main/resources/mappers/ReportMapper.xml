@@ -45,4 +45,8 @@
         ) t
     group by t.scene_id
   </select>
+
+  <update id="deleteReportById">
+    update t_report set is_deleted = 1 where id = #{id}
+  </update>
 </mapper>

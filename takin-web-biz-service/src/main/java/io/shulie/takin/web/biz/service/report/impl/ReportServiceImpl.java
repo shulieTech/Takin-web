@@ -183,6 +183,11 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
+    public void deleteReport(Long reportId) {
+        reportDao.deleteReport(reportId);
+    }
+
+    @Override
     public List<SceneReportListOutput> getReportListBySceneId(Long sceneId) {
         ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
         req.setSceneId(sceneId);

@@ -42,6 +42,8 @@ public interface ReportService {
      */
     ReportDetailOutput getReportByReportId(Long reportId);
 
+    void deleteReport(Long reportId);
+
     List<SceneReportListOutput> getReportListBySceneId(Long sceneId);
 
     /**

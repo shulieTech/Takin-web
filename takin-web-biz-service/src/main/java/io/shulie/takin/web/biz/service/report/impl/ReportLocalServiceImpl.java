@@ -1002,7 +1002,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     for (String inter : intervalList) {
                         String str[] = inter.split("-");
                         Integer count = v.stream().filter(traceMetrics -> traceMetrics.getAvgRt().compareTo(new BigDecimal(str[0])) >= 0 && traceMetrics.getAvgRt()
-                                .compareTo(new BigDecimal(str[1])) < 0).map(TraceMetricsAll::getTotal).reduce(Integer::sum).orElse(0);
+                                .compareTo(new BigDecimal(str[1])) < 0).map(TraceMetricsAll::getTotalCount).reduce(Integer::sum).orElse(0);
                         conut.add(String.valueOf(count));
                         xcost.add(inter);
                     }
@@ -1264,6 +1264,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             BigDecimal[] memory = new BigDecimal[time.length];
             BigDecimal[] io = new BigDecimal[time.length];
             BigDecimal[] network = new BigDecimal[time.length];
+            BigDecimal[] gcCost = new BigDecimal[time.length];
+            BigDecimal[] gcCount = new BigDecimal[time.length];
             for (String config : configs) {
                 if (StringUtils.isBlank(config)) {
                     continue;
@@ -1280,6 +1282,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     memory[i] = (memory[i] != null ? memory[i] : ZERO).add(array.getMemory()[i]);
                     io[i] = (io[i] != null ? io[i] : ZERO).add(array.getIo()[i]);
                     network[i] = (network[i] != null ? network[i] : ZERO).add(array.getNetwork()[i]);
+                    if (array.getGcCost() != null) {
+                        gcCost[i] = (gcCost[i] != null ? gcCost[i] : ZERO).add(array.getGcCost()[i]);
+                    } else {
+                        gcCost[i] = ZERO;
+                    }
+                    if (array.getGcCount() != null) {
+                        gcCount[i] = (gcCount[i] != null ? gcCount[i] : ZERO).add(array.getGcCount()[i]);
+                    } else {
+                        gcCount[i] = ZERO;
+                    }
                 }
                 count++;
             }
@@ -1290,6 +1302,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 memory[i] = avg(memory[i], count);
                 io[i] = avg(io[i], count);
                 network[i] = avg(network[i], count);
+                if (gcCost != null && gcCost[i] != null) {
+                    gcCost[i] = avg(gcCost[i], count);
+                } else {
+                    gcCost[i] = ZERO;
+                }
+                if (gcCount != null && gcCount[i] != null) {
+                    gcCount[i] = avg(gcCount[i], count);
+                } else {
+                    gcCount[i] = ZERO;
+                }
             }
             MachineDetailDTO.MachineTPSTargetDTO tpsTargetDTO = new MachineDetailDTO().new MachineTPSTargetDTO();
             tpsTargetDTO.setTime(time);
@@ -1299,7 +1321,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             tpsTargetDTO.setMemory(memory);
             tpsTargetDTO.setIo(io);
             tpsTargetDTO.setMbps(network);
-
+            tpsTargetDTO.setGcCost(gcCost);
+            tpsTargetDTO.setGcCount(gcCount);
             dto.setTpsTarget(tpsTargetDTO);
         } catch (Exception e) {
             log.error("Parse PtsConfig Error:, error={}", e.getMessage());

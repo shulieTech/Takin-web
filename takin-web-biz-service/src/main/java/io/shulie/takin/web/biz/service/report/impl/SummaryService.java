@@ -254,11 +254,11 @@ public class SummaryService {
                     double mbps = bases.subList(currentIndex, j).stream().filter(
                                     data -> data.getNetBandWidthRate() != null).mapToDouble(BaseServerResult::getNetBandWidthRate)
                             .average().orElse(0D);
-                    double youngGcCount = bases.subList(currentIndex, j).stream().filter(data -> data.getYoungGcCount() != null).mapToDouble(BaseServerResult::getYoungGcCount).reduce(0, Double::sum);
-                    double youngGcCost = bases.subList(currentIndex, j).stream().filter(data -> data.getYoungGcCost() != null).mapToDouble(BaseServerResult::getYoungGcCost).average().orElse(0D);
+                    double youngGcCount = bases.subList(currentIndex, j).stream().mapToDouble(BaseServerResult::getYoungGcCount).reduce(0, Double::sum);
+                    double youngGcCost = bases.subList(currentIndex, j).stream().mapToDouble(BaseServerResult::getYoungGcCost).average().orElse(0D);
 
-                    double fullGcCount = bases.subList(currentIndex, j).stream().filter(data -> data.getFullGcCount() != null).mapToDouble(BaseServerResult::getFullGcCount).reduce(0, Double::sum);
-                    double fullGcCost = bases.subList(currentIndex, j).stream().filter(data -> data.getFullGcCost() != null).mapToDouble(BaseServerResult::getFullGcCost).average().orElse(0D);
+                    double fullGcCount = bases.subList(currentIndex, j).stream().mapToDouble(BaseServerResult::getFullGcCount).reduce(0, Double::sum);
+                    double fullGcCost = bases.subList(currentIndex, j).stream().mapToDouble(BaseServerResult::getFullGcCost).average().orElse(0D);
 
                     target.setCpu(new BigDecimal((int) cpu));
                     target.setLoading(new BigDecimal(loading).setScale(2, RoundingMode.HALF_UP));

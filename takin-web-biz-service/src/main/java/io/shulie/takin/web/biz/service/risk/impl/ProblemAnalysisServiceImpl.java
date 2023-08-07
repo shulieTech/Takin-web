@@ -136,7 +136,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     vo.setCore(formatDouble(base.getCpuCores()).intValue());
                     vo.setDisk(formatDouble(base.getDisk()));
                     vo.setMbps(formatDouble(base.getNetBandwidth()));
-                    vo.setMemory(formatDouble(base.getMemory()));
+                    vo.setMemory(new BigDecimal(Optional.ofNullable(base.getMemory()).orElse(0L)));
                     vo.setAppIp(base.getTagAppIp());
                     vo.setAppName(appName);
                     vo.setReportId(reportId);

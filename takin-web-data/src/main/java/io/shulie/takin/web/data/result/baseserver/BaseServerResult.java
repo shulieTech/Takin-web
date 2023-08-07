@@ -1,6 +1,5 @@
 package io.shulie.takin.web.data.result.baseserver;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
@@ -77,7 +76,7 @@ public class BaseServerResult {
      * 内存大小
      */
     @Column(name = "memory")
-    private Double memory;
+    private long memory;
 
     /**
      * 应用ip
@@ -98,16 +97,16 @@ public class BaseServerResult {
     private String tagAgentId;
 
     private Double tps;
-    @JsonProperty("young_gc_count")
-    private Double youngGcCount;
+    @Column(name = "young_gc_count")
+    private double youngGcCount;
 
-    @JsonProperty("young_gc_cost")
-    private Double youngGcCost;
+    @Column(name = "young_gc_cost")
+    private double youngGcCost;
 
-    @JsonProperty("full_gc_count")
-    private Double fullGcCount;
-    @JsonProperty("full_gc_cost")
-    private Double fullGcCost;
+    @Column(name = "full_gc_count")
+    private double fullGcCount;
+    @Column(name = "full_gc_cost")
+    private double fullGcCost;
 
     /**
      * 获取毫秒的时间

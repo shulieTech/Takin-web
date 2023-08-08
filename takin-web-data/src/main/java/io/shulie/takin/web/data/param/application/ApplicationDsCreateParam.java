@@ -27,4 +27,8 @@ public class ApplicationDsCreateParam extends UserCommonExt {
      * 配置方式，0字段方式，1json方式
      */
     private Integer configType;
+    /**
+     * 是否手动添加
+     */
+    private boolean isManual;
 }

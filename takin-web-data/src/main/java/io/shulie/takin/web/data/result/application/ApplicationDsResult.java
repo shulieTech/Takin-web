@@ -82,6 +82,11 @@ public class ApplicationDsResult {
      */
     private Integer configType;
 
+    /**
+     * 是否手动添加
+     */
+    private boolean isManual;
+
     public String getFilterStr() {
         return this.getUrl() + "@@" + "" + "@@" + "";
     }

@@ -53,7 +53,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
         entity.setUserId(createParam.getUserId());
         entity.setStatus(createParam.getStatus());
         entity.setConfigType(createParam.getConfigType());
-
+        entity.setIsManual(createParam.isManual());
         //数据加密处理
         aes(entity);
         applicationDsManageMapper.insert(entity);
@@ -188,6 +188,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
                 dsResult.setParseConfig(entity.getParseConfig());
                 dsResult.setTenantId(entity.getTenantId());
                 dsResult.setUserId(entity.getUserId());
+                dsResult.setManual(entity.getIsManual());
                 applicationDsResultList.add(dsResult);
             }
         }

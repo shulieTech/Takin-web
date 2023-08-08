@@ -476,7 +476,11 @@ public class DsServiceImpl implements DsService {
 //        WebPluginUtils.fillQueryParam(queryParam);
         //这里为了拿到id,先存后查
         //这里补充的数据都不会同步到nacos，所以这里不清空缓存
-        this.filterAndSave(shadowDataBaseInfos, applicationId, queryParam);
+        try {
+            this.filterAndSave(shadowDataBaseInfos, applicationId, queryParam);
+        } catch (Throwable t) {
+            log.error("自动梳理数据补充出现异常", t);
+        }
 
         List<ApplicationDsV2Response> response = new ArrayList<>();
         if (isCache) {
@@ -615,7 +619,7 @@ public class DsServiceImpl implements DsService {
         if (CollectionUtils.isNotEmpty(amdbByDbs)) {
             //目前只同步es相关数据
             List<AppShadowDatabaseDTO> esDataList = amdbByDbs.stream().distinct().filter(o -> "ES".equals(o.getMiddlewareType())).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(esDataList)){
+            if (CollectionUtils.isNotEmpty(esDataList)) {
                 if (CollectionUtils.isNotEmpty(dsResults)) {
                     List<String> urls = dsResults.stream().map(ApplicationDsResult::getUrl).collect(Collectors.toList());
                     esDataList = esDataList.stream().filter(o -> !urls.contains(o.getDataSource())).collect(Collectors.toList());
@@ -1004,11 +1008,11 @@ public class DsServiceImpl implements DsService {
         return detailResult;
     }
 
-    private String converter(String amdbAttachment){
+    private String converter(String amdbAttachment) {
         Map<String, Object> json2Map = JsonHelper.json2Map(amdbAttachment, String.class, Object.class);
         Map<String, String> bizCache = new HashMap<>();
-        if (json2Map != null){
-            if (json2Map.containsKey("nodes")){
+        if (json2Map != null) {
+            if (json2Map.containsKey("nodes")) {
                 bizCache.put("nodes", json2Map.get("nodes").toString());
             }
             if (json2Map.containsKey("master")) {
@@ -1292,7 +1296,7 @@ public class DsServiceImpl implements DsService {
                 .filter(agentDto -> agentDto.getAgentVersion() != null)
                 .map(agentDto -> agentDto.getAgentVersion())
                 .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(agentVersionList)){
+        if (CollectionUtils.isEmpty(agentVersionList)) {
             log.error("过滤后从amdb未获取到应用版本信息,当前应用名{}", appName);
             return select;
         }

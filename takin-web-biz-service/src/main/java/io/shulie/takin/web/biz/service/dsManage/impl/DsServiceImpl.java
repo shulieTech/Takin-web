@@ -257,7 +257,7 @@ public class DsServiceImpl implements DsService {
                 dsResponse.setStatus(dsResult.getStatus());
                 dsResponse.setUpdateTime(dsResult.getUpdateTime());
                 dsResponse.setUserId(dsResult.getUserId());
-                dsResponse.setManual(dsResult.isManual());
+                dsResponse.setIsManual(dsResult.isManual());
                 return dsResponse;
             }).collect(Collectors.toList());
         }
@@ -1088,7 +1088,7 @@ public class DsServiceImpl implements DsService {
         v2Response.setDsType(DsTypeEnum.getEnumByCode(response.getDsType().getValue()).getDesc());
         v2Response.setUrl(response.getUrl());
         v2Response.setConnectionPool("");
-        v2Response.setIsManual(true);
+        v2Response.setIsManual(response.getIsManual());
         v2Response.setStatus(response.getStatus());
         //        v2Response.setCanRemove(v2Response.getIsManual());
         if (MiddleWareTypeEnum.LINK_POOL.getCode().equals(response.getDbType().getValue())) {

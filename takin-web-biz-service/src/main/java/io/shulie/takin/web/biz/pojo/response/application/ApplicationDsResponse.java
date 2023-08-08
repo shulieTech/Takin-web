@@ -48,8 +48,4 @@ public class ApplicationDsResponse extends AuthQueryResponseCommonExt {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date updateTime;
 
-    /**
-     * 是否手动添加
-     */
-    private boolean isManual;
 }

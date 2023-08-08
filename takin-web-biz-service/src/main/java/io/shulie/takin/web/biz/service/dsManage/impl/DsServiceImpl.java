@@ -618,7 +618,7 @@ public class DsServiceImpl implements DsService {
         //处理es数据
         if (CollectionUtils.isNotEmpty(amdbByDbs)) {
             //目前只同步es相关数据
-            List<AppShadowDatabaseDTO> esDataList = amdbByDbs.stream().distinct().filter(o -> "ES".equals(o.getMiddlewareType())).collect(Collectors.toList());
+            List<AppShadowDatabaseDTO> esDataList = amdbByDbs.stream().distinct().filter(o -> "ES".equals(o.getDbName())).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(esDataList)) {
                 if (CollectionUtils.isNotEmpty(dsResults)) {
                     List<String> urls = dsResults.stream().map(ApplicationDsResult::getUrl).collect(Collectors.toList());

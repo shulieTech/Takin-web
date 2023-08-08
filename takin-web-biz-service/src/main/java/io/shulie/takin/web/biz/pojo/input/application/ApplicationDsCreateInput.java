@@ -105,6 +105,11 @@ public class ApplicationDsCreateInput {
      */
     private Integer configType;
 
+    /**
+     * 数据来源，
+     */
+    private Integer dataSource;
+
     //--------hbase拆分字段后内容--------------
     /**
      * hbase 业务节点内容
@@ -135,4 +140,9 @@ public class ApplicationDsCreateInput {
 
     private String performanceTestNodes;
     //--------es拆分字段后内容--------------
+
+    /**
+     * 是否手动添加，默认是手动添加
+     */
+    private boolean isManual = true;
 }

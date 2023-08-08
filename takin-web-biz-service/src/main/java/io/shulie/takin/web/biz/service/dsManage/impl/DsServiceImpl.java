@@ -257,6 +257,7 @@ public class DsServiceImpl implements DsService {
                 dsResponse.setStatus(dsResult.getStatus());
                 dsResponse.setUpdateTime(dsResult.getUpdateTime());
                 dsResponse.setUserId(dsResult.getUserId());
+                dsResponse.setManual(dsResult.isManual());
                 return dsResponse;
             }).collect(Collectors.toList());
         }
@@ -555,7 +556,6 @@ public class DsServiceImpl implements DsService {
 
         List<ApplicationDsCacheManageDetailResult> saveCaches = Lists.newArrayList();
         List<ApplicationDsDbManageDetailResult> saveDbs = Lists.newArrayList();
-        List<ApplicationDsCreateParam> applicationDsCreateParams = Lists.newArrayList();
 
         if (CollectionUtils.isNotEmpty(amdbByLinkPools)) {
 
@@ -611,14 +611,28 @@ public class DsServiceImpl implements DsService {
             }
         }
 
+        //处理es数据
         if (CollectionUtils.isNotEmpty(amdbByDbs)) {
-            if (CollectionUtils.isNotEmpty(dsResults)) {
-                List<String> strings = dsResults.stream().map(ApplicationDsResult::getConfig).collect(Collectors.toList());
+            //目前只同步es相关数据
+            List<AppShadowDatabaseDTO> esDataList = amdbByDbs.stream().distinct().filter(o -> "ES".equals(o.getMiddlewareType())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(esDataList)){
+                if (CollectionUtils.isNotEmpty(dsResults)) {
+                    List<String> urls = dsResults.stream().map(ApplicationDsResult::getUrl).collect(Collectors.toList());
+                    esDataList = esDataList.stream().filter(o -> !urls.contains(o.getDataSource())).collect(Collectors.toList());
+                }
 
+                for (AppShadowDatabaseDTO appShadowDatabaseDTO : esDataList) {
+                    ApplicationDsCreateInput applicationDsCreateInput = new ApplicationDsCreateInput();
+                    applicationDsCreateInput.setApplicationId(applicationId);
+                    applicationDsCreateInput.setDbType(DbTypeEnum.ES_SERVER.getCode());
+                    applicationDsCreateInput.setDsType(DsTypeEnum.SHADOW_ES_KEY.getCode());
+                    applicationDsCreateInput.setBusinessNodes(appShadowDatabaseDTO.getDataSource());
+                    applicationDsCreateInput.setManual(false);
+                    shadowEsService.dsAdd(applicationDsCreateInput);
+                }
             }
         }
 
-        applicationDsDAO.batchSave(applicationDsCreateParams);
         dsDbManageDAO.batchSave(saveDbs);
         dsCacheManageDAO.batchSave(saveCaches);
     }

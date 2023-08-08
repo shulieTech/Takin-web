@@ -16,20 +16,10 @@
 
 package io.shulie.takin.web.biz.service.linkmanage.impl;
 
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
-import cn.hutool.core.collection.ListUtil;
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.collection.CollStreamUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
 import com.pamirs.takin.entity.domain.entity.TBList;
@@ -64,12 +54,7 @@ import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO.Blacklist;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO.RemoteCall;
 import io.shulie.takin.web.common.vo.application.AppRemoteCallListVO;
-import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationDAO;
-import io.shulie.takin.web.data.dao.application.InterfaceTypeChildDAO;
-import io.shulie.takin.web.data.dao.application.InterfaceTypeConfigDAO;
-import io.shulie.takin.web.data.dao.application.InterfaceTypeMainDAO;
-import io.shulie.takin.web.data.dao.application.RemoteCallConfigDAO;
+import io.shulie.takin.web.data.dao.application.*;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
 import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.model.mysql.*;
@@ -89,6 +74,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 /**
  * @author 无涯
@@ -846,6 +839,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             })
             .map(call -> {
                 AppRemoteCallListVO listVO = new AppRemoteCallListVO();
+                listVO.setId(call.getId());
                 listVO.setInterfaceName(
                     RemoteCallUtils.getInterfaceNameByRpcName(call.getMiddlewareName(), call.getServiceName(), call.getMethodName()));
                 // 接口类型

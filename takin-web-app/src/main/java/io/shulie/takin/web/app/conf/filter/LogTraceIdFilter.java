@@ -19,7 +19,6 @@ import org.slf4j.MDC;
  * @author shiyajian
  * create: 2020-09-18
  */
-@Slf4j
 public class LogTraceIdFilter implements Filter {
 
     @Override

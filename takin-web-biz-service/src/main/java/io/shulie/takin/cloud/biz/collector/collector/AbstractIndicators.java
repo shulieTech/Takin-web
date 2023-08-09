@@ -318,6 +318,14 @@ public abstract class AbstractIndicators {
                 event.setEventName(PressureStartCache.CHECK_FAIL_EVENT);
                 event.setExt(context);
             }
+            // 增加一个判断
+            if(interrupt) {
+                // 正常中断
+                if (redisClientUtil.hasKey(PressureStartCache.getJmeterStartFirstKey(resourceId))) {
+                    event.setEventName(PressureStartCache.RUNNING_FAILED);
+                    event.setExt(new StopEventSource(context, message, true));
+                }
+            }
             eventCenterTemplate.doEvents(event);
         }
     }

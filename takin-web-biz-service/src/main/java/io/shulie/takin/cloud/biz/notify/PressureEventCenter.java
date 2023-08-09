@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -154,15 +155,18 @@ public class PressureEventCenter extends AbstractIndicators {
         try {
             stopJob(resourceId, context.getJobId());
         } catch (Throwable e) {
+            log.error("stopJob error:{}",resourceId,e);
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, message + " | " + e.getMessage());
             exception = true;
         }
-        boolean noInterrupt = !source.isInterrupt();
-        if (noInterrupt) {
+
+        if (!source.isInterrupt()) {
+            log.error("非正常中断，进入这里{}", JSON.toJSONString(source));
             setTryRunTaskFailInfo(context.getSceneId(), context.getReportId(), context.getTenantId(), message);
         }
         if (!exception && redisClientUtil.lockStopFlagExpire(PressureStartCache.getStopFlag(resourceId), message)) {
-            if (noInterrupt) {
+            log.error("中断exception，进入这里{}-{}", JSON.toJSONString(source),exception);
+            if (!source.isInterrupt()) {
                 pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, message);
             }
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.STOPPING, null);

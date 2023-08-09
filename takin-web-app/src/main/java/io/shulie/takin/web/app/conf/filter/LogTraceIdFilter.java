@@ -30,8 +30,8 @@ public class LogTraceIdFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
-        HttpServletRequest servletRequest = (HttpServletRequest) request;
-        log.info(JSON.toJSONString(servletRequest));
+//        HttpServletRequest servletRequest = (HttpServletRequest) request;
+//        log.info(JSON.toJSONString(servletRequest));
         MDC.put("traceId", UUID.randomUUID().toString());
         chain.doFilter(request, response);
     }

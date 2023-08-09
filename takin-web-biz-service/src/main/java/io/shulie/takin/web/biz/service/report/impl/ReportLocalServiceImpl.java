@@ -596,11 +596,14 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
             list.add(map);
         }
+        Map<String, NodeCompareTargetOut.TopologyNode> newNodeMap = new HashMap<>();
+        if (CollectionUtils.isEmpty(list)||list.size()<2) {
+            return newNodeMap;
+        }
         //合并数据
         Set<String> keys1 = list.get(0).keySet();
         Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap1 = list.get(0);
         Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap2 = list.get(1);
-        Map<String, NodeCompareTargetOut.TopologyNode> newNodeMap = new HashMap<>();
         for (String s : keys1) {
             NodeCompareTargetOut.TopologyNode topologyNode1 = topologyNodeMap1.get(s);
             NodeCompareTargetOut.TopologyNode topologyNode2 = topologyNodeMap2.get(s);
@@ -614,6 +617,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     }
 
     private static NodeCompareTargetOut.TopologyNode genNodeTree(NodeCompareTargetOut.TopologyNode root, Map<String, NodeCompareTargetOut.TopologyNode> map) {
+        if (Objects.isNull(root) || MapUtils.isEmpty(map)) {
+            return null;
+        }
         Iterator<String> iterator = map.keySet().iterator();
         while (iterator.hasNext()) {
             String key = iterator.next();

@@ -560,8 +560,6 @@ public class SceneServiceImpl implements SceneService {
                 request.setMethod(entranceJoinEntity.getMethodName());
                 request.setRpcType(entranceJoinEntity.getRpcType());
                 Long activity = activityService.createActivity(request);
-                notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
-                        request.getMethod(), request.getRpcType(), request.getExtend());
                 sceneLinkRelateRequest.setBusinessActivityId(activity);
             }
         } else if (BusinessTypeEnum.VIRTUAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {

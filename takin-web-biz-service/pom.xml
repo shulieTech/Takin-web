@@ -142,6 +142,10 @@
                     <artifactId>jul-to-slf4j</artifactId>
                     <groupId>org.slf4j</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>lettuce-core</artifactId>
+                    <groupId>io.lettuce</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- spring boot -->

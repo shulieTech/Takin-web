@@ -43,22 +43,22 @@ public class RedisClientUtil {
             " redis.call('SREM', KEYS[1], ARGV[1]); return redis.call('SCARD', KEYS[1])";
 
     private static final String ADD_RETURN_COUNT =
-        " redis.call('SADD', KEYS[1], ARGV[1]); return redis.call('SCARD', KEYS[1])";
+            " redis.call('SADD', KEYS[1], ARGV[1]); return redis.call('SCARD', KEYS[1])";
 
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private RedisTemplate redisTemplate;
     private DefaultRedisScript<Integer> unlockRedisScript;
     private DefaultRedisScript<Integer> reentryLockRedisScript;
-    private DefaultRedisScript<Object> remAndCountScript;
-    private DefaultRedisScript<Object> addAndCountScript;
+    private DefaultRedisScript<Integer> remAndCountScript;
+    private DefaultRedisScript<Integer> addAndCountScript;
 
     @PostConstruct
     public void init() {
         unlockRedisScript = new DefaultRedisScript<>(UNLOCK_SCRIPT, Integer.class);
         reentryLockRedisScript = new DefaultRedisScript<>(REENTRY_LOCK_SCRIPT, Integer.class);
-        remAndCountScript = new DefaultRedisScript<>(REM_RETURN_COUNT, Object.class);
-        addAndCountScript = new DefaultRedisScript<>(ADD_RETURN_COUNT, Object.class);
+        remAndCountScript = new DefaultRedisScript<>(REM_RETURN_COUNT, Integer.class);
+        addAndCountScript = new DefaultRedisScript<>(ADD_RETURN_COUNT, Integer.class);
     }
 
     @Autowired
@@ -161,7 +161,7 @@ public class RedisClientUtil {
             return true;
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：redis命令执行失败 --> expire方法执行异常，异常信息: {}",
-                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }

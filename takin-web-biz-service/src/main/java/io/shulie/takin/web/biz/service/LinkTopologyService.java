@@ -789,13 +789,16 @@ public class LinkTopologyService extends CommonService {
         baseStorageParam.setTenantId(WebPluginUtils.traceTenantId());
         baseStorageParam.setEnvCode(WebPluginUtils.traceEnvCode());
         baseStorageParam.setUserId(WebPluginUtils.traceUserId());
-
+        baseStorageParam.setTenantId(1L);
+        baseStorageParam.setEnvCode("test");
+        baseStorageParam.setUserId(1L);
         // 卡慢 rt
         if (RpcTypeEnum.APP.getValue().equals(baseStorageParam.getRpcType())) {
             Integer rtInt = resultMap.get(1);
             if (rtInt != null) {
                 baseStorageParam.setType(1);
                 baseStorageParam.setLevel(rtInt);
+
 
                 // 入 瓶颈异常库
                 Long storage = E2ePluginUtils.bottleneckStorage(baseStorageParam);

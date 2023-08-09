@@ -597,7 +597,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             list.add(map);
         }
         Map<String, NodeCompareTargetOut.TopologyNode> newNodeMap = new HashMap<>();
-        if (CollectionUtils.isEmpty(list)||list.size()<2) {
+        if (CollectionUtils.isEmpty(list) || list.size() < 2) {
             return newNodeMap;
         }
         //合并数据
@@ -678,12 +678,19 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }).collect(Collectors.toList());
 
             ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
-            List<ReportAppPerformanceOut> list = new ArrayList<>();
-            if (CollectionUtils.isEmpty(activityResponses) || activityResponses.stream().filter(a -> Objects.nonNull(a)).count() <= 0) {
+
+            if (CollectionUtils.isEmpty(activityResponses)) {
                 return Response.success(Collections.EMPTY_LIST);
             }
+            List<ReportAppPerformanceOut> list = new ArrayList<>();
             for (ActivityResponse activityResponse : activityResponses) {
+                if (activityResponse.getTopology() == null || CollectionUtils.isEmpty(activityResponse.getTopology().getNodes())) {
+                    continue;
+                }
                 for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponse.getTopology().getNodes()) {
+                    if (node == null) {
+                        continue;
+                    }
                     //非app节点就跳过去
                     if (!node.getNodeType().getType().equalsIgnoreCase("app")) {
                         continue;
@@ -696,7 +703,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     reportAppPerformanceOut.setMaxRt(node.getServiceMaxRt() != null ? BigDecimal.valueOf(node.getServiceMaxRt()) : new BigDecimal(0));
                     reportAppPerformanceOut.setMinRt(node.getServiceMinRt() != null ? BigDecimal.valueOf(node.getServiceMinRt()) : new BigDecimal(0));
                     reportAppPerformanceOut.setSuccessRate(node.getServiceAllSuccessRate() != null ? BigDecimal.valueOf(node.getServiceAllSuccessRate() * 100) : new BigDecimal(0));
-                    reportAppPerformanceOut.setSa(reportDetailOutput.getSa());
+                    reportAppPerformanceOut.setSa(Optional.ofNullable(reportDetailOutput.getSa()).orElse(BigDecimal.ZERO));
                     reportAppPerformanceOut.setStartTime(DateUtil.formatDateTime(reportEntity.getStartTime()));
                     list.add(reportAppPerformanceOut);
                 }
@@ -980,7 +987,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     totalRequest.add(traceMetrics.getTotalCount());
                     if (traceMetrics.getTotalCount() == 0 || traceMetrics.getSuccessCount() == 0) {
                         successRate.add(0.0);
-                    }else {
+                    } else {
                         double suRate = BigDecimal.valueOf(traceMetrics.getSuccessCount()).divide(BigDecimal.valueOf(traceMetrics.getTotalCount()), 4, RoundingMode.HALF_UP)
                                 .multiply(BigDecimal.valueOf(100)).doubleValue();
                         successRate.add(suRate);
@@ -1004,7 +1011,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 if (CollectionUtils.isEmpty(intervalList)) {
                     conut.add(totalRequest.stream().reduce(Integer::sum).orElse(0).toString());
                     xcost.add(max.toString());
-                }else {
+                } else {
                     for (String inter : intervalList) {
                         String str[] = inter.split("-");
                         Integer count = v.stream().filter(traceMetrics -> traceMetrics.getAvgRt().compareTo(new BigDecimal(str[0])) >= 0 && traceMetrics.getAvgRt()

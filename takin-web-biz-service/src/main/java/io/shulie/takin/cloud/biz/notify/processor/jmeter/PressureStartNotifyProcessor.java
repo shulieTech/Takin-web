@@ -69,7 +69,7 @@ public class PressureStartNotifyProcessor extends AbstractIndicators
             if (Boolean.TRUE.equals(
                 redisTemplate.opsForValue().setIfAbsent(PressureStartCache.getJmeterStartFirstKey(resourceId), podId))) {
                 cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(sceneId, reportId, tenantId)
-                    .checkEnum(SceneManageStatusEnum.PRESSURE_NODE_RUNNING)
+                    .checkEnum(SceneManageStatusEnum.RESOURCE_LOCKING,SceneManageStatusEnum.PRESSURE_NODE_RUNNING,SceneManageStatusEnum.STARTING)
                     .updateEnum(SceneManageStatusEnum.ENGINE_RUNNING)
                     .build());
                 notifyStart(resourceContext, context);

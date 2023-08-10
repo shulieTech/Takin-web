@@ -44,7 +44,7 @@ public class ApiController {
     @Autowired
     private DictionaryCache dictionaryCache;
 
-    @Value("${file.upload.path:/data/nfs_dir/pressure_file_uoload}")
+    @Value("${file.upload.path:/data/nfs_dir/pressure_file_upload}")
     private String fileUploadPath;
 
     @Value("${takin.web.url:http://192.168.1.201/takin-web}")

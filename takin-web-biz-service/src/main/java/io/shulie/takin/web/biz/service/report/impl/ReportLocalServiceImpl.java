@@ -597,28 +597,34 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             list.add(map);
         }
         Map<String, NodeCompareTargetOut.TopologyNode> newNodeMap = new HashMap<>();
-        if (CollectionUtils.isEmpty(list) || list.size() < 2) {
+        if (CollectionUtils.isEmpty(list)) {
             return newNodeMap;
         }
-        //合并数据
-        Set<String> keys1 = list.get(0).keySet();
-        Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap1 = list.get(0);
-        Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap2 = list.get(1);
-        for (String s : keys1) {
-            NodeCompareTargetOut.TopologyNode topologyNode1 = topologyNodeMap1.get(s);
-            NodeCompareTargetOut.TopologyNode topologyNode2 = topologyNodeMap2.get(s);
-            if (topologyNode1 == null || topologyNode2 == null) {
-                continue;
+        //list可能有一个或者两个元素，后一个元素的getService1Rt赋值给前一个元素的getService2Rt，最后返回前一个元素
+        if (list.size() == 1) {
+            return list.get(0);
+        } else if (list.size() == 2) {
+            Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap1 = list.get(0);
+            Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap2 = list.get(1);
+            Set<String> keys1 = list.get(0).keySet();
+            for (String s : keys1) {
+                NodeCompareTargetOut.TopologyNode topologyNode1 = topologyNodeMap1.get(s);
+                NodeCompareTargetOut.TopologyNode topologyNode2 = topologyNodeMap2.get(s);
+                if (topologyNode1 == null || topologyNode2 == null) {
+                    continue;
+                }
+                topologyNode1.setService2Rt(topologyNode2.getService1Rt());
+                newNodeMap.put(s, topologyNode1);
             }
-            topologyNode1.setService2Rt(topologyNode2.getService1Rt());
-            newNodeMap.put(s, topologyNode1);
+        } else {
+            return newNodeMap;
         }
         return newNodeMap;
     }
 
     private static NodeCompareTargetOut.TopologyNode genNodeTree(NodeCompareTargetOut.TopologyNode root, Map<String, NodeCompareTargetOut.TopologyNode> map) {
         if (Objects.isNull(root) || MapUtils.isEmpty(map)) {
-            return null;
+            return root;
         }
         Iterator<String> iterator = map.keySet().iterator();
         while (iterator.hasNext()) {
@@ -684,7 +690,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             }
             List<ReportAppPerformanceOut> list = new ArrayList<>();
             for (ActivityResponse activityResponse : activityResponses) {
-                if (activityResponse.getTopology() == null || CollectionUtils.isEmpty(activityResponse.getTopology().getNodes())) {
+                if (activityResponse == null || activityResponse.getTopology() == null
+                        || CollectionUtils.isEmpty(activityResponse.getTopology().getNodes())) {
                     continue;
                 }
                 for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponse.getTopology().getNodes()) {
@@ -708,8 +715,14 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     list.add(reportAppPerformanceOut);
                 }
             }
-            list.sort(Comparator.comparing(ReportAppPerformanceOut::getAppName).reversed());
-            return Response.success(list);
+            if (CollectionUtils.isEmpty(list)) {
+                return Response.success(Collections.EMPTY_LIST);
+            }
+            List<ReportAppPerformanceOut> reportAppPerformanceOutList = list.stream()
+                    .collect(Collectors.toMap(ReportAppPerformanceOut::getAppName, a -> a, (k1, k2) -> k1))
+                    .values().stream().collect(Collectors.toList());
+            reportAppPerformanceOutList.sort(Comparator.comparing(ReportAppPerformanceOut::getAppName).reversed());
+            return Response.success(reportAppPerformanceOutList);
         } catch (Exception e) {
             log.error("getReortAppPerformanceList error:", e);
         }

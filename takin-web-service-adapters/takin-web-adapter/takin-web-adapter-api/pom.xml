@@ -41,8 +41,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.79</version>
-            <scope>compile</scope>
+            <version>${fastjson.version}</version>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>

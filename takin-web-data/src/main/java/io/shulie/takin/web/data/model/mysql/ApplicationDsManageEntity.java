@@ -92,4 +92,10 @@ public class ApplicationDsManageEntity extends UserBaseEntity {
      */
     @TableField(value = "config_type")
     private Integer configType;
+
+    /**
+     * 是否手动添加
+     */
+    @TableField(value = "is_manual")
+    private Boolean isManual;
 }

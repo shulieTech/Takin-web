@@ -83,8 +83,10 @@ public class ShadowEsServiceImpl extends AbstractDsService {
         // 新增配置
         createParam.setStatus(createRequest.getStatus());
         createParam.setConfigType(createRequest.getConfigType());
-        syncInfo(createRequest.getApplicationId(), applicationDetailResult.getApplicationName());
-
+        createParam.setManual(createRequest.isManual());
+        if (createRequest.isManual()){
+            syncInfo(createRequest.getApplicationId(), applicationDetailResult.getApplicationName());
+        }
         applicationDsDAO.insert(createParam);
         return Response.success();
     }

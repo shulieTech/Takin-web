@@ -36,7 +36,6 @@ import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.utils.PDFUtil;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
-import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.diff.api.report.ReportApi;
@@ -419,7 +418,7 @@ public class ReportServiceImpl implements ReportService {
         // 直接调用查询业务活动的拓扑图方法即可
         ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
         request.setActivityId(activityId);
-        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
+//        request.setFlowTypeEnum(FlowTypeEnum.PRESSURE_MEASUREMENT);
         request.setStartTime(reportLinkDiagramReq.getStartTime());
         request.setEndTime(reportLinkDiagramReq.getEndTime());
         request.setTempActivity(false);

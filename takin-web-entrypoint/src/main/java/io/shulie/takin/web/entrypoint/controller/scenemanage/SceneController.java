@@ -1,27 +1,19 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-import javax.validation.Valid;
-
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import io.shulie.takin.cloud.common.utils.JmxUtil;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import io.shulie.takin.adapter.api.entrypoint.scene.mix.SceneMixApi;
-import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
-import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
-import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageQueryReq;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneDetailV2Response;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
+import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
@@ -45,7 +37,6 @@ import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
-import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
@@ -56,12 +47,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.validation.Valid;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * 场景管理控制器 - 新
@@ -226,7 +218,7 @@ public class SceneController {
                 throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果转换为一维数据失败");
             }
             // 3.2. 一维数据转换为Map，获得xPathMD5 和 脚本节点名称的对应关系
-            Map<String, String> nodeMap = nodes.stream().collect(Collectors.toMap(ScriptNode::getXpathMd5, ScriptNode::getTestName));
+            Map<String, String> nodeMap = nodes.stream().collect(Collectors.toMap(ScriptNode::getXpathMd5, ScriptNode::getTestName, (k1, k2) -> k2));
             // 3.3 遍历压测内容并从Map中填充数据
             for (SceneRequest.Content item : content) {
                 if (!nodeMap.containsKey(item.getPathMd5())) {

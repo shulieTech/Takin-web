@@ -277,7 +277,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             return;
         }
         for (ScriptNodeSummaryBean bean : reportNodeDetail) {
-            if (bean.getActivityId() > 0) {
+            if (Objects.nonNull(bean.getActivityId()) && bean.getActivityId() > 0) {
                 BusinessActivitySummaryBean summaryBean = new BusinessActivitySummaryBean();
                 summaryBean.setBusinessActivityId(bean.getActivityId());
                 summaryBean.setBusinessActivityName(bean.getTestName());

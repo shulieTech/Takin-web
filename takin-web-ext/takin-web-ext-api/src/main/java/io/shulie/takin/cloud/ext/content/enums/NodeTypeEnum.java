@@ -1,10 +1,10 @@
 package io.shulie.takin.cloud.ext.content.enums;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import lombok.Getter;
 import org.apache.commons.lang.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author liyuanba
@@ -27,6 +27,8 @@ public enum NodeTypeEnum {
      * 取样器
      */
     SAMPLER("SamplerProxy", "Sampler", "Sample"),
+
+    KAKFK("io.shulie.jmeter.plugins.kafka.dataset.DataSet")
     ;
 
     @Getter

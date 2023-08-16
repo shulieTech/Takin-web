@@ -1,23 +1,9 @@
 package io.shulie.takin.cloud.common.utils;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import io.shulie.takin.cloud.common.enums.ThreadGroupTypeEnum;
 import io.shulie.takin.cloud.common.pojo.Pair;
 import io.shulie.takin.cloud.common.pojo.jmeter.ThreadGroupProperty;
@@ -29,6 +15,13 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author liyuanba
@@ -71,6 +64,10 @@ public class JmxUtil {
                 return null;
             }
             List<Element> elements = elements(childContainer);
+//            List<Element> elements1 = root.selectNodes("//io.shulie.jmeter.plugins.kafka.dataset.DataSet");
+//            if (CollUtil.isNotEmpty(elements1)) {
+//                elements.addAll(elements1);
+//            }
             return buildNodeTree(elements);
         } catch (DocumentException e) {
             log.error("buildNodeTree DocumentException, file=" + file.getAbsolutePath(), e);
@@ -215,9 +212,9 @@ public class JmxUtil {
                     continue;
                 }
                 JSONArray arr = o.values().stream().filter(Objects::nonNull)
-                    .map(v -> (JSONArray)v)
-                    .findFirst()
-                    .orElse(null);
+                        .map(v -> (JSONArray) v)
+                        .findFirst()
+                        .orElse(null);
                 if (null == arr) {
                     continue;
                 }
@@ -262,7 +259,7 @@ public class JmxUtil {
                     } else if (i <= holdTime) {
                         nowThreadNum += threadNum;
                     } else if (i < shutDownTime) {
-                        nowThreadNum += threadNum - (((double)threadNum / shutDown) * (i - holdTime));
+                        nowThreadNum += threadNum - (((double) threadNum / shutDown) * (i - holdTime));
                     } else if (i > shutDownTime) {
                         nowThreadNum += 0;
                     }
@@ -271,7 +268,7 @@ public class JmxUtil {
                     maxThreadNum = nowThreadNum;
                 }
             }
-            p.setMaxThreadNum((int)Math.ceil(maxThreadNum));
+            p.setMaxThreadNum((int) Math.ceil(maxThreadNum));
         }
         return p;
     }
@@ -395,7 +392,9 @@ public class JmxUtil {
                 } else if ("ShulieKafkaDataSetSampler".equals(name) || "io.shulie.jmeter.plugins.kafka.dataset.Sampler".equals(name)) {
                     node.setProps(buildProps(element));
                     Map<String, String> props = node.getProps();
-                    if (null == props) {return;}
+                    if (null == props) {
+                        return;
+                    }
                     String prefix = props.get("prefix");
                     String suffix = props.get("suffix");
                     String text = StrUtil.format("{}Kafka数据集采样器{}", prefix, suffix);
@@ -453,9 +452,13 @@ public class JmxUtil {
     }
 
     private static void setRabbitIdentification(ScriptNode node) {
-        if (null == node) {return;}
+        if (null == node) {
+            return;
+        }
         Map<String, String> props = node.getProps();
-        if (null == props) {return;}
+        if (null == props) {
+            return;
+        }
         String exchange = props.get("RabbitSampler.Exchange");
         String routingKey = props.get("RabbitPublisher.MessageRoutingKey");
         if (StrUtil.isBlank(routingKey)) {
@@ -538,7 +541,7 @@ public class JmxUtil {
             if (!(o instanceof Element)) {
                 continue;
             }
-            Element e = (Element)o;
+            Element e = (Element) o;
             if (isNotEnabled(e)) {
                 continue;
             }
@@ -601,7 +604,7 @@ public class JmxUtil {
     }
 
     public static Map<String, String> buildProps(Element element, List<String> propElementNames) {
-        return buildProps(element, propElementNames.toArray(new String[] {}));
+        return buildProps(element, propElementNames.toArray(new String[]{}));
     }
 
     /**
@@ -620,12 +623,12 @@ public class JmxUtil {
             return null;
         }
         return elements.stream().filter(Objects::nonNull)
-            .map(e -> JmxUtil.getKeyAndValue(e, propElementNames))
-            .filter(CollUtil::isNotEmpty)
-            .flatMap(Collection::stream)
-            .filter(Objects::nonNull)
-            .filter(p -> StrUtil.isNotBlank(p.getKey()) && Objects.nonNull(p.getValue()))
-            .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (o1, o2) -> o1));
+                .map(e -> JmxUtil.getKeyAndValue(e, propElementNames))
+                .filter(CollUtil::isNotEmpty)
+                .flatMap(Collection::stream)
+                .filter(Objects::nonNull)
+                .filter(p -> StrUtil.isNotBlank(p.getKey()) && Objects.nonNull(p.getValue()))
+                .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (o1, o2) -> o1));
     }
 
     public static Pair<String, String> getBasePropElementKeyAndValue(Element e) {
@@ -666,7 +669,7 @@ public class JmxUtil {
         String name = e.getName();
         if (null != propElementNames && propElementNames.length > 0) {
             boolean contains = Arrays.stream(propElementNames).filter(Objects::nonNull)
-                .anyMatch(s -> s.equals(name));
+                    .anyMatch(s -> s.equals(name));
             if (!contains) {
                 return null;
             }
@@ -728,8 +731,8 @@ public class JmxUtil {
             return;
         }
         String collect = Arrays.stream(keys).filter(StrUtil::isNotBlank)
-            .map(props::get)
-            .collect(Collectors.joining("|"));
+                .map(props::get)
+                .collect(Collectors.joining("|"));
         node.setIdentification(collect);
         node.setRequestPath(collect);
     }
@@ -822,11 +825,11 @@ public class JmxUtil {
             return 0;
         }
         return json.values().stream().filter(Objects::nonNull)
-            .map(o -> (String)o)
-            .filter(StrUtil::isNotBlank)
-            .map(NumberUtil::parseInt)
-            .findFirst()
-            .orElse(0);
+                .map(o -> (String) o)
+                .filter(StrUtil::isNotBlank)
+                .map(NumberUtil::parseInt)
+                .findFirst()
+                .orElse(0);
     }
 
     /**
@@ -843,7 +846,7 @@ public class JmxUtil {
         List<Element> list = CollUtil.newArrayList();
         for (Object o : elements) {
             if (o instanceof Element) {
-                list.add((Element)o);
+                list.add((Element) o);
             }
         }
         return list;

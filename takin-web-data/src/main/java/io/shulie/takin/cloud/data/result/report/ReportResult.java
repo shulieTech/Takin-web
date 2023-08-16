@@ -149,6 +149,8 @@ public class ReportResult extends ContextExt {
 
     private String ptConfig;
 
+    private Long deptId;
+
     /**
      * 通过ptConfig计算压测多少s
      */

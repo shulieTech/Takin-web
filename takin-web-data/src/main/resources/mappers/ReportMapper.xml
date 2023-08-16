@@ -33,6 +33,13 @@
     is_deleted, gmt_create, gmt_update
   </sql>
 
+  <select id="selectByResourceId" resultType="io.shulie.takin.cloud.data.model.mysql.ReportEntity">
+    select id,scene_id,scene_name,dept_id
+    from t_report
+    where resource_id = #{resourceId}
+    limit 1
+  </select>
+
   <select id="queryBySceneIds" parameterType="list" resultMap="BaseResultMap">
     select t.id,t.scene_id,t.job_id,t.scene_name,t.status, t.gmt_create
     from (

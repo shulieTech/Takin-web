@@ -1,18 +1,17 @@
 package io.shulie.takin.web.entrypoint.controller;
 
-import java.util.Map;
-
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
-import io.shulie.takin.web.biz.pojo.request.pts.IdRequest;
-import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.biz.pojo.request.pts.IdRequest;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 /**
  * 无需权限的访问
@@ -40,6 +40,8 @@ public class NoAuthController {
 
     @Resource
     private ReportDao reportDao;
+
+    private final static String SCENE_DATA = "项目id=%s,场景id=%s,场景名称=%s";
 
     @PutMapping("/resume/scenetask")
     public ResponseResult resumeSceneTask(@RequestBody Map<String, Object> paramMap) {
@@ -73,14 +75,17 @@ public class NoAuthController {
         return ResponseResult.success("重置成功");
     }
 
-    @GetMapping("/get/scene/byTask")
-    public ResponseResult getSceneByTask(@RequestParam(value = "podName") String podName) {
+    @GetMapping("/get/scene/podname")
+    public ResponseResult getSceneByPodName(@RequestParam(value = "podName") String podName) {
         //拆分podName，得到jobId
         String[] pods = StringUtils.split(podName, "-");
         if(pods == null || pods.length != 3) {
-            ResponseResult.fail("podName格式不正确", null);
+            return ResponseResult.fail("podName格式不正确", null);
         }
-
-        return ResponseResult.success("重置成功");
+        ReportResult result = reportDao.getByResourceId(Long.parseLong(pods[1]));
+        if(result == null) {
+            return ResponseResult.fail("未找到数据", null);
+        }
+        return ResponseResult.success(String.format(SCENE_DATA, result.getDeptId(), result.getSceneId(), result.getSceneName()));
     }
 }

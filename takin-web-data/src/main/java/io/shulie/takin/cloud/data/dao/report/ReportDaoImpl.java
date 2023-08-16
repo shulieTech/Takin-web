@@ -254,6 +254,15 @@ public class ReportDaoImpl implements ReportDao {
     }
 
     @Override
+    public ReportResult getByResourceId(Long resourceId) {
+        ReportEntity reportEntity = reportMapper.selectByResourceId(resourceId);
+        if(reportEntity == null) {
+            return null;
+        }
+        return BeanUtil.copyProperties(reportEntity, ReportResult.class);
+    }
+
+    @Override
     public void deleteReport(Long reportId) {
         reportMapper.deleteReportById(reportId);
     }

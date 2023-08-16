@@ -22,6 +22,9 @@ public interface ReportMapper extends BaseMapper<ReportEntity> {
     ReportEntity selectById(Serializable id);
 
     @InterceptorIgnore(tenantLine = "true")
+    ReportEntity selectByResourceId(@Param("resourceId") Long resourceId);
+
+    @InterceptorIgnore(tenantLine = "true")
     int updateById(@Param(Constants.ENTITY) ReportEntity entity);
 
     List<ReportEntity> queryBySceneIds(@Param("ids") List<Long> ids);

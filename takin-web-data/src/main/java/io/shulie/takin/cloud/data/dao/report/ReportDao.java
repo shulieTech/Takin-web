@@ -123,6 +123,8 @@ public interface ReportDao {
      */
     ReportResult getById(Long resultId);
 
+    ReportResult getByResourceId(Long resourceId);
+
     void deleteReport(Long reportId);
 
     /**

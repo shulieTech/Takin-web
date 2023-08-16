@@ -1,24 +1,15 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.fastjson.JSON;
-
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
-import io.shulie.takin.cloud.common.constants.ReportConstants;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
-import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
-import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
-import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
+import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
@@ -32,9 +23,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 1、查询生成中状态的报告（只取一条）
@@ -155,17 +150,17 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                     log.info("压测结束失败 Report :{}，cloud更新失败", reportId);
                 }
 
-                Boolean isLeaked = leakVerifyResultDAO.querySceneIsLeaked(reportId);
-                if (isLeaked) {
-                    //存在漏数，压测失败，修改压测报告状态 1：通过 0：不通过
-                    log.info("存在漏数，压测失败，修改压测报告状态:[{}]", reportId);
-                    UpdateReportConclusionReq conclusionReq = new UpdateReportConclusionReq();
-                    conclusionReq.setId(reportId);
-                    conclusionReq.setConclusion(0);
-                    conclusionReq.setErrorMessage("存在漏数");
-                    ResponseResult<String> responseResult = sceneTaskApi.updateReportStatus(conclusionReq);
-                    log.info("修改压测报告的结果:[{}]", JSON.toJSONString(responseResult));
-                }
+//                Boolean isLeaked = leakVerifyResultDAO.querySceneIsLeaked(reportId);
+//                if (isLeaked) {
+//                    //存在漏数，压测失败，修改压测报告状态 1：通过 0：不通过
+//                    log.info("存在漏数，压测失败，修改压测报告状态:[{}]", reportId);
+//                    UpdateReportConclusionReq conclusionReq = new UpdateReportConclusionReq();
+//                    conclusionReq.setId(reportId);
+//                    conclusionReq.setConclusion(0);
+//                    conclusionReq.setErrorMessage("存在漏数");
+//                    ResponseResult<String> responseResult = sceneTaskApi.updateReportStatus(conclusionReq);
+//                    log.info("修改压测报告的结果:[{}]", JSON.toJSONString(responseResult));
+//                }
                 reportDataCache.clearDataCache(reportId);
                 log.info("报告id={}汇总成功，花费时间={}", reportId, (System.currentTimeMillis() - startTime));
             } catch (Throwable e) {

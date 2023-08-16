@@ -1,8 +1,8 @@
 package io.shulie.takin.web.biz.constant;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
+
+import java.util.Map;
 
 /**
  * @author shiyajian
@@ -541,5 +541,6 @@ public final class BizOpConstants {
 
         public static final String CONFIG_NAME = "configName";
         public static final String CONFIG_VALUE = "configValue";
+        public static final String USER_AUTHORITY_CONFIG = "user_authority_config";
     }
 }

@@ -52,8 +52,8 @@ public class Executors {
                 log.error("Task " + r.toString() + " rejected from " + executor.toString());
             }
         };
-        threadPool = new ThreadPoolExecutor(300, 400, 10L, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<Runnable>(5000), factory, handler);
+        threadPool = new ThreadPoolExecutor(4, 20, 120L, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<Runnable>(1000), factory, handler);
 
         ThreadFactory scheduleFactory = new ThreadFactoryBuilder().setNameFormat("cloud-schedule-thread-%d").build();
         scheduledExecutorService = java.util.concurrent.Executors.newScheduledThreadPool(3, scheduleFactory);

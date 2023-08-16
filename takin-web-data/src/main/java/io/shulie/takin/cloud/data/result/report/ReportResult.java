@@ -149,6 +149,16 @@ public class ReportResult extends ContextExt {
 
     private String ptConfig;
 
+    /**
+     * 通过ptConfig计算压测多少s
+     */
+    private Integer ptSeconds;
+
+    /**
+     * 通过ptConfig计算压测启动多少pod
+     */
+    private Integer podNums;
+
     public Date getStartTime() {
         if (startTime == null) {
             return new Date();

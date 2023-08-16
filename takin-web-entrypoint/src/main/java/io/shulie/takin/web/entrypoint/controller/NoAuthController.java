@@ -15,6 +15,7 @@ import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,6 +70,17 @@ public class NoAuthController {
         String key = String.format("LOCK:pressure:scene:%s:locking", idRequest.getId());
         redisClientUtil.delete(key);
         log.info("重置压测场景id={}缓存数据成功....", idRequest.getId());
+        return ResponseResult.success("重置成功");
+    }
+
+    @GetMapping("/get/scene/byTask")
+    public ResponseResult getSceneByTask(@RequestParam(value = "podName") String podName) {
+        //拆分podName，得到jobId
+        String[] pods = StringUtils.split(podName, "-");
+        if(pods == null || pods.length != 3) {
+            ResponseResult.fail("podName格式不正确", null);
+        }
+
         return ResponseResult.success("重置成功");
     }
 }

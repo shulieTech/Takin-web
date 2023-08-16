@@ -124,7 +124,7 @@ public class UploadInterfaceService extends CommonService implements Initializin
                 JSONObject jsonObject = JSONObject.parseObject(s);
                 if (jsonObject.get("simulatorVersion") != null) {
                     simulatorAgentMap.put(appName, timeMillis);
-                    log.info("agent2.0的数据，不予处理，agent版本为:" + jsonObject.get("simulatorVersion"));
+                    log.debug("agent2.0的数据，不予处理，agent版本为:" + jsonObject.get("simulatorVersion"));
                     return;
                 }
 

@@ -444,7 +444,10 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             redisClientUtil.setString(PressureStartCache.getStopTaskMessageKey(sceneId), "报告超时", 2, TimeUnit.MINUTES);
             sceneTaskEventService.callStopEvent(reportResult);
         }
-        log.info("实时监测metric数据：tempReportDetail-运行时间：{}", System.currentTimeMillis() - start);
+        long cost = System.currentTimeMillis() - start;
+        if(cost > 500) {
+            log.info("实时监测metric数据：tempReportDetail-运行时间：{}", cost);
+        }
         return reportDetail;
     }
 
@@ -931,8 +934,10 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         reportTrend.setRt(avgRt);
         reportTrend.setTime(time);
         reportTrend.setConcurrent(concurrent);
-        log.info("实时监测链路趋势：queryReportTrend-运行时间：{}", System.currentTimeMillis() - start);
-
+        long cost = System.currentTimeMillis() - start;
+        if(cost > 500) {
+            log.info("实时监测链路趋势：queryReportTrend-运行时间：{}", cost);
+        }
         return reportTrend;
     }
 

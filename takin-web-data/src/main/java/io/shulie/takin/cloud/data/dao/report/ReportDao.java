@@ -26,7 +26,7 @@ public interface ReportDao {
      * @param param -
      * @return -
      */
-    List<ReportResult> queryReportList(ReportQueryParam param);
+    List<ReportResult> queryCalcPushWindowsReportList(ReportQueryParam param);
 
     /**
      * 获取报告

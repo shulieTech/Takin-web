@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Lists;
@@ -61,19 +62,17 @@ public class ReportDaoImpl implements ReportDao {
     }
 
     @Override
-    public List<ReportResult> queryReportList(ReportQueryParam param) {
+    public List<ReportResult> queryCalcPushWindowsReportList(ReportQueryParam param) {
         LambdaQueryWrapper<ReportEntity> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.isNotBlank(param.getEndTime())) {
-            wrapper.le(ReportEntity::getGmtCreate, param.getEndTime());
-        }
+        wrapper.ge(ReportEntity::getGmtCreate, DateUtil.offsetDay(new Date(), -1));
         if (null != param.getStatus()) {
             wrapper.eq(ReportEntity::getStatus, param.getStatus());
         }
         if (null != param.getIsDel()) {
             wrapper.eq(ReportEntity::getIsDeleted, param.getIsDel());
         }
-        wrapper.isNotNull(param.isJobIdNotNull(), ReportEntity::getJobId);
-
+        wrapper.isNotNull(ReportEntity::getJobId);
+        wrapper.isNotNull(ReportEntity::getStartTime);
         if (Objects.nonNull(param.getPressureTypeRelation())) {
             PressureTypeRelation relation = param.getPressureTypeRelation();
             if (relation.getHave()) {
@@ -82,9 +81,8 @@ public class ReportDaoImpl implements ReportDao {
                 wrapper.ne(ReportEntity::getPressureType, relation.getPressureType());
             }
         }
-
         List<ReportEntity> entities = reportMapper.selectList(wrapper);
-        if (entities != null && entities.size() > 0) {
+        if (CollectionUtils.isNotEmpty(entities)) {
             return entities.stream()
                     .map(t -> BeanUtil.copyProperties(t, ReportResult.class))
                     .collect(Collectors.toList());

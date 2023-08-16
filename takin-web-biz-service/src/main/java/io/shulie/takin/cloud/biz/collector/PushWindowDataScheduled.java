@@ -1,68 +1,54 @@
 package io.shulie.takin.cloud.biz.collector;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.function.Consumer;
-import java.util.concurrent.TimeUnit;
-import java.nio.charset.StandardCharsets;
-
-import javax.annotation.Resource;
-
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.text.CharSequenceUtil;
-
+import com.alibaba.fastjson.JSON;
+import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
+import io.shulie.takin.cloud.biz.output.statistics.PressureOutput;
+import io.shulie.takin.cloud.biz.output.statistics.RtDataOutput;
+import io.shulie.takin.cloud.biz.utils.DataUtils;
+import io.shulie.takin.cloud.biz.utils.Executors;
+import io.shulie.takin.cloud.common.bean.collector.ResponseMetrics;
+import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
+import io.shulie.takin.cloud.common.constants.CollectorConstants;
+import io.shulie.takin.cloud.common.constants.ScheduleConstants;
+import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
+import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
+import io.shulie.takin.cloud.common.exception.TakinCloudException;
+import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
+import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
+import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
+import io.shulie.takin.cloud.common.utils.*;
+import io.shulie.takin.cloud.data.dao.report.ReportDao;
+import io.shulie.takin.cloud.data.param.report.ReportQueryParam;
+import io.shulie.takin.cloud.data.param.report.ReportQueryParam.PressureTypeRelation;
+import io.shulie.takin.cloud.data.result.report.ReportResult;
+import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
+import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.jdbc.SQL;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
+import org.apache.ibatis.jdbc.SQL;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.stereotype.Component;
 
-import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.cloud.biz.utils.DataUtils;
-import io.shulie.takin.cloud.biz.utils.Executors;
-import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.cloud.common.utils.JsonUtil;
-import io.shulie.takin.cloud.common.utils.CommonUtil;
-import io.shulie.takin.cloud.common.utils.NumberUtil;
-import io.shulie.takin.cloud.data.dao.report.ReportDao;
-import io.shulie.takin.cloud.common.utils.CollectorUtil;
-import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
-import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
-import io.shulie.takin.web.common.enums.ContextSourceEnum;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
-import io.shulie.takin.cloud.ext.content.script.ScriptNode;
-import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
-import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.cloud.data.result.report.ReportResult;
-import io.shulie.takin.cloud.common.constants.ScheduleConstants;
-import io.shulie.takin.cloud.data.param.report.ReportQueryParam;
-import io.shulie.takin.cloud.biz.output.statistics.RtDataOutput;
-import io.shulie.takin.cloud.common.constants.CollectorConstants;
-import io.shulie.takin.cloud.common.exception.TakinCloudException;
-import io.shulie.takin.cloud.biz.output.statistics.PressureOutput;
-import io.shulie.takin.cloud.common.bean.collector.ResponseMetrics;
-import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
-import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
-import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
-import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
-import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
-import io.shulie.takin.cloud.data.param.report.ReportQueryParam.PressureTypeRelation;
+import javax.annotation.Resource;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="tangyuhan@shulie.io">yuhan.tang</a>
@@ -167,7 +153,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         Long jobId = report.getJobId();
         String logPre = String.format("reduceMetrics %s-%s-%s:%s",
             sceneId, reportId, customerId, showTime(timeWindow));
-        log.info(logPre + " start!");
+        //log.info(logPre + " start!");
         //如果时间窗口为空
         if (null == timeWindow) {
             //则通过当前压测统计表的未完成记录时间进行统计（数据统计有缺失的为未完成）
@@ -190,8 +176,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             log.info("{}, timeWindow={} ， metrics 是空集合!", logPre, showTime(timeWindow));
             return timeWindow;
         }
-        log.info("{} queryMetrics timeWindow={}, endTime={}, metricsList.size={}",
-            logPre, showTime(timeWindow), showTime(endTime), metricsList.size());
+        //log.info("{} queryMetrics timeWindow={}, endTime={}, metricsList.size={}", logPre, showTime(timeWindow), showTime(endTime), metricsList.size());
         if (null == timeWindow) {
             timeWindow = metricsList.stream().filter(Objects::nonNull)
                 .map(t -> CollectorUtil.getTimeWindowTime(t.getTime()))
@@ -201,7 +186,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         }
         //如果当前处理的时间窗口已经大于结束时间窗口，则退出
         if (timeWindow > endTime) {
-            log.info("{} return 3!timeWindow={}, endTime={}",
+            log.warn("{} return 3!timeWindow={}, endTime={}",
                 logPre, showTime(timeWindow), showTime(endTime));
             return timeWindow;
         }
@@ -212,7 +197,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             .distinct()
             .collect(Collectors.toList());
         if (CollUtil.isEmpty(transactions)) {
-            log.info("{} return 4!transactions is empty!", logPre);
+            log.warn("{} return 4!transactions is empty!", logPre);
             return timeWindow;
         }
 
@@ -226,7 +211,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
         if (CollUtil.isEmpty(results)) {
-            log.info("results is empty!");
+            log.warn("results is empty!");
             return timeWindow;
         }
 
@@ -240,8 +225,8 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         results.stream().filter(Objects::nonNull)
             .map(p -> InfluxUtil.toPoint(measurement, time, p))
             .forEach(influxWriter::insert);
-        log.info("{} finished!timeWindow={}, endTime={}",
-            logPre, showTime(timeWindow), showTime(endTime));
+//        log.info("{} finished!timeWindow={}, endTime={}",
+//            logPre, showTime(timeWindow), showTime(endTime));
         return timeWindow;
     }
 
@@ -503,14 +488,37 @@ public class PushWindowDataScheduled extends AbstractIndicators {
         param.setIsDel(0);
         param.setPressureTypeRelation(new PressureTypeRelation(PressureSceneEnum.INSPECTION_MODE.getCode(), false));
         param.setJobIdNotNull(true);
-        List<ReportResult> results = reportDao.queryReportList(param);
-        if (CollUtil.isEmpty(results)) {
-            log.debug("没有需要统计的报告！");
+        List<ReportResult> queryList = reportDao.queryCalcPushWindowsReportList(param);
+        if (CollUtil.isEmpty(queryList)) {
+            //log.info("没有需要汇总实时数据的报告！");
             return;
         }
-        List<Long> reportIds = CommonUtil.getList(results, ReportResult::getId);
-        log.info("找到需要统计的报告：" + JsonHelper.bean2Json(reportIds));
-        results.stream().filter(Objects::nonNull).forEach(r -> combineMetricsData(r, false, null));
+        queryList.forEach(data -> {
+            NewSceneRequest.PtConfig ptConfig = JSON.parseObject(data.getPtConfig(), NewSceneRequest.PtConfig.class);
+            if ("s".equalsIgnoreCase(ptConfig.getUnit())) {
+                data.setPtSeconds(ptConfig.getDuration().intValue());
+            } else if ("h".equalsIgnoreCase(ptConfig.getUnit())) {
+                data.setPtSeconds(ptConfig.getDuration().intValue() * 60 * 60);
+            } else {
+                data.setPtSeconds(ptConfig.getDuration().intValue() * 60);
+            }
+            data.setPodNums(ptConfig.getPodNum());
+        });
+        Date compareDate = new Date();
+        //10:00:00开始压测，压测5min 10:08分后 就不再计算了
+        List<ReportResult> filterList = queryList.stream().filter(data -> {
+            Date startTime = data.getStartTime();
+            startTime = DateUtil.offsetSecond(startTime, data.getPtSeconds());
+            startTime = DateUtil.offsetMinute(startTime, 3);
+            return startTime.compareTo(compareDate) > 0;
+        }).collect(Collectors.toList());
+        if (CollUtil.isEmpty(filterList)) {
+            log.info("过滤后，没有需要汇总实时数据的报告！");
+            return;
+        }
+        List<Long> reportIds = CommonUtil.getList(filterList, ReportResult::getId);
+        log.info("找到需要汇总实时数据的报告：" + StringUtils.join(reportIds, ","));
+        filterList.forEach(r -> combineMetricsData(r, false, null));
     }
 
     /**
@@ -642,24 +650,14 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             try {
                 WebPluginUtils.setTraceTenantContext(ext);
                 List<ScriptNode> nodes = JsonUtil.parseArray(r.getScriptNodeTree(), ScriptNode.class);
-                SceneManageWrapperOutput scene = cloudSceneManageService.getSceneManage(sceneId, null);
-                if (null == scene) {
-                    log.info("no such scene manager!sceneId=" + sceneId);
-                    return;
-                }
                 //结束时间取开始压测时间-10s+总测试时间+3分钟， 3分钟富裕时间，给与pod启动和压测引擎启动延时时间
-                long endTime = TimeUnit.MINUTES.toMillis(3L);
-                if (null != r.getStartTime()) {
-                    endTime += (r.getStartTime().getTime() - TimeUnit.SECONDS.toMillis(10));
-                } else if (null != r.getGmtCreate()) {
-                    endTime += r.getGmtCreate().getTime();
-                }
-                if (null != scene.getTotalTestTime()) {
-                    endTime += TimeUnit.SECONDS.toMillis(scene.getTotalTestTime());
-                } else if (null != scene.getPressureTestSecond()) {
-                    endTime += TimeUnit.SECONDS.toMillis(scene.getPressureTestSecond());
-                }
-                int podNum = scene.getIpNum();
+                Date endDate = DateUtil.offsetSecond(r.getStartTime(), -10);
+                endDate = DateUtil.offsetSecond(endDate, r.getPtSeconds());
+                endDate = DateUtil.offsetMinute(endDate, 3);
+                Calendar calendar=Calendar.getInstance();
+                calendar.setTime(endDate);
+                long endTime = calendar.getTimeInMillis();
+                int podNum = r.getPodNums();
                 long nowTimeWindow = CollectorUtil.getNowTimeWindow();
                 long breakTime = Math.min(endTime, nowTimeWindow);
                 if (dataCalibration) {
@@ -691,10 +689,6 @@ public class PushWindowDataScheduled extends AbstractIndicators {
                     finishPushData(r, podNum, timeWindow, endTime, nodes);
                 }
             } catch (Throwable t) {
-                if(t.getMessage().indexOf("场景记录不存在") > -1) {
-                    //压测过程中，把场景删除了
-                    log.error("压测过程中，把压测场景删除。。。。。sceneId={},reportId={}", sceneId, reportId);
-                }
                 log.error("pushData2 error!", t);
             } finally {
                 if (Objects.nonNull(finalAction)) {

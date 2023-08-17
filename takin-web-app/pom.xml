@@ -423,6 +423,6 @@
                 <inherited>false</inherited>
             </plugin>
         </plugins>
-        <finalName>${parent.artifactId}-${project.version}-${timestamp}</finalName>
+        <finalName>${artifactId}-${project.version}-${timestamp}</finalName>
     </build>
 </project>

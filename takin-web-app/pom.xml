@@ -10,10 +10,6 @@
     <artifactId>takin-web-app</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -363,7 +359,6 @@
         </profile>
     </profiles>
     <build>
-        <finalName>${parent.artifactId}-${project.version}-${maven.build.timestamp}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -428,5 +423,6 @@
                 <inherited>false</inherited>
             </plugin>
         </plugins>
+        <finalName>${parent.artifactId}-${project.version}-${timestamp}</finalName>
     </build>
 </project>

@@ -116,7 +116,6 @@ public final class BizOpConstants {
         //探针管理
         public static final String AGENT_LIST = "appManage_agentManage";
 
-
         // 大盘查询放开  dashboard 不允许用到其他地方
         public static final String DASHBOARD = "dashboard";
         public static final String DASHBOARD_APPMANAGE = "dashboard_" + APPLICATION_MANAGE;
@@ -541,6 +540,5 @@ public final class BizOpConstants {
 
         public static final String CONFIG_NAME = "configName";
         public static final String CONFIG_VALUE = "configValue";
-        public static final String USER_AUTHORITY_CONFIG = "user_authority_config";
     }
 }

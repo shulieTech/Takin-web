@@ -64,10 +64,6 @@ public class JmxUtil {
                 return null;
             }
             List<Element> elements = elements(childContainer);
-//            List<Element> elements1 = root.selectNodes("//io.shulie.jmeter.plugins.kafka.dataset.DataSet");
-//            if (CollUtil.isNotEmpty(elements1)) {
-//                elements.addAll(elements1);
-//            }
             return buildNodeTree(elements);
         } catch (DocumentException e) {
             log.error("buildNodeTree DocumentException, file=" + file.getAbsolutePath(), e);

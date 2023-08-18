@@ -142,7 +142,7 @@ public class SceneServiceImpl implements SceneService {
             return null;
         }
         return nodeList.stream().filter(Objects::nonNull)
-                .filter(node -> NodeTypeEnum.SAMPLER == node.getType())
+                .filter(node -> NodeTypeEnum.SAMPLER == node.getType() || NodeTypeEnum.KAKFK == node.getType())
                 .map(node -> this.nodeLinkToBusinessActivity(node, sceneId))
                 .collect(Collectors.toList());
     }

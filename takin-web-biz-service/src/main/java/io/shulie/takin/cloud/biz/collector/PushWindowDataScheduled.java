@@ -650,6 +650,17 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             try {
                 WebPluginUtils.setTraceTenantContext(ext);
                 List<ScriptNode> nodes = JsonUtil.parseArray(r.getScriptNodeTree(), ScriptNode.class);
+                if(r.getPtSeconds() == null) {
+                    NewSceneRequest.PtConfig ptConfig = JSON.parseObject(r.getPtConfig(), NewSceneRequest.PtConfig.class);
+                    if ("s".equalsIgnoreCase(ptConfig.getUnit())) {
+                        r.setPtSeconds(ptConfig.getDuration().intValue());
+                    } else if ("h".equalsIgnoreCase(ptConfig.getUnit())) {
+                        r.setPtSeconds(ptConfig.getDuration().intValue() * 60 * 60);
+                    } else {
+                        r.setPtSeconds(ptConfig.getDuration().intValue() * 60);
+                    }
+                    r.setPodNums(ptConfig.getPodNum());
+                }
                 //结束时间取开始压测时间-10s+总测试时间+3分钟， 3分钟富裕时间，给与pod启动和压测引擎启动延时时间
                 Date endDate = DateUtil.offsetSecond(r.getStartTime(), -10);
                 endDate = DateUtil.offsetSecond(endDate, r.getPtSeconds());

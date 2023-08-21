@@ -71,4 +71,6 @@ public interface SceneService {
     boolean existsScene(Long tenantId, String envCode);
 
     void update(SceneUpdateParam param);
+
+    Boolean existsSceneName(String sceneName);
 }

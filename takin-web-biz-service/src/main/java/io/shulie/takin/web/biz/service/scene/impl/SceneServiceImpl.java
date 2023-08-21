@@ -964,4 +964,12 @@ public class SceneServiceImpl implements SceneService {
     public void update(SceneUpdateParam param) {
         sceneDao.update(param);
     }
+
+    @Override
+    public Boolean existsSceneName(String sceneName) {
+        SceneQueryParam sceneQueryParam = new SceneQueryParam();
+        sceneQueryParam.setSceneName(sceneName);
+        List<SceneResult> sceneList = sceneDao.selectListByName(sceneQueryParam);
+        return CollectionUtils.isNotEmpty(sceneList);
+    }
 }

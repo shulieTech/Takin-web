@@ -83,6 +83,10 @@ public class PtsProcessServiceImpl implements PtsProcessService{
         request.setProcessName(request.getProcessName().replace(" ", ""));
         String jsonApi = JSON.toJSONString(request);
         UploadResponse uploadResponse;
+        if(sceneService.existsSceneName(request.getProcessName())){
+            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_ADD_ERROR,
+                    "新增PTS流程失败，业务流程名称【"+request.getProcessName()+"】已存在！");
+        }
         try {
             String jmxString = PtsBuildJsonToJmxTextTools.parseJmxString(jsonApi);
             jmxString = PtsXmlContentUtils.replaceAndSymbol(jmxString);

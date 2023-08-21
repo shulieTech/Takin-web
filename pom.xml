@@ -78,6 +78,8 @@
         <openpdf.version>9.1.22</openpdf.version>
         <transmittable-thread-local>2.12.4</transmittable-thread-local>
         <cloud.version>5.4.0.12</cloud.version>
+        <tomcat.version>9.0.63</tomcat.version>
+
     </properties>
 
     <modules>
@@ -93,6 +95,7 @@
         <module>takin-web-eventcenter</module>
     </modules>
     <dependencyManagement>
+
         <dependencies>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>

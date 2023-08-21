@@ -31,6 +31,7 @@ public class PressureInterruptProcessor extends AbstractIndicators
         }
         String jmeterId = String.valueOf(data.getPressureExampleId());
         if (redisClientUtil.lockNoExpire(PressureStartCache.getJmeterErrorFirstKey(resourceId), jmeterId)) {
+            // 正常中断不应该属于失败
             callRunningFailedEvent(String.valueOf(data.getResourceId()), "jmeter正常中断", true);
         }
         removeSuccessKey(resourceId, String.valueOf(data.getResourceExampleId()), jmeterId, param.getTime());

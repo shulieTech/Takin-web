@@ -5,10 +5,7 @@ import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
-import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
-import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
-import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.adapter.api.model.response.report.*;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
@@ -113,6 +110,16 @@ public class ReportController {
     )
     public ResponseResult<ReportTrendResp> queryReportTrend(ReportTrendQueryReq reportTrendQuery) {
         return ResponseResult.success(reportService.queryReportTrend(reportTrendQuery));
+    }
+
+    @GetMapping("report/queryReportTrendByThread")
+    @ApiOperation("线程报告链路趋势")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.START_STOP
+    )
+    public ResponseResult<ThreadReportTrendResp> queryReportTrendByThread(ReportTrendQueryReq reportTrendQuery) {
+        return ResponseResult.success(reportService.queryReportTrendByThread(reportTrendQuery));
     }
 
     @GetMapping("/report/queryNodeTree")

@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-5.10.0</version>
+    <version>takin-web-5.10.0.RenShouVersion_fix</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -41,7 +41,7 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
-        <takin.web.version>takin-web-5.10.0</takin.web.version>
+        <takin.web.version>takin-web-5.10.0.RenShouVersion_fix</takin.web.version>
         <takin.common.version>common-2.0.2-SNAPSHOT</takin.common.version>
         <command.channel>common-2.0.0-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.6.2</pardar.log.protocol.version>
@@ -49,7 +49,7 @@
 
         <!-- 3rd libs version -->
         <commons-lang3.version>3.5</commons-lang3.version>
-        <spring.boot.version>2.3.0.RELEASE</spring.boot.version>
+        <spring.boot.version>2.3.12.RELEASE</spring.boot.version>
         <mysql-jdbc.version>8.0.26</mysql-jdbc.version>
         <druid.version>1.1.22</druid.version>
         <common-pools2.version>2.3</common-pools2.version>
@@ -78,6 +78,8 @@
         <openpdf.version>9.1.22</openpdf.version>
         <transmittable-thread-local>2.12.4</transmittable-thread-local>
         <cloud.version>5.4.0.12</cloud.version>
+        <tomcat.version>9.0.63</tomcat.version>
+
     </properties>
 
     <modules>
@@ -93,6 +95,7 @@
         <module>takin-web-eventcenter</module>
     </modules>
     <dependencyManagement>
+
         <dependencies>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
@@ -188,7 +191,7 @@
             <dependency>
                 <groupId>org.springframework.session</groupId>
                 <artifactId>spring-session-data-redis</artifactId>
-                <version>${spring.boot.version}</version>
+                <version> 2.3.3.RELEASE</version>
             </dependency>
 
             <dependency>

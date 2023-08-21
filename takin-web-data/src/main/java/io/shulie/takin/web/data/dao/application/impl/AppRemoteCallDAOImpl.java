@@ -76,7 +76,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
             entity.setMd5(RemoteCallUtils.buildRemoteCallName(entity.getAppName(),entity.getInterfaceName(),entity.getInterfaceType()));
             return entity;
         }).collect(Collectors.toList());
-        this.saveBatch(entities);
+        this.saveOrUpdateBatch(entities);
     }
 
     @Override

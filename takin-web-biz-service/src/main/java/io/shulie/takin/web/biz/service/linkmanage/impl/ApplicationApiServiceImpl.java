@@ -1,5 +1,8 @@
 package io.shulie.takin.web.biz.service.linkmanage.impl;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -200,17 +203,37 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
         ApplicationApiParam apiParam = new ApplicationApiParam();
         apiParam.setAppName(appName);
         List<ApplicationApiManageResult> all = applicationApiDAO.querySimpleWithTenant(apiParam);
+
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        all.add(this.buildApi(appName,LocalDateTime.now().plusDays(-2).format(formatter)));
+        all.add(this.buildApi(appName,LocalDateTime.now().plusDays(-1).format(formatter)));
+        all.add(this.buildApi(appName,LocalDateTime.now().format(formatter)));
+        all.add(this.buildApi(appName,LocalDateTime.now().plusDays(1).format(formatter)));
+
+
         if (CollectionUtils.isEmpty(all)) {
             return null;
         }
+
         Map<String, List<String>> res = new HashMap<>();
         for (ApplicationApiManageResult applicationApiManage : all) {
             res.computeIfAbsent(applicationApiManage.getApplicationName(), k -> new ArrayList<>()).add(
                     applicationApiManage.getApi()
                             + "#" + applicationApiManage.getMethod());
         }
+
         return res;
 
+    }
+
+    private ApplicationApiManageResult buildApi(String appName, String format) {
+        ApplicationApiManageResult result = new ApplicationApiManageResult();
+        result.setApplicationName(appName);
+        // 添加最近三天的 入口规则 /20230816/10/RA0CB1E23081610011510119 ---> /20230720/{value}/{value}
+        result.setApi("/" + format + "/{value}/{value}");
+        result.setMethod("POST");
+        return result;
     }
 
     @Override

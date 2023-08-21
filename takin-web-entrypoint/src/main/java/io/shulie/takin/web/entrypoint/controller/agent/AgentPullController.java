@@ -2,8 +2,6 @@ package io.shulie.takin.web.entrypoint.controller.agent;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.websocket.server.PathParam;
 
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
@@ -144,8 +142,7 @@ public class AgentPullController {
     @ApiOperation(value = "白名单获取")
     @RequestMapping(value = "/confcenter/wbmnt/query/{userAppKey}", method = RequestMethod.GET)
     public ResponseResult<AgentRemoteCallVO> wbmntQuery(
-            @ApiParam(name = "appName", value = "应用名") @RequestParam("appName") String appName,
-            @PathParam("userAppKey") String userAppKey) {
+            @ApiParam(name = "appName", value = "应用名") @RequestParam("appName") String appName) {
         return ResponseResult.success(agentConfigCacheManager.getRemoteCallConfig(appName));
     }
 

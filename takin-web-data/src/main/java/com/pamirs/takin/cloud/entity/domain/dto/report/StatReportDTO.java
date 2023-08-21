@@ -52,6 +52,8 @@ public class StatReportDTO {
      */
     private BigDecimal avgRt;
 
+    private BigDecimal sumRt;
+
     /**
      * Sa总计数
      */

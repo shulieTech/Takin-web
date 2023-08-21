@@ -16,7 +16,15 @@
 
 package io.shulie.takin.web.biz.service.linkmanage.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -25,10 +33,10 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import cn.hutool.core.collection.ListUtil;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.collection.CollStreamUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
@@ -72,7 +80,11 @@ import io.shulie.takin.web.data.dao.application.InterfaceTypeMainDAO;
 import io.shulie.takin.web.data.dao.application.RemoteCallConfigDAO;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
 import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
-import io.shulie.takin.web.data.model.mysql.*;
+import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
+import io.shulie.takin.web.data.model.mysql.InterfaceTypeChildEntity;
+import io.shulie.takin.web.data.model.mysql.InterfaceTypeConfigEntity;
+import io.shulie.takin.web.data.model.mysql.InterfaceTypeMainEntity;
+import io.shulie.takin.web.data.model.mysql.RemoteCallConfigEntity;
 import io.shulie.takin.web.data.param.application.AppRemoteCallCreateParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
@@ -912,8 +924,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         if (CollectionUtils.isEmpty(templateList)) {
             return Collections.emptyList();
         }
-        return templateList.stream().
-            filter(templateDto -> !"HTTP".equals(templateDto.getEngName()))
+        return templateList.stream()
+            // by hzq 2023.1.31
+            //.filter(templateDto -> !"HTTP".equals(templateDto.getEngName()))
             .map(templateDto -> {
                 String engName = templateDto.getEngName();
                 return new SelectVO(engName, engName);

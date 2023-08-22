@@ -2,10 +2,6 @@ package io.shulie.takin.cloud.biz.config;
 
 import javax.annotation.PostConstruct;
 
-import com.netflix.curator.RetryPolicy;
-import com.netflix.curator.framework.CuratorFramework;
-import com.netflix.curator.framework.CuratorFrameworkFactory;
-import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.pamirs.pradar.remoting.RemotingClient;
 import com.pamirs.pradar.remoting.netty.NettyClientConfigurator;
 import com.pamirs.pradar.remoting.netty.NettyRemotingClient;
@@ -13,6 +9,10 @@ import com.pamirs.pradar.remoting.protocol.DefaultProtocolFactorySelector;
 import com.pamirs.pradar.remoting.protocol.ProtocolFactorySelector;
 import io.shulie.surge.data.common.zk.ZkClient;
 import io.shulie.surge.data.common.zk.impl.NetflixCuratorZkClient;
+import org.apache.curator.RetryPolicy;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

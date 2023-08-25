@@ -102,6 +102,51 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.io.File;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
+import com.pamirs.takin.common.constant.Constants;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneBusinessActivityRefOpen;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneScriptRefOpen;
+import io.shulie.takin.adapter.api.model.request.scenetask.SceneTryRunTaskStartReq;
+import io.shulie.takin.cloud.biz.input.scenemanage.*;
+import io.shulie.takin.cloud.biz.output.scenetask.*;
+import io.shulie.takin.cloud.common.constants.*;
+import io.shulie.takin.cloud.common.enums.*;
+import io.shulie.takin.cloud.data.model.mysql.*;
+import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
+import io.shulie.takin.web.biz.utils.FileUtils;
+import io.shulie.takin.web.common.constant.AppConstants;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author 莫问
@@ -150,6 +195,13 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
     private PressureTaskVarietyDAO pressureTaskVarietyDAO;
     @Resource
     private ActivityDAO activityDAO;
+
+    @Value("${file.upload.script.path:/nfs/takin/script/}")
+    private String scriptFilePath;
+
+    @Resource
+    private SceneTaskService sceneTaskService;
+
 
     private static final Long KB = 1024L;
     private static final Long MB = KB * 1024;
@@ -621,7 +673,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
     }
 
     @Override
-    public SceneTryRunTaskStartOutput startTryRun(SceneManageWrapperInput input, List<EnginePluginInput> enginePlugins) {
+    public SceneTryRunTaskStartOutput startTryRun(SceneManageWrapperInput input, List<EnginePluginInput> enginePlugins, SceneTryRunTaskStartReq debugCloudRequest) {
         Long sceneManageId;
         CloudPluginUtils.fillUserData(input);
         //首先根据脚本实例id构建压测场景名称
@@ -657,6 +709,12 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         } else {
             sceneManageId = sceneManageResult.getId();
         }
+        // 脚本检查
+        log.info("调试 --> 脚本校验!");
+        List<String> errorMessage = this.checkScriptCorrelationAndGetError(debugCloudRequest);
+        if (!errorMessage.isEmpty()) {
+            throw new RuntimeException(errorMessage.toString());
+        }
 
         // 前置环境校验
         SceneTaskStartInput sceneTaskStartInput = new SceneTaskStartInput();
@@ -690,6 +748,47 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         sceneTryRunTaskStartOutput.setReportId(context.getReportId());
         return sceneTryRunTaskStartOutput;
     }
+
+    /**
+     * 脚本检查
+     *
+     * @param debugCloudRequest 相关入参
+     * @return 错误信息
+     */
+    private List<String> checkScriptCorrelationAndGetError(SceneTryRunTaskStartReq debugCloudRequest) {
+        SceneManageWrapperDTO sceneData = new SceneManageWrapperDTO();
+        sceneData.getWatchmanIdList().add(debugCloudRequest.getMachineId());
+        sceneData.setScriptType(debugCloudRequest.getScriptType());
+        sceneData.setScriptId(debugCloudRequest.getScriptDeployId());
+        // 上传路径
+        List<SceneScriptRefOpen> uploadFileList = debugCloudRequest.getUploadFile();
+        if (CollectionUtil.isNotEmpty(uploadFileList)) {
+            List<SceneScriptRefDTO> uploadFileDTOList = uploadFileList.stream().map(uploadFile -> {
+                SceneScriptRefDTO sceneScriptRefDTO = new SceneScriptRefDTO();
+                sceneScriptRefDTO.setFileType(uploadFile.getFileType());
+                sceneScriptRefDTO.setIsDeleted(AppConstants.NO);
+                sceneScriptRefDTO.setId(uploadFile.getId());
+                sceneScriptRefDTO.setUploadPath(uploadFile.getUploadPath());
+                return sceneScriptRefDTO;
+            }).collect(Collectors.toList());
+            sceneData.setUploadFile(uploadFileDTOList);
+        }
+
+        List<SceneBusinessActivityRefOpen> businessActivityConfigList = debugCloudRequest.getBusinessActivityConfig();
+        List<SceneBusinessActivityRefDTO> businessActivityConfigDTOList = businessActivityConfigList.stream().map(businessActivityConfig -> {
+            SceneBusinessActivityRefDTO sceneBusinessActivityRefDTO = new SceneBusinessActivityRefDTO();
+            sceneBusinessActivityRefDTO.setBusinessActivityId(businessActivityConfig.getBusinessActivityId());
+            sceneBusinessActivityRefDTO.setBusinessActivityName(businessActivityConfig.getBusinessActivityName());
+            return sceneBusinessActivityRefDTO;
+        }).collect(Collectors.toList());
+
+        sceneData.setBusinessActivityConfig(businessActivityConfigDTOList);
+        sceneData.setIsAbsoluteScriptPath(FileUtils.isAbsoluteUploadPath(sceneData.getUploadFile(), scriptFilePath));
+        sceneData.setPressureTestSceneName(SceneManageConstant.getTryRunSceneName(debugCloudRequest.getScriptDeployId()));
+        String result = sceneTaskService.checkScriptCorrelation(sceneData);
+        return Arrays.asList(StrUtil.split(result, Constants.SPLIT));
+    }
+
 
     @Override
     public SceneTryRunTaskStatusOutput checkTaskStatus(Long sceneId, Long reportId) {
@@ -779,29 +878,28 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         }
         //检测脚本文件是否有变更
         SceneScriptRefOutput scriptRefOutput = sceneData.getUploadFile().stream().filter(Objects::nonNull).filter(
-                fileRef -> fileRef.getFileType() == 0 && fileRef.getFileName().endsWith(SCRIPT_NAME_SUFFIX)).findFirst().orElse(null);
+            fileRef -> fileRef.getFileType() == 0 && fileRef.getFileName().endsWith(SCRIPT_NAME_SUFFIX)).findFirst().orElse(null);
 
         boolean jmxCheckResult = checkOutJmx(scriptRefOutput);
         if (!jmxCheckResult) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_JMX_FILE_CHECK_ERROR,
-                    "启动压测场景--场景ID:" + sceneData.getId() + ",脚本文件校验失败！");
+                "启动压测场景--场景ID:" + sceneData.getId() + ",脚本文件校验失败！");
         }
 
         // 判断场景是否有job正在执行 一个场景只能保证一个job执行
         String sceneRunningKey = PressureStartCache.getSceneResourceLockingKey(sceneId);
         if (!redisClientUtil.lockNoExpire(sceneRunningKey, sceneRunningKey)) {
             throw new TakinCloudException(TakinCloudExceptionEnum.TASK_START_VERIFY_ERROR,
-                    "场景【" + sceneData.getId() + "】" + "存在未删除的job,请等待删除或者人为判断是否可以手工删除~");
+                "场景【" + sceneData.getId() + "】" + "存在未删除的job,请等待删除或者人为判断是否可以手工删除~");
         }
         // 校验是否与场景同步了
         {
             String disabledKey = "DISABLED";
             String featureString = sceneData.getFeatures();
-            Map<String, Object> feature = JSONObject.parseObject(featureString, new TypeReference<Map<String, Object>>() {
-            });
+            Map<String, Object> feature = JSONObject.parseObject(featureString, new TypeReference<Map<String, Object>>() {});
             if (feature.containsKey(disabledKey)) {
                 throw new TakinCloudException(TakinCloudExceptionEnum.TASK_START_VERIFY_ERROR,
-                        "场景【" + sceneData.getId() + "】对应的业务流程发生变更，未能自动匹配，请手动编辑后启动压测");
+                    "场景【" + sceneData.getId() + "】对应的业务流程发生变更，未能自动匹配，请手动编辑后启动压测");
             }
         }
     }
@@ -824,8 +922,8 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         if (Long.valueOf(1).equals(num)) {
             // 启动只更新一次
             cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(taskResult.getSceneId(), taskResult.getTaskId(),
-                            taskResult.getTenantId()).checkEnum(SceneManageStatusEnum.JOB_CREATING).updateEnum(SceneManageStatusEnum.PRESSURE_NODE_RUNNING)
-                    .build());
+                    taskResult.getTenantId()).checkEnum(SceneManageStatusEnum.JOB_CREATING).updateEnum(SceneManageStatusEnum.PRESSURE_NODE_RUNNING)
+                .build());
         }
 
     }
@@ -860,7 +958,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             ReportResult recentlyReport = reportDao.getRecentlyReport(taskResult.getSceneId());
             if (!taskId.equals(recentlyReport.getId())) {
                 log.error("更新压测生命周期，所更新的报告不是压测场景的最新报告,场景id:{},更新的报告id:{},当前最新的报告id:{}",
-                        taskResult.getSceneId(), taskId, recentlyReport.getId());
+                    taskResult.getSceneId(), taskId, recentlyReport.getId());
                 return;
             }
             sceneManageDao.getBaseMapper().updateById(new SceneManageEntity() {{
@@ -956,7 +1054,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
 
     private Boolean compareScript(long sceneId, String scriptId) {
         Object scriptIdObj = stringRedisTemplate.opsForHash().get(String.format(SceneStartCheckConstants.SCENE_KEY, sceneId),
-                SceneStartCheckConstants.SCRIPT_ID_KEY);
+            SceneStartCheckConstants.SCRIPT_ID_KEY);
         return scriptIdObj != null && scriptId.equals(scriptIdObj.toString());
     }
 
@@ -970,7 +1068,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
     }
 
     private void comparePosition(SceneTaskStartCheckOutput output, long sceneId, String fileName, int podNum, boolean isSplit,
-                                 Map<Object, Object> positionMap) {
+        Map<Object, Object> positionMap) {
         SceneBigFileSliceEntity sliceEntity = fileSliceService.getOneByParam(new FileSliceRequest() {{
             setSceneId(sceneId);
             setFileName(fileName);
@@ -1125,7 +1223,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         ActivityQueryParam param = new ActivityQueryParam();
         param.setActivityIds(businessActivityConfig.stream().map(SceneBusinessActivityRefOutput::getBusinessActivityId).collect(Collectors.toList()));
         Map<Long, ActivityListResult> activityMap = activityDAO.getActivityList(param).stream().collect(
-                Collectors.toMap(ActivityListResult::getActivityId, Function.identity()));
+            Collectors.toMap(ActivityListResult::getActivityId, Function.identity()));
         businessActivityConfig.forEach(activity -> {
             ReportBusinessActivityDetail reportBusinessActivityDetail = new ReportBusinessActivityDetail();
             reportBusinessActivityDetail.setReportId(reportId);
@@ -1169,7 +1267,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             return;
         }
         List<String> bindRefList = businessActivityConfig.stream().filter(Objects::nonNull).map(SceneBusinessActivityRefOutput::getBindRef).collect(
-                Collectors.toList());
+            Collectors.toList());
         List<ReportBusinessActivityDetail> resultList = new ArrayList<>();
         List<ScriptNode> testPlanNodeList = JsonPathUtil.getCurrentNodeByType(scriptNodeTree, NodeTypeEnum.TEST_PLAN.name());
         if (org.apache.commons.collections.CollectionUtils.isNotEmpty(testPlanNodeList) && testPlanNodeList.size() == 1) {
@@ -1183,7 +1281,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         List<ScriptNode> controllerNodes = JsonPathUtil.getCurrentNodeByType(scriptNodeTree, NodeTypeEnum.CONTROLLER.name());
         if (org.apache.commons.collections.CollectionUtils.isNotEmpty(controllerNodes)) {
             controllerNodes.stream().filter(Objects::nonNull).filter(node -> !bindRefList.contains(node.getXpathMd5())).forEach(
-                    node -> fillNonTargetActivityDetail(sceneId, reportId, node, resultList));
+                node -> fillNonTargetActivityDetail(sceneId, reportId, node, resultList));
         }
         if (org.apache.commons.collections.CollectionUtils.isNotEmpty(resultList)) {
             resultList.stream().filter(Objects::nonNull).forEach(detail -> reportBusinessActivityDetailDao.insert(detail));
@@ -1221,12 +1319,12 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
 
     private void notifyStart(SceneManageWrapperOutput scene, ReportResult report) {
         cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(scene.getId(), report.getId(), scene.getCustomId()).checkEnum(
-                SceneManageStatusEnum.RESOURCE_LOCKING).updateEnum(SceneManageStatusEnum.STARTING).build());
+            SceneManageStatusEnum.RESOURCE_LOCKING).updateEnum(SceneManageStatusEnum.STARTING).build());
     }
 
     @IntrestFor(event = PressureStartCache.CHECK_SUCCESS_EVENT, order = 1)
     public void tryRun(Event event) {
-        ResourceContext context = (ResourceContext) event.getExt();
+        ResourceContext context = (ResourceContext)event.getExt();
         Long sceneId = context.getSceneId();
         String tryRunKey = PressureStartCache.getTryRunKey(sceneId);
         if (redisClientUtil.hasKey(tryRunKey)) {
@@ -1244,7 +1342,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
 
     @IntrestFor(event = PressureStartCache.CHECK_SUCCESS_EVENT, order = 2)
     public void flowDebug(Event event) {
-        ResourceContext context = (ResourceContext) event.getExt();
+        ResourceContext context = (ResourceContext)event.getExt();
         Long sceneId = context.getSceneId();
         String flowDebugKey = PressureStartCache.getFlowDebugKey(sceneId);
         if (redisClientUtil.hasKey(flowDebugKey)) {
@@ -1262,7 +1360,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
 
     @IntrestFor(event = PressureStartCache.CHECK_SUCCESS_EVENT, order = 3)
     public void inspect(Event event) {
-        ResourceContext context = (ResourceContext) event.getExt();
+        ResourceContext context = (ResourceContext)event.getExt();
         Long sceneId = context.getSceneId();
         String inspectKey = PressureStartCache.getInspectKey(sceneId);
         if (redisClientUtil.hasKey(inspectKey)) {
@@ -1395,7 +1493,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
 
     private void lockFlowIfNecessary(SceneManageWrapperOutput sceneData, SceneTaskStartInput input, ReportResult report) {
         if (!Objects.equals(input.getAssetType(), AssetTypeEnum.PRESS_REPORT.getCode()) && redisClientUtil.lockNoExpire(
-                PressureStartCache.getLockFlowKey(report.getId()), String.valueOf(System.currentTimeMillis()))) {
+            PressureStartCache.getLockFlowKey(report.getId()), String.valueOf(System.currentTimeMillis()))) {
             frozenAccountFlow(input, report, sceneData);
         }
     }

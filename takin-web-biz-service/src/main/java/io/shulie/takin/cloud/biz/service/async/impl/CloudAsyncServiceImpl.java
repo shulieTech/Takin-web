@@ -1,14 +1,5 @@
 package io.shulie.takin.cloud.biz.service.async.impl;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.notify.StartFailEventSource;
 import io.shulie.takin.cloud.biz.service.async.CloudAsyncService;
@@ -28,6 +19,14 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Resource;
+import java.util.Date;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author qianshui
@@ -279,7 +278,7 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
 
     private void markJmeterStarted(ResourceContext context) {
         Long taskId = context.getTaskId();
-        pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.ALIVE, null);
+//        pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.ALIVE, null);
         pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.PRESSURING, null);
         updateReportStartTime(context);
     }

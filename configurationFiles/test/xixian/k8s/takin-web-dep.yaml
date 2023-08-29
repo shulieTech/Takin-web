@@ -13,6 +13,13 @@ spec:
       labels:
         app: web
     spec:
+      hostAliases:
+        - ip: "10.161.11.242"
+          hostnames:
+            - "skyeye.test.unicom.local"
+        - ip: "10.161.11.244"
+          hostnames:
+            - "skyeye.test.unicom.local"
       containers:
       - name: web
         image: harbor.dcos.xixian.unicom.local/skyeye-platform/stresstest/test/web:2.0.0

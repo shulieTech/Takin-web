@@ -1,8 +1,9 @@
 package io.shulie.takin.cloud.biz.output.scenetask;
 
-import java.util.List;
-
+import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author qianshui
@@ -16,4 +17,6 @@ public class SceneActionOutput {
     private Long reportId;
 
     private List<String> msg;
+
+    private SceneManageWrapperOutput sceneManageWrapperOutput;
 }

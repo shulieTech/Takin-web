@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -457,6 +458,17 @@ public class CloudSceneServiceImpl implements CloudSceneService {
     private int updateStepScene(BasicInfo basicInfo,
         PtConfigExt config, List<?> analysisResult, DataValidation dataValidation) {
         Map<String, Object> feature = assembleFeature(basicInfo.getScriptId(), basicInfo.getBusinessFlowId(), dataValidation);
+        //填充上次压测集群信息
+        SceneManageEntity sceneManageEntity =  sceneManageMapper.selectById(basicInfo.getSceneId());
+        if(sceneManageEntity.getFeatures() != null) {
+            JSONObject jsonObject = JSON.parseObject(sceneManageEntity.getFeatures());
+            String machineId = jsonObject.getString("machineId");
+            Integer machineType = jsonObject.getInteger("machineType");
+            if(machineId != null && machineType != null) {
+                feature.put("machineId", machineId);
+                feature.put("machineType", machineType);
+            }
+        }
         // 组装数据实体类
         SceneManageEntity sceneEntity = assembleSceneEntity(basicInfo.getSceneId(), basicInfo.getType(), basicInfo.getName(),
             basicInfo.getScriptType(), config, feature, analysisResult);

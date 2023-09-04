@@ -20,6 +20,7 @@ import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreate
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.WatchmanClusterResponse;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
@@ -170,7 +171,17 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                         // 默认选择集群
                         SceneActionParam param = new SceneActionParam();
                         param.setSceneId(scheduler.getSceneId());
-                        param.setMachineId(engineClusterService.selectOne().getId());
+                        // 优先查找上次启动的集群，再随便选一个
+                        String machineId;
+                        WatchmanClusterResponse response = engineClusterService.extractLastExecExtract(scheduler.getSceneId(), 0);
+                        if(response.getId() != null) {
+                            machineId = response.getId();
+                            log.info("使用上次的压力集群发起压测......");
+                        } else {
+                            machineId = engineClusterService.selectOne().getId();
+                            log.info("新找一个压力集群发起压测......");
+                        }
+                        param.setMachineId(machineId);
                         param.setUserId(scheduler.getUserId());
                         param.setIsTiming(true);
                         CheckResultVo resultVo;

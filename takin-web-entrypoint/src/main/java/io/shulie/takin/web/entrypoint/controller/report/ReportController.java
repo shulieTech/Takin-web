@@ -15,10 +15,7 @@ import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
-import io.shulie.takin.web.biz.pojo.output.report.ReportLtDetailOutput;
+import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
@@ -62,8 +59,8 @@ public class ReportController {
     @GetMapping("report/listReport")
     @ApiOperation("报告列表")
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
-        needAuth = ActionTypeEnum.QUERY
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.QUERY
     )
     public Response<List<ReportDTO>> listReport(ReportQueryParam reportQuery) {
         ResponseResult<List<ReportDTO>> response = reportService.listReport(reportQuery);
@@ -79,8 +76,8 @@ public class ReportController {
     @GetMapping("report/listReport/un_safe")
     @ApiOperation("大盘使用报告列表")
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.DASHBOARD_REPORT,
-        needAuth = ActionTypeEnum.QUERY
+            moduleCode = BizOpConstants.ModuleCode.DASHBOARD_REPORT,
+            needAuth = ActionTypeEnum.QUERY
     )
     public ResponseResult<List<ReportDTO>> listReportNoAuth(ReportQueryParam reportQuery) {
         ResponseResult<List<ReportDTO>> response = reportService.listReport(reportQuery);
@@ -101,8 +98,8 @@ public class ReportController {
     @ApiOperation("实况报告")
     @ApiImplicitParam(name = "sceneId", value = "场景ID")
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
-        needAuth = ActionTypeEnum.START_STOP
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.START_STOP
     )
     public ResponseResult<ReportDetailTempOutput> tempReportDetail(Long sceneId) {
         return ResponseResult.success(reportService.tempReportDetail(sceneId));
@@ -111,8 +108,8 @@ public class ReportController {
     @GetMapping("/report/queryTempReportTrend")
     @ApiOperation("实况报告链路趋势")
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
-        needAuth = ActionTypeEnum.START_STOP
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.START_STOP
     )
     public ResponseResult<ReportTrendResp> queryTempReportTrend(ReportTrendQueryReq reportTrendQuery) {
         return ResponseResult.success(reportService.queryTempReportTrend(reportTrendQuery));
@@ -121,8 +118,8 @@ public class ReportController {
     @GetMapping("report/queryReportTrend")
     @ApiOperation("报告链路趋势")
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
-        needAuth = ActionTypeEnum.START_STOP
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.START_STOP
     )
     public ResponseResult<ReportTrendResp> queryReportTrend(ReportTrendQueryReq reportTrendQuery) {
         return ResponseResult.success(reportService.queryReportTrend(reportTrendQuery));
@@ -131,8 +128,8 @@ public class ReportController {
     @GetMapping("/report/queryNodeTree")
     @ApiOperation("脚本节点树")
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
-        needAuth = ActionTypeEnum.START_STOP
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.START_STOP
     )
     public ResponseResult<List<ScriptNodeTreeResp>> queryNodeTree(ReportQueryRequest request) {
         return reportService.queryNodeTree(request);
@@ -160,8 +157,8 @@ public class ReportController {
     @GetMapping("/report/businessActivity/summary/list")
     @ApiOperation("压测明细")
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
-        needAuth = ActionTypeEnum.START_STOP
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.START_STOP
     )
     public ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId) {
         return ResponseResult.success(reportService.querySummaryList(reportId));
@@ -170,13 +167,13 @@ public class ReportController {
     @GetMapping("/report/getJtlDownLoadUrl")
     @ApiOperation(value = "获取jtl文件下载路径")
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
-        needAuth = ActionTypeEnum.DOWNLOAD
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.DOWNLOAD
     )
     public ReportJtlDownloadResponse getJtlDownLoadUrl(@RequestParam("reportId") Long reportId) {
         ReportJtlDownloadOutput output = reportService.getJtlDownLoadUrl(reportId);
         ReportJtlDownloadResponse response = new ReportJtlDownloadResponse();
-        BeanUtils.copyProperties(output,response);
+        BeanUtils.copyProperties(output, response);
         return response;
     }
 
@@ -197,28 +194,28 @@ public class ReportController {
         ReportDetailOutput output = reportService.getReportByReportId(reportId);
         ReportLtDetailOutput detailOutput = ReportLtDetailOutputUtils.convertToLt(output);
         //根据appId，查询appName
-        if(CollectionUtils.isNotEmpty(detailOutput.getAppNames())) {
+        if (CollectionUtils.isNotEmpty(detailOutput.getAppNames())) {
             List<Long> appIds = new ArrayList<>();
-            for(String appName : detailOutput.getAppNames()) {
+            for (String appName : detailOutput.getAppNames()) {
                 appIds.add(Long.parseLong(appName));
             }
             List<ApplicationListResponse> responseList = applicationService.getApplicationListByAppIds(appIds);
-            if(CollectionUtils.isNotEmpty(responseList)) {
+            if (CollectionUtils.isNotEmpty(responseList)) {
                 detailOutput.setAppNames(responseList.stream().map(ApplicationListResponse::getApplicationName).collect(Collectors.toList()));
                 detailOutput.getAppNames().stream().sorted();
             }
         }
         //查找场景的其他报告
         List<SceneReportListOutput> scenReportList = reportService.getReportListBySceneId(output.getSceneId());
-        if(CollectionUtils.isNotEmpty(scenReportList)) {
+        if (CollectionUtils.isNotEmpty(scenReportList)) {
             //过滤本报告
-            List<SceneReportListOutput> filterReportList = scenReportList.stream().filter(data -> data.getReportId() != reportId).collect(Collectors.toList());
-            if(CollectionUtils.isNotEmpty(filterReportList)) {
+            List<SceneReportListOutput> filterReportList = scenReportList.stream().filter(data -> !data.getReportId().equals(reportId)).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(filterReportList)) {
                 //按照时间倒排
                 filterReportList.sort((o1, o2) -> {
-                    if(o1.getReportId() > o2.getReportId()) {
+                    if (o1.getReportId() > o2.getReportId()) {
                         return -1;
-                    } else if(o1.getReportId() < o2.getReportId()) {
+                    } else if (o1.getReportId() < o2.getReportId()) {
                         return 1;
                     }
                     return 0;
@@ -226,17 +223,20 @@ public class ReportController {
                 detailOutput.setReports(filterReportList);
             }
         }
+        List<BusinessActivityReportOutput> businessActivities = detailOutput.getBusinessActivities().stream()
+                .filter(a -> a.getBusinessActivityId() > 0).collect(Collectors.toList());
+        detailOutput.setBusinessActivities(businessActivities);
         return ResponseResult.success(detailOutput);
     }
 
     @GetMapping("vlt/report/getLinkDiagram")
     @ApiOperation("LT版-业务活动链路图")
-    public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse> getLtLinkDiagram(@Validated ReportLinkDiagramReq reportLinkDiagramReq){
+    public ResponseResult<io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse> getLtLinkDiagram(@Validated ReportLinkDiagramReq reportLinkDiagramReq) {
         return reportService.getLinkDiagram(reportLinkDiagramReq);
     }
 
     @GetMapping("/report/modifyLinkDiagram")
-    public ResponseResult<String> modifyLinkDiagram(@Validated ReportLinkDiagramReq reportLinkDiagramReq){
+    public ResponseResult<String> modifyLinkDiagram(@Validated ReportLinkDiagramReq reportLinkDiagramReq) {
         reportService.modifyLinkDiagram(reportLinkDiagramReq);
         return ResponseResult.success();
     }

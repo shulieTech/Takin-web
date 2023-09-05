@@ -1,38 +1,17 @@
 package io.shulie.takin.web.biz.service;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.alibaba.fastjson.JSON;
-
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.pradar.MiddlewareType;
-import com.pamirs.takin.common.constant.AppConfigSheetEnum;
 import com.pamirs.takin.common.constant.LinkSheetEnum;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.MD5Util;
-import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
-import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
-import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
-import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoBaseDTO;
-import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForCacheDTO;
-import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForDBDTO;
-import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForMQDTO;
-import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForOSSDTO;
-import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForSearchDTO;
+import io.shulie.amdb.common.dto.link.topology.*;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.amdb.common.enums.NodeTypeGroupEnum;
-import io.shulie.surge.data.deploy.pradar.parser.PradarLogType;
 import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
@@ -46,37 +25,19 @@ import io.shulie.takin.web.biz.common.CommonService;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppCallDatasourceInfo;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppCallInfo;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppProvider;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppProviderInfo;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.ApplicationEntranceTopologyEdgeResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.DbInfo;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.ExceptionListResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.MqInfo;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.NodeDetailDatasourceInfo;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.NodeTypeResponseEnum;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.OssInfo;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyAppNodeResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyCacheNodeResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyDbNodeResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyMqNodeResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyOssNodeResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyOtherNodeResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologySearchNodeResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyUnknownNodeResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyVirtualNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.*;
 import io.shulie.takin.web.biz.pojo.response.application.export.*;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
-import io.shulie.takin.web.common.vo.excel.ApplicationRemoteCallConfigExcelVO;
 import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
+import io.shulie.takin.web.data.dao.application.ApplicationApiDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
+import io.shulie.takin.web.data.param.application.ApplicationApiQueryParam;
+import io.shulie.takin.web.data.result.application.ApplicationApiManageResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.baseserver.TraceMetricsResult;
 import io.shulie.takin.web.ext.entity.e2e.E2eBaseStorageParam;
@@ -91,7 +52,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 链路拓扑图 接口--拓扑图信息从AMDB获取
@@ -121,6 +93,9 @@ public class LinkTopologyService extends CommonService {
     private ActivityService activityService;
 
     private static String pradarDatabase = "pradar";
+
+    @Resource
+    private ApplicationApiDAO applicationApiDAO;
 
     public static final double INIT = 0.0; // db 没有数据的初始值
 
@@ -183,9 +158,13 @@ public class LinkTopologyService extends CommonService {
 
         // edges
         List<LinkEdgeDTO> edges = applicationEntrancesTopology.getEdges();
-        if (CollectionUtils.isNotEmpty(edges)) {
-            providerEdgeMap = edges.stream().collect(Collectors.groupingBy(LinkEdgeDTO::getTargetId));
-            callEdgeMap = edges.stream().collect(Collectors.groupingBy(LinkEdgeDTO::getSourceId));
+        ApplicationApiQueryParam manage = new ApplicationApiQueryParam();
+        manage.setApplicationName(request.getApplicationName());
+        List<ApplicationApiManageResult> dataList = applicationApiDAO.selectBySelective(manage, WebPluginUtils.getQueryAllowUserIdList());
+        List<LinkEdgeDTO> fittlerEdges = machchRestfullUrl(dataList, edges);
+        if (CollectionUtils.isNotEmpty(fittlerEdges)) {
+            providerEdgeMap = fittlerEdges.stream().collect(Collectors.groupingBy(LinkEdgeDTO::getTargetId));
+            callEdgeMap = fittlerEdges.stream().collect(Collectors.groupingBy(LinkEdgeDTO::getSourceId));
         }
 
         // 节点转换
@@ -198,6 +177,43 @@ public class LinkTopologyService extends CommonService {
         // 异常转换
         applicationEntranceTopologyResponse.setExceptions(
                 this.getExceptionsFromNodes(applicationEntranceTopologyResponse.getNodes()));
+    }
+
+
+    private List<LinkEdgeDTO> machchRestfullUrl(List<ApplicationApiManageResult> apiManageResults, List<LinkEdgeDTO> edges) {
+        if (CollectionUtils.isEmpty(apiManageResults)) {
+            return edges;
+        }
+
+        if (CollectionUtils.isEmpty(edges)) {
+            return Collections.emptyList();
+        }
+        // 定义规则列表
+        List<String> rules = new ArrayList<>();
+        rules = apiManageResults.stream().map(ApplicationApiManageResult::getApi).filter(a -> Objects.nonNull(a)).collect(Collectors.toList());
+        // 请求字符串
+        // 遍历规则列表并匹配请求
+        List<LinkEdgeDTO> edgeDTOList = new ArrayList<>();
+        for (String rule : rules) {
+            String regex = rule.replaceAll("\\{[^/]+\\}", "([^/]+)");
+            Pattern pattern = Pattern.compile(regex);
+            for (LinkEdgeDTO edge : edges) {
+                Matcher matcher = pattern.matcher(edge.getService());
+                if (matcher.matches()) {
+                    edge.setService(rule);
+                }
+                edgeDTOList.add(edge);
+            }
+        }
+
+        // 根据 Service 属性进行去重
+        List<LinkEdgeDTO> deduplicatedPersons = edgeDTOList.stream()
+                .collect(Collectors.toMap(LinkEdgeDTO::getService, p -> p, (existing, replacement) -> existing))
+                .values()
+                .stream()
+                .collect(Collectors.toList());
+
+        return deduplicatedPersons;
     }
 
     /**

@@ -151,7 +151,6 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Resource
     private ReportApplicationSummaryMapper reportApplicationSummaryMapper;
 
-
     static {
         costList.add(new Pair<>(0, 200));
         costList.add(new Pair<>(200, 500));
@@ -622,13 +621,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return newNodeMap;
     }
 
-    private static NodeCompareTargetOut.TopologyNode genNodeTree(NodeCompareTargetOut.TopologyNode root, Map<String, NodeCompareTargetOut.TopologyNode> map) {
+    private NodeCompareTargetOut.TopologyNode genNodeTree(NodeCompareTargetOut.TopologyNode root, Map<String, NodeCompareTargetOut.TopologyNode> map) {
         if (Objects.isNull(root) || MapUtils.isEmpty(map)) {
             return root;
         }
         Iterator<String> iterator = map.keySet().iterator();
         while (iterator.hasNext()) {
             String key = iterator.next();
+            if (!key.contains("&&&&&&")) {
+                continue;
+            }
             String[] split = key.split("&&&&&&");
             if (split.length != 2) {
                 continue;
@@ -641,12 +643,15 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 } else {
                     root.getNodes().add(map.get(key));
                 }
-                genNodeTree(map.get(key), map);
+                if (!split[1].equals(split[0])) {
+                    genNodeTree(map.get(key), map);
+                }
             } else if (root.getLabel().equals(split[0])) {
                 NodeCompareTargetOut.TopologyNode topologyNode = map.get(key);
                 root.setService1Rt(topologyNode.getService1Rt());
                 root.setService2Rt(topologyNode.getService2Rt());
             }
+
         }
         return root;
     }

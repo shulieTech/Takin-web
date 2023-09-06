@@ -198,11 +198,13 @@ public class LinkTopologyService extends CommonService {
             String regex = rule.replaceAll("\\{[^/]+\\}", "([^/]+)");
             Pattern pattern = Pattern.compile(regex);
             for (LinkEdgeDTO edge : edges) {
-                Matcher matcher = pattern.matcher(edge.getService());
+                String tmpUrl = Pattern.quote(edge.getService());
+                Matcher matcher = pattern.matcher(tmpUrl);
                 if (matcher.matches()) {
                     edge.setService(rule);
                 }
                 edgeDTOList.add(edge);
+
             }
         }
 

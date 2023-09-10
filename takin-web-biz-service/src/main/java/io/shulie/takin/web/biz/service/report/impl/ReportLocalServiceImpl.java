@@ -621,7 +621,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 } else {
                     root.getNodes().add(map.get(key));
                 }
-                genNodeTree(map.get(key), map);
+                if (!split[0].equals(split[1])){
+                    genNodeTree(map.get(key), map);
+                }
             } else if (root.getLabel().equals(split[0])) {
                 NodeCompareTargetOut.TopologyNode topologyNode = map.get(key);
                 root.setService1Rt(topologyNode.getService1Rt());

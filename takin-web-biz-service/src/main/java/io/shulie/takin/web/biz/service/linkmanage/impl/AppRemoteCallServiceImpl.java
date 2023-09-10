@@ -760,7 +760,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                                 param.setServerAppName(callDTOS.stream().map(ApplicationRemoteCallDTO::getAppName).collect(Collectors.joining(",")));
                             }
                             autoJoinWhite(param);
-                            if (param.getType() == AppRemoteCallConfigEnum.OPEN_WHITELIST.getType()) {
+                            if (Objects.equals(param.getType(), AppRemoteCallConfigEnum.OPEN_WHITELIST.getType())) {
                                 AppRemoteCallEntity updateParam = new AppRemoteCallEntity();
                                 updateParam.setId(callEntity.getId());
                                 updateParam.setGmtModified(new Date());

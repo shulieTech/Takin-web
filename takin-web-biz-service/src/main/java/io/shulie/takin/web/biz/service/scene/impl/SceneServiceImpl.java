@@ -785,7 +785,7 @@ public class SceneServiceImpl implements SceneService {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到业务流程对应的脚本！");
         }
         ScriptManageDeployDetailResponse result = scriptManageService.getScriptManageDeployDetail(oldScriptDeployId);
-        List<FileManageResponse> fileManageResponseList = fileManageResponseList = result.getFileManageResponseList();
+        List<FileManageResponse> fileManageResponseList = result.getFileManageResponseList();
         ScriptManageDeployUpdateRequest updateRequest = new ScriptManageDeployUpdateRequest();
         updateRequest.setId(oldScriptDeployId);
         updateRequest.setMVersion(ScriptMVersionEnum.SCRIPT_M_1.getCode());
@@ -840,7 +840,7 @@ public class SceneServiceImpl implements SceneService {
         if (CollectionUtils.isNotEmpty(data)) {
             sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
             List<ScriptNode> samplerNodes = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);
-            sceneUpdateParam.setTotalNodeNum(null == samplerNodes ? 0 : samplerNodes.size());
+            sceneUpdateParam.setTotalNodeNum(samplerNodes.size());
         }
         //更新业务流程
         sceneUpdateParam.setScriptDeployId(scriptDeployId);

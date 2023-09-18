@@ -213,7 +213,7 @@ public class NacosConfigManager {
             }
         } catch (NacosException e) {
             log.error("推送配置到nacos发生异常,dataId:{}, group:{}, content:{}", dataId, group, configs, e);
-            throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "dataId:" + dataId + "推送nacos出现异常:" + e.getErrMsg());
+//            throw new TakinWebException(TakinWebExceptionEnum.NACOS_PUSH_ERROR, "dataId:" + dataId + "推送nacos出现异常:" + e.getErrMsg());
         }
     }
 

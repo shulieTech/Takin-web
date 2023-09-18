@@ -113,3 +113,8 @@
 #takin.listener.jobtask:
 #
 ##liantong.menu: true
+spring:
+  profiles:
+    active: local
+      env: local
+env: local

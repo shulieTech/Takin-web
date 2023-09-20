@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ScriptCsvCreateTaskMapper">
+  <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.ScriptCsvCreateTaskEntity">
+    <!--@mbg.generated-->
+    <!--@Table t_script_csv_create_task-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="task_start_time" jdbcType="TIMESTAMP" property="taskStartTime" />
+    <result column="task_end_time" jdbcType="TIMESTAMP" property="taskEndTime" />
+    <result column="template_variable" jdbcType="VARCHAR" property="templateVariable" />
+    <result column="template_content" jdbcType="LONGVARCHAR" property="templateContent" />
+    <result column="script_csv_variable_json_path" jdbcType="VARCHAR" property="scriptCsvVariableJsonPath" />
+    <result column="current_create_schedule" jdbcType="VARCHAR" property="currentCreateSchedule" />
+    <result column="create_status" jdbcType="TINYINT" property="createStatus" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="alias_name" jdbcType="BOOLEAN" property="aliasName" />
+    <result column="dept_id" jdbcType="BIGINT" property="deptId" />
+    <result column="business_flow_id" jdbcType="BIGINT" property="businessFlowId" />
+    <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, task_start_time, task_end_time, template_variable, template_content, script_csv_variable_json_path, 
+    current_create_schedule, create_status, remark, alias_name, dept_id, business_flow_id, 
+    CREATE_TIME, UPDATE_TIME
+  </sql>
+  <update id="updateBatch" parameterType="java.util.List">
+    <!--@mbg.generated-->
+    update t_script_csv_create_task
+    <trim prefix="set" suffixOverrides=",">
+      <trim prefix="task_start_time = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.taskStartTime,jdbcType=TIMESTAMP}
+        </foreach>
+      </trim>
+      <trim prefix="task_end_time = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.taskEndTime,jdbcType=TIMESTAMP}
+        </foreach>
+      </trim>
+      <trim prefix="template_variable = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.templateVariable,jdbcType=VARCHAR}
+        </foreach>
+      </trim>
+      <trim prefix="template_content = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.templateContent,jdbcType=LONGVARCHAR}
+        </foreach>
+      </trim>
+      <trim prefix="script_csv_variable_json_path = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.scriptCsvVariableJsonPath,jdbcType=VARCHAR}
+        </foreach>
+      </trim>
+      <trim prefix="current_create_schedule = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.currentCreateSchedule,jdbcType=VARCHAR}
+        </foreach>
+      </trim>
+      <trim prefix="create_status = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.createStatus,jdbcType=TINYINT}
+        </foreach>
+      </trim>
+      <trim prefix="remark = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.remark,jdbcType=VARCHAR}
+        </foreach>
+      </trim>
+      <trim prefix="alias_name = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.aliasName,jdbcType=BOOLEAN}
+        </foreach>
+      </trim>
+      <trim prefix="dept_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.deptId,jdbcType=BIGINT}
+        </foreach>
+      </trim>
+      <trim prefix="business_flow_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.businessFlowId,jdbcType=BIGINT}
+        </foreach>
+      </trim>
+      <trim prefix="CREATE_TIME = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.createTime,jdbcType=TIMESTAMP}
+        </foreach>
+      </trim>
+      <trim prefix="UPDATE_TIME = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.updateTime,jdbcType=TIMESTAMP}
+        </foreach>
+      </trim>
+    </trim>
+    where id in
+    <foreach close=")" collection="list" item="item" open="(" separator=", ">
+      #{item.id,jdbcType=BIGINT}
+    </foreach>
+  </update>
+  <update id="updateBatchSelective" parameterType="java.util.List">
+    <!--@mbg.generated-->
+    update t_script_csv_create_task
+    <trim prefix="set" suffixOverrides=",">
+      <trim prefix="task_start_time = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.taskStartTime != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.taskStartTime,jdbcType=TIMESTAMP}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="task_end_time = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.taskEndTime != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.taskEndTime,jdbcType=TIMESTAMP}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="template_variable = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.templateVariable != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.templateVariable,jdbcType=VARCHAR}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="template_content = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.templateContent != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.templateContent,jdbcType=LONGVARCHAR}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="script_csv_variable_json_path = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.scriptCsvVariableJsonPath != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.scriptCsvVariableJsonPath,jdbcType=VARCHAR}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="current_create_schedule = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.currentCreateSchedule != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.currentCreateSchedule,jdbcType=VARCHAR}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="create_status = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.createStatus != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.createStatus,jdbcType=TINYINT}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="remark = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.remark != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.remark,jdbcType=VARCHAR}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="alias_name = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.aliasName != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.aliasName,jdbcType=BOOLEAN}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="dept_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.deptId != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.deptId,jdbcType=BIGINT}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="business_flow_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.businessFlowId != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.businessFlowId,jdbcType=BIGINT}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="CREATE_TIME = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.createTime != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.createTime,jdbcType=TIMESTAMP}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="UPDATE_TIME = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.updateTime != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.updateTime,jdbcType=TIMESTAMP}
+          </if>
+        </foreach>
+      </trim>
+    </trim>
+    where id in
+    <foreach close=")" collection="list" item="item" open="(" separator=", ">
+      #{item.id,jdbcType=BIGINT}
+    </foreach>
+  </update>
+  <insert id="batchInsert" keyColumn="id" keyProperty="id" parameterType="map" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into t_script_csv_create_task
+    (task_start_time, task_end_time, template_variable, template_content, script_csv_variable_json_path, 
+      current_create_schedule, create_status, remark, alias_name, dept_id, business_flow_id, 
+      CREATE_TIME, UPDATE_TIME)
+    values
+    <foreach collection="list" item="item" separator=",">
+      (#{item.taskStartTime,jdbcType=TIMESTAMP}, #{item.taskEndTime,jdbcType=TIMESTAMP}, 
+        #{item.templateVariable,jdbcType=VARCHAR}, #{item.templateContent,jdbcType=LONGVARCHAR}, 
+        #{item.scriptCsvVariableJsonPath,jdbcType=VARCHAR}, #{item.currentCreateSchedule,jdbcType=VARCHAR}, 
+        #{item.createStatus,jdbcType=TINYINT}, #{item.remark,jdbcType=VARCHAR}, #{item.aliasName,jdbcType=BOOLEAN}, 
+        #{item.deptId,jdbcType=BIGINT}, #{item.businessFlowId,jdbcType=BIGINT}, #{item.createTime,jdbcType=TIMESTAMP}, 
+        #{item.updateTime,jdbcType=TIMESTAMP})
+    </foreach>
+  </insert>
+  <insert id="insertOrUpdate" keyColumn="id" keyProperty="id" parameterType="io.shulie.takin.web.data.model.mysql.ScriptCsvCreateTaskEntity" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into t_script_csv_create_task
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      task_start_time,
+      task_end_time,
+      template_variable,
+      template_content,
+      script_csv_variable_json_path,
+      current_create_schedule,
+      create_status,
+      remark,
+      alias_name,
+      dept_id,
+      business_flow_id,
+      CREATE_TIME,
+      UPDATE_TIME,
+    </trim>
+    values
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      #{taskStartTime,jdbcType=TIMESTAMP},
+      #{taskEndTime,jdbcType=TIMESTAMP},
+      #{templateVariable,jdbcType=VARCHAR},
+      #{templateContent,jdbcType=LONGVARCHAR},
+      #{scriptCsvVariableJsonPath,jdbcType=VARCHAR},
+      #{currentCreateSchedule,jdbcType=VARCHAR},
+      #{createStatus,jdbcType=TINYINT},
+      #{remark,jdbcType=VARCHAR},
+      #{aliasName,jdbcType=BOOLEAN},
+      #{deptId,jdbcType=BIGINT},
+      #{businessFlowId,jdbcType=BIGINT},
+      #{createTime,jdbcType=TIMESTAMP},
+      #{updateTime,jdbcType=TIMESTAMP},
+    </trim>
+    on duplicate key update 
+    <trim suffixOverrides=",">
+      <if test="id != null">
+        id = #{id,jdbcType=BIGINT},
+      </if>
+      task_start_time = #{taskStartTime,jdbcType=TIMESTAMP},
+      task_end_time = #{taskEndTime,jdbcType=TIMESTAMP},
+      template_variable = #{templateVariable,jdbcType=VARCHAR},
+      template_content = #{templateContent,jdbcType=LONGVARCHAR},
+      script_csv_variable_json_path = #{scriptCsvVariableJsonPath,jdbcType=VARCHAR},
+      current_create_schedule = #{currentCreateSchedule,jdbcType=VARCHAR},
+      create_status = #{createStatus,jdbcType=TINYINT},
+      remark = #{remark,jdbcType=VARCHAR},
+      alias_name = #{aliasName,jdbcType=BOOLEAN},
+      dept_id = #{deptId,jdbcType=BIGINT},
+      business_flow_id = #{businessFlowId,jdbcType=BIGINT},
+      CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+    </trim>
+  </insert>
+  <insert id="insertOrUpdateSelective" keyColumn="id" keyProperty="id" parameterType="io.shulie.takin.web.data.model.mysql.ScriptCsvCreateTaskEntity" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into t_script_csv_create_task
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="taskStartTime != null">
+        task_start_time,
+      </if>
+      <if test="taskEndTime != null">
+        task_end_time,
+      </if>
+      <if test="templateVariable != null">
+        template_variable,
+      </if>
+      <if test="templateContent != null">
+        template_content,
+      </if>
+      <if test="scriptCsvVariableJsonPath != null">
+        script_csv_variable_json_path,
+      </if>
+      <if test="currentCreateSchedule != null">
+        current_create_schedule,
+      </if>
+      <if test="createStatus != null">
+        create_status,
+      </if>
+      <if test="remark != null">
+        remark,
+      </if>
+      <if test="aliasName != null">
+        alias_name,
+      </if>
+      <if test="deptId != null">
+        dept_id,
+      </if>
+      <if test="businessFlowId != null">
+        business_flow_id,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME,
+      </if>
+    </trim>
+    values
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="taskStartTime != null">
+        #{taskStartTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="taskEndTime != null">
+        #{taskEndTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="templateVariable != null">
+        #{templateVariable,jdbcType=VARCHAR},
+      </if>
+      <if test="templateContent != null">
+        #{templateContent,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="scriptCsvVariableJsonPath != null">
+        #{scriptCsvVariableJsonPath,jdbcType=VARCHAR},
+      </if>
+      <if test="currentCreateSchedule != null">
+        #{currentCreateSchedule,jdbcType=VARCHAR},
+      </if>
+      <if test="createStatus != null">
+        #{createStatus,jdbcType=TINYINT},
+      </if>
+      <if test="remark != null">
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="aliasName != null">
+        #{aliasName,jdbcType=BOOLEAN},
+      </if>
+      <if test="deptId != null">
+        #{deptId,jdbcType=BIGINT},
+      </if>
+      <if test="businessFlowId != null">
+        #{businessFlowId,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+    on duplicate key update 
+    <trim suffixOverrides=",">
+      <if test="id != null">
+        id = #{id,jdbcType=BIGINT},
+      </if>
+      <if test="taskStartTime != null">
+        task_start_time = #{taskStartTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="taskEndTime != null">
+        task_end_time = #{taskEndTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="templateVariable != null">
+        template_variable = #{templateVariable,jdbcType=VARCHAR},
+      </if>
+      <if test="templateContent != null">
+        template_content = #{templateContent,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="scriptCsvVariableJsonPath != null">
+        script_csv_variable_json_path = #{scriptCsvVariableJsonPath,jdbcType=VARCHAR},
+      </if>
+      <if test="currentCreateSchedule != null">
+        current_create_schedule = #{currentCreateSchedule,jdbcType=VARCHAR},
+      </if>
+      <if test="createStatus != null">
+        create_status = #{createStatus,jdbcType=TINYINT},
+      </if>
+      <if test="remark != null">
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="aliasName != null">
+        alias_name = #{aliasName,jdbcType=BOOLEAN},
+      </if>
+      <if test="deptId != null">
+        dept_id = #{deptId,jdbcType=BIGINT},
+      </if>
+      <if test="businessFlowId != null">
+        business_flow_id = #{businessFlowId,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+</mapper>

@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ScriptCsvDataSetMapper">
+  <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.ScriptCsvDataSetEntity">
+    <!--@mbg.generated-->
+    <!--@Table t_script_csv_data_set-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="script_csv_data_set_name" jdbcType="VARCHAR" property="scriptCsvDataSetName" />
+    <result column="script_csv_file_name" jdbcType="VARCHAR" property="scriptCsvFileName" />
+    <result column="script_csv_variable_name" jdbcType="VARCHAR" property="scriptCsvVariableName" />
+    <result column="ignore_first_line" jdbcType="BOOLEAN" property="ignoreFirstLine" />
+    <result column="script_deploy_id" jdbcType="BIGINT" property="scriptDeployId" />
+    <result column="business_flow_id" jdbcType="BIGINT" property="businessFlowId" />
+    <result column="file_manage_id" jdbcType="BIGINT" property="fileManageId" />
+    <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, script_csv_data_set_name, script_csv_file_name, script_csv_variable_name, ignore_first_line, 
+    script_deploy_id, business_flow_id, file_manage_id, CREATE_TIME, UPDATE_TIME
+  </sql>
+  <update id="updateBatch" parameterType="java.util.List">
+    <!--@mbg.generated-->
+    update t_script_csv_data_set
+    <trim prefix="set" suffixOverrides=",">
+      <trim prefix="script_csv_data_set_name = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.scriptCsvDataSetName,jdbcType=VARCHAR}
+        </foreach>
+      </trim>
+      <trim prefix="script_csv_file_name = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.scriptCsvFileName,jdbcType=VARCHAR}
+        </foreach>
+      </trim>
+      <trim prefix="script_csv_variable_name = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.scriptCsvVariableName,jdbcType=VARCHAR}
+        </foreach>
+      </trim>
+      <trim prefix="ignore_first_line = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.ignoreFirstLine,jdbcType=BOOLEAN}
+        </foreach>
+      </trim>
+      <trim prefix="script_deploy_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.scriptDeployId,jdbcType=BIGINT}
+        </foreach>
+      </trim>
+      <trim prefix="business_flow_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.businessFlowId,jdbcType=BIGINT}
+        </foreach>
+      </trim>
+      <trim prefix="file_manage_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.fileManageId,jdbcType=BIGINT}
+        </foreach>
+      </trim>
+      <trim prefix="CREATE_TIME = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.createTime,jdbcType=TIMESTAMP}
+        </foreach>
+      </trim>
+      <trim prefix="UPDATE_TIME = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.updateTime,jdbcType=TIMESTAMP}
+        </foreach>
+      </trim>
+    </trim>
+    where id in
+    <foreach close=")" collection="list" item="item" open="(" separator=", ">
+      #{item.id,jdbcType=BIGINT}
+    </foreach>
+  </update>
+  <update id="updateBatchSelective" parameterType="java.util.List">
+    <!--@mbg.generated-->
+    update t_script_csv_data_set
+    <trim prefix="set" suffixOverrides=",">
+      <trim prefix="script_csv_data_set_name = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.scriptCsvDataSetName != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.scriptCsvDataSetName,jdbcType=VARCHAR}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="script_csv_file_name = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.scriptCsvFileName != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.scriptCsvFileName,jdbcType=VARCHAR}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="script_csv_variable_name = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.scriptCsvVariableName != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.scriptCsvVariableName,jdbcType=VARCHAR}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="ignore_first_line = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.ignoreFirstLine != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.ignoreFirstLine,jdbcType=BOOLEAN}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="script_deploy_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.scriptDeployId != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.scriptDeployId,jdbcType=BIGINT}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="business_flow_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.businessFlowId != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.businessFlowId,jdbcType=BIGINT}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="file_manage_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.fileManageId != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.fileManageId,jdbcType=BIGINT}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="CREATE_TIME = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.createTime != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.createTime,jdbcType=TIMESTAMP}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="UPDATE_TIME = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.updateTime != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.updateTime,jdbcType=TIMESTAMP}
+          </if>
+        </foreach>
+      </trim>
+    </trim>
+    where id in
+    <foreach close=")" collection="list" item="item" open="(" separator=", ">
+      #{item.id,jdbcType=BIGINT}
+    </foreach>
+  </update>
+  <insert id="batchInsert" keyColumn="id" keyProperty="id" parameterType="map" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into t_script_csv_data_set
+    (script_csv_data_set_name, script_csv_file_name, script_csv_variable_name, ignore_first_line, 
+      script_deploy_id, business_flow_id, file_manage_id, CREATE_TIME, UPDATE_TIME)
+    values
+    <foreach collection="list" item="item" separator=",">
+      (#{item.scriptCsvDataSetName,jdbcType=VARCHAR}, #{item.scriptCsvFileName,jdbcType=VARCHAR}, 
+        #{item.scriptCsvVariableName,jdbcType=VARCHAR}, #{item.ignoreFirstLine,jdbcType=BOOLEAN}, 
+        #{item.scriptDeployId,jdbcType=BIGINT}, #{item.businessFlowId,jdbcType=BIGINT}, 
+        #{item.fileManageId,jdbcType=BIGINT}, #{item.createTime,jdbcType=TIMESTAMP}, #{item.updateTime,jdbcType=TIMESTAMP}
+        )
+    </foreach>
+  </insert>
+  <insert id="insertOrUpdate" keyColumn="id" keyProperty="id" parameterType="io.shulie.takin.web.data.model.mysql.ScriptCsvDataSetEntity" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into t_script_csv_data_set
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      script_csv_data_set_name,
+      script_csv_file_name,
+      script_csv_variable_name,
+      ignore_first_line,
+      script_deploy_id,
+      business_flow_id,
+      file_manage_id,
+      CREATE_TIME,
+      UPDATE_TIME,
+    </trim>
+    values
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      #{scriptCsvDataSetName,jdbcType=VARCHAR},
+      #{scriptCsvFileName,jdbcType=VARCHAR},
+      #{scriptCsvVariableName,jdbcType=VARCHAR},
+      #{ignoreFirstLine,jdbcType=BOOLEAN},
+      #{scriptDeployId,jdbcType=BIGINT},
+      #{businessFlowId,jdbcType=BIGINT},
+      #{fileManageId,jdbcType=BIGINT},
+      #{createTime,jdbcType=TIMESTAMP},
+      #{updateTime,jdbcType=TIMESTAMP},
+    </trim>
+    on duplicate key update 
+    <trim suffixOverrides=",">
+      <if test="id != null">
+        id = #{id,jdbcType=BIGINT},
+      </if>
+      script_csv_data_set_name = #{scriptCsvDataSetName,jdbcType=VARCHAR},
+      script_csv_file_name = #{scriptCsvFileName,jdbcType=VARCHAR},
+      script_csv_variable_name = #{scriptCsvVariableName,jdbcType=VARCHAR},
+      ignore_first_line = #{ignoreFirstLine,jdbcType=BOOLEAN},
+      script_deploy_id = #{scriptDeployId,jdbcType=BIGINT},
+      business_flow_id = #{businessFlowId,jdbcType=BIGINT},
+      file_manage_id = #{fileManageId,jdbcType=BIGINT},
+      CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+    </trim>
+  </insert>
+  <insert id="insertOrUpdateSelective" keyColumn="id" keyProperty="id" parameterType="io.shulie.takin.web.data.model.mysql.ScriptCsvDataSetEntity" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into t_script_csv_data_set
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="scriptCsvDataSetName != null">
+        script_csv_data_set_name,
+      </if>
+      <if test="scriptCsvFileName != null">
+        script_csv_file_name,
+      </if>
+      <if test="scriptCsvVariableName != null">
+        script_csv_variable_name,
+      </if>
+      <if test="ignoreFirstLine != null">
+        ignore_first_line,
+      </if>
+      <if test="scriptDeployId != null">
+        script_deploy_id,
+      </if>
+      <if test="businessFlowId != null">
+        business_flow_id,
+      </if>
+      <if test="fileManageId != null">
+        file_manage_id,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME,
+      </if>
+    </trim>
+    values
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="scriptCsvDataSetName != null">
+        #{scriptCsvDataSetName,jdbcType=VARCHAR},
+      </if>
+      <if test="scriptCsvFileName != null">
+        #{scriptCsvFileName,jdbcType=VARCHAR},
+      </if>
+      <if test="scriptCsvVariableName != null">
+        #{scriptCsvVariableName,jdbcType=VARCHAR},
+      </if>
+      <if test="ignoreFirstLine != null">
+        #{ignoreFirstLine,jdbcType=BOOLEAN},
+      </if>
+      <if test="scriptDeployId != null">
+        #{scriptDeployId,jdbcType=BIGINT},
+      </if>
+      <if test="businessFlowId != null">
+        #{businessFlowId,jdbcType=BIGINT},
+      </if>
+      <if test="fileManageId != null">
+        #{fileManageId,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+    on duplicate key update 
+    <trim suffixOverrides=",">
+      <if test="id != null">
+        id = #{id,jdbcType=BIGINT},
+      </if>
+      <if test="scriptCsvDataSetName != null">
+        script_csv_data_set_name = #{scriptCsvDataSetName,jdbcType=VARCHAR},
+      </if>
+      <if test="scriptCsvFileName != null">
+        script_csv_file_name = #{scriptCsvFileName,jdbcType=VARCHAR},
+      </if>
+      <if test="scriptCsvVariableName != null">
+        script_csv_variable_name = #{scriptCsvVariableName,jdbcType=VARCHAR},
+      </if>
+      <if test="ignoreFirstLine != null">
+        ignore_first_line = #{ignoreFirstLine,jdbcType=BOOLEAN},
+      </if>
+      <if test="scriptDeployId != null">
+        script_deploy_id = #{scriptDeployId,jdbcType=BIGINT},
+      </if>
+      <if test="businessFlowId != null">
+        business_flow_id = #{businessFlowId,jdbcType=BIGINT},
+      </if>
+      <if test="fileManageId != null">
+        file_manage_id = #{fileManageId,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+
+  <select id="listByBusinessFlowId" resultMap="BaseResultMap">
+    select * from t_script_csv_data_set where business_flow_id = #{businessFlowId}
+    </select>
+</mapper>

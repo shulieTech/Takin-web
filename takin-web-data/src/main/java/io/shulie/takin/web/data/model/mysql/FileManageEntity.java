@@ -89,4 +89,12 @@ public class FileManageEntity extends TenantBaseEntity {
      */
     @TableField(value = "customer_id")
     private Long customerId;
+
+    // 新增
+    @TableField(value = "create_type")
+    private Integer createType;
+    @TableField(value = "alias_name")
+    private String aliasName;
+    @TableField(value = "dept_id")
+    private Long deptId;
 }

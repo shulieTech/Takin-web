@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
  * @date 2021/10/13 3:11 下午
  */
 public enum NodeTypeEnum {
+
     /**
      * TestPlan
      */

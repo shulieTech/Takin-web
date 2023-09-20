@@ -1962,8 +1962,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      * @return 路径前缀
      */
     private String getTargetScriptPath(ScriptManageDeployResult scriptManageDeployResult) {
-        return String.format("%s/%s/%s/",
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH),
+        // ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH) todo
+        return String.format("%s/%s/%s/", "/Users/hezhongqi/aliyun_workspace/shulie/skyeye_stresstest_web/nfs",
             scriptManageDeployResult.getScriptId(), scriptManageDeployResult.getScriptVersion());
     }
 

@@ -18,6 +18,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Lists;
 import io.shulie.takin.cloud.common.enums.ThreadGroupTypeEnum;
 import io.shulie.takin.cloud.common.pojo.Pair;
 import io.shulie.takin.cloud.common.pojo.jmeter.ThreadGroupProperty;
@@ -41,6 +42,83 @@ public class JmxUtil {
      */
     private static final List<String> BASE_PROP_ELEMENTS = CollUtil.newArrayList("stringProp", "boolProp", "intProp", "doubleProp");
 
+
+
+    /**
+     * 从jmx文件中提取csv文件
+     */
+    public static List<ScriptNode> buildCsvNode(String file) {
+        if (StrUtil.isBlank(file)) {
+            return Lists.newArrayList();
+        }
+        File f = new File(file);
+        if (!f.exists() || !f.isFile()) {
+            return Lists.newArrayList();
+        }
+        return buildCsvNode(f);
+    }
+    public static List<ScriptNode> buildCsvNode(File file) {
+        SAXReader saxReader = new SAXReader();
+        try {
+            Document document = saxReader.read(file);
+            Element root = document.getRootElement();
+            if (null == root) {
+                return null;
+            }
+            Element childContainer = root.element("hashTree");
+            if (null == childContainer) {
+                return null;
+            }
+            List<Element> elements = elements(childContainer);
+            List<ScriptNode> csvList = Lists.newArrayList();
+            buildCsvNode(elements,csvList);
+            return csvList;
+        } catch (DocumentException e) {
+            log.error("buildCsvNode DocumentException, file=" + file.getAbsolutePath(), e);
+        }
+        return null;
+    }
+
+    public static void buildCsvNode(List<Element> elements,List<ScriptNode> csvList) {
+        if (CollUtil.isEmpty(elements)) {
+            return;
+        }
+        for (int i = 0; i < elements.size(); i++) {
+            Element e = elements.get(i);
+            ScriptNode node = buildCsvNode(e);
+            if(node != null) {
+                csvList.add(node);
+            }
+            if (i < elements.size() - 1) {
+                Element nextElement = elements.get(i + 1);
+                if ("hashTree".equals(nextElement.getName())) {
+                    buildCsvNode(elements(nextElement),csvList);
+                }
+            }
+        }
+    }
+
+    public static ScriptNode buildCsvNode(Element element) {
+        if (isNotEnabled(element)) {
+            return null;
+        }
+        if("CSVDataSet".equals(element.getName())) {
+            String testName = element.attributeValue("testname");
+            ScriptNode node = new ScriptNode();
+            node.setName(element.getName());
+            node.setTestName(testName);
+            node.setXpath(element.getUniquePath());
+            node.setXpathMd5(Md5Util.md5(node.getXpath()));
+            node.setMd5(Md5Util.md5(element.asXML()));
+            node.setProps(buildProps(element, BASE_PROP_ELEMENTS));
+            return node;
+        }
+        return null;
+    }
+
+
+
+
     /**
      * 从jmx文件中提取结构树
      */
@@ -54,6 +132,8 @@ public class JmxUtil {
         }
         return buildNodeTree(f);
     }
+
+
 
     /**
      * 从jmx文件中提取结构树
@@ -99,6 +179,7 @@ public class JmxUtil {
         }
         return nodes;
     }
+
 
     public static ScriptNode buildNode(Element element) {
         if (isNotEnabled(element)) {

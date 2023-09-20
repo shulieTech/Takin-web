@@ -98,7 +98,9 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             "t_pressure_task_variety",
             "t_pressure_task_callback",
             "t_interface_performance_result",
-            "t_report_machine"
+            "t_report_machine",
+            "t_script_csv_data_set",
+            "t_script_csv_create_task"
     };
 
     private String[] tableArrWithoutEnvCode = new String[]{
@@ -155,7 +157,9 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             "t_interface_performance_result",
             "t_tro_dept_level_name",
             "t_tenant_resource",
-            "t_report_machine"
+            "t_report_machine",
+            "t_script_csv_data_set",
+            "t_script_csv_create_task"
     };
 
     private String[] tableArrWithoutUserId = new String[] {
@@ -210,7 +214,9 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_pressure_task_variety",
         "t_pressure_task_callback",
         "t_interface_performance_result",
-        "t_shadow_mq_consumer"
+        "t_shadow_mq_consumer",
+            "t_script_csv_data_set",
+            "t_script_csv_create_task"
     };
 
     /**

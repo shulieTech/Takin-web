@@ -21,6 +21,8 @@ public class BusinessFlowParseRequest {
     @ApiModelProperty(name = "id", value = "业务流程id")
     private Long id;
 
+    private Long scriptDeployId;
+
     @NotNull(message = "脚本文件 不能为空")
     @ApiModelProperty(name = "scriptFile", value = "脚本文件")
     private FileManageUpdateRequest scriptFile;

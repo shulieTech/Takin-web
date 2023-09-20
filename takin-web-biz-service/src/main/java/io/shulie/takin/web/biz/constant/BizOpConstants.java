@@ -92,6 +92,7 @@ public final class BizOpConstants {
         public static final String FLOW_ACCOUNT = "flowAccount";
         public static final String OPERATIONLOG = "configCenter_operationLog";
         public static final String SCRIPT_MANAGE = "scriptManage";
+        public static final String SCRIPT_CSV_MANAGE = "scriptCsvManage";
         public static final String AUTHORITY_CONFIG = "configCenter_authorityConfig";
         public static final String DEBUGTOOL = "debugTool";
         public static final String DEBUGTOOL_LINKDEBUG = "debugTool_linkDebug";

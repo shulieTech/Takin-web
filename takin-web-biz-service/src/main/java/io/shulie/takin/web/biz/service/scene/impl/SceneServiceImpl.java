@@ -1,5 +1,8 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,6 +47,7 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchRespons
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.datamanage.CsvManageService;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceService;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
@@ -69,6 +73,7 @@ import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.model.mysql.ScriptCsvDataSetEntity;
 import io.shulie.takin.web.data.model.mysql.pressureresource.PressureResourceEntity;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
@@ -143,6 +148,9 @@ public class SceneServiceImpl implements SceneService {
     private ApplicationDAO applicationDAO;
     @Resource
     private PressureResourceMapper pressureResourceMapper;
+
+    @Resource
+    private CsvManageService csvManageService;
 
     @Override
     public List<SceneLinkRelateResult> nodeLinkToBusinessActivity(List<ScriptNode> nodes, Long sceneId) {
@@ -278,15 +286,20 @@ public class SceneServiceImpl implements SceneService {
         }
         //解析脚本
         List<ScriptNode> data = new ArrayList<>();
+        List<ScriptCsvDataSetEntity> csvDataSetEntityList = Lists.newArrayList();
         String testPlanName = "";
         if (!encoded) {
-            //解析脚本
+            //1. 解析脚本 ---  解析执行计划
             data = sceneManageApi.scriptAnalyze(analyzeRequest);
             List<ScriptNode> testPlan = JmxUtil.getScriptNodeByType(NodeTypeEnum.TEST_PLAN, data);
             if (CollectionUtils.isEmpty(testPlan)) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
             }
             testPlanName = testPlan.get(0).getTestName();
+
+            // 2.解析csv组件
+            csvDataSetEntityList.addAll(csvManageService.transformFromJmeter(analyzeRequest));
+
         }
         boolean isPressureResouce = false;
         if (businessFlowParseRequest.getId() != null) {
@@ -297,18 +310,28 @@ public class SceneServiceImpl implements SceneService {
         String businessFlowName = null;
         if (isPressureResouce || businessFlowParseRequest.getId() == null) {
             SceneCreateParam createParam = saveBusinessFlow(businessFlowParseRequest.getSource(), testPlanName, data, fileManageCreateRequest, businessFlowParseRequest.getPluginList(), isPressureResouce, businessFlowParseRequest.getId());
+            // 实例id
             businessFlowParseRequest.setId(createParam.getId());
+            // 将脚本deployId 赋值到 对象中
+            businessFlowParseRequest.setScriptDeployId(createParam.getScriptDeployId());
             businessFlowName = createParam.getSceneName();
         } else {
             SceneResult sceneResult = updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null, data, businessFlowParseRequest.getPluginList(), testPlanName);
             businessFlowName = sceneResult.getSceneName();
+            // 重新更新下
+            businessFlowParseRequest.setScriptDeployId(sceneResult.getScriptDeployId());
         }
+
+        // 如何保存csv？？？
+        csvManageService.save(csvDataSetEntityList,businessFlowParseRequest);
 
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
         result.setId(businessFlowParseRequest.getId());
         result.setBusinessProcessName(businessFlowName);
         return result;
     }
+
+
 
     @Transactional(rollbackFor = Exception.class)
     public SceneCreateParam saveBusinessFlow(Integer source, String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
@@ -356,7 +379,6 @@ public class SceneServiceImpl implements SceneService {
             createRequest.setPluginConfigCreateRequests(pluginList);
         }
         Long scriptManageId = scriptManageService.createScriptManage(createRequest);
-
         //更新业务流程
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
         sceneUpdateParam.setId(sceneCreateParam.getId());
@@ -366,6 +388,7 @@ public class SceneServiceImpl implements SceneService {
             sceneUpdateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
         }
         sceneDao.update(sceneUpdateParam);
+        sceneCreateParam.setScriptDeployId(scriptManageId);
         return sceneCreateParam;
     }
 
@@ -851,6 +874,8 @@ public class SceneServiceImpl implements SceneService {
             //自动匹配
             autoMatchActivity(businessFlowId);
         }
+        // 更新下脚本Id
+        sceneResult.setScriptDeployId(scriptDeployId);
         return sceneResult;
     }
 

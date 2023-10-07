@@ -165,6 +165,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private String pressureEngineJtlPath;
     @Value("${pressure.engine.log.path:/data/nfs_dir/logs}")
     private String pressureEngineLogPath;
+    @Value("${ptl.log.path:/data/}")
+    private String ptlLogPath;
 
     public static final String COMPARE = "<=";
 
@@ -1761,9 +1763,15 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (StringUtils.isNotBlank(features)) {
             JSONObject engineInfos = JSONObject.parseObject(features);
             String nfsRoot = engineInfos.getString(PressureStartCache.FEATURES_NFS_ROOT);
-            if (StringUtils.isNotBlank(nfsRoot)) {
-                realJtlPath = DataUtils.mergeDirPath(nfsRoot, "ptl");
-                realLogPath = DataUtils.mergeDirPath(nfsRoot, "logs");
+            String ptlLogServer = engineInfos.getString(PressureStartCache.FEATURES_PTL_LOG_SERVER);
+            if(StringUtils.isNotBlank(ptlLogServer)) {
+                realJtlPath = DataUtils.mergeDirPath(ptlLogPath + ptlLogServer , "ptl");
+                realLogPath = DataUtils.mergeDirPath(ptlLogPath + ptlLogServer, "logs");
+            } else {
+                if (StringUtils.isNotBlank(nfsRoot)) {
+                    realJtlPath = DataUtils.mergeDirPath(nfsRoot, "ptl");
+                    realLogPath = DataUtils.mergeDirPath(nfsRoot, "logs");
+                }
             }
         }
 

@@ -14,6 +14,7 @@ public class WatchmanNode {
     private String name;
     private String nfsServer;
     private String nfsDir;
+    private String ptlLogServer;
     private Long nfsUsableSpace;
     private Long nfsTotalSpace;
 

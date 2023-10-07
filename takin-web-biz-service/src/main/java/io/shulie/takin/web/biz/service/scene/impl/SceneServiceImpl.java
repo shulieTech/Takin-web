@@ -966,10 +966,14 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Override
-    public Boolean existsSceneName(String sceneName) {
+    public Boolean existsSceneName(String sceneName, Long id) {
         SceneQueryParam sceneQueryParam = new SceneQueryParam();
         sceneQueryParam.setSceneName(sceneName);
         List<SceneResult> sceneList = sceneDao.selectListByName(sceneQueryParam);
-        return CollectionUtils.isNotEmpty(sceneList);
+        if(id != null) {
+            return CollectionUtils.isNotEmpty(sceneList.stream().filter(data -> id.longValue() != data.getId().longValue()).collect(Collectors.toList()));
+        } else {
+            return CollectionUtils.isNotEmpty(sceneList);
+        }
     }
 }

@@ -72,5 +72,5 @@ public interface SceneService {
 
     void update(SceneUpdateParam param);
 
-    Boolean existsSceneName(String sceneName);
+    Boolean existsSceneName(String sceneName, Long id);
 }

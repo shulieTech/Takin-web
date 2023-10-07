@@ -67,6 +67,7 @@ public abstract class PressureStartCache {
     public static final String FEATURES_MACHINE_PTL_PATH = "machinePtlPath";
     public static final String FEATURES_NFS_SERVER = "nfsServer";
     public static final String FEATURES_NFS_ROOT= "nfsRoot";
+    public static final String FEATURES_PTL_LOG_SERVER= "ptlLogServer";
 
     public static String getResourceKey(String resourceId) {
         return String.format("pressure:resource:%s:locking", resourceId);

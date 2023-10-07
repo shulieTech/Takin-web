@@ -545,6 +545,7 @@ public abstract class AbstractIndicators {
         String nfsDir = node.getNfsDir();
         map.put(PressureStartCache.FEATURES_NFS_SERVER, nfsServer);
         map.put(PressureStartCache.FEATURES_NFS_ROOT, nfsDir);
+        map.put(PressureStartCache.FEATURES_PTL_LOG_SERVER, node.getPtlLogServer());
         if (Objects.equals(map.get(PressureStartCache.FEATURES_MACHINE_TYPE), String.valueOf(EngineType.PRIVATE.getType()))) {
             List<String> paths = new ArrayList<>(3);
             paths.add("nfsServer：" + nfsServer);

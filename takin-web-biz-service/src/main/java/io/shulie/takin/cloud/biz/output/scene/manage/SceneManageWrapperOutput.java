@@ -131,6 +131,8 @@ public class SceneManageWrapperOutput extends ContextExt {
 
     private boolean continueRead;
 
+    private Long deptId;
+
     /**
      * 场景类型:0:普通场景，1:流量调试
      */

@@ -1092,6 +1092,7 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         wrapperOutput.setFeatures(sceneManageResult.getFeatures());
         wrapperOutput.setScriptAnalysisResult(sceneManageResult.getScriptAnalysisResult());
         wrapperOutput.setPtConfig(sceneManageResult.getPtConfig());
+        wrapperOutput.setDeptId(sceneManageResult.getDeptId());
     }
 
     /**

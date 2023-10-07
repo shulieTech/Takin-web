@@ -1130,6 +1130,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         report.setEnvCode(scene.getEnvCode());
         report.setTenantId(scene.getTenantId());
         report.setOperateId(input.getOperateId());
+        report.setDeptId(scene.getDeptId());
         //负责人默认启动人
         report.setUserId(input.getIsTiming() ? scene.getUserId() : CloudPluginUtils.getUserId());
         report.setSceneName(scene.getPressureTestSceneName());

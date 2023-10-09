@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -279,7 +280,7 @@ public class SceneServiceImpl implements SceneService {
             }
             testPlanName = testPlan.get(0).getTestName();
         }
-        String businessFlowName = null;
+        String businessFlowName;
         if (businessFlowParseRequest.getId() == null) {
             SceneCreateParam createParam = saveBusinessFlow(businessFlowParseRequest.getSource(), testPlanName, data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
             businessFlowParseRequest.setId(createParam.getId());
@@ -302,7 +303,13 @@ public class SceneServiceImpl implements SceneService {
         sceneQueryParam.setSceneName(testName);
         List<SceneResult> sceneResultList = sceneDao.selectListByName(sceneQueryParam);
         if (CollectionUtils.isNotEmpty(sceneResultList)) {
-            testName = testName + "_" + DateUtil.formatDateTime(new Date());
+            //修改为使用jmeter文件名+时间作为场景名称
+            if (Objects.nonNull(fileManageCreateRequest) && StringUtils.isNotBlank(fileManageCreateRequest.getFileName())) {
+                String result = fileManageCreateRequest.getFileName().substring(0, fileManageCreateRequest.getFileName().lastIndexOf("."));
+                testName = result + "_" + DateUtil.format(new Date(),DatePattern.PURE_DATETIME_PATTERN);
+            } else {
+                testName = testName + "_" + DateUtil.format(new Date(),DatePattern.PURE_DATETIME_PATTERN);
+            }
         }
         //保存业务流程
         SceneCreateParam sceneCreateParam = new SceneCreateParam();
@@ -324,7 +331,7 @@ public class SceneServiceImpl implements SceneService {
         String scriptName = sceneCreateParam.getSceneName();
         List<ScriptManageResult> scriptManageResults = scriptManageDao.selectScriptManageByName(sceneCreateParam.getSceneName());
         if (CollectionUtils.isNotEmpty(scriptManageResults)) {
-            scriptName = sceneCreateParam.getSceneName() + "_" + DateUtil.formatDateTime(new Date());
+            scriptName = sceneCreateParam.getSceneName() + "_" + DateUtil.format(new Date(), DatePattern.PURE_DATETIME_PATTERN);
         }
         createRequest.setFileManageCreateRequests(Collections.singletonList(LinkManageConvert.INSTANCE.ofFileManageCreateRequest(fileManageCreateRequest)));
         createRequest.setName(scriptName);
@@ -802,6 +809,8 @@ public class SceneServiceImpl implements SceneService {
         //更新业务流程
         sceneUpdateParam.setScriptDeployId(scriptDeployId);
         sceneUpdateParam.setId(businessFlowId);
+//        String testName = scriptFile.getFileName() + "_" + DateUtil.formatDateTime(new Date());
+//        sceneUpdateParam.setSceneName(testName);
         sceneDao.update(sceneUpdateParam);
         //脚本节点有改动，重新自动匹配
         if (CollectionUtils.isNotEmpty(data)) {

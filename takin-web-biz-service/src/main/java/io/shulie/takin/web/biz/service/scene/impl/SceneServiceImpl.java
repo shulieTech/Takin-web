@@ -152,7 +152,10 @@ public class SceneServiceImpl implements SceneService {
      * 节点和业务活动匹配
      */
     public SceneLinkRelateResult nodeLinkToBusinessActivity(ScriptNode node, Long sceneId) {
-        List<SceneLinkRelateResult> links = sceneLinkRelateDao.getByIdentification(node.getIdentification());
+        SceneLinkRelateQuery query = new SceneLinkRelateQuery();
+        query.setScriptIdentification(node.getIdentification());
+        query.setSceneId(sceneId);
+        List<SceneLinkRelateResult> links = sceneLinkRelateDao.query(query);
         SceneLinkRelateResult link = null;
         ActivityListResult activity = null;
         boolean isMany = false;

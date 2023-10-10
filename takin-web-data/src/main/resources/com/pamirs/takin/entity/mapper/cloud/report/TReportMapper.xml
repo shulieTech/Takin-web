@@ -125,6 +125,9 @@
             <if test="param.envCode != null">
                 and `env_code` = #{param.envCode}
             </if>
+            <if test="param.deptId != null">
+                and dept_id = #{param.deptId}
+            </if>
         </where>
         order by id desc
     </select>

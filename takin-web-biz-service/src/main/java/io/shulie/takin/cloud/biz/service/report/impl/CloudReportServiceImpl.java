@@ -101,6 +101,7 @@ import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 import io.shulie.takin.web.biz.utils.ParsePressureTimeByModeUtils;
 import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -193,6 +194,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
         param.setEnvCode(CloudPluginUtils.getContext().getEnvCode());
         param.setTenantId(CloudPluginUtils.getContext().getTenantId());
+        param.setDeptId(WebPluginUtils.traceDeptId());
         List<Report> reportList = tReportMapper.listReport(param);
         if (CollectionUtils.isEmpty(reportList)) {
             return new PageInfo<>(new ArrayList<>(0));

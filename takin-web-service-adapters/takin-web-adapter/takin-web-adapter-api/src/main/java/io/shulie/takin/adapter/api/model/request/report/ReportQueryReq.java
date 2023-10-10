@@ -25,6 +25,9 @@ public class ReportQueryReq extends PagingContextExt {
      */
     @ApiModelProperty(name = "reportId", value = "报告ID")
     private Long reportId;
+
+    @ApiModelProperty(name = "deptId", value = "部门ID")
+    private Long deptId;
     /**
      * 场景名称
      */

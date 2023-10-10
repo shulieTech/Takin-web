@@ -1,13 +1,14 @@
 package io.shulie.takin.web.biz.pojo.response.scriptmanage;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author shulie
@@ -67,19 +68,20 @@ public class ScriptManageDeployDetailResponse implements Serializable {
      * 文件列表
      */
     @JsonProperty("relatedFiles")
-    private List<FileManageResponse> fileManageResponseList;
+    private List<FileManageResponse> fileManageResponseList = Collections.emptyList();
 
     /**
      * 附件列表
      */
     @JsonProperty("relatedAttachments")
-    private List<FileManageResponse> attachmentManageResponseList;
+    private List<FileManageResponse> attachmentManageResponseList = Collections.emptyList();
+    ;
 
     /**
      * 引擎插件列表
      */
     @JsonProperty("pluginConfigs")
-    private List<PluginConfigDetailResponse> pluginConfigDetailResponseList;
+    private List<PluginConfigDetailResponse> pluginConfigDetailResponseList = Collections.emptyList();
 
     /**
      * hasBigFile 是否有大文件

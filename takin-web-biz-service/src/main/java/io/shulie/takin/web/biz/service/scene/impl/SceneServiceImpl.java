@@ -281,7 +281,13 @@ public class SceneServiceImpl implements SceneService {
             if (CollectionUtils.isEmpty(testPlan)) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
             }
-            testPlanName = testPlan.get(0).getTestName();
+            //修改为使用jmeter文件名+时间作为场景名称
+            if (Objects.nonNull(fileManageCreateRequest) && StringUtils.isNotBlank(fileManageCreateRequest.getFileName())) {
+                String result = fileManageCreateRequest.getFileName().substring(0, fileManageCreateRequest.getFileName().lastIndexOf("."));
+                testPlanName = result + "_" + DateUtil.format(new Date(),DatePattern.PURE_DATETIME_PATTERN);
+            } else {
+                testPlanName = testPlan.get(0).getTestName() + "_" + DateUtil.format(new Date(),DatePattern.PURE_DATETIME_PATTERN);
+            }
         }
         String businessFlowName;
         if (businessFlowParseRequest.getId() == null) {
@@ -831,6 +837,9 @@ public class SceneServiceImpl implements SceneService {
         result.setScriptDeployId(sceneResult.getScriptDeployId());
         result.setTotalNodeNum(sceneResult.getTotalNodeNum());
         result.setLinkRelateNum(sceneResult.getLinkRelateNum());
+        if(CollectionUtils.isEmpty(result.getFileManageResponseList())){
+            result.setFileManageResponseList(new ArrayList<>());
+        }
     }
 
     private void dealScriptJmxNodes(List<SceneLinkRelateResult> sceneLinkRelateResults, List<ScriptJmxNode> scriptJmxNodes) {

@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.result.filemanage;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import lombok.Data;
@@ -58,8 +59,8 @@ public class FileManageResult extends UserCommonExt {
 
     private Integer isDeleted;
 
-    private Date gmtCreate;
+    private LocalDateTime gmtCreate;
 
-    private Date gmtUpdate;
+    private LocalDateTime gmtUpdate;
 
 }

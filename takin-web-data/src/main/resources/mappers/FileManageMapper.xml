@@ -24,4 +24,30 @@
         id, file_name, file_size, file_ext, file_type, file_extend, tenant_id,env_code, upload_time,
         upload_path, is_deleted, gmt_create, gmt_update
     </sql>
+
+    <update id="updateBatch" parameterType="java.util.List">
+        <!--@mbg.generated-->
+        update t_file_manage
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="file_name = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.fileName,jdbcType=VARCHAR}
+                </foreach>
+            </trim>
+            <trim prefix="file_extend = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.fileExtend,jdbcType=VARCHAR}
+                </foreach>
+            </trim>
+            <trim prefix="gmt_update = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.gmtUpdate,jdbcType=TIMESTAMP}
+                </foreach>
+            </trim>
+        </trim>
+        where id in
+        <foreach close=")" collection="list" item="item" open="(" separator=", ">
+            #{item.id,jdbcType=BIGINT}
+        </foreach>
+    </update>
 </mapper>

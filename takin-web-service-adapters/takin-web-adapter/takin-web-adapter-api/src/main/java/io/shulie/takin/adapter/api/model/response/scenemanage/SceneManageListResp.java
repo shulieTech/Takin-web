@@ -1,12 +1,12 @@
 package io.shulie.takin.adapter.api.model.response.scenemanage;
 
-import java.math.BigDecimal;
-
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.math.BigDecimal;
 
 /**
  * @author qianshui

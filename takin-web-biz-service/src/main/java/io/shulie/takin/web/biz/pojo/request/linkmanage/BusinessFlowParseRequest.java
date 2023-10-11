@@ -1,7 +1,5 @@
 package io.shulie.takin.web.biz.pojo.request.linkmanage;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
@@ -10,6 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author zhaoyong
@@ -34,4 +33,5 @@ public class BusinessFlowParseRequest {
 
     // 单接口压测入口
     private Integer source;
+
 }

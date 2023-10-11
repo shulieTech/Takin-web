@@ -48,4 +48,7 @@ public class UploadResponse {
 
     @ApiModelProperty(value = "文件访问路径")
     private String downloadUrl;
+
+    @ApiModelProperty(value = "文件组件Id")
+    private Long scriptCsvDataSetId;
 }

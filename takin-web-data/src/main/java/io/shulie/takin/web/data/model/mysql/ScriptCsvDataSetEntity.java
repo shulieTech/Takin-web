@@ -4,8 +4,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.time.LocalDateTime;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 /**
  * csv组件表
@@ -62,6 +63,18 @@ public class ScriptCsvDataSetEntity {
     private Long fileManageId;
 
     /**
+     * 是否拆分
+     */
+    @TableField(value = "is_split")
+    private Boolean isSplit;
+
+    /**
+     * 是否按照顺序拆分
+     */
+    @TableField(value = "is_order_split")
+    private Boolean isOrderSplit;
+
+    /**
      * 插入时间
      */
     @TableField(value = "CREATE_TIME")
@@ -72,7 +85,4 @@ public class ScriptCsvDataSetEntity {
      */
     @TableField(value = "UPDATE_TIME")
     private LocalDateTime updateTime;
-
-
-
 }

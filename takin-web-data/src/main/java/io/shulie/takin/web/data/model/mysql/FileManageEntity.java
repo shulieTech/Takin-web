@@ -6,6 +6,7 @@ import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -76,10 +77,10 @@ public class FileManageEntity extends TenantBaseEntity {
     private Integer isDeleted;
 
     @TableField(value = "gmt_create")
-    private Date gmtCreate;
+    private LocalDateTime gmtCreate;
 
     @TableField(value = "gmt_update")
-    private Date gmtUpdate;
+    private LocalDateTime gmtUpdate;
 
     @TableField(value = "sign",fill = FieldFill.INSERT)
     private String sign;
@@ -90,11 +91,16 @@ public class FileManageEntity extends TenantBaseEntity {
     @TableField(value = "customer_id")
     private Long customerId;
 
-    // 新增
+    // 新增 生成类型（0:手动上传；1:在线生成）
     @TableField(value = "create_type")
     private Integer createType;
     @TableField(value = "alias_name")
     private String aliasName;
     @TableField(value = "dept_id")
     private Long deptId;
+
+    @TableField(value = "script_csv_data_set_id")
+    private Long scriptCsvDataSetId;
+
+
 }

@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 /**
  * 上传文件的传输类
  *
@@ -41,8 +43,12 @@ public class UploadFileDTO {
     @ApiModelProperty(value = "是否拆分")
     private Integer isSplit;
 
+    @ApiModelProperty(value = "是否按顺序拆分")
+    private Integer isOrderSplit;
+
     @ApiModelProperty(value = "Topic")
     private String topic;
+
 
     @ApiModelProperty(value = "文件类型")
     private Integer fileType;
@@ -64,5 +70,7 @@ public class UploadFileDTO {
      */
     @ApiModelProperty(hidden = true)
     private Long scriptId;
+
+    private LocalDateTime gmtUpdate;
 
 }

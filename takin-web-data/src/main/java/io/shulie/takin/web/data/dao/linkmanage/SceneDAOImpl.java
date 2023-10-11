@@ -1,13 +1,7 @@
 package io.shulie.takin.web.data.dao.linkmanage;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.excel.util.StringUtils;
-
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.excel.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -26,6 +20,10 @@ import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 业务流程dao
@@ -76,6 +74,7 @@ public class SceneDAOImpl implements SceneDAO {
         queryWrapper.select(
                 SceneEntity::getId,
                 SceneEntity::getSceneName,
+                SceneEntity::getScriptDeployId,
                 SceneEntity::getTenantId,
                 SceneEntity::getUserId);
         List<SceneEntity> sceneEntityList = sceneMapper.selectList(queryWrapper);
@@ -86,6 +85,7 @@ public class SceneDAOImpl implements SceneDAO {
                 sceneResult.setSceneName(sceneEntity.getSceneName());
                 sceneResult.setTenantId(sceneEntity.getTenantId());
                 sceneResult.setUserId(sceneEntity.getUserId());
+                sceneResult.setScriptDeployId(sceneEntity.getScriptDeployId());
                 return sceneResult;
             }).collect(Collectors.toList());
         }

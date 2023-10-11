@@ -1,11 +1,12 @@
 package io.shulie.takin.web.biz.pojo.request.filemanage;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author zhaoyong
@@ -39,6 +40,11 @@ public class FileManageUpdateRequest implements Serializable {
     private String md5;
 
     /**
+     * 文件uuid
+     */
+    private String uuId;
+
+    /**
      * 脚本内容，前端编辑之后的脚本，需要转化为文件存储到指定目录
      */
     private String scriptContent;
@@ -70,4 +76,12 @@ public class FileManageUpdateRequest implements Serializable {
      * 新上传的文件的下载路径
      */
     private String downloadUrl;
+
+    @ApiModelProperty(name = "scriptCsvDataSetId", value = "css组件Id")
+    private Long scriptCsvDataSetId;
+
+
+    @ApiModelProperty(name = "aliasName", value = "备注")
+    private String aliasName;
+
 }

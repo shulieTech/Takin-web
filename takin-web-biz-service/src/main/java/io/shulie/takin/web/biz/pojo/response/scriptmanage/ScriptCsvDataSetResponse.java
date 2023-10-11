@@ -1,22 +1,22 @@
 package io.shulie.takin.web.biz.pojo.response.scriptmanage;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.shulie.takin.web.common.vo.script.RequestAssertDetailVO;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 /**
- * @author liuchuan
- * @date 2021/5/11 1:54 下午
- */
+* @Package io.shulie.takin.web.biz.pojo.response.scriptmanage
+* @ClassName: ScriptCsvDataSetResponse
+* @author hezhongqi
+* @description:
+* @date 2023/9/21 14:23
+*/
 @Data
 @ApiModel("出参类-csv数据")
 public class ScriptCsvDataSetResponse {
@@ -73,12 +73,34 @@ public class ScriptCsvDataSetResponse {
      * 插入时间
      */
     @ApiModelProperty("createTime")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     /**
      * 变更时间
      */
     @ApiModelProperty("updateTime")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
+
+    @ApiModelProperty("createType")
+    private Integer createType;
+    @ApiModelProperty(value = "aliasName")
+    private String aliasName;
+
+    @ApiModelProperty(value = "是否拆分")
+    private Integer isSplit;
+
+    @ApiModelProperty(value = "是否按照顺序拆分")
+    private Integer isOrderSplit;
+
+    @ApiModelProperty(value = "上传路径：返回给前端下载路径")
+    @JsonProperty("downloadUrl")
+    private String uploadPath;
+
+
+    @ApiModelProperty(value = "csv文件列表")
+    private List<FileManageResponse> files;
+
 
 }

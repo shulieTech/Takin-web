@@ -22,6 +22,7 @@ public class BusinessFlowDataFileRequest implements Serializable {
     @ApiModelProperty(name = "id", value = "业务流程id")
     private Long id;
 
+
     @ApiModelProperty(name = "uploadFiles", value = "数据文件")
     @JsonProperty("uploadFiles")
     private List<FileManageUpdateRequest> fileManageUpdateRequests;

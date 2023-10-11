@@ -1,8 +1,9 @@
 package io.shulie.takin.web.data.dao.scriptmanage;
 
-import java.util.List;
-
+import io.shulie.takin.web.data.model.mysql.ScriptFileRefEntity;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
+
+import java.util.List;
 
 /**
  * @author zhaoyong
@@ -35,4 +36,21 @@ public interface ScriptFileRefDAO {
      */
     void createScriptFileRefs(List<Long> fileIds, Long id);
 
+
+    /**
+     * 根据文件Id获取脚本实例id
+     * @param fileManageId
+     * @return
+     */
+    ScriptFileRefResult selectByFileManageId(Long fileManageId);
+
+    /**
+     * 根据文件Ids获取脚本实例id
+     * @param fileManageIds
+     * @return
+     */
+    List<ScriptFileRefResult> selectByFileManageIds(List<Long> fileManageIds);
+
+
+    void batchUpdateIds(List<ScriptFileRefEntity> collect);
 }

@@ -4,8 +4,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.time.LocalDateTime;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 /**
  * csv生成任务表
@@ -71,7 +72,7 @@ public class ScriptCsvCreateTaskEntity {
      * 别名
      */
     @TableField(value = "alias_name")
-    private Boolean aliasName;
+    private String aliasName;
 
     /**
      * 部门ID（模块ID）
@@ -86,6 +87,18 @@ public class ScriptCsvCreateTaskEntity {
     private Long businessFlowId;
 
     /**
+     * 业务活动ID
+     */
+    @TableField(value = "link_id")
+    private Long linkId;
+
+    /**
+     * csv组件表Id
+     */
+    @TableField(value = "script_csv_data_set_id")
+    private Long scriptCsvDataSetId;
+
+    /**
      * 插入时间
      */
     @TableField(value = "CREATE_TIME")
@@ -96,4 +109,9 @@ public class ScriptCsvCreateTaskEntity {
      */
     @TableField(value = "UPDATE_TIME")
     private LocalDateTime updateTime;
+
+    @TableField(value = "ENV_CODE")
+    private String envCode;
+    @TableField(value = "TENANT_ID")
+    private Long tenantId;
 }

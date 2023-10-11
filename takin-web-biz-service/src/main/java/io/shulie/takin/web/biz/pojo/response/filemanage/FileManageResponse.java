@@ -1,12 +1,12 @@
 package io.shulie.takin.web.biz.pojo.response.filemanage;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author zhaoyong
@@ -17,6 +17,36 @@ public class FileManageResponse implements Serializable {
 
     @ApiModelProperty(value = "文件id")
     private Long id;
+
+    /**
+     * 主键id
+     */
+    @ApiModelProperty("fileManageId")
+    private Long fileManageId;
+
+    /**
+     * 任务iD
+     */
+    @ApiModelProperty("taskId")
+    private Long taskId;
+
+
+    /**
+     * 文件名称
+     */
+    @ApiModelProperty(value = "生成类型")
+    private Integer createType;
+
+    @ApiModelProperty(value = "aliasName")
+    private String aliasName;
+
+
+    @ApiModelProperty(value = "taskStatus")
+    private Integer taskStatus;
+
+    @ApiModelProperty(value = "任务进度")
+    private String currentCreateSchedule;
+
 
     /**
      * 文件名称

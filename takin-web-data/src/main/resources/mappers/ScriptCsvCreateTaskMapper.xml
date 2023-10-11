@@ -13,17 +13,21 @@
     <result column="current_create_schedule" jdbcType="VARCHAR" property="currentCreateSchedule" />
     <result column="create_status" jdbcType="TINYINT" property="createStatus" />
     <result column="remark" jdbcType="VARCHAR" property="remark" />
-    <result column="alias_name" jdbcType="BOOLEAN" property="aliasName" />
+    <result column="alias_name" jdbcType="VARCHAR" property="aliasName" />
     <result column="dept_id" jdbcType="BIGINT" property="deptId" />
     <result column="business_flow_id" jdbcType="BIGINT" property="businessFlowId" />
+    <result column="link_id" jdbcType="BIGINT" property="linkId" />
+    <result column="script_csv_data_set_id" jdbcType="BIGINT" property="scriptCsvDataSetId" />
     <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
     <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="TENANT_ID" jdbcType="BIGINT" property="tenantId" />
+    <result column="ENV_CODE" jdbcType="VARCHAR" property="envCode" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, task_start_time, task_end_time, template_variable, template_content, script_csv_variable_json_path, 
     current_create_schedule, create_status, remark, alias_name, dept_id, business_flow_id, 
-    CREATE_TIME, UPDATE_TIME
+    link_id, script_csv_data_set_id, CREATE_TIME, UPDATE_TIME,TENANT_ID,ENV_CODE
   </sql>
   <update id="updateBatch" parameterType="java.util.List">
     <!--@mbg.generated-->
@@ -71,7 +75,7 @@
       </trim>
       <trim prefix="alias_name = case" suffix="end,">
         <foreach collection="list" index="index" item="item">
-          when id = #{item.id,jdbcType=BIGINT} then #{item.aliasName,jdbcType=BOOLEAN}
+          when id = #{item.id,jdbcType=BIGINT} then #{item.aliasName,jdbcType=VARCHAR}
         </foreach>
       </trim>
       <trim prefix="dept_id = case" suffix="end,">
@@ -82,6 +86,16 @@
       <trim prefix="business_flow_id = case" suffix="end,">
         <foreach collection="list" index="index" item="item">
           when id = #{item.id,jdbcType=BIGINT} then #{item.businessFlowId,jdbcType=BIGINT}
+        </foreach>
+      </trim>
+      <trim prefix="link_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.linkId,jdbcType=BIGINT}
+        </foreach>
+      </trim>
+      <trim prefix="script_csv_data_set_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.scriptCsvDataSetId,jdbcType=BIGINT}
         </foreach>
       </trim>
       <trim prefix="CREATE_TIME = case" suffix="end,">
@@ -163,7 +177,7 @@
       <trim prefix="alias_name = case" suffix="end,">
         <foreach collection="list" index="index" item="item">
           <if test="item.aliasName != null">
-            when id = #{item.id,jdbcType=BIGINT} then #{item.aliasName,jdbcType=BOOLEAN}
+            when id = #{item.id,jdbcType=BIGINT} then #{item.aliasName,jdbcType=VARCHAR}
           </if>
         </foreach>
       </trim>
@@ -178,6 +192,20 @@
         <foreach collection="list" index="index" item="item">
           <if test="item.businessFlowId != null">
             when id = #{item.id,jdbcType=BIGINT} then #{item.businessFlowId,jdbcType=BIGINT}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="link_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.linkId != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.linkId,jdbcType=BIGINT}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="script_csv_data_set_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.scriptCsvDataSetId != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.scriptCsvDataSetId,jdbcType=BIGINT}
           </if>
         </foreach>
       </trim>
@@ -206,14 +234,15 @@
     insert into t_script_csv_create_task
     (task_start_time, task_end_time, template_variable, template_content, script_csv_variable_json_path, 
       current_create_schedule, create_status, remark, alias_name, dept_id, business_flow_id, 
-      CREATE_TIME, UPDATE_TIME)
+      link_id, script_csv_data_set_id, CREATE_TIME, UPDATE_TIME)
     values
     <foreach collection="list" item="item" separator=",">
       (#{item.taskStartTime,jdbcType=TIMESTAMP}, #{item.taskEndTime,jdbcType=TIMESTAMP}, 
         #{item.templateVariable,jdbcType=VARCHAR}, #{item.templateContent,jdbcType=LONGVARCHAR}, 
         #{item.scriptCsvVariableJsonPath,jdbcType=VARCHAR}, #{item.currentCreateSchedule,jdbcType=VARCHAR}, 
-        #{item.createStatus,jdbcType=TINYINT}, #{item.remark,jdbcType=VARCHAR}, #{item.aliasName,jdbcType=BOOLEAN}, 
-        #{item.deptId,jdbcType=BIGINT}, #{item.businessFlowId,jdbcType=BIGINT}, #{item.createTime,jdbcType=TIMESTAMP}, 
+        #{item.createStatus,jdbcType=TINYINT}, #{item.remark,jdbcType=VARCHAR}, #{item.aliasName,jdbcType=VARCHAR}, 
+        #{item.deptId,jdbcType=BIGINT}, #{item.businessFlowId,jdbcType=BIGINT}, #{item.linkId,jdbcType=BIGINT}, 
+        #{item.scriptCsvDataSetId,jdbcType=BIGINT}, #{item.createTime,jdbcType=TIMESTAMP}, 
         #{item.updateTime,jdbcType=TIMESTAMP})
     </foreach>
   </insert>
@@ -235,6 +264,8 @@
       alias_name,
       dept_id,
       business_flow_id,
+      link_id,
+      script_csv_data_set_id,
       CREATE_TIME,
       UPDATE_TIME,
     </trim>
@@ -251,9 +282,11 @@
       #{currentCreateSchedule,jdbcType=VARCHAR},
       #{createStatus,jdbcType=TINYINT},
       #{remark,jdbcType=VARCHAR},
-      #{aliasName,jdbcType=BOOLEAN},
+      #{aliasName,jdbcType=VARCHAR},
       #{deptId,jdbcType=BIGINT},
       #{businessFlowId,jdbcType=BIGINT},
+      #{linkId,jdbcType=BIGINT},
+      #{scriptCsvDataSetId,jdbcType=BIGINT},
       #{createTime,jdbcType=TIMESTAMP},
       #{updateTime,jdbcType=TIMESTAMP},
     </trim>
@@ -270,9 +303,11 @@
       current_create_schedule = #{currentCreateSchedule,jdbcType=VARCHAR},
       create_status = #{createStatus,jdbcType=TINYINT},
       remark = #{remark,jdbcType=VARCHAR},
-      alias_name = #{aliasName,jdbcType=BOOLEAN},
+      alias_name = #{aliasName,jdbcType=VARCHAR},
       dept_id = #{deptId,jdbcType=BIGINT},
       business_flow_id = #{businessFlowId,jdbcType=BIGINT},
+      link_id = #{linkId,jdbcType=BIGINT},
+      script_csv_data_set_id = #{scriptCsvDataSetId,jdbcType=BIGINT},
       CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
       UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
     </trim>
@@ -317,6 +352,12 @@
       <if test="businessFlowId != null">
         business_flow_id,
       </if>
+      <if test="linkId != null">
+        link_id,
+      </if>
+      <if test="scriptCsvDataSetId != null">
+        script_csv_data_set_id,
+      </if>
       <if test="createTime != null">
         CREATE_TIME,
       </if>
@@ -354,13 +395,19 @@
         #{remark,jdbcType=VARCHAR},
       </if>
       <if test="aliasName != null">
-        #{aliasName,jdbcType=BOOLEAN},
+        #{aliasName,jdbcType=VARCHAR},
       </if>
       <if test="deptId != null">
         #{deptId,jdbcType=BIGINT},
       </if>
       <if test="businessFlowId != null">
         #{businessFlowId,jdbcType=BIGINT},
+      </if>
+      <if test="linkId != null">
+        #{linkId,jdbcType=BIGINT},
+      </if>
+      <if test="scriptCsvDataSetId != null">
+        #{scriptCsvDataSetId,jdbcType=BIGINT},
       </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},
@@ -399,13 +446,19 @@
         remark = #{remark,jdbcType=VARCHAR},
       </if>
       <if test="aliasName != null">
-        alias_name = #{aliasName,jdbcType=BOOLEAN},
+        alias_name = #{aliasName,jdbcType=VARCHAR},
       </if>
       <if test="deptId != null">
         dept_id = #{deptId,jdbcType=BIGINT},
       </if>
       <if test="businessFlowId != null">
         business_flow_id = #{businessFlowId,jdbcType=BIGINT},
+      </if>
+      <if test="linkId != null">
+        link_id = #{linkId,jdbcType=BIGINT},
+      </if>
+      <if test="scriptCsvDataSetId != null">
+        script_csv_data_set_id = #{scriptCsvDataSetId,jdbcType=BIGINT},
       </if>
       <if test="createTime != null">
         CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},

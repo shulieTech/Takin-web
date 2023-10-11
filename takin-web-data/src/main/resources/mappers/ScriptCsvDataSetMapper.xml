@@ -12,13 +12,16 @@
     <result column="script_deploy_id" jdbcType="BIGINT" property="scriptDeployId" />
     <result column="business_flow_id" jdbcType="BIGINT" property="businessFlowId" />
     <result column="file_manage_id" jdbcType="BIGINT" property="fileManageId" />
+    <result column="is_split" jdbcType="BOOLEAN" property="isSplit" />
+    <result column="is_order_split" jdbcType="BOOLEAN" property="isOrderSplit" />
     <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
     <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, script_csv_data_set_name, script_csv_file_name, script_csv_variable_name, ignore_first_line, 
-    script_deploy_id, business_flow_id, file_manage_id, CREATE_TIME, UPDATE_TIME
+    script_deploy_id, business_flow_id, file_manage_id, is_split, is_order_split, CREATE_TIME, 
+    UPDATE_TIME
   </sql>
   <update id="updateBatch" parameterType="java.util.List">
     <!--@mbg.generated-->
@@ -57,6 +60,16 @@
       <trim prefix="file_manage_id = case" suffix="end,">
         <foreach collection="list" index="index" item="item">
           when id = #{item.id,jdbcType=BIGINT} then #{item.fileManageId,jdbcType=BIGINT}
+        </foreach>
+      </trim>
+      <trim prefix="is_split = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.isSplit,jdbcType=BOOLEAN}
+        </foreach>
+      </trim>
+      <trim prefix="is_order_split = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.isOrderSplit,jdbcType=BOOLEAN}
         </foreach>
       </trim>
       <trim prefix="CREATE_TIME = case" suffix="end,">
@@ -128,6 +141,20 @@
           </if>
         </foreach>
       </trim>
+      <trim prefix="is_split = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.isSplit != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.isSplit,jdbcType=BOOLEAN}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="is_order_split = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.isOrderSplit != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.isOrderSplit,jdbcType=BOOLEAN}
+          </if>
+        </foreach>
+      </trim>
       <trim prefix="CREATE_TIME = case" suffix="end,">
         <foreach collection="list" index="index" item="item">
           <if test="item.createTime != null">
@@ -152,14 +179,15 @@
     <!--@mbg.generated-->
     insert into t_script_csv_data_set
     (script_csv_data_set_name, script_csv_file_name, script_csv_variable_name, ignore_first_line, 
-      script_deploy_id, business_flow_id, file_manage_id, CREATE_TIME, UPDATE_TIME)
+      script_deploy_id, business_flow_id, file_manage_id, is_split, is_order_split, CREATE_TIME, 
+      UPDATE_TIME)
     values
     <foreach collection="list" item="item" separator=",">
       (#{item.scriptCsvDataSetName,jdbcType=VARCHAR}, #{item.scriptCsvFileName,jdbcType=VARCHAR}, 
         #{item.scriptCsvVariableName,jdbcType=VARCHAR}, #{item.ignoreFirstLine,jdbcType=BOOLEAN}, 
         #{item.scriptDeployId,jdbcType=BIGINT}, #{item.businessFlowId,jdbcType=BIGINT}, 
-        #{item.fileManageId,jdbcType=BIGINT}, #{item.createTime,jdbcType=TIMESTAMP}, #{item.updateTime,jdbcType=TIMESTAMP}
-        )
+        #{item.fileManageId,jdbcType=BIGINT}, #{item.isSplit,jdbcType=BOOLEAN}, #{item.isOrderSplit,jdbcType=BOOLEAN}, 
+        #{item.createTime,jdbcType=TIMESTAMP}, #{item.updateTime,jdbcType=TIMESTAMP})
     </foreach>
   </insert>
   <insert id="insertOrUpdate" keyColumn="id" keyProperty="id" parameterType="io.shulie.takin.web.data.model.mysql.ScriptCsvDataSetEntity" useGeneratedKeys="true">
@@ -176,6 +204,8 @@
       script_deploy_id,
       business_flow_id,
       file_manage_id,
+      is_split,
+      is_order_split,
       CREATE_TIME,
       UPDATE_TIME,
     </trim>
@@ -191,6 +221,8 @@
       #{scriptDeployId,jdbcType=BIGINT},
       #{businessFlowId,jdbcType=BIGINT},
       #{fileManageId,jdbcType=BIGINT},
+      #{isSplit,jdbcType=BOOLEAN},
+      #{isOrderSplit,jdbcType=BOOLEAN},
       #{createTime,jdbcType=TIMESTAMP},
       #{updateTime,jdbcType=TIMESTAMP},
     </trim>
@@ -206,6 +238,8 @@
       script_deploy_id = #{scriptDeployId,jdbcType=BIGINT},
       business_flow_id = #{businessFlowId,jdbcType=BIGINT},
       file_manage_id = #{fileManageId,jdbcType=BIGINT},
+      is_split = #{isSplit,jdbcType=BOOLEAN},
+      is_order_split = #{isOrderSplit,jdbcType=BOOLEAN},
       CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
       UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
     </trim>
@@ -237,6 +271,12 @@
       </if>
       <if test="fileManageId != null">
         file_manage_id,
+      </if>
+      <if test="isSplit != null">
+        is_split,
+      </if>
+      <if test="isOrderSplit != null">
+        is_order_split,
       </if>
       <if test="createTime != null">
         CREATE_TIME,
@@ -271,6 +311,12 @@
       <if test="fileManageId != null">
         #{fileManageId,jdbcType=BIGINT},
       </if>
+      <if test="isSplit != null">
+        #{isSplit,jdbcType=BOOLEAN},
+      </if>
+      <if test="isOrderSplit != null">
+        #{isOrderSplit,jdbcType=BOOLEAN},
+      </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},
       </if>
@@ -303,6 +349,12 @@
       </if>
       <if test="fileManageId != null">
         file_manage_id = #{fileManageId,jdbcType=BIGINT},
+      </if>
+      <if test="isSplit != null">
+        is_split = #{isSplit,jdbcType=BOOLEAN},
+      </if>
+      <if test="isOrderSplit != null">
+        is_order_split = #{isOrderSplit,jdbcType=BOOLEAN},
       </if>
       <if test="createTime != null">
         CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},

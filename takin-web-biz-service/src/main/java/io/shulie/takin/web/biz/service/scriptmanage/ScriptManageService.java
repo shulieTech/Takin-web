@@ -1,27 +1,14 @@
 package io.shulie.takin.web.biz.service.scriptmanage;
 
-import java.util.List;
-
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployPageQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptTagCreateRefRequest;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.SupportJmeterPluginNameRequest;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.SupportJmeterPluginVersionRequest;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.WebPartRequest;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageActivityResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageSceneManageResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageXmlContentResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.SupportJmeterPluginNameResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.SupportJmeterPluginVersionResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.WebPartResponse;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.*;
+import io.shulie.takin.web.biz.pojo.response.scriptmanage.*;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
 import io.shulie.takin.web.data.model.mysql.FileManageEntity;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
+
+import java.util.List;
 
 /**
  * @author zhaoyong
@@ -82,9 +69,15 @@ public interface ScriptManageService {
     ScriptManageDeployDetailResponse getScriptManageDeployDetail(Long scriptDeployId);
 
     /**
-     * 修改脚本文件
+     * 修改脚本文件 && 这里 todo 可能需要修改
      */
     Long updateScriptManage(ScriptManageDeployUpdateRequest scriptManageDeployUpdateRequest);
+
+
+    /**
+     * 修改脚本文件的 数据文件，不修改文件
+     */
+    List<FileManageEntity> updateScriptCssManage(ScriptManageDeployUpdateRequest scriptManageDeployUpdateRequest);
 
     /**
      * 查询所有业务流程，再将所有关联的脚本id附带出来

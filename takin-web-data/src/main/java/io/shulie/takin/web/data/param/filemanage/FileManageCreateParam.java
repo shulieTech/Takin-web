@@ -1,11 +1,11 @@
 package io.shulie.takin.web.data.param.filemanage;
 
-import java.util.Date;
-
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import java.util.Date;
 
 /**
  * @author zhaoyong
@@ -55,5 +55,10 @@ public class FileManageCreateParam extends TenantCommonExt {
      * 签名
      */
     private String md5;
+
+    @ApiModelProperty(name = "scriptCsvDataSetId", value = "css组件Id")
+    private Long scriptCsvDataSetId;
+
+    private String aliasName;
 
 }

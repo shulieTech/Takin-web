@@ -55,6 +55,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -183,6 +184,16 @@ public class SceneController {
      * @return 调用Cloud接口用的入参
      */
     private SceneRequest buildSceneRequest(NewSceneRequest request) {
+        //解析如果线程数>pod数 pod数=1
+        Integer podNum = request.getConfig().getPodNum();
+        Map<String, NewSceneRequest.ThreadGroupConfig> threadGroupConfigMap = request.getConfig().getThreadGroupConfigMap();
+        if(MapUtils.isNotEmpty(threadGroupConfigMap)) {
+            threadGroupConfigMap.forEach((key, value) -> {
+                if(value.getThreadNum() < podNum) {
+                    request.getConfig().setPodNum(1);
+                }
+            });
+        }
         // 1. 基本信息
         SceneRequest sceneRequest = BeanUtil.copyProperties(request, SceneRequest.class);
         // 2. 线程组施压配置 （字段相同，但是由于类型不同，导致的无法拷贝属性，需要手动转换）

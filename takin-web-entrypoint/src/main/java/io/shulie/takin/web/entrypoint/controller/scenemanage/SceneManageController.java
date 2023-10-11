@@ -407,5 +407,9 @@ public class SceneManageController {
             }
         }
         sceneVO.setScheduleInterval(sceneVO.getScheduleInterval() != null ? sceneVO.getScheduleInterval() : 1);
+        //如果podNum>threadNum 设置podNum=1
+        if(sceneVO.getIpNum() > sceneVO.getConcurrenceNum()) {
+            sceneVO.setIpNum(1);
+        }
     }
 }

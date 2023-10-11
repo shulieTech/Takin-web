@@ -83,8 +83,6 @@ public class ScriptCsvDataSetResponse {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 
-    @ApiModelProperty("createType")
-    private Integer createType;
     @ApiModelProperty(value = "aliasName")
     private String aliasName;
 

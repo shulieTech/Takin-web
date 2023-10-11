@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName(value = "t_script_csv_create_task")
-public class ScriptCsvCreateTaskEntity {
+public class ScriptCsvCreateTaskEntity extends TenantBaseEntity {
     /**
      * 主键id
      */
@@ -110,8 +111,4 @@ public class ScriptCsvCreateTaskEntity {
     @TableField(value = "UPDATE_TIME")
     private LocalDateTime updateTime;
 
-    @TableField(value = "ENV_CODE")
-    private String envCode;
-    @TableField(value = "TENANT_ID")
-    private Long tenantId;
 }

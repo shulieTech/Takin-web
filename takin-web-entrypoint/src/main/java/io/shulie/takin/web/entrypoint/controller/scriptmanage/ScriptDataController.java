@@ -1,6 +1,9 @@
 package io.shulie.takin.web.entrypoint.controller.scriptmanage;
 
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
@@ -145,6 +148,13 @@ public class ScriptDataController {
     }
 
 
+    /**
+     * 上传文件  无需权限
+     * @param sceneId
+     * @param scriptCsvDataSetId
+     * @param file
+     * @return
+     */
     @PostMapping("/upload")
     @ApiOperation(value = "文件上传")
     public List<UploadResponse> upload(Long sceneId, Long scriptCsvDataSetId, List<MultipartFile> file) {
@@ -153,15 +163,15 @@ public class ScriptDataController {
 
     @PostMapping("/uploadDataFile")
     @ApiOperation("业务流程上传css数据文件")
-//    @ModuleDef(
-//            moduleName = BizOpConstants.Modules.LINK_CARDING,
-//            subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
-//            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATEFile
-//    )
-//    @AuthVerification(
-//            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
-//            needAuth = ActionTypeEnum.UPDATE
-//    )
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.LINK_CARDING,
+            subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
+            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATEFile
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+            needAuth = ActionTypeEnum.UPDATE
+    )
     public ResponseResult<BusinessFlowDetailResponse> uploadDataFile(@RequestBody @Valid BusinessFlowDataFileRequest businessFlowDataFileRequest) {
         BusinessFlowDetailResponse sceneDetailDto = csvManageService.uploadDataFile(businessFlowDataFileRequest);
         // 操作日志

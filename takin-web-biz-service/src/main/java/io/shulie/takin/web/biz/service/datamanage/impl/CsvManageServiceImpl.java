@@ -269,7 +269,6 @@ public class CsvManageServiceImpl implements CsvManageService {
             FileManageEntity fileManageEntity = fileIdMap.get(response.getFileManageId());
             if (fileManageEntity != null) {
                 response.setAliasName(fileManageEntity.getAliasName());
-                response.setCreateType(fileManageEntity.getCreateType());
                 response.setCreateTime(fileManageEntity.getGmtCreate());
                 response.setUploadPath(fileManageEntity.getUploadPath());
             }
@@ -310,15 +309,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         if (CollectionUtils.isEmpty(csvDataSetEntityList)) {
             return Lists.newArrayList();
         }
-        // 2. 获取文件表数据
-        List<Long> fileIds = csvDataSetEntityList.stream().map(ScriptCsvDataSetEntity::getFileManageId).collect(Collectors.toList());
-        LambdaQueryWrapper<FileManageEntity> fileWrapper = new LambdaQueryWrapper<>();
-        fileWrapper.in(FileManageEntity::getId, fileIds);
-        fileWrapper.eq(FileManageEntity::getIsDeleted, 0);
-        List<FileManageEntity> fileManageEntityList = fileManageMapper.selectList(fileWrapper);
-        Map<Long, FileManageEntity> fileIdMap = fileManageEntityList.stream().collect(Collectors.toMap(FileManageEntity::getId, t -> t));
-
-        // 3. 获取任务列表
+        // 2. 获取任务列表
         List<Long> ids = csvDataSetEntityList.stream().map(ScriptCsvDataSetEntity::getId).collect(Collectors.toList());
         LambdaQueryWrapper<ScriptCsvCreateTaskEntity> taskWrapper = new LambdaQueryWrapper<>();
         taskWrapper.in(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId, ids);
@@ -329,15 +320,8 @@ public class CsvManageServiceImpl implements CsvManageService {
         return csvDataSetEntityList.stream().map(t -> {
             ScriptCsvCreateDetailResponse detailResponse = new ScriptCsvCreateDetailResponse();
             // 组装组件数据
-            ScriptCsvDataSetResponse setResponse = new ScriptCsvDataSetResponse();
-            BeanUtils.copyProperties(t, setResponse);
-            FileManageEntity fileManageEntity = fileIdMap.get(t.getFileManageId());
-            if (fileManageEntity != null) {
-                setResponse.setAliasName(fileManageEntity.getAliasName());
-                setResponse.setCreateType(fileManageEntity.getCreateType());
-            }
-            detailResponse.setScriptCsvDataSetResponse(setResponse);
-            ScriptCsvCreateTaskResponse taskResponse = new ScriptCsvCreateTaskResponse();
+            BeanUtils.copyProperties(t, detailResponse);
+            detailResponse.setScriptCsvDataSetId(t.getId());
             // 转一下 map
             Map<String,String> scriptCsvVariableJsonPath = Maps.newHashMap();
             String scriptCsvVariableName = t.getScriptCsvVariableName();
@@ -345,24 +329,21 @@ public class CsvManageServiceImpl implements CsvManageService {
             for(String variableName : variableNames) {
                 scriptCsvVariableJsonPath.put(variableName,"");
             }
-            taskResponse.setScriptCsvVariableJsonPath(scriptCsvVariableJsonPath);
+            detailResponse.setScriptCsvVariableJsonPath(scriptCsvVariableJsonPath);
 
             List<ScriptCsvCreateTaskEntity> taskList = taskMap.get(t.getId());
             if (!CollectionUtils.isEmpty(taskList)) {
                 // 组装 最近一次任务的
                 ScriptCsvCreateTaskEntity scriptCsvCreateTaskEntity = taskList.get(0);
-                BeanUtils.copyProperties(scriptCsvCreateTaskEntity, taskResponse);
+                BeanUtils.copyProperties(scriptCsvCreateTaskEntity, detailResponse);
 
                 Map<String,String> taskVariableJsonPathMap = JSON.parseObject(scriptCsvCreateTaskEntity.getScriptCsvVariableJsonPath(), Map.class);
                 scriptCsvVariableJsonPath.putAll(taskVariableJsonPathMap);
-                taskResponse.setScriptCsvVariableJsonPath(scriptCsvVariableJsonPath);
-
-                detailResponse.setScriptCsvCreateTaskResponse(taskResponse);
-
+                detailResponse.setScriptCsvVariableJsonPath(scriptCsvVariableJsonPath);
                 //组装 模板列表
                 String templateContent = scriptCsvCreateTaskEntity.getTemplateContent();
                 ScriptCsvDataTemplateResponse templateResponse = JSON.parseObject(templateContent, ScriptCsvDataTemplateResponse.class);
-                detailResponse.setScriptCsvDataTemplateResponse(templateResponse);
+                detailResponse.setTemplate(templateResponse);
             }
             // 重组
             return detailResponse;
@@ -444,6 +425,8 @@ public class CsvManageServiceImpl implements CsvManageService {
             scriptCsvCreateTask.setScriptCsvDataSetId(request.getScriptCsvDataSetId());
             scriptCsvCreateTask.setCreateTime(LocalDateTime.now());
             scriptCsvCreateTask.setUpdateTime(LocalDateTime.now());
+            scriptCsvCreateTask.setTenantId(WebPluginUtils.traceTenantId());
+            scriptCsvCreateTask.setEnvCode(WebPluginUtils.traceEnvCode());
             taskEntityList.add(scriptCsvCreateTask);
         }
         int insert = scriptCsvCreateTaskMapper.batchInsert(taskEntityList);
@@ -911,7 +894,7 @@ public class CsvManageServiceImpl implements CsvManageService {
                     throw new RuntimeException("组件中上传文件仅允许.csv格式且文件名为" + fileName + "的数据");
                 }
             } else {
-                if (name.endsWith(".csv") && fileNameIdMap.keySet().contains(name)) {
+                if (name.endsWith(".csv") && !fileNameIdMap.containsKey(name)) {
                     throw new RuntimeException("组件中不允许上传组件外的数据文件");
                 }
             }
@@ -971,7 +954,10 @@ public class CsvManageServiceImpl implements CsvManageService {
 
         // 3. 默认选择上传的文件
         List<Long> scriptCsvDataSetIds = fileManageEntityList.stream().map(FileManageEntity::getScriptCsvDataSetId).collect(Collectors.toList());
-        List<ScriptCsvDataSetEntity> csvDataSetEntityList = scriptCsvDataSetMapper.selectBatchIds(scriptCsvDataSetIds);
+        List<ScriptCsvDataSetEntity> csvDataSetEntityList = Lists.newArrayList();
+        if(CollectionUtils.isEmpty(scriptCsvDataSetIds)) {
+            csvDataSetEntityList.addAll( scriptCsvDataSetMapper.selectBatchIds(scriptCsvDataSetIds));
+        }
 
         // 旧的文件id
         List<Long> oleFileIds = csvDataSetEntityList.stream().map(ScriptCsvDataSetEntity::getFileManageId).filter(Objects::nonNull)
@@ -988,8 +974,10 @@ public class CsvManageServiceImpl implements CsvManageService {
             throw new RuntimeException("组件文件关联更新失败");
         }
         // 删除之前的关联关系
-        List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectByFileManageIds(oleFileIds);
-        scriptFileRefDAO.deleteByIds(scriptFileRefResults.stream().map(ScriptFileRefResult::getId).collect(Collectors.toList()));
+        if(CollectionUtils.isEmpty(oleFileIds)) {
+            List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectByFileManageIds(oleFileIds);
+            scriptFileRefDAO.deleteByIds(scriptFileRefResults.stream().map(ScriptFileRefResult::getId).collect(Collectors.toList()));
+        }
 
         // 新增新的关系
         scriptFileRefDAO.createScriptFileRefs(fileManageEntityList.stream().map(FileManageEntity::getId).collect(Collectors.toList()), scriptDeployId);

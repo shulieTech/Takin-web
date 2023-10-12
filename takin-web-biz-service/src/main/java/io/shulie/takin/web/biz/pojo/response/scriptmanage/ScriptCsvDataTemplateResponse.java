@@ -30,9 +30,9 @@ public class ScriptCsvDataTemplateResponse {
 
     private String appName;
 
-    private String requestUrl;
+    private String serviceName;
 
-    private String requestMethod;
+    private String methodName;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime startTime;

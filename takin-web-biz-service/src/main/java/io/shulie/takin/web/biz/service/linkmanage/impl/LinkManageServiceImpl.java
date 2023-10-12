@@ -1,65 +1,19 @@
 package io.shulie.takin.web.biz.service.linkmanage.impl;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import com.alibaba.fastjson.JSON;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.dao.linkguard.TLinkGuardMapper;
-import com.pamirs.takin.entity.dao.linkmanage.TBusinessLinkManageTableMapper;
-import com.pamirs.takin.entity.dao.linkmanage.TLinkManageTableMapper;
-import com.pamirs.takin.entity.dao.linkmanage.TMiddlewareInfoMapper;
-import com.pamirs.takin.entity.dao.linkmanage.TMiddlewareLinkRelateMapper;
-import com.pamirs.takin.entity.dao.linkmanage.TSceneLinkRelateMapper;
-import com.pamirs.takin.entity.dao.linkmanage.TSceneMapper;
+import com.pamirs.takin.entity.dao.linkmanage.*;
 import com.pamirs.takin.entity.domain.dto.EntranceSimpleDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessActiveIdAndNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessActiveViewListDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowIdAndNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessLinkDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.ExistBusinessActiveDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.MiddleWareNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.MiddleWareVersionDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.SceneDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.SystemProcessIdAndNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.TechLinkDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.TopologicalGraphEntity;
-import com.pamirs.takin.entity.domain.dto.linkmanage.TopologicalGraphNode;
-import com.pamirs.takin.entity.domain.dto.linkmanage.TopologicalGraphRelation;
-import com.pamirs.takin.entity.domain.dto.linkmanage.TopologicalGraphVo;
-import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.ApplicationRemoteDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.BusinessCoverDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkHistoryInfoDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkmiddleWareDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.SystemProcessDto;
+import com.pamirs.takin.entity.domain.dto.linkmanage.*;
+import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.*;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.LinkDomainEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.enums.LinkDomainEnum;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.enums.MiddlewareTypeEnum;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.enums.NodeClassEnum;
-import com.pamirs.takin.entity.domain.entity.linkmanage.BusinessLinkManageTable;
-import com.pamirs.takin.entity.domain.entity.linkmanage.LinkManageTable;
-import com.pamirs.takin.entity.domain.entity.linkmanage.LinkQueryVo;
-import com.pamirs.takin.entity.domain.entity.linkmanage.Scene;
-import com.pamirs.takin.entity.domain.entity.linkmanage.TMiddlewareInfo;
+import com.pamirs.takin.entity.domain.entity.linkmanage.*;
 import com.pamirs.takin.entity.domain.entity.linkmanage.statistics.StatisticsQueryVo;
 import com.pamirs.takin.entity.domain.entity.linkmanage.structure.Category;
 import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowTree;
@@ -75,6 +29,7 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessLinkResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.MiddleWareResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.TechLinkResponse;
 import io.shulie.takin.web.biz.service.agent.AgentPluginSupportService;
+import io.shulie.takin.web.biz.service.datamanage.CsvManageService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.CategoryUtils;
@@ -91,7 +46,6 @@ import io.shulie.takin.web.data.dao.linkmanage.LinkManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
 import io.shulie.takin.web.data.dao.pressureresource.PressureResourceDAO;
 import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
-import io.shulie.takin.web.data.mapper.mysql.PressureResourceMapper;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.BusinessLinkManageQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.LinkManageQueryParam;
@@ -120,6 +74,14 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author vernon
@@ -167,6 +129,9 @@ public class LinkManageServiceImpl implements LinkManageService {
     private SceneLinkRelateDAO sceneLinkRelateDAO;
     @Autowired
     private PressureResourceDAO pressureResourceDAO;
+
+    @Autowired
+    private CsvManageService csvManageService;
 
     private static void iteratorChildNodes(TopologicalGraphNode parentNode,
                                            List<Category> childList,
@@ -515,6 +480,8 @@ public class LinkManageServiceImpl implements LinkManageService {
         try {
             if (sceneDetail.getScriptDeployId() != null) {
                 scriptManageService.deleteScriptManage(sceneDetail.getScriptDeployId());
+                // 删除 组件的所有
+                csvManageService.deleteCsvAll(Long.valueOf(sceneId));
             }
             tSceneMapper.deleteByPrimaryKey(Long.parseLong(sceneId));
 
@@ -531,6 +498,7 @@ public class LinkManageServiceImpl implements LinkManageService {
             sceneLinkRelateDAO.deleteBySceneId(sceneId);
             //过滤出可以设置为删除状态的业务活动id并设置为可以删除
             enableBusinessActiveCanDelte(businessLinkIds);
+
 
             // 删除压测资源准备
             pressureResourceDAO.delete(Long.valueOf(sceneId));

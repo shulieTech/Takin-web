@@ -1,8 +1,8 @@
 package io.shulie.takin.web.biz.constant;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
+
+import java.util.Map;
 
 /**
  * @author shiyajian
@@ -33,6 +33,7 @@ public final class BizOpConstants {
         public static final String SYSTEM_PROCESS = "系统流程";
         public static final String BUSINESS_ACTIVITY = "业务活动";
         public static final String BUSINESS_PROCESS = "业务流程";
+        public static final String CSV_MANAGE = "CSV管理";
         public static final String BASIC_INFO = "基础信息";
         public static final String SHADOW_DATABASE_TABLE = "影子库表";
         public static final String PLUGINS_MANAGER = "插件管理";
@@ -77,6 +78,8 @@ public final class BizOpConstants {
         public static final String SYSTEM_PROCESS = "systemFlow";
         public static final String BUSINESS_ACTIVITY = "businessActivity";
         public static final String BUSINESS_PROCESS = "businessFlow";
+        public static final String CSV_MANAGE = "csvManage";
+
         public static final String APPLICATION_MANAGE = "appManage";
         public static final String SECURITY_CENTER = "securityCenter";
         public static final String INTERFACE_TEST = "pressureTestManage_testByInterface";
@@ -177,6 +180,13 @@ public final class BizOpConstants {
         public static final String MESSAGE_BUSINESS_PROCESS_UPDATE = "message.business_process.update";
         public static final String MESSAGE_BUSINESS_FLOW = "message.business_flow.update";
         public static final String MESSAGE_BUSINESS_PROCESS_UPDATEFile = "message.business_process.updatefile";
+        public static final String MESSAGE_BUSINESS_PROCESS_UPDATEFILE_NEW = "message.business_process.updatefile_new";
+        public static final String MESSAGE_BUSINESS_PROCESS_SELECT= "message.business_process.select";
+        public static final String MESSAGE_BUSINESS_PROCESS_UPDATE_ALIASNAME= "message.business_process.update.aliasName";
+        public static final String MESSAGE_BUSINESS_PROCESS_CSV_SPILT = "message.business_process.csv.spilt";
+        public static final String MESSAGE_CSV_MANAGE_DELETE = "message.csv.manage.delete";
+        public static final String MESSAGE_CSV_MANAGE_CREATE = "message.csv.manage.create";
+        public static final String MESSAGE_CSV_MANAGE_CANCEL = "message.csv.manage.cancel";
 
         /**
          * 基础信息
@@ -408,6 +418,7 @@ public final class BizOpConstants {
          * 业务流程id
          */
         public static final String BUSINESS_FLOW_ID = "businessFlowId";
+        public static final String SCRIPT_CSV_DATA_SET_ID = "scriptCsvDataSetId";
         /**
          * 业务流程名称
          */

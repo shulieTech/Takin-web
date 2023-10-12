@@ -70,6 +70,12 @@ public class ScriptCsvDataSetResponse {
     private Long fileManageId;
 
     /**
+     * 生成类型
+     */
+    @ApiModelProperty(value = "生成类型")
+    private Integer createType;
+
+    /**
      * 插入时间
      */
     @ApiModelProperty("createTime")
@@ -95,6 +101,7 @@ public class ScriptCsvDataSetResponse {
     @ApiModelProperty(value = "上传路径：返回给前端下载路径")
     @JsonProperty("downloadUrl")
     private String uploadPath;
+
 
 
     @ApiModelProperty(value = "csv文件列表")

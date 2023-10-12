@@ -38,13 +38,17 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptCsvDataSetRespon
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptCsvDataTemplateResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptCsvManageResponse;
 import io.shulie.takin.web.biz.service.datamanage.CsvManageService;
+import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.web.biz.service.webide.WebIDESyncService;
-import io.shulie.takin.web.data.mapper.mysql.FileManageMapper;
-import io.shulie.takin.web.data.mapper.mysql.ScriptCsvCreateTaskMapper;
-import io.shulie.takin.web.data.mapper.mysql.ScriptCsvDataSetMapper;
+import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
+import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
+import io.shulie.takin.web.data.mapper.mysql.*;
 import io.shulie.takin.web.data.model.mysql.FileManageEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptCsvCreateTaskEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptCsvDataSetEntity;
+import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +59,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 说明:
@@ -71,6 +76,9 @@ public class CsvManageServiceImplTest {
     private CsvManageService csvManageService;
 
     @Autowired
+    private ScriptFileRefDAO scriptFileRefDAO;
+
+    @Autowired
     private FileManageMapper fileManageMapper;
     @Autowired
     private SceneScriptRefMapper sceneScriptRefMapper;
@@ -83,6 +91,18 @@ public class CsvManageServiceImplTest {
     @Resource
     private WebIDESyncService webIDESyncService;
 
+    @Autowired
+    private LinkManageService linkManageService;
+
+    @Autowired
+    private SceneDAO sceneDAO;
+
+    @Autowired
+    private ScriptManageDeployMapper scriptManageDeployMapper;
+
+    @Autowired
+    private ScriptManageMapper scriptManageMapper;
+
 
     /**
      * 测试 1. csv组件列表
@@ -90,7 +110,7 @@ public class CsvManageServiceImplTest {
      */
     @Test
     public void listCsvByBusinessFlowId() {
-        List<ScriptCsvDataSetResponse> scriptCsvDataSetResponses = csvManageService.listCsvByBusinessFlowId(58L);
+        List<ScriptCsvDataSetResponse> scriptCsvDataSetResponses = csvManageService.listCsvByBusinessFlowId(63L);
         for (ScriptCsvDataSetResponse response : scriptCsvDataSetResponses) {
             System.out.println(JSON.toJSONString(response));
         }
@@ -237,7 +257,7 @@ public class CsvManageServiceImplTest {
     @Test
     public void createDetail () {
         Long businessFlowId = 58L;
-        List<ScriptCsvCreateDetailResponse> detail = csvManageService.createDetail(businessFlowId);
+        List<ScriptCsvCreateDetailResponse> detail = csvManageService.createDetail(businessFlowId,null);
         System.out.println(JSON.toJSONString(detail));
     }
 
@@ -256,7 +276,7 @@ public class CsvManageServiceImplTest {
     public void createTask () {
         ScriptCsvCreateTaskRequest request = new ScriptCsvCreateTaskRequest();
         //request.setTemplateVariable("referer,aaa");
-        String template = "{\"templateDTO\":[{\"title\":\"header参数\",\"key\":\"header参数\",\"children\":[{\"title\":\"content-length\",\"key\":\"header#$.content-length\",\"children\":null},{\"title\":\"pinpoint-traceid\",\"key\":\"header#$.pinpoint-traceid\",\"children\":null},{\"title\":\"pinpoint-papptype\",\"key\":\"header#$.pinpoint-papptype\",\"children\":null},{\"title\":\"x-forwarded-port\",\"key\":\"header#$.x-forwarded-port\",\"children\":null},{\"title\":\"x-forwarded-for\",\"key\":\"header#$.x-forwarded-for\",\"children\":null},{\"title\":\"accept\",\"key\":\"header#$.accept\",\"children\":null},{\"title\":\"pinpoint-host\",\"key\":\"header#$.pinpoint-host\",\"children\":null},{\"title\":\"pinpoint-spanid\",\"key\":\"header#$.pinpoint-spanid\",\"children\":null},{\"title\":\"pinpoint-flags\",\"key\":\"header#$.pinpoint-flags\",\"children\":null},{\"title\":\"host\",\"key\":\"header#$.host\",\"children\":null},{\"title\":\"content-type\",\"key\":\"header#$.content-type\",\"children\":null},{\"title\":\"connection\",\"key\":\"header#$.connection\",\"children\":null},{\"title\":\"pinpoint-pspanid\",\"key\":\"header#$.pinpoint-pspanid\",\"children\":null},{\"title\":\"accept-encoding\",\"key\":\"header#$.accept-encoding\",\"children\":null},{\"title\":\"user-agent\",\"key\":\"header#$.user-agent\",\"children\":null},{\"title\":\"pinpoint-pappname\",\"key\":\"header#$.pinpoint-pappname\",\"children\":null}]},{\"title\":\"requestBody参数\",\"key\":\"requestBody参数\",\"children\":[{\"title\":\"bus\",\"key\":\"requestBody#$.bus\",\"children\":[]},{\"title\":\"act\",\"key\":\"requestBody#$.act\",\"children\":[]},{\"title\":\"data\",\"key\":\"requestBody#$.data\",\"children\":[{\"title\":\"bus\",\"key\":\"requestBody#$.data[0].bus\",\"children\":[]},{\"title\":\"unionId\",\"key\":\"requestBody#$.data[0].unionId\",\"children\":[]},{\"title\":\"act\",\"key\":\"requestBody#$.data[0].act\",\"children\":[]},{\"title\":\"version\",\"key\":\"requestBody#$.data[0].version\",\"children\":[]}]},{\"title\":\"obj\",\"key\":\"requestBody#$.obj\",\"children\":[{\"title\":\"id\",\"key\":\"requestBody#$.obj.id\",\"children\":[]},{\"title\":\"visitType\",\"key\":\"requestBody#$.obj.visitType\",\"children\":[]}]},{\"title\":\"type\",\"key\":\"requestBody#$.type\",\"children\":[]},{\"title\":\"templateId\",\"key\":\"requestBody#$.templateId\",\"children\":[]},{\"title\":\"objs\",\"key\":\"requestBody#$.objs\",\"children\":[]}]},{\"title\":\"Url参数\",\"key\":\"Url参数\",\"children\":null}],\"count\":100,\"total\":6,\"appName\":\"fm_ac\",\"requestUrl\":\"/ac/auth\",\"requestMethod\":\"\",\"startTime\":\"2023-10-09 00:00:38\",\"endTime\":\"2023-10-10 17:42:38\"}\n";
+        String template = "{\"templateDTO\":[{\"title\":\"header参数\",\"key\":\"header参数\",\"children\":[{\"title\":\"sec-fetch-mode\",\"key\":\"header#$.sec-fetch-mode\",\"children\":null},{\"title\":\"referer\",\"key\":\"header#$.referer\",\"children\":null},{\"title\":\"content-length\",\"key\":\"header#$.content-length\",\"children\":null},{\"title\":\"sec-fetch-site\",\"key\":\"header#$.sec-fetch-site\",\"children\":null},{\"title\":\"accept-language\",\"key\":\"header#$.accept-language\",\"children\":null},{\"title\":\"x-forwarded-proto\",\"key\":\"header#$.x-forwarded-proto\",\"children\":null},{\"title\":\"cookie\",\"key\":\"header#$.cookie\",\"children\":null},{\"title\":\"x-forwarded-port\",\"key\":\"header#$.x-forwarded-port\",\"children\":null},{\"title\":\"x-forwarded-for\",\"key\":\"header#$.x-forwarded-for\",\"children\":null},{\"title\":\"dnt\",\"key\":\"header#$.dnt\",\"children\":null},{\"title\":\"forwarded\",\"key\":\"header#$.forwarded\",\"children\":null},{\"title\":\"accept\",\"key\":\"header#$.accept\",\"children\":null},{\"title\":\"x-real-ip\",\"key\":\"header#$.x-real-ip\",\"children\":null},{\"title\":\"authorization\",\"key\":\"header#$.authorization\",\"children\":null},{\"title\":\"sec-ch-ua\",\"key\":\"header#$.sec-ch-ua\",\"children\":null},{\"title\":\"sec-ch-ua-mobile\",\"key\":\"header#$.sec-ch-ua-mobile\",\"children\":null},{\"title\":\"x-forwarded-host\",\"key\":\"header#$.x-forwarded-host\",\"children\":null},{\"title\":\"sec-ch-ua-platform\",\"key\":\"header#$.sec-ch-ua-platform\",\"children\":null},{\"title\":\"host\",\"key\":\"header#$.host\",\"children\":null},{\"title\":\"user\",\"key\":\"header#$.user\",\"children\":null},{\"title\":\"accept-encoding\",\"key\":\"header#$.accept-encoding\",\"children\":null},{\"title\":\"user-agent\",\"key\":\"header#$.user-agent\",\"children\":null},{\"title\":\"sec-fetch-dest\",\"key\":\"header#$.sec-fetch-dest\",\"children\":null}]},{\"title\":\"requestBody参数\",\"key\":\"requestBody参数\",\"children\":[{\"title\":\"n\",\"key\":\"requestBody#$.n\",\"children\":[]}]},{\"title\":\"Url参数\",\"key\":\"Url参数\",\"children\":[{\"title\":\"value-0\",\"key\":\"url#value-0\",\"children\":null},{\"title\":\"value-1\",\"key\":\"url#value-1\",\"children\":null},{\"title\":\"value-2\",\"key\":\"url#value-2\",\"children\":null}]}],\"count\":100,\"total\":279,\"appName\":\"msasso_a\",\"serviceName\":\"/bit-msa-sso/common/v2/auth/send2FACode/token/{value}/account/{value}/cipher/{value}/AK/BIT-MSA\",\"methodName\":\"GET\",\"startTime\":\"2023-10-09 00:00:38\",\"endTime\":\"2023-10-10 17:42:38\"}\n";
         request.setTemplate(JSON.parseObject(template,ScriptCsvDataTemplateResponse.class));
         Map<String,String> map = Maps.newHashMap();
         map.put("visitType","requestBody#$.obj.visitType");
@@ -269,26 +289,10 @@ public class CsvManageServiceImplTest {
         request.setScriptCsvDataSetId(31L);
 
 
-        ScriptCsvCreateTaskRequest request1 = new ScriptCsvCreateTaskRequest();
-        //request.setTemplateVariable("referer,aaa");
-        String template1 = "{\"templateDTO\":[{\"title\":\"header参数\",\"key\":\"header参数\",\"children\":[{\"title\":\"sec-fetch-mode\",\"key\":\"header#$.sec-fetch-mode\",\"children\":null},{\"title\":\"referer\",\"key\":\"header#$.referer\",\"children\":null},{\"title\":\"content-length\",\"key\":\"header#$.content-length\",\"children\":null},{\"title\":\"sec-fetch-site\",\"key\":\"header#$.sec-fetch-site\",\"children\":null},{\"title\":\"accept-language\",\"key\":\"header#$.accept-language\",\"children\":null},{\"title\":\"x-forwarded-proto\",\"key\":\"header#$.x-forwarded-proto\",\"children\":null},{\"title\":\"cookie\",\"key\":\"header#$.cookie\",\"children\":null},{\"title\":\"x-forwarded-port\",\"key\":\"header#$.x-forwarded-port\",\"children\":null},{\"title\":\"x-forwarded-for\",\"key\":\"header#$.x-forwarded-for\",\"children\":null},{\"title\":\"dnt\",\"key\":\"header#$.dnt\",\"children\":null},{\"title\":\"forwarded\",\"key\":\"header#$.forwarded\",\"children\":null},{\"title\":\"accept\",\"key\":\"header#$.accept\",\"children\":null},{\"title\":\"x-real-ip\",\"key\":\"header#$.x-real-ip\",\"children\":null},{\"title\":\"authorization\",\"key\":\"header#$.authorization\",\"children\":null},{\"title\":\"sec-ch-ua\",\"key\":\"header#$.sec-ch-ua\",\"children\":null},{\"title\":\"sec-ch-ua-mobile\",\"key\":\"header#$.sec-ch-ua-mobile\",\"children\":null},{\"title\":\"x-forwarded-host\",\"key\":\"header#$.x-forwarded-host\",\"children\":null},{\"title\":\"sec-ch-ua-platform\",\"key\":\"header#$.sec-ch-ua-platform\",\"children\":null},{\"title\":\"host\",\"key\":\"header#$.host\",\"children\":null},{\"title\":\"user\",\"key\":\"header#$.user\",\"children\":null},{\"title\":\"accept-encoding\",\"key\":\"header#$.accept-encoding\",\"children\":null},{\"title\":\"user-agent\",\"key\":\"header#$.user-agent\",\"children\":null},{\"title\":\"sec-fetch-dest\",\"key\":\"header#$.sec-fetch-dest\",\"children\":null}]},{\"title\":\"requestBody参数\",\"key\":\"requestBody参数\",\"children\":[{\"title\":\"n\",\"key\":\"requestBody#$.n\",\"children\":[]}]},{\"title\":\"Url参数\",\"key\":\"Url参数\",\"children\":[{\"title\":\"value-0\",\"key\":\"url#value-0\",\"children\":null},{\"title\":\"value-1\",\"key\":\"url#value-1\",\"children\":null},{\"title\":\"value-2\",\"key\":\"url#value-2\",\"children\":null}]}],\"count\":100,\"total\":279,\"appName\":\"msasso_a\",\"requestUrl\":\"/bit-msa-sso/common/v2/auth/send2FACode/token/{value}/account/{value}/cipher/{value}/AK/BIT-MSA\",\"requestMethod\":\"GET\",\"startTime\":\"2023-10-09 00:00:38\",\"endTime\":\"2023-10-10 17:42:38\"}\n";
-        request1.setTemplate(JSON.parseObject(template1,ScriptCsvDataTemplateResponse.class));
-        Map<String,String> map1 = Maps.newHashMap();
-        map1.put("value0","url#value-0");
-        map1.put("value1","url#value-1");
-        map1.put("value2","url#value-2");
-        map1.put("n","requestBody#$.n");
-        map1.put("authorization","header#$.authorization");
-        request1.setScriptCsvVariableJsonPath(map1);
-        request1.setRemark("测试");
-        request1.setAliasName("AA");
-        request1.setBusinessFlowId(58L);
-        request1.setLinkId(11L);
-        request1.setScriptCsvDataSetId(32L);
+
 
         List<ScriptCsvCreateTaskRequest> requestList = Lists.newArrayList();
         requestList.add(request);
-        requestList.add(request1);
         csvManageService.createTask(requestList);
         // 检查job是否存在
         List<ScriptCsvCreateTaskEntity> scriptCsvCreateTaskEntities = scriptCsvCreateTaskMapper.selectList(new LambdaQueryWrapper<>());
@@ -339,6 +343,58 @@ public class CsvManageServiceImplTest {
     public void activityList () {
         List<BusinessActivityInfoResponse> businessActivityInfoResponses = webIDESyncService.activityList(41L);
         System.out.println(JSON.toJSONString(businessActivityInfoResponses));
+    }
+
+    /**
+     * 测试16  删除业务流程
+     * DETETE http://localhost:8000/takin-web/api/link/scene/manage
+     */
+    @Test
+    public void deleteScene () {
+        Long sceneId = 63L;
+        SceneResult sceneDetail = sceneDAO.getSceneDetail(sceneId);
+        Long scriptDeployId = sceneDetail.getScriptDeployId();
+        ScriptManageDeployEntity scriptManageDeployEntity = scriptManageDeployMapper.selectById(scriptDeployId);
+        Long scriptId = scriptManageDeployEntity.getScriptId();
+        List<ScriptCsvDataSetEntity> csvDataSetEntityList = scriptCsvDataSetMapper.listByBusinessFlowId(sceneId);
+        List<Long> csvDataSetIds = csvDataSetEntityList.stream().map(ScriptCsvDataSetEntity::getId).collect(Collectors.toList());
+        // 文件
+        List<Long> fileIds = Lists.newArrayList();
+        LambdaQueryWrapper<FileManageEntity> fileWrapper = new LambdaQueryWrapper<>();
+        fileWrapper.in(FileManageEntity::getScriptCsvDataSetId,csvDataSetIds);
+        List<FileManageEntity> fileManageEntityList = fileManageMapper.selectList(fileWrapper);
+        fileIds.addAll(fileManageEntityList.stream().map(FileManageEntity::getId).collect(Collectors.toList()));
+
+        List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectFileIdsByScriptDeployId(scriptDeployId);
+        fileIds.addAll(scriptFileRefResults.stream().map(ScriptFileRefResult::getFileId).collect(Collectors.toList()));
+
+
+        // 1.删除
+        String s = linkManageService.deleteScene("63");
+        // 2. 校验下
+        // 1.场景是否还存在
+        System.out.println(sceneDAO.getSceneDetail(sceneId));
+        // 脚本
+        System.out.println(scriptManageMapper.selectById(scriptId));
+        // 脚本实例
+        LambdaQueryWrapper<ScriptManageDeployEntity> deployWrapper = new LambdaQueryWrapper<>();
+        deployWrapper.in(ScriptManageDeployEntity::getScriptId,scriptId);
+        System.out.println(scriptManageDeployMapper.selectList(deployWrapper));
+        // 组件
+        System.out.println( scriptCsvDataSetMapper.selectBatchIds(csvDataSetIds));
+
+        // 任务
+        LambdaQueryWrapper<ScriptCsvCreateTaskEntity> taskWrapper = new LambdaQueryWrapper<>();
+        taskWrapper.in(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId,csvDataSetIds);
+        System.out.println( scriptCsvCreateTaskMapper.selectList(taskWrapper));
+
+        // 脚本关联关系
+        System.out.println(scriptFileRefDAO.selectFileIdsByScriptDeployId(scriptDeployId));
+
+        // 文件
+        System.out.println(fileManageMapper.selectBatchIds(fileIds));
+
+
     }
 
 

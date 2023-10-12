@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.job;
 
 import io.shulie.takin.web.biz.service.datamanage.CsvManageService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -20,7 +21,7 @@ public class CsvCreateTaskRunJob {
     private CsvManageService csvManageService;
 
     //@XxlJob("csvCreateTaskRunJobExecute")
-    //@Scheduled(cron = "0/10 * *  * * ?")
+    @Scheduled(cron = "0/10 * *  * * ?")
     public void execute() {
         try {
             csvManageService.runJob();

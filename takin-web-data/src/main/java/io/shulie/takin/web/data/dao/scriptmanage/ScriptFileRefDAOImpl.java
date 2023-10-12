@@ -77,6 +77,9 @@ public class ScriptFileRefDAOImpl implements ScriptFileRefDAO{
                 ScriptFileRefEntity::getFileId);
         wrapper.eq(ScriptFileRefEntity::getFileId,fileManageId);
         ScriptFileRefEntity scriptFileRefEntity = scriptFileRefMapper.selectOne(wrapper);
+        if(scriptFileRefEntity == null) {
+            return null;
+        }
         ScriptFileRefResult scriptFileRefResult = new ScriptFileRefResult();
         scriptFileRefResult.setId(scriptFileRefEntity.getId());
         scriptFileRefResult.setFileId(scriptFileRefEntity.getFileId());

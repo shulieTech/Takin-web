@@ -59,6 +59,19 @@ public class WebIDESyncController {
         if(Objects.isNull(businessFlowId)){
             return new ArrayList<>();
         }
-        return webIDESyncService.activityList(businessFlowId);
+        List<BusinessActivityInfoResponse> businessActivityInfoResponses = webIDESyncService.activityList(businessFlowId);
+        BusinessActivityInfoResponse response = new BusinessActivityInfoResponse();
+        response.setActivityId(1L);
+        response.setActivityName("mock测试");
+        response.setApplicationName("msasso_a");
+        response.setApplicationId(1l);
+        response.setType(1);
+        response.setMethodName("GET");
+        response.setServiceName("/bit-msa-sso/common/v2/auth/send2FACode/token/{value}/account/{value}/cipher/{value}/AK/BIT-MSA");
+        response.setEntrace("GET|/bit-msa-sso/common/v2/auth/send2FACode/token/{value}/account/{value}/cipher/{value}/AK/BIT-MSA");
+
+
+        businessActivityInfoResponses.add(response);
+        return businessActivityInfoResponses;
     }
 }

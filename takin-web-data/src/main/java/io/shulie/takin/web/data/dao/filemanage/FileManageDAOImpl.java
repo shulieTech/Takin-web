@@ -9,6 +9,7 @@ import io.shulie.takin.web.data.model.mysql.FileManageEntity;
 import io.shulie.takin.web.data.param.filemanage.FileManageCreateParam;
 import io.shulie.takin.web.data.result.filemanage.FileManageResponse;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -63,6 +64,9 @@ public class FileManageDAOImpl implements FileManageDAO {
         // 收集 fileIds, 并赋值给 params
         return fileList.stream().map(t -> {
             FileManageEntity entity = BeanUtil.copyProperties(t, FileManageEntity.class);
+            if(entity.getDeptId() == null) {
+                entity.setDeptId(WebPluginUtils.traceDeptId());
+            }
             fileManageMapper.insert(entity);
             return entity.getId();
         }).collect(Collectors.toList());
@@ -73,6 +77,9 @@ public class FileManageDAOImpl implements FileManageDAO {
         // 收集 fileIds, 并赋值给 params
         return fileList.stream().map(t -> {
             FileManageEntity entity = BeanUtil.copyProperties(t, FileManageEntity.class);
+            if(entity.getDeptId() == null) {
+                entity.setDeptId(WebPluginUtils.traceDeptId());
+            }
             fileManageMapper.insert(entity);
             return entity;
         }).collect(Collectors.toList());
@@ -82,6 +89,9 @@ public class FileManageDAOImpl implements FileManageDAO {
     public List<FileManageEntity> createFileManageList_ext(List<FileManageCreateParam> fileList) {
         return fileList.stream().map(t -> {
             FileManageEntity entity = BeanUtil.copyProperties(t, FileManageEntity.class);
+            if(entity.getDeptId() == null) {
+                entity.setDeptId(WebPluginUtils.traceDeptId());
+            }
             fileManageMapper.insert(entity);
             return entity;
         }).collect(Collectors.toList());

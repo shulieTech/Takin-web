@@ -1,5 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.scriptmanage;
 
+import com.alibaba.fastjson.JSON;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
@@ -50,31 +51,30 @@ public class ScriptDataController {
 
     @ApiOperation("文件-删除")
     @GetMapping("/deleteFile")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.LINK_CARDING,
+            subModuleName = BizOpConstants.SubModules.CSV_MANAGE,
+            logMsgKey = BizOpConstants.Message.MESSAGE_CSV_MANAGE_DELETE
+    )
 //    @AuthVerification(
-//            moduleCode = BizOpConstants.ModuleCode.SCRIPT_CSV_MANAGE,
-//            needAuth = ActionTypeEnum.QUERY
+//            moduleCode = BizOpConstants.ModuleCode.CSV_MANAGE,
+//            needAuth = ActionTypeEnum.DELETE
 //    )
     public ScriptManageStringResponse deleteFile(@RequestParam("fileManageId") Long fileManageId) {
         csvManageService.deleteFile(fileManageId);
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
+        OperationLogContextHolder.addVars("fileManageId", fileManageId.toString());
         return new ScriptManageStringResponse("删除成功");
     }
 
     @ApiOperation("csv组件列表")
     @GetMapping("csv/list")
-//    @AuthVerification(
-//        moduleCode = BizOpConstants.ModuleCode.SCRIPT_CSV_MANAGE,
-//        needAuth = ActionTypeEnum.QUERY
-//    )
     public List<ScriptCsvDataSetResponse> pageCsvByBusinessFlowId(@RequestParam("businessFlowId") Long businessFlowId) {
         return csvManageService.listCsvByBusinessFlowId(businessFlowId);
     }
 
     @ApiOperation("附件列表")
     @GetMapping("annex/list")
-//    @AuthVerification(
-//            moduleCode = BizOpConstants.ModuleCode.SCRIPT_CSV_MANAGE,
-//            needAuth = ActionTypeEnum.QUERY
-//    )
     public List<FileManageResponse> listAnnexByBusinessFlowId(@RequestParam("businessFlowId") Long businessFlowId) {
         return csvManageService.listAnnexByBusinessFlowId(businessFlowId);
     }
@@ -82,45 +82,69 @@ public class ScriptDataController {
 
     @ApiOperation("csv拆分,csv是否按分区排序")
     @PutMapping("csv/splitOrOrderSplit")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.LINK_CARDING,
+            subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
+            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_CSV_SPILT
+    )
     public ScriptManageStringResponse spilt(@RequestBody @Valid BusinessFlowDataFileV2Request request) {
-        // todo 操作日志记录
         csvManageService.spiltOrIsOrderSplit(request);
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCRIPT_CSV_DATA_SET_ID, String.valueOf(request.getScriptCsvDataSetId()));
+        OperationLogContextHolder.addVars("isSplit", request.getIsSplit() != null ? request.getIsSplit().toString():"");
+        OperationLogContextHolder.addVars("isOrderSplit", request.getIsOrderSplit() != null ?request.getIsOrderSplit().toString():"");
         return new ScriptManageStringResponse("设置成功");
     }
 
 
     @ApiOperation("点击生成csv，调用接口，获取相关数据")
     @GetMapping("csv/create/detail")
-    public List<ScriptCsvCreateDetailResponse> createDetail(@RequestParam("businessFlowId") Long businessFlowId) {
-        return csvManageService.createDetail(businessFlowId);
+    public List<ScriptCsvCreateDetailResponse> createDetail(@RequestParam("businessFlowId") Long businessFlowId,
+                                                            @RequestParam(value = "scriptCsvDataSetId",required = false) Long scriptCsvDataSetId ) {
+        return csvManageService.createDetail(businessFlowId,scriptCsvDataSetId);
     }
 
 
     @ApiOperation("拉取模板数据")
     @PostMapping("csv/template/pull")
-    public ScriptCsvDataTemplateResponse pullTemplate(@RequestBody ScriptCsvDataTemplateRequest request) {
-        // mock数据
-//        request.setAppName("msasso_a");
-//        request.setMethodName("GET");
-//        request.setServiceName("/bit-msa-sso/common/v2/auth/send2FACode/token/{value}/account/{value}/cipher/{value}/AK/BIT-MSA");
-//        request.setAppName("fm_ac");
-//        request.setMethodName("");
-//        request.setServiceName("/ac/auth");
-
+    public ScriptCsvDataTemplateResponse pullTemplate(@RequestBody @Valid ScriptCsvDataTemplateRequest request) {
         return csvManageService.getCsvTemplate(request);
     }
 
     @ApiOperation("点击生成csv,并生成任务")
     @PostMapping("csv/create")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.LINK_CARDING,
+            subModuleName = BizOpConstants.SubModules.CSV_MANAGE,
+            logMsgKey = BizOpConstants.Message.MESSAGE_CSV_MANAGE_CREATE
+    )
+//    @AuthVerification(
+//            moduleCode = BizOpConstants.ModuleCode.CSV_MANAGE,
+//            needAuth = ActionTypeEnum.CREATE
+//    )
     public ScriptManageStringResponse createTask(@RequestBody List<ScriptCsvCreateTaskRequest> request) {
         csvManageService.createTask(request);
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
+        List<String> csvList = request.stream().map(t -> t.getBusinessFlowId() + "-" + t.getScriptCsvDataSetId()).collect(Collectors.toList());
+        OperationLogContextHolder.addVars("csvList", JSON.toJSONString(csvList));
         return new ScriptManageStringResponse("任务已提交");
     }
 
     @ApiOperation("取消任务")
     @PutMapping("csv/task/cancel")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.LINK_CARDING,
+            subModuleName = BizOpConstants.SubModules.CSV_MANAGE,
+            logMsgKey = BizOpConstants.Message.MESSAGE_CSV_MANAGE_CANCEL
+    )
+//    @AuthVerification(
+//            moduleCode = BizOpConstants.ModuleCode.CSV_MANAGE,
+//            needAuth = ActionTypeEnum.DELETE
+//    )
     public ScriptManageStringResponse cancelTask(@RequestBody ScriptCsvCreateTaskRequest request) {
         csvManageService.cancelTask(request);
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
+        OperationLogContextHolder.addVars("taskId", request.getTaskId().toString());
         return new ScriptManageStringResponse("取消任务成功");
     }
 
@@ -133,8 +157,20 @@ public class ScriptDataController {
 
     @ApiOperation("csv文件选择")
     @GetMapping("csv/file/select")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.LINK_CARDING,
+            subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
+            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_SELECT
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+            needAuth = ActionTypeEnum.UPDATE
+    )
     public ScriptManageStringResponse selectCsv(@RequestParam("scriptCsvDataSetId") Long scriptCsvDataSetId,
                                                     @RequestParam("fileManageId") Long fileManageId) {
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
+        OperationLogContextHolder.addVars("scriptCsvDataSetId",scriptCsvDataSetId.toString());
+        OperationLogContextHolder.addVars("fileManageId",fileManageId.toString());
         csvManageService.selectCsv(scriptCsvDataSetId, fileManageId);
         return new ScriptManageStringResponse("选择成功");
     }
@@ -143,6 +179,10 @@ public class ScriptDataController {
 
     @ApiOperation("csv管理列表")
     @PostMapping("csv/manage")
+//    @AuthVerification(
+//            moduleCode = BizOpConstants.ModuleCode.CSV_MANAGE,
+//            needAuth = ActionTypeEnum.QUERY
+//    )
     public PagingList<ScriptCsvManageResponse> cssManage(@RequestBody PageScriptCssManageQueryRequest request) {
         return  csvManageService.csvManage(request);
     }
@@ -166,7 +206,7 @@ public class ScriptDataController {
     @ModuleDef(
             moduleName = BizOpConstants.Modules.LINK_CARDING,
             subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
-            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATEFile
+            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATEFILE_NEW
     )
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
@@ -205,7 +245,19 @@ public class ScriptDataController {
 
     @PostMapping("/updateAliasName")
     @ApiOperation("更新备注")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.LINK_CARDING,
+            subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
+            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATE_ALIASNAME
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+            needAuth = ActionTypeEnum.UPDATE
+    )
     public ScriptManageStringResponse updateAliasName(@RequestBody ScriptCsvAliasNameUpdateRequest request) {
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
+        OperationLogContextHolder.addVars("aliasName",request.getAliasName());
+        OperationLogContextHolder.addVars("fileManageId",request.getFileManageId().toString());
         csvManageService.updateAliasName(request);
         return new ScriptManageStringResponse("备注更新成功");
     }

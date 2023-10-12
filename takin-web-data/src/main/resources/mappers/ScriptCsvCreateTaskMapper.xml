@@ -20,14 +20,14 @@
     <result column="script_csv_data_set_id" jdbcType="BIGINT" property="scriptCsvDataSetId" />
     <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
     <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
-    <result column="TENANT_ID" jdbcType="BIGINT" property="tenantId" />
-    <result column="ENV_CODE" jdbcType="VARCHAR" property="envCode" />
+    <result column="env_code" jdbcType="VARCHAR" property="envCode" />
+    <result column="tenant_id" jdbcType="BIGINT" property="tenantId" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, task_start_time, task_end_time, template_variable, template_content, script_csv_variable_json_path, 
     current_create_schedule, create_status, remark, alias_name, dept_id, business_flow_id, 
-    link_id, script_csv_data_set_id, CREATE_TIME, UPDATE_TIME,TENANT_ID,ENV_CODE
+    link_id, script_csv_data_set_id, CREATE_TIME, UPDATE_TIME, env_code, tenant_id
   </sql>
   <update id="updateBatch" parameterType="java.util.List">
     <!--@mbg.generated-->
@@ -106,6 +106,16 @@
       <trim prefix="UPDATE_TIME = case" suffix="end,">
         <foreach collection="list" index="index" item="item">
           when id = #{item.id,jdbcType=BIGINT} then #{item.updateTime,jdbcType=TIMESTAMP}
+        </foreach>
+      </trim>
+      <trim prefix="env_code = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.envCode,jdbcType=VARCHAR}
+        </foreach>
+      </trim>
+      <trim prefix="tenant_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.tenantId,jdbcType=BIGINT}
         </foreach>
       </trim>
     </trim>
@@ -223,6 +233,20 @@
           </if>
         </foreach>
       </trim>
+      <trim prefix="env_code = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.envCode != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.envCode,jdbcType=VARCHAR}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="tenant_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.tenantId != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.tenantId,jdbcType=BIGINT}
+          </if>
+        </foreach>
+      </trim>
     </trim>
     where id in
     <foreach close=")" collection="list" item="item" open="(" separator=", ">
@@ -234,7 +258,7 @@
     insert into t_script_csv_create_task
     (task_start_time, task_end_time, template_variable, template_content, script_csv_variable_json_path, 
       current_create_schedule, create_status, remark, alias_name, dept_id, business_flow_id, 
-      link_id, script_csv_data_set_id, CREATE_TIME, UPDATE_TIME)
+      link_id, script_csv_data_set_id, CREATE_TIME, UPDATE_TIME, env_code, tenant_id)
     values
     <foreach collection="list" item="item" separator=",">
       (#{item.taskStartTime,jdbcType=TIMESTAMP}, #{item.taskEndTime,jdbcType=TIMESTAMP}, 
@@ -243,7 +267,8 @@
         #{item.createStatus,jdbcType=TINYINT}, #{item.remark,jdbcType=VARCHAR}, #{item.aliasName,jdbcType=VARCHAR}, 
         #{item.deptId,jdbcType=BIGINT}, #{item.businessFlowId,jdbcType=BIGINT}, #{item.linkId,jdbcType=BIGINT}, 
         #{item.scriptCsvDataSetId,jdbcType=BIGINT}, #{item.createTime,jdbcType=TIMESTAMP}, 
-        #{item.updateTime,jdbcType=TIMESTAMP})
+        #{item.updateTime,jdbcType=TIMESTAMP}, #{item.envCode,jdbcType=VARCHAR}, #{item.tenantId,jdbcType=BIGINT}
+        )
     </foreach>
   </insert>
   <insert id="insertOrUpdate" keyColumn="id" keyProperty="id" parameterType="io.shulie.takin.web.data.model.mysql.ScriptCsvCreateTaskEntity" useGeneratedKeys="true">
@@ -268,6 +293,8 @@
       script_csv_data_set_id,
       CREATE_TIME,
       UPDATE_TIME,
+      env_code,
+      tenant_id,
     </trim>
     values
     <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -289,6 +316,8 @@
       #{scriptCsvDataSetId,jdbcType=BIGINT},
       #{createTime,jdbcType=TIMESTAMP},
       #{updateTime,jdbcType=TIMESTAMP},
+      #{envCode,jdbcType=VARCHAR},
+      #{tenantId,jdbcType=BIGINT},
     </trim>
     on duplicate key update 
     <trim suffixOverrides=",">
@@ -310,6 +339,8 @@
       script_csv_data_set_id = #{scriptCsvDataSetId,jdbcType=BIGINT},
       CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
       UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      env_code = #{envCode,jdbcType=VARCHAR},
+      tenant_id = #{tenantId,jdbcType=BIGINT},
     </trim>
   </insert>
   <insert id="insertOrUpdateSelective" keyColumn="id" keyProperty="id" parameterType="io.shulie.takin.web.data.model.mysql.ScriptCsvCreateTaskEntity" useGeneratedKeys="true">
@@ -364,6 +395,12 @@
       <if test="updateTime != null">
         UPDATE_TIME,
       </if>
+      <if test="envCode != null">
+        env_code,
+      </if>
+      <if test="tenantId != null">
+        tenant_id,
+      </if>
     </trim>
     values
     <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -415,6 +452,12 @@
       <if test="updateTime != null">
         #{updateTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="envCode != null">
+        #{envCode,jdbcType=VARCHAR},
+      </if>
+      <if test="tenantId != null">
+        #{tenantId,jdbcType=BIGINT},
+      </if>
     </trim>
     on duplicate key update 
     <trim suffixOverrides=",">
@@ -465,6 +508,12 @@
       </if>
       <if test="updateTime != null">
         UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="envCode != null">
+        env_code = #{envCode,jdbcType=VARCHAR},
+      </if>
+      <if test="tenantId != null">
+        tenant_id = #{tenantId,jdbcType=BIGINT},
       </if>
     </trim>
   </insert>

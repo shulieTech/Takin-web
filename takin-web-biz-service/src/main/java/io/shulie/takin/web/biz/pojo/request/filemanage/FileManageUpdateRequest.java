@@ -84,4 +84,8 @@ public class FileManageUpdateRequest implements Serializable {
     @ApiModelProperty(name = "aliasName", value = "备注")
     private String aliasName;
 
+    private Long deptId;
+
+    private Integer createType;
+
 }

@@ -61,7 +61,7 @@ public interface CsvManageService {
      * @param businessFlowId
      * @return
      */
-    List<ScriptCsvCreateDetailResponse> createDetail(Long businessFlowId);
+    List<ScriptCsvCreateDetailResponse> createDetail(Long businessFlowId,Long scriptCsvDataSetId);
 
     /**
      * 拉取模板数据
@@ -137,4 +137,10 @@ public interface CsvManageService {
     void updateAliasName(ScriptCsvAliasNameUpdateRequest request);
 
     void runJob();
+
+    /**
+     * 删除场景的时候，同时把组件，组件任务， 组件对应的文件都删除
+     * @param sceneId
+     */
+    void deleteCsvAll(Long sceneId);
 }

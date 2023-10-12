@@ -542,7 +542,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         String targetScriptPath = this.getTargetScriptPath(scriptManageDeployUpdateRequest, scriptManageDeployResult);
 
 
-        if(!cssIsNew) {
+        if (!cssIsNew) {
             // 老版走下面逻辑
             // 这里, 脚本文件, 附件, 都放在一起了
             List<FileManageUpdateRequest> addFileManageUpdateRequests = scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream()
@@ -569,13 +569,13 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
             // 文件ids与脚本发布id做关联
             scriptFileRefDAO.createScriptFileRefs(fileIds, newScriptDeployId);
-            return  newScriptDeployId;
+            return newScriptDeployId;
         }
 
         // 新版逻辑如下
         List<FileManageCreateParam> fileManageCreateParams = scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream().map(t -> {
             FileManageCreateParam fileManageCreateParam = new FileManageCreateParam();
-            BeanUtils.copyProperties(t,fileManageCreateParam);
+            BeanUtils.copyProperties(t, fileManageCreateParam);
             return fileManageCreateParam;
         }).collect(Collectors.toList());
 
@@ -589,7 +589,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectFileIdsByScriptDeployId(oldScriptDeployId);
         scriptFileRefDAO.batchUpdateIds(scriptFileRefResults.stream().map(t -> {
             ScriptFileRefEntity entity = new ScriptFileRefEntity();
-            BeanUtils.copyProperties(t,entity);
+            BeanUtils.copyProperties(t, entity);
             entity.setGmtUpdate(new Date());
             entity.setScriptDeployId(newScriptDeployId);
             return entity;
@@ -618,7 +618,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         ScriptManageDeployResult scriptManageDeployResult = scriptManageDAO.selectScriptManageDeployById(scriptManageDeployUpdateRequest.getId());
 
         // 这里需要复制到一个新目录，该目录与脚本文件独立 放到脚本Id那一层  先迁移过去，后续要判断下附件，需要将附件覆盖更新
-        String targetScriptPath = this.getTargetScriptPathNew(scriptManageDeployUpdateRequest,scriptManageDeployResult);
+        String targetScriptPath = this.getTargetScriptPathNew(scriptManageDeployUpdateRequest, scriptManageDeployResult);
 
         // 插入文件记录所需参数
         List<FileManageCreateParam> fileManageCreateParams = getFileManageCreateParamsByUpdateReq(addFileManageUpdateRequests, targetScriptPath);
@@ -626,12 +626,12 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         List<FileManageEntity> fileManageListReturnEntity = fileManageDAO.createFileManageListReturnEntity(fileManageCreateParams);
 
         // 对附件信息，同名的附件需要删除，找到相关附件信息 Delete attachments with the same name
-        this.deleteSameAttachments(fileManageListReturnEntity,scriptManageDeployResult);
+        this.deleteSameAttachments(fileManageListReturnEntity, scriptManageDeployResult);
 
         // 附件与脚本发布id做关联
         scriptFileRefDAO.createScriptFileRefs(fileManageListReturnEntity.stream()
-                .filter(t -> FileTypeEnum.ATTACHMENT.getCode().equals(t.getFileType()))
-                .map(FileManageEntity::getId).collect(Collectors.toList()),
+                        .filter(t -> FileTypeEnum.ATTACHMENT.getCode().equals(t.getFileType()))
+                        .map(FileManageEntity::getId).collect(Collectors.toList()),
                 scriptManageDeployUpdateRequest.getId());
 
         return fileManageListReturnEntity.stream()
@@ -641,6 +641,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
     /**
      * 删除同名附件
+     *
      * @param fileManageListReturnEntity
      * @param scriptManageDeployResult
      */
@@ -648,14 +649,14 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         List<String> fileNames = fileManageListReturnEntity.stream().filter(t -> t.getFileType().equals(FileTypeEnum.ATTACHMENT.getCode()))
                 .map(FileManageEntity::getFileName).collect(Collectors.toList());
         List<ScriptFileRefResult> scriptFileRefResultList = scriptFileRefDAO.selectFileIdsByScriptDeployId(scriptManageDeployResult.getId());
-        Map<Long,Long> fileIdMap = scriptFileRefResultList.stream().collect(Collectors.toMap(ScriptFileRefResult::getFileId,ScriptFileRefResult::getId));
+        Map<Long, Long> fileIdMap = scriptFileRefResultList.stream().collect(Collectors.toMap(ScriptFileRefResult::getFileId, ScriptFileRefResult::getId));
         List<Long> fileIds = scriptFileRefResultList.stream().map(ScriptFileRefResult::getFileId).distinct().collect(Collectors.toList());
         List<FileManageResult> fileManageResults = fileManageDAO.selectFileManageByIds(fileIds);
-        for(FileManageResult fileManageResult : fileManageResults) {
-            if(fileManageResult.getFileType().equals(FileTypeEnum.ATTACHMENT.getCode()) && fileNames.contains(fileManageResult.getFileName())) {
+        for (FileManageResult fileManageResult : fileManageResults) {
+            if (fileManageResult.getFileType().equals(FileTypeEnum.ATTACHMENT.getCode()) && fileNames.contains(fileManageResult.getFileName())) {
                 // 删除文件，同时删除关联关系
                 Long id = fileIdMap.get(fileManageResult.getId());
-                if(id == null) {
+                if (id == null) {
                     continue;
                 }
 
@@ -734,7 +735,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                         && !StringUtil.isBlank(o.getUploadId())).map(
                 o -> tmpFilePath + "/" + o.getUploadId() + "/" + o.getFileName()).collect(Collectors.toList());
         List<Long> existFileIds = scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream().filter(
-                        o -> !cssIsNew &&  o.getIsDeleted() == 0
+                        o -> !cssIsNew && o.getIsDeleted() == 0
                                 && StringUtil.isBlank(o.getUploadId()) && o.getId() != null).map(FileManageUpdateRequest::getId)
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(existFileIds)) {
@@ -754,7 +755,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         if (CollectionUtils.isNotEmpty(tmpFilePaths)) {
             sourcePaths.addAll(tmpFilePaths);
         }
-        if(CollectionUtils.isEmpty(sourcePaths)) {
+        if (CollectionUtils.isEmpty(sourcePaths)) {
             // 新版一般不会有sourcePaths的
             return targetScriptPath;
         }
@@ -784,9 +785,9 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         String targetScriptPath = this.getTargetScriptPathNew(scriptManageDeployResult);
         String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH);
 
-        for(FileManageUpdateRequest request :scriptManageDeployUpdateRequest.getFileManageUpdateRequests()) {
+        for (FileManageUpdateRequest request : scriptManageDeployUpdateRequest.getFileManageUpdateRequests()) {
             // 文件要一个个迁移
-            if(request.getIsDeleted() == 1 || StringUtil.isBlank(request.getUploadId())) {
+            if (request.getIsDeleted() == 1 || StringUtil.isBlank(request.getUploadId())) {
                 continue;
             }
             String tmpFile = tmpFilePath + "/" + request.getUploadId() + "/" + request.getFileName();
@@ -806,6 +807,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
         return targetScriptPath;
     }
+
     /**
      * 更新脚本, 创建新的脚本实例, 获得脚本实例结果
      *
@@ -1371,10 +1373,10 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             fileExtend.put("isBigFile", fileManageUpdateRequest.getIsBigFile());
             fileManageCreateParam.setFileExtend(JsonHelper.bean2Json(fileExtend));
 
-            String uploadPath =  targetScriptPath  + fileManageUpdateRequest.getFileName();
-            if(StringUtils.isNotBlank(fileManageUpdateRequest.getUuId())) {
+            String uploadPath = targetScriptPath + fileManageUpdateRequest.getFileName();
+            if (StringUtils.isNotBlank(fileManageUpdateRequest.getUuId())) {
                 //新版
-                uploadPath =  targetScriptPath + fileManageUpdateRequest.getUuId() +"/" + fileManageUpdateRequest.getFileName();
+                uploadPath = targetScriptPath + fileManageUpdateRequest.getUuId() + "/" + fileManageUpdateRequest.getFileName();
             }
             uploadPath = PathFormatForTest.format(uploadPath);
             fileManageCreateParam.setUploadPath(uploadPath);
@@ -1383,7 +1385,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             // 补充进去的
             fileManageCreateParam.setScriptCsvDataSetId(fileManageUpdateRequest.getScriptCsvDataSetId());
             fileManageCreateParam.setAliasName(fileManageUpdateRequest.getAliasName());
-
+            fileManageCreateParam.setDeptId(WebPluginUtils.traceDeptId());
+            fileManageCreateParam.setCreateType(fileManageUpdateRequest.getCreateType() != null & fileManageUpdateRequest.getCreateType() == 1 ? 1 : 0);
             return fileManageCreateParam;
         }).collect(Collectors.toList());
 
@@ -1678,7 +1681,15 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                 sceneManageApi.deleteScene(sceneManageDeleteReq);
             });
         }
+
         scriptManageDAO.deleteScriptManageAndDeploy(scriptManageDeployResult.getScriptId());
+
+        // 删除组件表
+
+        // 删除任务表
+        // 删除组件对应的csv
+
+
         List<Long> existScriptManageDeployIds = existScriptManageDeployResults.stream().map(
                 ScriptManageDeployResult::getId).collect(Collectors.toList());
         List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectFileIdsByScriptDeployIds(

@@ -61,4 +61,7 @@ public class FileManageCreateParam extends TenantCommonExt {
 
     private String aliasName;
 
+    private Long deptId;
+    private Integer createType;
+
 }

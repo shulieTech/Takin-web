@@ -133,6 +133,9 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     private String fileUploadUrl;
     @Value("${script.check:true}")
     private Boolean scriptCheck;
+    //是否本地
+    @Value("${is.local:false}")
+    private Boolean isLocal;
     /**
      * 是否新版css 是的话，文件不复制，仅修改数据库记录即可，默认是新版
      */
@@ -2083,9 +2086,13 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      * @return 路径前缀
      */
     private String getTargetScriptPath(ScriptManageDeployResult scriptManageDeployResult) {
-        // ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH) todo
-        return String.format("%s/%s/%s/", "/Users/hezhongqi/aliyun_workspace/shulie/skyeye_stresstest_web/nfs",
+        if (Boolean.TRUE.equals(isLocal)) {
+            return String.format("%s/%s/%s/", "/Users/hezhongqi/aliyun_workspace/shulie/skyeye_stresstest_web/nfs",
+                    scriptManageDeployResult.getScriptId(), scriptManageDeployResult.getScriptVersion());
+        }
+        return String.format("%s/%s/%s/", ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH),
                 scriptManageDeployResult.getScriptId(), scriptManageDeployResult.getScriptVersion());
+
     }
 
     /**
@@ -2095,7 +2102,10 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      * @return 路径前缀
      */
     private String getTargetScriptPathNew(ScriptManageDeployResult scriptManageDeployResult) {
-        // ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH) todo
+        if(Boolean.TRUE.equals(isLocal)) {
+            return String.format("%s/%s/",ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH),
+                    scriptManageDeployResult.getScriptId());
+        }
         return String.format("%s/%s/", "/Users/hezhongqi/aliyun_workspace/shulie/skyeye_stresstest_web/nfs",
                 scriptManageDeployResult.getScriptId());
     }

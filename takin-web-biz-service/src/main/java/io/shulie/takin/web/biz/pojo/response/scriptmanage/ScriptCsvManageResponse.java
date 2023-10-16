@@ -74,7 +74,7 @@ public class ScriptCsvManageResponse  extends AuthQueryResponseCommonExt {
     // 模板名称
 
     @ApiModelProperty(value = "是否选择该csv")
-    private Boolean isSelect;
+    private Boolean isSelect = false;
 
     /**
      * 变更时间

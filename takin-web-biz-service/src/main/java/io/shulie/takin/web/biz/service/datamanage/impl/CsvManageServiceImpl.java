@@ -312,16 +312,16 @@ public class CsvManageServiceImpl implements CsvManageService {
     }
 
     @Override
-    public List<ScriptCsvCreateDetailResponse> createDetail(Long businessFlowId,Long scriptCsvDataSetId) {
+    public List<ScriptCsvCreateDetailResponse> createDetail(Long businessFlowId, Long scriptCsvDataSetId) {
         // 1. 获取组件列表
         List<ScriptCsvDataSetEntity> csvDataSetEntityList = Lists.newArrayList();
-        if(scriptCsvDataSetId != null) {
+        if (scriptCsvDataSetId != null) {
             ScriptCsvDataSetEntity scriptCsvDataSetEntity = scriptCsvDataSetMapper.selectById(scriptCsvDataSetId);
-            if(scriptCsvDataSetEntity == null) {
+            if (scriptCsvDataSetEntity == null) {
                 return Lists.newArrayList();
             }
             csvDataSetEntityList.add(scriptCsvDataSetEntity);
-        }else {
+        } else {
             csvDataSetEntityList.addAll(scriptCsvDataSetMapper.listByBusinessFlowId(businessFlowId));
         }
 
@@ -619,7 +619,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         }
         // 3. 找到文件关联关系 --- t_script_file_ref
         ScriptFileRefResult scriptFileRefResult = scriptFileRefDAO.selectByFileManageId(fileManageEntity.getId());
-        if(scriptFileRefResult != null) {
+        if (scriptFileRefResult != null) {
             // 4. 删除文件关联关系
             scriptFileRefDAO.deleteByIds(Collections.singletonList(scriptFileRefResult.getId()));
             log.info("删除文件，调用同步压测场景接口。");
@@ -712,9 +712,15 @@ public class CsvManageServiceImpl implements CsvManageService {
         sceneWrapper.select(SceneEntity::getId, SceneEntity::getScriptDeployId, SceneEntity::getSceneName);
         sceneWrapper.in(SceneEntity::getScriptDeployId, scriptDeployIds);
         List<SceneEntity> sceneEntities = sceneMapper.selectList(sceneWrapper);
-        // 脚本id对应的业务活动名称是什么
-        Map<Long, SceneEntity> sceneNameMap = sceneEntities.stream().collect(Collectors.toMap(SceneEntity::getScriptDeployId, t -> t, (t1, t2) -> t2));
+
+        // 脚本id对应的业务活动名称是什么 老数据兼容
+        Map<Long, SceneEntity> idSceneNameMap = sceneEntities.stream().collect(Collectors.toMap(SceneEntity::getId, t -> t, (t1, t2) -> t2));
         Map<Long, Long> fileIdScriptIdMap = scriptFileRefResults.stream().collect(Collectors.toMap(ScriptFileRefResult::getFileId, ScriptFileRefResult::getScriptDeployId));
+
+        // 新版本 从组件里获取
+        Map<Long, SceneEntity> scriptDeployIdSceneNameMap = sceneEntities.stream().collect(Collectors.toMap(SceneEntity::getScriptDeployId, t -> t, (t1, t2) -> t2));
+
+
         // 根据文件Id 查询文件组件信息
         List<Long> finalScriptCsvDataSetId = records.stream().map(FileManageEntity::getScriptCsvDataSetId).distinct().collect(Collectors.toList());
         List<ScriptCsvDataSetEntity> csvDataSetEntityList = scriptCsvDataSetMapper.selectBatchIds(finalScriptCsvDataSetId);
@@ -729,7 +735,7 @@ public class CsvManageServiceImpl implements CsvManageService {
 
             Long scriptDeployId = fileIdScriptIdMap.get(t.getId());
             if (scriptDeployId != null) {
-                SceneEntity sceneEntity = sceneNameMap.get(scriptDeployId);
+                SceneEntity sceneEntity = scriptDeployIdSceneNameMap.get(scriptDeployId);
                 response.setBusinessFlowId(sceneEntity != null ? sceneEntity.getId() : null);
                 response.setBusinessFlowName(sceneEntity != null ? sceneEntity.getSceneName() : null);
             }
@@ -737,10 +743,18 @@ public class CsvManageServiceImpl implements CsvManageService {
             response.setScriptCsvFileName(t.getFileName());
             if (t.getScriptCsvDataSetId() != null) {
                 ScriptCsvDataSetEntity setEntity = scriptCsvDataSetIdEntityMap.get(t.getScriptCsvDataSetId());
-                response.setScriptCsvDataSetName(setEntity != null ? setEntity.getScriptCsvDataSetName() : null);
-                response.setScriptCsvVariableName(setEntity != null ? setEntity.getScriptCsvVariableName() : null);
-                // 是否选择判断
-                response.setIsSelect(setEntity != null && t.getId().equals(setEntity.getFileManageId()));
+                if (setEntity != null) {
+                    SceneEntity sceneEntity = idSceneNameMap.get(setEntity.getBusinessFlowId());
+                    response.setBusinessFlowId(setEntity.getBusinessFlowId());
+                    response.setBusinessFlowName(sceneEntity != null ? sceneEntity.getSceneName() : "");
+                    response.setScriptCsvDataSetName(setEntity.getScriptCsvDataSetName());
+                    response.setScriptCsvVariableName(setEntity.getScriptCsvVariableName());
+                    // 是否选择判断
+                    response.setIsSelect(t.getId().equals(setEntity.getFileManageId()));
+                }
+            } else {
+                // 没有组件id 默认就是选择的 也就是老版本
+                response.setIsSelect(true);
             }
             response.setDeptId(t.getDeptId());
             WebPluginUtils.fillQueryResponse(response);
@@ -946,11 +960,11 @@ public class CsvManageServiceImpl implements CsvManageService {
             t.setUuId(UUID.randomUUID().toString());
             if (FileTypeEnum.DATA.getCode().equals(t.getFileType())) {
                 ScriptCsvDataSetEntity scriptCsvDataSetEntity = scriptCsvDataSetIdMap.get(t.getScriptCsvDataSetId());
-                if(scriptCsvDataSetEntity != null) {
+                if (scriptCsvDataSetEntity != null) {
                     t.setIsSplit(Boolean.TRUE.equals(scriptCsvDataSetEntity.getIsSplit()) ? 1 : 0);
                     t.setIsOrderSplit(Boolean.TRUE.equals(scriptCsvDataSetEntity.getIsOrderSplit()) ? 1 : 0);
                 }
-                if(t.getDeptId() == null) {
+                if (t.getDeptId() == null) {
                     t.setDeptId(WebPluginUtils.traceDeptId());
                 }
             }
@@ -1009,7 +1023,7 @@ public class CsvManageServiceImpl implements CsvManageService {
     public void deleteCsvAll(Long sceneId) {
         // 1.获取组件
         List<ScriptCsvDataSetEntity> csvDataSetEntityList = scriptCsvDataSetMapper.listByBusinessFlowId(sceneId);
-        if(CollectionUtils.isEmpty(csvDataSetEntityList)) {
+        if (CollectionUtils.isEmpty(csvDataSetEntityList)) {
             return;
         }
 
@@ -1018,7 +1032,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         LambdaQueryWrapper<ScriptCsvCreateTaskEntity> taskWrapper = new LambdaQueryWrapper<>();
         taskWrapper.in(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId, scriptCsvDataSetIds);
         List<ScriptCsvCreateTaskEntity> scriptCsvCreateTaskEntities = scriptCsvCreateTaskMapper.selectList(taskWrapper);
-        if(!CollectionUtils.isEmpty(scriptCsvCreateTaskEntities)) {
+        if (!CollectionUtils.isEmpty(scriptCsvCreateTaskEntities)) {
             scriptCsvCreateTaskMapper.deleteBatchIds(scriptCsvCreateTaskEntities.stream().map(ScriptCsvCreateTaskEntity::getId).collect(Collectors.toList()));
         }
         // 3. 删除组件
@@ -1027,7 +1041,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         LambdaQueryWrapper<FileManageEntity> fileWrapper = new LambdaQueryWrapper<>();
         fileWrapper.in(FileManageEntity::getScriptCsvDataSetId, scriptCsvDataSetIds);
         List<FileManageEntity> fileManageEntityList = fileManageMapper.selectList(fileWrapper);
-        if(CollectionUtils.isEmpty(fileManageEntityList)) {
+        if (CollectionUtils.isEmpty(fileManageEntityList)) {
             return;
         }
         List<Long> fileIds = fileManageEntityList.stream().map(FileManageEntity::getId).collect(Collectors.toList());
@@ -1041,7 +1055,7 @@ public class CsvManageServiceImpl implements CsvManageService {
 
         // 删除关联关系
         List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectByFileManageIds(fileIds);
-        if(!CollectionUtils.isEmpty(scriptFileRefResults)) {
+        if (!CollectionUtils.isEmpty(scriptFileRefResults)) {
             scriptFileRefDAO.deleteByIds(scriptFileRefResults.stream().map(ScriptFileRefResult::getId).collect(Collectors.toList()));
         }
     }
@@ -1049,7 +1063,7 @@ public class CsvManageServiceImpl implements CsvManageService {
     @Override
     public void runJob() {
         // 1. 每次只执行一次 上锁
-        Boolean running = RedisHelper.setIfAbsent(CSV_TASK_RUN_REDIS_KEY, 1,1L, TimeUnit.MINUTES);
+        Boolean running = RedisHelper.setIfAbsent(CSV_TASK_RUN_REDIS_KEY, 1, 1L, TimeUnit.MINUTES);
         if (running == null || Boolean.FALSE.equals(running)) {
             return;
         }
@@ -1070,7 +1084,7 @@ public class CsvManageServiceImpl implements CsvManageService {
                 commonExt.setSource(ContextSourceEnum.JOB.getCode());
                 WebPluginUtils.setTraceTenantContext(commonExt);
                 CurrentCreateScheduleDTO currentCreateScheduleDTO = JSON.parseObject(scriptCsvCreateTaskEntity.getCurrentCreateSchedule(), CurrentCreateScheduleDTO.class);
-                if(scriptCsvCreateTaskEntity.getCreateStatus().equals(ScriptCsvCreateTaskState.GENERATED)) {
+                if (scriptCsvCreateTaskEntity.getCreateStatus().equals(ScriptCsvCreateTaskState.GENERATED)) {
                     RedisHelper.delete(CSV_TASK_REDIS_KEY);
                     return;
                 }
@@ -1101,7 +1115,7 @@ public class CsvManageServiceImpl implements CsvManageService {
             ScriptCsvCreateTaskEntity scriptCsvCreateTaskEntity = scriptCsvCreateTaskEntities.get(0);
             // 锁定
             Boolean ifAbsent = RedisHelper.setIfAbsent(CSV_TASK_REDIS_KEY, scriptCsvCreateTaskEntity.getId());
-            if(Boolean.FALSE.equals(ifAbsent)) {
+            if (Boolean.FALSE.equals(ifAbsent)) {
                 // 锁定失败
                 return;
             }
@@ -1137,7 +1151,7 @@ public class CsvManageServiceImpl implements CsvManageService {
             // 3. 开始收集数据
             this.collectData(scriptCsvCreateTaskEntity);
         } catch (Exception e) {
-            log.error("执行失败：",e);
+            log.error("执行失败：", e);
         } finally {
             RedisHelper.delete(CSV_TASK_RUN_REDIS_KEY);
         }
@@ -1243,7 +1257,7 @@ public class CsvManageServiceImpl implements CsvManageService {
                 FileUtils.touch(file);
             }
         } catch (IOException e) {
-           log.error("创建文件失败");
+            log.error("创建文件失败");
         }
         if (CollectionUtils.isEmpty(trafficRecorderData)) {
             return 0;

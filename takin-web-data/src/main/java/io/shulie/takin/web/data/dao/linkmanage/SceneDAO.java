@@ -1,13 +1,13 @@
 package io.shulie.takin.web.data.dao.linkmanage;
 
-import java.util.List;
-
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
 import io.shulie.takin.web.data.param.scene.ScenePageQueryParam;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
+
+import java.util.List;
 
 /**
  * @author fanxx

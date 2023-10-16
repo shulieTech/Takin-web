@@ -64,12 +64,15 @@ public class SceneDAOImpl implements SceneDAO {
     public List<SceneResult> selectList(SceneQueryParam queryParam) {
         List<SceneResult> sceneResultList = Lists.newArrayList();
         LambdaQueryWrapper<SceneEntity> queryWrapper = new LambdaQueryWrapper<>();
-        if (CollectionUtils.isNotEmpty(queryParam.getUserIdList())) {
-            queryWrapper.in(SceneEntity::getUserId, queryParam.getUserIdList());
+        if(queryParam.getIsWithUserId()) {
+            if (CollectionUtils.isNotEmpty(queryParam.getUserIdList())) {
+                queryWrapper.in(SceneEntity::getUserId, queryParam.getUserIdList());
+            }
         }
         if (!StringUtils.isEmpty(queryParam.getSceneName())) {
             queryWrapper.like(SceneEntity::getSceneName, queryParam.getSceneName());
         }
+
         queryWrapper.eq(SceneEntity::getIsDeleted, 0);
         queryWrapper.select(
                 SceneEntity::getId,

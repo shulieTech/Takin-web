@@ -693,6 +693,9 @@ public class CsvManageServiceImpl implements CsvManageService {
         LambdaQueryWrapper<FileManageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(!CollectionUtils.isEmpty(fileIds), FileManageEntity::getId, fileIds);
         wrapper.eq(FileManageEntity::getFileType, FileTypeEnum.DATA.getCode());
+
+        wrapper.and(tmp -> tmp.eq(FileManageEntity::getDeptId,WebPluginUtils.traceDeptId()).or().isNull(FileManageEntity::getDeptId));
+
         wrapper.like(StringUtils.isNotBlank(request.getScriptCsvFileName()), FileManageEntity::getFileName, request.getScriptCsvFileName());
         wrapper.in(!CollectionUtils.isEmpty(scriptCsvDataSetIds), FileManageEntity::getScriptCsvDataSetId, scriptCsvDataSetIds);
         wrapper.orderByDesc(FileManageEntity::getUploadTime);
@@ -784,6 +787,10 @@ public class CsvManageServiceImpl implements CsvManageService {
         List<Long> finalScriptCsvDataSetId = Lists.newArrayList();
         if (scriptCsvDataSetIds != null && scriptCsvDataSetIdsByFile != null) {
             finalScriptCsvDataSetId.addAll(scriptCsvDataSetIds.stream().filter(scriptCsvDataSetIdsByFile::contains).collect(Collectors.toList()));
+        }else if(scriptCsvDataSetIds != null) {
+            finalScriptCsvDataSetId.addAll(scriptCsvDataSetIds);
+        }else if(scriptCsvDataSetIdsByFile != null) {
+            finalScriptCsvDataSetId.addAll(scriptCsvDataSetIdsByFile);
         }
         // 3. 场景id
         LambdaQueryWrapper<ScriptCsvCreateTaskEntity> wrapper = new LambdaQueryWrapper<>();
@@ -791,6 +798,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         if (sceneResults != null) {
             wrapper.in(ScriptCsvCreateTaskEntity::getBusinessFlowId, sceneResults.stream().map(SceneResult::getId).collect(Collectors.toList()));
         }
+        wrapper.eq(ScriptCsvCreateTaskEntity::getDeptId,WebPluginUtils.traceDeptId());
         wrapper.eq(request.getTaskState() != null, ScriptCsvCreateTaskEntity::getCreateStatus, request.getTaskState());
         wrapper.orderByDesc(ScriptCsvCreateTaskEntity::getUpdateTime);
 
@@ -863,6 +871,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         SceneQueryParam queryParam = new SceneQueryParam();
         WebPluginUtils.fillQueryParam(queryParam);
         queryParam.setSceneName(businessFlowName);
+        queryParam.setIsWithUserId(false);
         return sceneDAO.selectList(queryParam);
     }
 

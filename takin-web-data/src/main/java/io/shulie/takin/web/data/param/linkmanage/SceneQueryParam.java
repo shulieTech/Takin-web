@@ -10,4 +10,5 @@ import lombok.Data;
 @Data
 public class SceneQueryParam extends AuthQueryParamCommonExt {
     private String sceneName;
+    private Boolean isWithUserId = false;
 }

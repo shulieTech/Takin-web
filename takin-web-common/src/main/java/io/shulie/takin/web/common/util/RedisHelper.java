@@ -1,15 +1,5 @@
 package io.shulie.takin.web.common.util;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -17,6 +7,15 @@ import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 /**
  * redis 工具类
@@ -44,7 +43,25 @@ public class RedisHelper {
      * @param value
      */
     public static void setValue(String redisKey,Object value) {
-        redisTemplate.opsForValue().set(redisKey,value);
+         redisTemplate.opsForValue().set(redisKey,value);
+    }
+
+    /**
+     * 赋值
+     * @param redisKey
+     * @param value
+     */
+    public static Boolean setIfAbsent(String redisKey,Object value) {
+        return redisTemplate.opsForValue().setIfAbsent(redisKey, value);
+    }
+
+    /**
+     * 赋值
+     * @param redisKey
+     * @param value
+     */
+    public static Boolean setIfAbsent(String redisKey,Object value,Long timeout, TimeUnit unit) {
+        return redisTemplate.opsForValue().setIfAbsent(redisKey, value,timeout,unit);
     }
 
     /**

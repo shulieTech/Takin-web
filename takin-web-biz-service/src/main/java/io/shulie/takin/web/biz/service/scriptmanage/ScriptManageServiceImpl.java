@@ -1389,7 +1389,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             fileManageCreateParam.setScriptCsvDataSetId(fileManageUpdateRequest.getScriptCsvDataSetId());
             fileManageCreateParam.setAliasName(fileManageUpdateRequest.getAliasName());
             fileManageCreateParam.setDeptId(WebPluginUtils.traceDeptId());
-            fileManageCreateParam.setCreateType(fileManageUpdateRequest.getCreateType() != null & fileManageUpdateRequest.getCreateType() == 1 ? 1 : 0);
+            fileManageCreateParam.setCreateType(fileManageUpdateRequest.getCreateType() != null && fileManageUpdateRequest.getCreateType() == 1 ? 1 : 0);
             return fileManageCreateParam;
         }).collect(Collectors.toList());
 
@@ -2103,10 +2103,10 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      */
     private String getTargetScriptPathNew(ScriptManageDeployResult scriptManageDeployResult) {
         if(Boolean.TRUE.equals(isLocal)) {
-            return String.format("%s/%s/",ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH),
+            return String.format("%s/%s/", "/Users/hezhongqi/aliyun_workspace/shulie/skyeye_stresstest_web/nfs",
                     scriptManageDeployResult.getScriptId());
         }
-        return String.format("%s/%s/", "/Users/hezhongqi/aliyun_workspace/shulie/skyeye_stresstest_web/nfs",
+        return String.format("%s/%s/",ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH),
                 scriptManageDeployResult.getScriptId());
     }
 

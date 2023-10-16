@@ -86,6 +86,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -130,8 +131,8 @@ public class CsvManageServiceImpl implements CsvManageService {
     @Resource
     private DiffFileApi fileApi;
 
-    private static String CSS_TASK_REDIS_KEY = "script:css:task";
-    private static String CSS_TASK_RUN_REDIS_KEY = "script:css:task:run";
+    private static String CSV_TASK_REDIS_KEY = "script:csv:task";
+    private static String CSV_TASK_RUN_REDIS_KEY = "script:csv:task:run";
 
 
     @Override
@@ -481,6 +482,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         // 1. 获取 任务列表
         LambdaQueryWrapper<ScriptCsvCreateTaskEntity> taskWrapper = new LambdaQueryWrapper<>();
         taskWrapper.eq(ScriptCsvCreateTaskEntity::getBusinessFlowId, businessFlowId);
+        taskWrapper.eq(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId, scriptCsvDataSetId);
         taskWrapper.in(ScriptCsvCreateTaskEntity::getCreateStatus, Arrays.asList(ScriptCsvCreateTaskState.IN_FORMATION, ScriptCsvCreateTaskState.BE_QUEUING));
         List<ScriptCsvCreateTaskEntity> taskEntityList = scriptCsvCreateTaskMapper.selectList(taskWrapper);
         responseList.addAll(taskEntityList.stream().map(t -> {
@@ -1037,92 +1039,103 @@ public class CsvManageServiceImpl implements CsvManageService {
     @Override
     public void runJob() {
         // 1. 每次只执行一次 上锁
-        Object running = RedisHelper.stringGet(CSS_TASK_RUN_REDIS_KEY);
-        if (running != null) {
+        Boolean running = RedisHelper.setIfAbsent(CSV_TASK_RUN_REDIS_KEY, 1,1L, TimeUnit.MINUTES);
+        if (running == null || Boolean.FALSE.equals(running)) {
             return;
         }
-        // 任务上锁
-        Object lock = RedisHelper.stringGet(CSS_TASK_REDIS_KEY);
-        if (lock != null && StringUtils.isNotBlank(lock.toString())) {
-            // 2. 判断是否任务状态是否取消
-            ScriptCsvCreateTaskEntity scriptCsvCreateTaskEntity = scriptCsvCreateTaskMapper.selectById(Long.valueOf(lock.toString()));
-            if (scriptCsvCreateTaskEntity == null) {
-                this.completeTask(null, null);
+        try {
+            // 任务上锁
+            Object lock = RedisHelper.stringGet(CSV_TASK_REDIS_KEY);
+            if (lock != null && StringUtils.isNotBlank(lock.toString())) {
+                // 2. 判断是否任务状态是否取消
+                ScriptCsvCreateTaskEntity scriptCsvCreateTaskEntity = scriptCsvCreateTaskMapper.selectById(Long.valueOf(lock.toString()));
+                if (scriptCsvCreateTaskEntity == null) {
+                    this.completeTask(null, null);
+                    return;
+                }
+                // 租户补充
+                TenantCommonExt commonExt = new TenantCommonExt();
+                commonExt.setTenantId(scriptCsvCreateTaskEntity.getTenantId());
+                commonExt.setEnvCode(scriptCsvCreateTaskEntity.getEnvCode());
+                commonExt.setSource(ContextSourceEnum.JOB.getCode());
+                WebPluginUtils.setTraceTenantContext(commonExt);
+                CurrentCreateScheduleDTO currentCreateScheduleDTO = JSON.parseObject(scriptCsvCreateTaskEntity.getCurrentCreateSchedule(), CurrentCreateScheduleDTO.class);
+                if(scriptCsvCreateTaskEntity.getCreateStatus().equals(ScriptCsvCreateTaskState.GENERATED)) {
+                    RedisHelper.delete(CSV_TASK_REDIS_KEY);
+                    return;
+                }
+                if (scriptCsvCreateTaskEntity.getCreateStatus().equals(ScriptCsvCreateTaskState.CANCELLED)) {
+                    this.completeTask(scriptCsvCreateTaskEntity, null);
+                    return;
+                }
+                // 3. 页码总数
+                int totalPage = currentCreateScheduleDTO.getTotalPage();
+                int page = currentCreateScheduleDTO.getPage();
+                if (page > totalPage) {
+                    this.completeTask(scriptCsvCreateTaskEntity, currentCreateScheduleDTO);
+                    return;
+                }
+                // 4. 开始收集数据
+                this.collectData(scriptCsvCreateTaskEntity);
                 return;
             }
-            // 租户补充
-            TenantCommonExt commonExt = new TenantCommonExt();
-            commonExt.setTenantId(scriptCsvCreateTaskEntity.getTenantId());
-            commonExt.setEnvCode(scriptCsvCreateTaskEntity.getEnvCode());
-            commonExt.setSource(ContextSourceEnum.JOB.getCode());
-            WebPluginUtils.setTraceTenantContext(commonExt);
+            // 5. 查找任务
+            LambdaQueryWrapper<ScriptCsvCreateTaskEntity> taskWrapper = new LambdaQueryWrapper<>();
+            taskWrapper.eq(ScriptCsvCreateTaskEntity::getCreateStatus, ScriptCsvCreateTaskState.BE_QUEUING);
+            taskWrapper.orderByAsc(ScriptCsvCreateTaskEntity::getCreateTime);
+            List<ScriptCsvCreateTaskEntity> scriptCsvCreateTaskEntities = scriptCsvCreateTaskMapper.selectList(taskWrapper);
+            if (CollectionUtils.isEmpty(scriptCsvCreateTaskEntities)) {
+                return;
+            }
+            // 6.开始任务，并锁定任务
+            ScriptCsvCreateTaskEntity scriptCsvCreateTaskEntity = scriptCsvCreateTaskEntities.get(0);
+            // 锁定
+            Boolean ifAbsent = RedisHelper.setIfAbsent(CSV_TASK_REDIS_KEY, scriptCsvCreateTaskEntity.getId());
+            if(Boolean.FALSE.equals(ifAbsent)) {
+                // 锁定失败
+                return;
+            }
+
+            scriptCsvCreateTaskEntity.setCreateStatus(ScriptCsvCreateTaskState.IN_FORMATION);
+            // 填入临时目录路径
+            ScriptCsvDataSetEntity scriptCsvDataSetEntity = scriptCsvDataSetMapper.selectById(scriptCsvCreateTaskEntity.getScriptCsvDataSetId());
+            if (scriptCsvDataSetEntity == null) {
+                return;
+            }
             CurrentCreateScheduleDTO currentCreateScheduleDTO = JSON.parseObject(scriptCsvCreateTaskEntity.getCurrentCreateSchedule(), CurrentCreateScheduleDTO.class);
-            if(scriptCsvCreateTaskEntity.getCreateStatus().equals(ScriptCsvCreateTaskState.GENERATED)) {
-                RedisHelper.delete(CSS_TASK_REDIS_KEY);
+            currentCreateScheduleDTO.setUploadId(UUID.randomUUID().toString());
+            currentCreateScheduleDTO.setTempPath(tempPath + SceneManageConstant.FILE_SPLIT +
+                    currentCreateScheduleDTO.getUploadId() + SceneManageConstant.FILE_SPLIT + scriptCsvDataSetEntity.getScriptCsvFileName());
+            currentCreateScheduleDTO.setCurrent(0L);
+            currentCreateScheduleDTO.setPage(0);
+            currentCreateScheduleDTO.setTotalPage((int) (currentCreateScheduleDTO.getTotal() / 10000 + 1));
+            currentCreateScheduleDTO.setIgnoreFirstLine(scriptCsvDataSetEntity.getIgnoreFirstLine());
+            currentCreateScheduleDTO.setScriptCsvVariableName(scriptCsvDataSetEntity.getScriptCsvVariableName());
+
+            scriptCsvCreateTaskEntity.setCurrentCreateSchedule(JSON.toJSONString(currentCreateScheduleDTO));
+            scriptCsvCreateTaskEntity.setUpdateTime(LocalDateTime.now());
+            scriptCsvCreateTaskEntity.setRemark("正在进行中的任务");
+            scriptCsvCreateTaskEntity.setTaskStartTime(LocalDateTime.now());
+
+            int i = scriptCsvCreateTaskMapper.updateById(scriptCsvCreateTaskEntity);
+            if (i <= 0) {
+                log.error("任务状态更新失败");
                 return;
             }
-            if (scriptCsvCreateTaskEntity.getCreateStatus().equals(ScriptCsvCreateTaskState.CANCELLED)) {
-                this.completeTask(scriptCsvCreateTaskEntity, null);
-                return;
-            }
-            // 3. 页码总数
-            int totalPage = currentCreateScheduleDTO.getTotalPage();
-            int page = currentCreateScheduleDTO.getPage();
-            if (page > totalPage) {
-                this.completeTask(scriptCsvCreateTaskEntity, currentCreateScheduleDTO);
-                return;
-            }
-            // 4. 开始收集数据
+
+            // 异步收集
+            // 3. 开始收集数据
             this.collectData(scriptCsvCreateTaskEntity);
-            return;
+        } catch (Exception e) {
+            log.error("执行失败：",e);
+        } finally {
+            RedisHelper.delete(CSV_TASK_RUN_REDIS_KEY);
         }
-        // 5. 查找任务
-        LambdaQueryWrapper<ScriptCsvCreateTaskEntity> taskWrapper = new LambdaQueryWrapper<>();
-        taskWrapper.eq(ScriptCsvCreateTaskEntity::getCreateStatus, ScriptCsvCreateTaskState.BE_QUEUING);
-        taskWrapper.orderByAsc(ScriptCsvCreateTaskEntity::getCreateTime);
-        List<ScriptCsvCreateTaskEntity> scriptCsvCreateTaskEntities = scriptCsvCreateTaskMapper.selectList(taskWrapper);
-        if (CollectionUtils.isEmpty(scriptCsvCreateTaskEntities)) {
-            return;
-        }
-        // 6.开始任务，并锁定任务
-        ScriptCsvCreateTaskEntity scriptCsvCreateTaskEntity = scriptCsvCreateTaskEntities.get(0);
-        scriptCsvCreateTaskEntity.setCreateStatus(ScriptCsvCreateTaskState.IN_FORMATION);
-        // 填入临时目录路径
-        ScriptCsvDataSetEntity scriptCsvDataSetEntity = scriptCsvDataSetMapper.selectById(scriptCsvCreateTaskEntity.getScriptCsvDataSetId());
-        if (scriptCsvDataSetEntity == null) {
-            return;
-        }
-        CurrentCreateScheduleDTO currentCreateScheduleDTO = JSON.parseObject(scriptCsvCreateTaskEntity.getCurrentCreateSchedule(), CurrentCreateScheduleDTO.class);
-        currentCreateScheduleDTO.setUploadId(UUID.randomUUID().toString());
-        currentCreateScheduleDTO.setTempPath(tempPath + SceneManageConstant.FILE_SPLIT +
-                currentCreateScheduleDTO.getUploadId() + SceneManageConstant.FILE_SPLIT + scriptCsvDataSetEntity.getScriptCsvFileName());
-        currentCreateScheduleDTO.setCurrent(0L);
-        currentCreateScheduleDTO.setPage(0);
-        currentCreateScheduleDTO.setTotalPage((int) (currentCreateScheduleDTO.getTotal() / 10000 + 1));
-        currentCreateScheduleDTO.setIgnoreFirstLine(scriptCsvDataSetEntity.getIgnoreFirstLine());
-        currentCreateScheduleDTO.setScriptCsvVariableName(scriptCsvDataSetEntity.getScriptCsvVariableName());
-
-        scriptCsvCreateTaskEntity.setCurrentCreateSchedule(JSON.toJSONString(currentCreateScheduleDTO));
-        scriptCsvCreateTaskEntity.setUpdateTime(LocalDateTime.now());
-        scriptCsvCreateTaskEntity.setRemark("正在进行中的任务");
-        scriptCsvCreateTaskEntity.setTaskStartTime(LocalDateTime.now());
-
-        int i = scriptCsvCreateTaskMapper.updateById(scriptCsvCreateTaskEntity);
-        if (i <= 0) {
-            log.error("任务状态更新失败");
-            return;
-        }
-        // 锁定
-        RedisHelper.setValue(CSS_TASK_REDIS_KEY, scriptCsvCreateTaskEntity.getId());
-        // 异步收集
-        // 3. 开始收集数据
-        this.collectData(scriptCsvCreateTaskEntity);
 
     }
 
     private void collectData(ScriptCsvCreateTaskEntity scriptCsvCreateTaskEntity) {
         try {
-            RedisHelper.setValue(CSS_TASK_RUN_REDIS_KEY, "1");
             scriptCsvCreateTaskEntity.setUpdateTime(LocalDateTime.now());
             // 1.获取当前进度，并更新下一集的进度
             CurrentCreateScheduleDTO currentCreateScheduleDTO = JSON.parseObject(scriptCsvCreateTaskEntity.getCurrentCreateSchedule(), CurrentCreateScheduleDTO.class);
@@ -1161,8 +1174,6 @@ public class CsvManageServiceImpl implements CsvManageService {
             int i = scriptCsvCreateTaskMapper.updateById(scriptCsvCreateTaskEntity);
         } catch (Exception e) {
             log.error("收集csv失败：", e);
-        } finally {
-            RedisHelper.delete(CSS_TASK_RUN_REDIS_KEY);
         }
 
     }
@@ -1173,7 +1184,7 @@ public class CsvManageServiceImpl implements CsvManageService {
             ScriptCsvDataSetEntity scriptCsvDataSetEntity = scriptCsvDataSetMapper.selectById(scriptCsvCreateTaskEntity.getScriptCsvDataSetId());
             if (scriptCsvDataSetEntity == null) {
                 // 如果组件变更，还在执行，把这个设置成备注 组件已变更
-                RedisHelper.delete(CSS_TASK_REDIS_KEY);
+                RedisHelper.delete(CSV_TASK_REDIS_KEY);
                 scriptCsvCreateTaskEntity.setCreateStatus(ScriptCsvCreateTaskState.CANCELLED);
                 scriptCsvCreateTaskEntity.setRemark("组件已删除");
                 scriptCsvCreateTaskMapper.updateById(scriptCsvCreateTaskEntity);
@@ -1208,7 +1219,7 @@ public class CsvManageServiceImpl implements CsvManageService {
             this.uploadDataFile(request);
 
         }
-        RedisHelper.delete(CSS_TASK_REDIS_KEY);
+        RedisHelper.delete(CSV_TASK_REDIS_KEY);
     }
 
     private Integer writeFile(ScriptCsvCreateTaskEntity scriptCsvCreateTaskEntity, List<TrafficRecorderExtResponse> trafficRecorderData,

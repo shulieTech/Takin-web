@@ -813,9 +813,11 @@ public class CsvManageServiceImpl implements CsvManageService {
             CurrentCreateScheduleDTO currentCreateScheduleDTO = JSON.parseObject(t.getCurrentCreateSchedule(), CurrentCreateScheduleDTO.class);
             response.setCurrentCreateSchedule(currentCreateScheduleDTO.parseCurrentCreateSchedule(t.getCreateStatus()));
             response.setIsSelect(Boolean.FALSE);
+            response.setCurrentCreateScheduleString(t.getCurrentCreateSchedule());
             response.setCreateTime(t.getCreateTime());
             response.setDeptId(t.getDeptId());
             WebPluginUtils.fillQueryResponse(response);
+
             return response;
         }).collect(Collectors.toList()), entityPage.getTotal());
     }

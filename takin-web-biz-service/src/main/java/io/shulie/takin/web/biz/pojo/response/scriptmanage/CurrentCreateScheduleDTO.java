@@ -67,7 +67,7 @@ public class CurrentCreateScheduleDTO {
     public String parseCurrentCreateSchedule(Integer createStatus) {
         // 进度计算
         String currentCreateSchedule = "0%";
-        if (ScriptCsvCreateTaskState.IN_FORMATION.equals(createStatus)) {
+        if (ScriptCsvCreateTaskState.IN_FORMATION.equals(createStatus) || ScriptCsvCreateTaskState.CANCELLED.equals(createStatus) ) {
             Long count = this.count;
             Long current = this.current;
             if (!(current == null || count == 0)) {

@@ -27,3 +27,6 @@ application-local.*
 
 .DS_Store
 public/!/extensions.idx
+/plugins/
+/nfs_dir/
+/nfs/

@@ -725,6 +725,8 @@ public class CsvManageServiceImpl implements CsvManageService {
             BeanUtils.copyProperties(t, response);
             response.setFileManageId(t.getId());
 
+            response.setFileCreateTime(t.getGmtCreate());
+
             Long scriptDeployId = fileIdScriptIdMap.get(t.getId());
             if (scriptDeployId != null) {
                 SceneEntity sceneEntity = sceneNameMap.get(scriptDeployId);

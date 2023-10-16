@@ -79,7 +79,7 @@ public class ScriptCsvManageResponse  extends AuthQueryResponseCommonExt {
     /**
      * 变更时间
      */
-    @ApiModelProperty("updateTime")
+    @ApiModelProperty("fileCreateTime")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime fileCreateTime;
 

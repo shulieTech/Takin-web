@@ -71,7 +71,7 @@ public class CurrentCreateScheduleDTO {
             Long count = this.count;
             Long current = this.current;
             if (!(current == null || count == 0)) {
-                currentCreateSchedule = (current / count) + "%";
+                currentCreateSchedule = (current * 100 / count ) + "%";
             }
         } else if (ScriptCsvCreateTaskState.GENERATED.equals(createStatus)) {
             currentCreateSchedule = "100%";

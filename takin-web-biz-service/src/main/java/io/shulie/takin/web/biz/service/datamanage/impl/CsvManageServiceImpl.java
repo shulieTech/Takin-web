@@ -734,13 +734,16 @@ public class CsvManageServiceImpl implements CsvManageService {
                 response.setBusinessFlowName(sceneEntity != null ? sceneEntity.getSceneName() : null);
             }
             response.setIsSelect(Boolean.FALSE);
+            response.setScriptCsvFileName(t.getFileName());
             if (t.getScriptCsvDataSetId() != null) {
                 ScriptCsvDataSetEntity setEntity = scriptCsvDataSetIdEntityMap.get(t.getScriptCsvDataSetId());
                 response.setScriptCsvDataSetName(setEntity != null ? setEntity.getScriptCsvDataSetName() : null);
+                response.setScriptCsvVariableName(setEntity != null ? setEntity.getScriptCsvVariableName() : null);
                 // 是否选择判断
                 response.setIsSelect(setEntity != null && t.getId().equals(setEntity.getFileManageId()));
             }
             response.setDeptId(t.getDeptId());
+            WebPluginUtils.fillQueryResponse(response);
             return response;
         }).collect(Collectors.toList()), entityPage.getTotal());
 
@@ -812,6 +815,7 @@ public class CsvManageServiceImpl implements CsvManageService {
             response.setIsSelect(Boolean.FALSE);
             response.setCreateTime(t.getCreateTime());
             response.setDeptId(t.getDeptId());
+            WebPluginUtils.fillQueryResponse(response);
             return response;
         }).collect(Collectors.toList()), entityPage.getTotal());
     }
@@ -944,7 +948,9 @@ public class CsvManageServiceImpl implements CsvManageService {
                     t.setIsSplit(Boolean.TRUE.equals(scriptCsvDataSetEntity.getIsSplit()) ? 1 : 0);
                     t.setIsOrderSplit(Boolean.TRUE.equals(scriptCsvDataSetEntity.getIsOrderSplit()) ? 1 : 0);
                 }
-                t.setDeptId(WebPluginUtils.traceDeptId());
+                if(t.getDeptId() == null) {
+                    t.setDeptId(WebPluginUtils.traceDeptId());
+                }
             }
         });
 

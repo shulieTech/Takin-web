@@ -458,6 +458,14 @@ public class CsvManageServiceImpl implements CsvManageService {
 
     @Override
     public void cancelTask(ScriptCsvCreateTaskRequest request) {
+        // 校验下状态，已完成的不允许取消任务
+        ScriptCsvCreateTaskEntity scriptCsvCreateTaskEntity = scriptCsvCreateTaskMapper.selectById(request.getTaskId());
+        if(scriptCsvCreateTaskEntity == null) {
+            throw new RuntimeException("任务不存在");
+        }
+        if(ScriptCsvCreateTaskState.GENERATED.equals(scriptCsvCreateTaskEntity.getCreateStatus())) {
+            throw new RuntimeException("已生成的任务不允许取消");
+        }
         ScriptCsvCreateTaskEntity entity = new ScriptCsvCreateTaskEntity();
         entity.setId(request.getTaskId());
         entity.setUpdateTime(LocalDateTime.now());

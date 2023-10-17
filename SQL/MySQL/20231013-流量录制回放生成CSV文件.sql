@@ -109,3 +109,13 @@ UPDATE trodb.t_base_config SET CONFIG_VALUE = '[
     "scriptManage_4_delete",
     "scriptManage_7_download"
 ]', CONFIG_DESC = '全部按钮名称', USE_YN = 0, CREATE_TIME = '2022-08-22 07:14:06', UPDATE_TIME = '2023-10-17 10:36:28' WHERE CONFIG_CODE = 'ALL_BUTTON' AND env_code = 'system' AND tenant_id = -1;
+
+
+# 根据业务流程更新
+update t_file_manage a set dept_id = (select dept_id from (select b.file_id,c.dept_id from t_scene c, t_script_file_ref b where c.script_deploy_id = b.script_deploy_id) d where d.file_id = a.id)
+where dept_id is null
+
+# 根据脚本表更新
+update t_file_manage a set dept_id = (select dept_id from (select e.file_id,d.dept_id from (select b.dept_id,c.id from t_script_manage b,t_script_manage_deploy c where b.id = c.script_id
+                                                                                           ) d, t_script_file_ref e  where d.id = e.script_deploy_id) f where f.file_id = a.id)
+where dept_id is null

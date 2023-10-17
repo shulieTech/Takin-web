@@ -56,10 +56,10 @@ public class ScriptDataController {
             subModuleName = BizOpConstants.SubModules.CSV_MANAGE,
             logMsgKey = BizOpConstants.Message.MESSAGE_CSV_MANAGE_DELETE
     )
-//    @AuthVerification(
-//            moduleCode = BizOpConstants.ModuleCode.CSV_MANAGE,
-//            needAuth = ActionTypeEnum.DELETE
-//    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.CSV_MANAGE,
+            needAuth = ActionTypeEnum.DELETE
+    )
     public ScriptManageStringResponse deleteFile(@RequestParam("fileManageId") Long fileManageId) {
         csvManageService.deleteFile(fileManageId);
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
@@ -137,10 +137,10 @@ public class ScriptDataController {
             subModuleName = BizOpConstants.SubModules.CSV_MANAGE,
             logMsgKey = BizOpConstants.Message.MESSAGE_CSV_MANAGE_CANCEL
     )
-//    @AuthVerification(
-//            moduleCode = BizOpConstants.ModuleCode.CSV_MANAGE,
-//            needAuth = ActionTypeEnum.DELETE
-//    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.CSV_MANAGE,
+            needAuth = ActionTypeEnum.DELETE
+    )
     public ScriptManageStringResponse cancelTask(@RequestBody ScriptCsvCreateTaskRequest request) {
         csvManageService.cancelTask(request);
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
@@ -179,10 +179,10 @@ public class ScriptDataController {
 
     @ApiOperation("csv管理列表")
     @PostMapping("csv/manage")
-//    @AuthVerification(
-//            moduleCode = BizOpConstants.ModuleCode.CSV_MANAGE,
-//            needAuth = ActionTypeEnum.QUERY
-//    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.CSV_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
     public PagingList<ScriptCsvManageResponse> cssManage(@RequestBody PageScriptCssManageQueryRequest request) {
         return  csvManageService.csvManage(request);
     }

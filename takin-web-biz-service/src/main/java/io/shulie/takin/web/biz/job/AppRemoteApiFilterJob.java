@@ -2,7 +2,6 @@ package io.shulie.takin.web.biz.job;
 
 import cn.hutool.core.collection.CollStreamUtil;
 import com.google.common.collect.Maps;
-import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
@@ -65,30 +64,31 @@ public class AppRemoteApiFilterJob {
                 }
                 // 根据环境 分线程
                 for (TenantEnv e : ext.getEnvs()) {
-                    // 分片key
-                    int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
-                    if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
-                        // 分布式锁
-                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "appRemoteApiFilterJobExecute");
-                        if (distributedLock.checkLock(lockKey)) {
-                            continue;
-                        }
-                        appRemoteApiFilterThreadPool.execute(() -> {
-                            boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
-                            if (!tryLock) {
-                                return;
-                            }
-                            try {
-                                WebPluginUtils.setTraceTenantContext(
-                                        new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                                                ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
-                                this.appRemoteApiFilter();
-                                WebPluginUtils.removeTraceContext();
-                            } finally {
-                                distributedLock.unLockSafely(lockKey);
-                            }
-                        });
+                    // 分布式锁
+                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "appRemoteApiFilterJobExecute");
+                    if (distributedLock.checkLock(lockKey)) {
+                        continue;
                     }
+                    appRemoteApiFilterThreadPool.execute(() -> {
+                        boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
+                        if (!tryLock) {
+                            return;
+                        }
+                        try {
+                            WebPluginUtils.setTraceTenantContext(
+                                    new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                            ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                            this.appRemoteApiFilter();
+                            WebPluginUtils.removeTraceContext();
+                        } finally {
+                            distributedLock.unLockSafely(lockKey);
+                        }
+                    });
+                    // 分片key
+//                    int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
+//                    if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
+//
+//                    }
                 }
             }
         }

@@ -1,7 +1,6 @@
 package io.shulie.takin.web.biz.job;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.DistributedLock;
@@ -54,27 +53,28 @@ public class AppAccessStatusJob {
             Runnable r = () -> {
                 // 根据环境 分线程
                 for (TenantEnv e : ext.getEnvs()) {
-                    int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
-                    if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
-                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "appAccessStatusJobExecute");
-                        if (distributedLock.checkLock(lockKey)) {
-                            continue;
-                        }
-
-                        boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
-                        if (!tryLock) {
-                            return;
-                        }
-                        try {
-                            WebPluginUtils.setTraceTenantContext(
-                                    new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                                            ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
-                            applicationService.syncApplicationAccessStatus();
-                            WebPluginUtils.removeTraceContext();
-                        } finally {
-                            distributedLock.unLockSafely(lockKey);
-                        }
+                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "appAccessStatusJobExecute");
+                    if (distributedLock.checkLock(lockKey)) {
+                        continue;
                     }
+
+                    boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
+                    if (!tryLock) {
+                        return;
+                    }
+                    try {
+                        WebPluginUtils.setTraceTenantContext(
+                                new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                        ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                        applicationService.syncApplicationAccessStatus();
+                        WebPluginUtils.removeTraceContext();
+                    } finally {
+                        distributedLock.unLockSafely(lockKey);
+                    }
+//                    int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
+//                    if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
+//
+//                    }
 
                 }
             };

@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.job;
 
-import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.pressureresource.PressureResourceCommonService;
@@ -41,29 +40,30 @@ public class PressureResourceJob {
             }
             // 开始数据层分片
             for (TenantInfoExt.TenantEnv e : ext.getEnvs()) {
-                // 分片key
-                int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
-                if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
-                    // 分布式锁
-                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "pressureResourceJobExecute");
-                    if (distributedLock.checkLock(lockKey)) {
-                        continue;
-                    }
-                    pressureResourceThreadPool.execute(() -> {
-                        try {
-                            boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
-                            if (!tryLock) {
-                                return;
-                            }
-                            WebPluginUtils.setTraceTenantContext(
-                                    new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                                            ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
-                            pressureResourceCommonService.processAutoPressureResource();
-                        } finally {
-                            distributedLock.unLockSafely(lockKey);
-                        }
-                    });
+                // 分布式锁
+                String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "pressureResourceJobExecute");
+                if (distributedLock.checkLock(lockKey)) {
+                    continue;
                 }
+                pressureResourceThreadPool.execute(() -> {
+                    try {
+                        boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
+                        if (!tryLock) {
+                            return;
+                        }
+                        WebPluginUtils.setTraceTenantContext(
+                                new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                        ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                        pressureResourceCommonService.processAutoPressureResource();
+                    } finally {
+                        distributedLock.unLockSafely(lockKey);
+                    }
+                });
+//                // 分片key
+//                int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
+//                if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
+//
+//                }
 
             }
         }

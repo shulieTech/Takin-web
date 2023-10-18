@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.job;
 
-import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
@@ -55,20 +54,21 @@ public class FinishReportJob extends AbstractSceneTask {
                 Long reportId = taskDto.getReportId();
                 // 私有化 + 开源 根据 报告id进行分片
                 // 开始数据层分片
-                if (reportId % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
-                    Object task = runningTasks.putIfAbsent(reportId, EMPTY);
-                    if (task == null) {
-                        ThreadPoolUtil.getReportFinishThreadPool().execute(() -> {
-                            try {
-                                reportTaskService.finishReport(reportId, taskDto);
-                            } catch (Throwable e) {
-                                log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
-                            } finally {
-                                runningTasks.remove(reportId);
-                            }
-                        });
-                    }
+                Object task = runningTasks.putIfAbsent(reportId, EMPTY);
+                if (task == null) {
+                    ThreadPoolUtil.getReportFinishThreadPool().execute(() -> {
+                        try {
+                            reportTaskService.finishReport(reportId, taskDto);
+                        } catch (Throwable e) {
+                            log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
+                        } finally {
+                            runningTasks.remove(reportId);
+                        }
+                    });
                 }
+//                if (reportId % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
+//
+//                }
             }
             this.cleanUnAvailableTasks(taskDtoList);
         } else {

@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.job;
 
-import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
@@ -49,20 +48,21 @@ public class CalcTmpReportDataJob  extends AbstractSceneTask {
             for (SceneTaskDto taskDto : taskDtoList) {
                 Long reportId = taskDto.getReportId();
                 // 开始数据层分片
-                if (reportId % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
-                    Object task = runningTasks.putIfAbsent(reportId, EMPTY);
-                    if (task == null) {
-                        ThreadPoolUtil.getReportTpsThreadPool().execute(() -> {
-                            try {
-                                reportTaskService.calcTmpReportData(reportId);
-                            } catch (Throwable e) {
-                                log.error("execute CalcTmpReportDataJob occured error. reportId={}", reportId, e);
-                            } finally {
-                                runningTasks.remove(reportId);
-                            }
-                        });
-                    }
+                Object task = runningTasks.putIfAbsent(reportId, EMPTY);
+                if (task == null) {
+                    ThreadPoolUtil.getReportTpsThreadPool().execute(() -> {
+                        try {
+                            reportTaskService.calcTmpReportData(reportId);
+                        } catch (Throwable e) {
+                            log.error("execute CalcTmpReportDataJob occured error. reportId={}", reportId, e);
+                        } finally {
+                            runningTasks.remove(reportId);
+                        }
+                    });
                 }
+//                if (reportId % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
+//
+//                }
             }
         } else {
             this.runTask_ext(taskDtoList);

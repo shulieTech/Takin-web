@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.job;
 
-import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
@@ -62,29 +61,30 @@ public class AppRemoteCallJob  {
                 }
                 // 开始数据层分片
                 for (TenantEnv e : ext.getEnvs()) {
-                    // 分片key
-                    int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
-                    if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
-                        // 分布式锁
-                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "appRemoteCallJobExecute");
-                        if (distributedLock.checkLock(lockKey)) {
-                            continue;
-                        }
-                        remoteCallThreadPool.execute(() -> {
-                            boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
-                            if (!tryLock) {
-                                return;
-                            }
-                            try {
-                                WebPluginUtils.setTraceTenantContext(
-                                        new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                                                ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
-                                appRemoteCallService.syncAmdb();
-                            } finally {
-                                distributedLock.unLockSafely(lockKey);
-                            }
-                        });
+                    // 分布式锁
+                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), "appRemoteCallJobExecute");
+                    if (distributedLock.checkLock(lockKey)) {
+                        continue;
                     }
+                    remoteCallThreadPool.execute(() -> {
+                        boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
+                        if (!tryLock) {
+                            return;
+                        }
+                        try {
+                            WebPluginUtils.setTraceTenantContext(
+                                    new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                            ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                            appRemoteCallService.syncAmdb();
+                        } finally {
+                            distributedLock.unLockSafely(lockKey);
+                        }
+                    });
+//                    // 分片key
+//                    int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
+//                    if (shardKey % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()) {
+//
+//                    }
 
                 }
             }

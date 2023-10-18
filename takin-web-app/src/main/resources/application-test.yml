@@ -101,7 +101,7 @@
 ## 正式可以不需要
 #pressure.pod.start.expireTime: 30
 #pressure.node.start.expireTime: 30
-#pressure.node.heartbeat.expireTime: 60
+#pressure.node.heartbeat.expireTime: 300
 #
 #pressure.callback.ignore.type: 303
 #

@@ -1,6 +1,7 @@
 package io.shulie.takin.web.data.dao.scriptmanage;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
 import io.shulie.takin.web.data.mapper.mysql.ScriptFileRefMapper;
 import io.shulie.takin.web.data.model.mysql.ScriptFileRefEntity;
@@ -39,6 +40,13 @@ public class ScriptFileRefDAOImpl implements ScriptFileRefDAO{
         if (CollectionUtils.isNotEmpty(scriptFileRefIds)){
             scriptFileRefMapper.deleteBatchIds(scriptFileRefIds);
         }
+    }
+
+    @Override
+    public void deleteByScriptDeployId(Long scriptDeployId) {
+        LambdaUpdateWrapper<ScriptFileRefEntity> delete = new LambdaUpdateWrapper<>();
+        delete.eq(ScriptFileRefEntity::getScriptDeployId,scriptDeployId);
+        scriptFileRefMapper.delete(delete);
     }
 
     @Override

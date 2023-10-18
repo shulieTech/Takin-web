@@ -544,23 +544,21 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                 scriptManageDeployUpdateRequest);
         String targetScriptPath = this.getTargetScriptPath(scriptManageDeployUpdateRequest, scriptManageDeployResult);
 
+        // 这里, 脚本文件, 附件, 都放在一起了
+        List<FileManageUpdateRequest> addFileManageUpdateRequests = scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream()
+                .filter(o -> o.getIsDeleted() == 0).collect(Collectors.toList());
 
-        if (!cssIsNew) {
+        // 删除大文件的记录
+        Integer ifCoverBigFile = scriptManageDeployUpdateRequest.getIfCoverBigFile();
+        if (ifCoverBigFile != null && ifCoverBigFile.equals(1)) {
+            addFileManageUpdateRequests = addFileManageUpdateRequests.stream().filter(
+                    t -> t.getIsBigFile() == null || !t.getIsBigFile().equals(1)).collect(Collectors.toList());
+        }
+        // 插入文件记录所需参数
+        List<FileManageCreateParam> fileManageCreateParams = getFileManageCreateParamsByUpdateReq(addFileManageUpdateRequests, targetScriptPath);
+
+        if (Boolean.FALSE.equals(cssIsNew)) {
             // 老版走下面逻辑
-            // 这里, 脚本文件, 附件, 都放在一起了
-            List<FileManageUpdateRequest> addFileManageUpdateRequests = scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream()
-                    .filter(o -> o.getIsDeleted() == 0).collect(Collectors.toList());
-            // 删除大文件的记录
-            Integer ifCoverBigFile = scriptManageDeployUpdateRequest.getIfCoverBigFile();
-            if (ifCoverBigFile != null && ifCoverBigFile.equals(1)) {
-                addFileManageUpdateRequests = addFileManageUpdateRequests.stream().filter(
-                        t -> t.getIsBigFile() == null || !t.getIsBigFile().equals(1)).collect(Collectors.toList());
-            }
-
-            // 插入文件记录所需参数
-            List<FileManageCreateParam> fileManageCreateParams = getFileManageCreateParamsByUpdateReq(
-                    addFileManageUpdateRequests, targetScriptPath);
-
             // 创建文件记录, 获得文件ids
             List<Long> fileIds = fileManageDAO.createFileManageList(fileManageCreateParams);
             // 更新 cloud 上, 该脚本id
@@ -575,12 +573,16 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             return newScriptDeployId;
         }
 
-        // 新版逻辑如下
-        List<FileManageCreateParam> fileManageCreateParams = scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream().map(t -> {
-            FileManageCreateParam fileManageCreateParam = new FileManageCreateParam();
-            BeanUtils.copyProperties(t, fileManageCreateParam);
-            return fileManageCreateParam;
-        }).collect(Collectors.toList());
+        // 新版逻辑如下 区分脚本文件 + 其他文件
+        List<FileManageCreateParam> scriptFiles = fileManageCreateParams.stream()
+                .filter(t -> FileTypeEnum.SCRIPT.getCode().equals(t.getFileType())).collect(Collectors.toList());
+
+        List<FileManageCreateParam> otherFiles = fileManageCreateParams.stream()
+                .filter(t -> !FileTypeEnum.SCRIPT.getCode().equals(t.getFileType())).collect(Collectors.toList());
+
+        // 脚本文件需要新增
+        // 创建文件记录, 获得文件ids
+        List<Long> fileIds = fileManageDAO.createFileManageList(scriptFiles);
 
         // 脚本发布id
         Long oldScriptDeployId = scriptManageDeployUpdateRequest.getId();
@@ -588,15 +590,22 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         // 注意: 两方的事务, 没有, 不能保证操作的原子性
         this.updateCloudFileByScriptId(oldScriptDeployId, newScriptDeployId, scriptManageDeployResult.getType(), fileManageCreateParams);
 
-        // 更新关联关系即可
+        // 脚本文件关系进行绑定
+        scriptFileRefDAO.createScriptFileRefs(fileIds, newScriptDeployId);
+        // 其他的数据 进行数据迁移
+        List<Long> otherFileIds = otherFiles.stream().map(FileManageCreateParam::getId).collect(Collectors.toList());
         List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectFileIdsByScriptDeployId(oldScriptDeployId);
-        scriptFileRefDAO.batchUpdateIds(scriptFileRefResults.stream().map(t -> {
-            ScriptFileRefEntity entity = new ScriptFileRefEntity();
-            BeanUtils.copyProperties(t, entity);
-            entity.setGmtUpdate(new Date());
-            entity.setScriptDeployId(newScriptDeployId);
-            return entity;
+        scriptFileRefDAO.batchUpdateIds(scriptFileRefResults.stream().filter(t -> otherFileIds.contains(t.getFileId())).map(t -> {
+            ScriptFileRefEntity scriptFileRefEntity = new ScriptFileRefEntity();
+            BeanUtils.copyProperties(t, scriptFileRefEntity);
+            scriptFileRefEntity.setGmtUpdate(new Date());
+            scriptFileRefEntity.setScriptDeployId(newScriptDeployId);
+            return scriptFileRefEntity;
         }).collect(Collectors.toList()));
+
+        // 删除原来的脚步的绑定关系
+        scriptFileRefDAO.deleteByIds(scriptFileRefResults.stream().filter(t -> !otherFileIds.contains(t.getFileId()))
+                .map(ScriptFileRefResult::getId).collect(Collectors.toList()));
         return newScriptDeployId;
     }
 
@@ -1375,12 +1384,17 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             fileExtend.put("isOrderSplit", fileManageUpdateRequest.getIsOrderSplit());
             fileExtend.put("isBigFile", fileManageUpdateRequest.getIsBigFile());
             fileManageCreateParam.setFileExtend(JsonHelper.bean2Json(fileExtend));
-
             String uploadPath = targetScriptPath + fileManageUpdateRequest.getFileName();
-            if (StringUtils.isNotBlank(fileManageUpdateRequest.getUuId())) {
-                //新版
-                uploadPath = targetScriptPath + fileManageUpdateRequest.getUuId() + "/" + fileManageUpdateRequest.getFileName();
+            if (Boolean.TRUE.equals(cssIsNew)) {
+                fileManageCreateParam.setId(fileManageUpdateRequest.getId());
+                // 新版csv
+                if (StringUtils.isNotBlank(fileManageUpdateRequest.getUuId())
+                        && !FileTypeEnum.SCRIPT.getCode().equals(fileManageUpdateRequest.getFileType())) {
+                    //新版
+                    uploadPath = targetScriptPath + fileManageUpdateRequest.getUuId() + "/" + fileManageUpdateRequest.getFileName();
+                }
             }
+
             uploadPath = PathFormatForTest.format(uploadPath);
             fileManageCreateParam.setUploadPath(uploadPath);
             fileManageCreateParam.setUploadTime(fileManageUpdateRequest.getUploadTime());

@@ -23,6 +23,12 @@ public interface ScriptFileRefDAO {
     void deleteByIds(List<Long> scriptFileRefIds);
 
     /**
+     * 删除原来的绑定关系
+     * @param scriptDeployId
+     */
+    void deleteByScriptDeployId(Long scriptDeployId);
+
+    /**
      * 根据脚本发布实例id批量查询关联关系
      * @param scriptDeployIds
      * @return

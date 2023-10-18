@@ -268,6 +268,10 @@ public class SceneServiceImpl implements SceneService {
         }
         List<ScriptNode> result = Lists.newArrayList();
         for (ScriptNode node : nodes) {
+            if (StringUtils.equalsAnyIgnoreCase(node.getName(), "BeanShellSampler", "JSR223Sampler")) {
+                node.setRequestPath(buildUnknowSamplerName(node.getName()));
+                node.setIdentification(node.getRequestPath());
+            }
             result.add(node);
             if (CollectionUtils.isEmpty(node.getChildren())) {
                 continue;
@@ -884,11 +888,10 @@ public class SceneServiceImpl implements SceneService {
                 //默认不匹配
                 scriptJmxNode.setStatus(0);
                 // 支持beanshell,默认匹配
-                if (StringUtils.equalsAny(scriptJmxNode.getName(), "BeanShellSampler", "JSR223Sampler") ) {
-                    String name = scriptJmxNode.getName().toLowerCase();
-                    scriptJmxNode.setEntrace("|"+name);
-                    scriptJmxNode.setRequestPath("|"+name);
-                    scriptJmxNode.setIdentification("takin|"+name);
+                if (StringUtils.equalsAnyIgnoreCase(scriptJmxNode.getName(), "BeanShellSampler", "JSR223Sampler")) {
+                    scriptJmxNode.setEntrace(buildUnknowSamplerName(scriptJmxNode.getName()));
+                    scriptJmxNode.setRequestPath(scriptJmxNode.getEntrace());
+                    scriptJmxNode.setIdentification(scriptJmxNode.getEntrace());
                     scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
                 }
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {
@@ -976,5 +979,9 @@ public class SceneServiceImpl implements SceneService {
         } else {
             return CollectionUtils.isNotEmpty(sceneList);
         }
+    }
+
+    private String buildUnknowSamplerName(String samplerName) {
+        return StringUtils.lowerCase("takin|"+samplerName);
     }
 }

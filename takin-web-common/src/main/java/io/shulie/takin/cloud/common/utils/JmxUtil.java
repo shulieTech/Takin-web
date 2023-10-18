@@ -765,7 +765,7 @@ public class JmxUtil {
             node.setRequestPath(topic);
             node.setIdentification(String.format("%s|%s", topic, SamplerTypeEnum.KAFKA.getRpcTypeEnum().getValue()));
         } else {
-            node.setRequestPath("POST|JavaRequest");
+            node.setRequestPath("POST|"+node.getTestName());
             node.setIdentification(node.getRequestPath() + "|0");
         }
     }

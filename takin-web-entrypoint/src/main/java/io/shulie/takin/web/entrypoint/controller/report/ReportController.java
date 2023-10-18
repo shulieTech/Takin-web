@@ -298,15 +298,15 @@ public class ReportController {
             }
         }
         //如果size>1，删除最后一个（优化展示）
-        int length = timeList.size();
-        if(length > 1) {
-            reportTrendResp.getTime().remove(length - 1);
-            reportTrendResp.getSa().remove(length - 1);
-            reportTrendResp.getTps().remove(length - 1);
-            reportTrendResp.getConcurrent().remove(length - 1);
-            reportTrendResp.getSuccessRate().remove(length - 1);
-            reportTrendResp.getRt().remove(length - 1);
-        }
+//        int length = timeList.size();
+//        if(length > 1) {
+//            reportTrendResp.getTime().remove(length - 1);
+//            reportTrendResp.getSa().remove(length - 1);
+//            reportTrendResp.getTps().remove(length - 1);
+//            reportTrendResp.getConcurrent().remove(length - 1);
+//            reportTrendResp.getSuccessRate().remove(length - 1);
+//            reportTrendResp.getRt().remove(length - 1);
+//        }
     }
 
     private Boolean checkDataIsZero(String data) {

@@ -106,17 +106,19 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             return new PageInfo<>(Lists.newArrayList());
         }
         queryDTO.setTaskId(report.getJobId());
-        Long startTime = queryDTO.getStartTime();
-        long reportStartTime = report.getStartTime().getTime() - 5 * 60 * 1000L;
-        if (startTime == null || startTime.compareTo(0L) <= 0) {
-            queryDTO.setStartTime(reportStartTime);
+        /**
+         * 不再查询点击停止之后的数据了
+         */
+        long startTime = System.currentTimeMillis();
+        if(report.getStartTime() != null) {
+            startTime = report.getStartTime().getTime();
         }
-        // 如果reportDetail.getEndTime()为空，取值5min,考虑到取当前时间的话，后续可能会查太多数据
-        Long endTime = queryDTO.getEndTime();
-        if (endTime == null || endTime.compareTo(queryDTO.getStartTime()) <= 0) {
-            queryDTO.setEndTime(
-                report.getEndTime() != null ? (report.getEndTime().getTime() + 5 * 60 * 1000L) : (reportStartTime + 10 * 60 * 1000L));
+        queryDTO.setStartTime(startTime);
+        long endTime = startTime + 60 * 60 * 1000L;
+        if(report.getEndTime() != null) {
+            endTime = report.getEndTime().getTime() - 6 * 1000L;
         }
+        queryDTO.setEndTime(endTime);
         queryDTO.setSceneId(report.getSceneId());
         return getReportTraceDtoList(queryDTO);
     }
@@ -323,7 +325,13 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
 
         List<ReportTraceDTO> collect = entryTraceInfoDtoPagingList.getList().stream().map(traceInfo -> {
             ReportTraceDTO traceDTO = new ReportTraceDTO();
-            traceDTO.setInterfaceName(traceInfo.getEntry());
+            String entry = traceInfo.getEntry();
+            int pos = StringUtils.indexOf(entry, "@MD5");
+            if(pos == -1) {
+                traceDTO.setInterfaceName(entry);
+            } else {
+                traceDTO.setInterfaceName(StringUtils.substring(entry, 0, pos));
+            }
             traceDTO.setApplicationName(buildAppName(traceInfo));
             traceDTO.setSucceeded(ResultCodeUtils.isOk(traceInfo.getStatus()));
             traceDTO.setTotalRt(traceInfo.getProcessTime());

@@ -1150,15 +1150,20 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         // 脚本对应的列表
         List<String> filePathList = scriptManageDAO.listFilePathByScriptDeployId(scriptDeployId);
         Assert.notEmpty(filePathList, "脚本文件不存在！");
-        String aFile = filePathList.get(0);
-        File file = new File(aFile);
-        Assert.isTrue(file.exists(), "脚本文件不存在！");
+
+        List<File> files = Lists.newArrayList();
+        for(String filePath : filePathList) {
+            File file = new File(filePath);
+            Assert.isTrue(file.exists(),filePath +  "文件不存在！");
+            files.add(file);
+        }
+
+        File file = files.get(0);
         File parentFile = file.getParentFile();
 
         // 根据脚本名称组装
-        String absoluteZipName = String.format("%s%s%s.%s", parentFile.getParent(),
-                File.separator, scriptDeploy.getName(), ProbeConstants.FILE_TYPE_ZIP);
-        ZipUtil.zip(parentFile.getAbsolutePath(), absoluteZipName);
+        String absoluteZipName = String.format("%s%s%s.%s", parentFile.getParent(), File.separator, scriptDeploy.getName(), ProbeConstants.FILE_TYPE_ZIP);
+        ZipUtil.zip(new File(absoluteZipName), false,files.toArray(new File[]{}));
         return absoluteZipName;
     }
 

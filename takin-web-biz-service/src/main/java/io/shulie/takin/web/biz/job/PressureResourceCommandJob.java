@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.job;
 
-import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.shulie.takin.web.biz.nacos.NacosConfigManager;
 import io.shulie.takin.web.biz.service.DistributedLock;
@@ -17,10 +16,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * 压测资源关联应用
@@ -58,9 +57,9 @@ public class PressureResourceCommandJob {
             return;
         }
         // 按配置Id分片
-        List<PressureResourceEntity> filterList = resourceList.stream().filter(resouce ->
-                        resouce.getId() % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex())
-                .collect(Collectors.toList());
+     //.filter(resouce ->
+                //resouce.getId() % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex())
+        List<PressureResourceEntity> filterList = new ArrayList<>(resourceList);
         if (CollectionUtils.isEmpty(filterList)) {
             return;
         }

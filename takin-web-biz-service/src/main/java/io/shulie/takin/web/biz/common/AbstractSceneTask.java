@@ -1,15 +1,6 @@
 package io.shulie.takin.web.biz.common;
 
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSON;
-
-import com.xxl.job.core.context.XxlJobHelper;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
@@ -19,6 +10,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author caijianying
@@ -92,9 +91,9 @@ public abstract class AbstractSceneTask {
      */
     protected void runTask_ext(List<SceneTaskDto> taskDtoList) {
         //筛选出租户的任务
+        //.filter(t -> t.getReportId() % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()
         final Map<Long, List<SceneTaskDto>> listMap =
-                taskDtoList.stream().filter(t -> t.getReportId() % XxlJobHelper.getShardTotal() == XxlJobHelper.getShardIndex()
-                ).collect(Collectors.groupingBy(SceneTaskDto::getTenantId));
+                taskDtoList.stream().collect(Collectors.groupingBy(SceneTaskDto::getTenantId));
         if (listMap.isEmpty()) {
             return;
         }

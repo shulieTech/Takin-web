@@ -158,41 +158,22 @@ public class SceneServiceImpl implements SceneService {
         List<SceneLinkRelateResult> links = sceneLinkRelateDao.query(query);
         SceneLinkRelateResult link = null;
         ActivityListResult activity = null;
-        boolean isMany = false;
 
         if (CollectionUtils.isNotEmpty(links)) {
-            //sceneId不为空，更新过程
-            if (null != sceneId) {
-                //如果存在业务流程id相同情况，优先匹配业务流程相同的
-                List<SceneLinkRelateResult> collect = links.stream().filter(o -> sceneId.equals(NumberUtils.toLong(o.getSceneId())))
-                        .collect(Collectors.toList());
-                if (CollectionUtils.isNotEmpty(collect)) {
-                    Set<String> businessActivitySet = collect.stream().map(SceneLinkRelateResult::getBusinessLinkId).collect(Collectors.toSet());
-                    //即便业务流程相同，也不能匹配到两个业务活动
-                    if (CollectionUtils.isNotEmpty(businessActivitySet)) {
-                        if (businessActivitySet.size() == 1) {
-                            link = collect.get(0);
-                        } else {
-                            isMany = true;
-                        }
-                    }
-                }
-            }
-            //如果相同业务流程id中没有匹配到，并且没有多个匹配的情况
-            if (null == link && !isMany) {
-                //没有匹配到
-                Set<String> businessActivitySet = links.stream().map(SceneLinkRelateResult::getBusinessLinkId).collect(Collectors.toSet());
-                if (CollectionUtils.isNotEmpty(businessActivitySet)) {
-                    if (businessActivitySet.size() == 1) {
-                        link = links.get(0);
-                    } else {
-                        isMany = true;
-                    }
+            List<SceneLinkRelateResult> sceneLinkRelateResults = links.stream()
+                    .collect(Collectors.toMap(SceneLinkRelateResult::getBusinessLinkId, p -> p, (k1, k2) -> k1))
+                    .values().stream().collect(Collectors.toList());
+            if (sceneLinkRelateResults.size() == 1) {
+                link = sceneLinkRelateResults.get(0);
+            } else if (sceneId != null) {
+                List<SceneLinkRelateResult> sceneLinkRelateResultsTmp = sceneLinkRelateResults.stream().filter(o -> sceneId.equals(NumberUtils.toLong(o.getSceneId()))).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(sceneLinkRelateResultsTmp) && sceneLinkRelateResultsTmp.size() == 1) {
+                    link = sceneLinkRelateResultsTmp.get(0);
                 }
             }
         }
         //没有在关联关系中匹配到，去业务活动中匹配
-        if (link == null && !isMany) {
+        if (link == null) {
             ActivityQueryParam param = new ActivityQueryParam();
             param.setEntrance(node.getIdentification());
             List<ActivityListResult> activities = activityDao.getActivityList(param);
@@ -217,7 +198,22 @@ public class SceneServiceImpl implements SceneService {
             r.setTechLinkId(activity.getTechLinkId());
             r.setParentBusinessLinkId(activity.getParentTechLinkId());
         }
+        //如果没有匹配上业务活动就先创建成虚拟业务活动
+        if (StringUtils.isEmpty(r.getEntrance())) {
+            createVirtualActivity(r, node, sceneId);
+        }
         return r;
+    }
+
+    private void createVirtualActivity(SceneLinkRelateResult r,ScriptNode node,long sceneId) {
+        SceneLinkRelateRequest sceneLinkRelateRequest =  new SceneLinkRelateRequest();
+        sceneLinkRelateRequest.setIdentification(r.getScriptIdentification());
+        sceneLinkRelateRequest.setTestName(node.getTestName());
+        sceneLinkRelateRequest.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+        sceneLinkRelateRequest.setBusinessFlowId(sceneId);
+        sceneLinkRelateRequest.setSamplerType(node.getSamplerType());
+        sceneLinkRelateRequest.setXpathMd5(r.getScriptXpathMd5());
+        matchActivity(sceneLinkRelateRequest);
     }
 
     /**
@@ -284,9 +280,9 @@ public class SceneServiceImpl implements SceneService {
             //修改为使用jmeter文件名+时间作为场景名称
             if (Objects.nonNull(fileManageCreateRequest) && StringUtils.isNotBlank(fileManageCreateRequest.getFileName())) {
                 String result = fileManageCreateRequest.getFileName().substring(0, fileManageCreateRequest.getFileName().lastIndexOf("."));
-                testPlanName = result + "_" + DateUtil.format(new Date(),DatePattern.PURE_DATETIME_PATTERN);
+                testPlanName = result + "_" + DateUtil.format(new Date(), DatePattern.PURE_DATETIME_PATTERN);
             } else {
-                testPlanName = testPlan.get(0).getTestName() + "_" + DateUtil.format(new Date(),DatePattern.PURE_DATETIME_PATTERN);
+                testPlanName = testPlan.get(0).getTestName() + "_" + DateUtil.format(new Date(), DatePattern.PURE_DATETIME_PATTERN);
             }
         }
         String businessFlowName;
@@ -315,9 +311,9 @@ public class SceneServiceImpl implements SceneService {
             //修改为使用jmeter文件名+时间作为场景名称
             if (Objects.nonNull(fileManageCreateRequest) && StringUtils.isNotBlank(fileManageCreateRequest.getFileName())) {
                 String result = fileManageCreateRequest.getFileName().substring(0, fileManageCreateRequest.getFileName().lastIndexOf("."));
-                testName = result + "_" + DateUtil.format(new Date(),DatePattern.PURE_DATETIME_PATTERN);
+                testName = result + "_" + DateUtil.format(new Date(), DatePattern.PURE_DATETIME_PATTERN);
             } else {
-                testName = testName + "_" + DateUtil.format(new Date(),DatePattern.PURE_DATETIME_PATTERN);
+                testName = testName + "_" + DateUtil.format(new Date(), DatePattern.PURE_DATETIME_PATTERN);
             }
         }
         //保存业务流程
@@ -837,7 +833,7 @@ public class SceneServiceImpl implements SceneService {
         result.setScriptDeployId(sceneResult.getScriptDeployId());
         result.setTotalNodeNum(sceneResult.getTotalNodeNum());
         result.setLinkRelateNum(sceneResult.getLinkRelateNum());
-        if(CollectionUtils.isEmpty(result.getFileManageResponseList())){
+        if (CollectionUtils.isEmpty(result.getFileManageResponseList())) {
             result.setFileManageResponseList(new ArrayList<>());
         }
     }

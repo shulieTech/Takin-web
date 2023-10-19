@@ -1,28 +1,12 @@
 package io.shulie.takin.web.biz.service.scriptmanage.impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.base.Joiner;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
@@ -71,17 +55,8 @@ import io.shulie.takin.web.biz.pojo.request.scriptmanage.PageScriptDebugRequestR
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptDebugDoDebugRequest;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.WatchmanClusterResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugListResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
-import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.biz.service.DistributedLock;
-import io.shulie.takin.web.biz.service.LeakSqlService;
-import io.shulie.takin.web.biz.service.VerifyTaskReportService;
-import io.shulie.takin.web.biz.service.VerifyTaskService;
+import io.shulie.takin.web.biz.pojo.response.scriptmanage.*;
+import io.shulie.takin.web.biz.service.*;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.EngineClusterService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
@@ -145,6 +120,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 脚本调试表(ScriptDebug)表服务实现类
@@ -1134,8 +1117,8 @@ public class ScriptDebugServiceImpl extends AbstractIndicators implements Script
         log.info("调试 --> 检查压测状态 --> cloud 压测检查 --> 请求入参: {}!", JSONUtil.toJsonStr(checkRequest));
 
         // 重试40次, 每次等待2s, 加上接口请求响应时间, 大于80s
-        int retryTime = 40;
-        int intervalTime = 2;
+        int retryTime = 50;
+        int intervalTime = 4;
         for (int i = 1; i <= retryTime; i++) {
             try {
                 CloudPressureStatus taskStatusEnum = null;

@@ -489,4 +489,8 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         entrance.setBusinessType(jsonObject.getInteger(ReportConstants.ACTIVITY_TYPE));
         return entrance;
     }
+
+    public static void main(String[] args) {
+        System.out.println(JSON.parseObject("{\"duration\":5,\"podNum\":1,\"threadGroupConfigMap\":{\"7dae7383a28b5c45069b528a454d1164\":{\"estimateFlow\":50.0,\"mode\":1,\"rampUpUnit\":\"m\",\"threadNum\":10,\"type\":0}},\"unit\":\"m\"}").getLongValue("duration"));
+    }
 }

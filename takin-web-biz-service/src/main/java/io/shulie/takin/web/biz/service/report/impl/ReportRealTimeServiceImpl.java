@@ -109,12 +109,18 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         /**
          * 不再查询点击停止之后的数据了
          */
+        long duration = 60L;
+        try {
+            duration = JSON.parseObject(report.getPtConfig()).getLongValue("duration");
+        } catch (Exception e) {
+            log.error("parse report={},pt_config duration error", reportId);
+        }
         long startTime = System.currentTimeMillis();
         if(report.getStartTime() != null) {
             startTime = report.getStartTime().getTime();
         }
         queryDTO.setStartTime(startTime);
-        long endTime = startTime + 60 * 60 * 1000L;
+        long endTime = startTime + duration * 60 * 1000L;
         if(report.getStopTime() != null) {
             endTime = report.getStopTime().getTime();
         } else {

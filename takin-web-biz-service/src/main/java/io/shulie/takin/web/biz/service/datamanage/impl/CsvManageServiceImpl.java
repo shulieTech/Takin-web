@@ -402,9 +402,14 @@ public class CsvManageServiceImpl implements CsvManageService {
     @Override
     public void createTask(List<ScriptCsvCreateTaskRequest> requests) {
         List<ScriptCsvCreateTaskEntity> taskEntityList = Lists.newArrayList();
+        // 获取组件
+        List<Long> scriptCsvDataSetIds = requests.stream().map(ScriptCsvCreateTaskRequest::getScriptCsvDataSetId).collect(Collectors.toList());
+        List<ScriptCsvDataSetEntity> csvDataSetEntityList = scriptCsvDataSetMapper.selectBatchIds(scriptCsvDataSetIds);
+        Map<Long, ScriptCsvDataSetEntity> scriptCsvDataSetIdEntityMap = csvDataSetEntityList.stream().collect(Collectors.toMap(ScriptCsvDataSetEntity::getId,t ->t));
+
+
+
         for (ScriptCsvCreateTaskRequest request : requests) {
-
-
             // 1. 创建任务
             ScriptCsvCreateTaskEntity scriptCsvCreateTask = new ScriptCsvCreateTaskEntity();
             // 校验 是否所以映射关系是否都配置了
@@ -412,7 +417,10 @@ public class CsvManageServiceImpl implements CsvManageService {
             if (scriptCsvVariableJsonPath == null) {
                 throw new RuntimeException("映射关系未空，请配置~");
             }
-            ScriptCsvDataSetEntity scriptCsvDataSetEntity = scriptCsvDataSetMapper.selectById(request.getScriptCsvDataSetId());
+            if(StringUtils.isBlank(request.getAliasName())) {
+                throw new RuntimeException("任务，必须要有别名");
+            }
+            ScriptCsvDataSetEntity scriptCsvDataSetEntity = scriptCsvDataSetIdEntityMap.get(request.getScriptCsvDataSetId());
             if (scriptCsvDataSetEntity == null) {
                 throw new RuntimeException("组件已修改，请重新进入生成页面~");
             }
@@ -453,6 +461,43 @@ public class CsvManageServiceImpl implements CsvManageService {
             scriptCsvCreateTask.setEnvCode(WebPluginUtils.traceEnvCode());
             taskEntityList.add(scriptCsvCreateTask);
         }
+
+        // 再次校验下别名
+        Map<Long, List<ScriptCsvCreateTaskEntity>> scriptCsvDataSetIdRequestMap =
+                taskEntityList.stream().collect(Collectors.groupingBy(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId));
+
+
+        LambdaQueryWrapper<FileManageEntity> fileWrapper = new LambdaQueryWrapper<>();
+        fileWrapper.select(FileManageEntity::getScriptCsvDataSetId,FileManageEntity::getAliasName);
+        fileWrapper.in(FileManageEntity::getScriptCsvDataSetId,scriptCsvDataSetIdRequestMap.keySet());
+        List<FileManageEntity> sourceFile = fileManageMapper.selectList(fileWrapper);
+        Map<Long, List<FileManageEntity>> scriptCsvDataSetIdSourceFileMap  = sourceFile.stream().collect(Collectors.groupingBy(FileManageEntity::getScriptCsvDataSetId));
+
+
+        LambdaQueryWrapper<ScriptCsvCreateTaskEntity> taskWrapper = new LambdaQueryWrapper<>();
+        taskWrapper.select(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId,ScriptCsvCreateTaskEntity::getAliasName);
+        taskWrapper.in(ScriptCsvCreateTaskEntity::getCreateStatus,Arrays.asList(ScriptCsvCreateTaskState.IN_FORMATION, ScriptCsvCreateTaskState.BE_QUEUING));
+        taskWrapper.in(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId,scriptCsvDataSetIdRequestMap.keySet());
+        List<ScriptCsvCreateTaskEntity> tasks = scriptCsvCreateTaskMapper.selectList(taskWrapper);
+        Map<Long, List<ScriptCsvCreateTaskEntity>> scriptCsvDataSetIdTaskMap  = tasks.stream().collect(Collectors.groupingBy(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId));
+
+        scriptCsvDataSetIdRequestMap.forEach((scriptCsvDataSetId,list) ->{
+
+            List<FileManageEntity> currentList = scriptCsvDataSetIdSourceFileMap.getOrDefault(scriptCsvDataSetId,Lists.newArrayList());
+            List<String> aliasNames = currentList.stream().map(FileManageEntity::getAliasName).collect(Collectors.toList());
+
+            List<ScriptCsvCreateTaskEntity> sourceTasks = scriptCsvDataSetIdTaskMap.getOrDefault(scriptCsvDataSetId, Lists.newArrayList());
+            List<String> taskAliasNames = sourceTasks.stream().map(ScriptCsvCreateTaskEntity::getAliasName).collect(Collectors.toList());
+            ScriptCsvDataSetEntity scriptCsvDataSetEntity = scriptCsvDataSetIdEntityMap.get(scriptCsvDataSetId);
+            list.forEach(t -> {
+                if(aliasNames.contains(t.getAliasName())) {
+                    throw new RuntimeException(scriptCsvDataSetEntity.getScriptCsvFileName() + "的别名存在重复，不允许重复的别名~");
+                }
+                if(taskAliasNames.contains(t.getAliasName())) {
+                    throw new RuntimeException(scriptCsvDataSetEntity.getScriptCsvFileName()  + "与任务别名存在重复，不允许重复的别名~");
+                }
+            });
+        });
         int insert = scriptCsvCreateTaskMapper.batchInsert(taskEntityList);
         if (insert <= 0) {
             throw new RuntimeException("csv任务创建失败");
@@ -964,10 +1009,54 @@ public class CsvManageServiceImpl implements CsvManageService {
         }
         // 检验下
         for (FileManageUpdateRequest updateRequest : request.getFileManageUpdateRequests()) {
-            if (FileTypeEnum.DATA.getCode().equals(updateRequest.getFileType()) && updateRequest.getScriptCsvDataSetId() == null) {
-                throw new RuntimeException("数据文件，必须要有对应的组件id");
+            if (FileTypeEnum.DATA.getCode().equals(updateRequest.getFileType()) ) {
+                if(updateRequest.getScriptCsvDataSetId() == null) {
+                    throw new RuntimeException("数据文件，必须要有对应的组件id");
+                }
+                if(StringUtils.isBlank(updateRequest.getAliasName())) {
+                    throw new RuntimeException("数据文件，必须要有别名");
+                }
             }
         }
+        Map<Long, List<FileManageUpdateRequest>> scriptCsvDataSetIdRequestMap =
+                request.getFileManageUpdateRequests().stream().collect(Collectors.groupingBy(FileManageUpdateRequest::getScriptCsvDataSetId));
+
+        LambdaQueryWrapper<FileManageEntity> fileWrapper = new LambdaQueryWrapper<>();
+        fileWrapper.select(FileManageEntity::getScriptCsvDataSetId,FileManageEntity::getAliasName);
+        fileWrapper.in(FileManageEntity::getScriptCsvDataSetId,scriptCsvDataSetIdRequestMap.keySet());
+        List<FileManageEntity> sourceFile = fileManageMapper.selectList(fileWrapper);
+        Map<Long, List<FileManageEntity>> scriptCsvDataSetIdSourceFileMap  = sourceFile.stream().collect(Collectors.groupingBy(FileManageEntity::getScriptCsvDataSetId));
+
+        LambdaQueryWrapper<ScriptCsvCreateTaskEntity> taskWrapper = new LambdaQueryWrapper<>();
+        taskWrapper.select(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId,ScriptCsvCreateTaskEntity::getAliasName);
+        taskWrapper.in(ScriptCsvCreateTaskEntity::getCreateStatus,Arrays.asList(ScriptCsvCreateTaskState.IN_FORMATION, ScriptCsvCreateTaskState.BE_QUEUING));
+        taskWrapper.in(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId,scriptCsvDataSetIdRequestMap.keySet());
+        List<ScriptCsvCreateTaskEntity> tasks = scriptCsvCreateTaskMapper.selectList(taskWrapper);
+        Map<Long, List<ScriptCsvCreateTaskEntity>> scriptCsvDataSetIdTaskMap  = tasks.stream().collect(Collectors.groupingBy(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId));
+
+
+
+        scriptCsvDataSetIdRequestMap.forEach((scriptCsvDataSetId,list) ->{
+            if(list.stream().map(FileManageUpdateRequest::getAliasName).distinct().count() != list.size()) {
+                throw new RuntimeException(list.get(0).getFileName() + "的别名存在重复，不允许重复的别名~");
+            }
+            List<FileManageEntity> currentList = scriptCsvDataSetIdSourceFileMap.getOrDefault(scriptCsvDataSetId,Lists.newArrayList());
+            List<String> aliasNames = currentList.stream().map(FileManageEntity::getAliasName).collect(Collectors.toList());
+
+            List<ScriptCsvCreateTaskEntity> taskEntityList = scriptCsvDataSetIdTaskMap.getOrDefault(scriptCsvDataSetId, Lists.newArrayList());
+            List<String> taskAliasNames = taskEntityList.stream().map(ScriptCsvCreateTaskEntity::getAliasName).collect(Collectors.toList());
+            list.forEach(t -> {
+                if(aliasNames.contains(t.getAliasName())) {
+                    throw new RuntimeException(list.get(0).getFileName() + "的别名存在重复，不允许重复的别名~");
+                }
+                if(taskAliasNames.contains(t.getAliasName())) {
+                    throw new RuntimeException(list.get(0).getFileName() + "与任务重别名存在重复，不允许重复的别名~");
+                }
+            });
+        });
+
+
+
         // 1. 判断业务流程是否存在
         SceneResult sceneResult = sceneDao.getSceneDetail(request.getId());
         if (sceneResult == null) {

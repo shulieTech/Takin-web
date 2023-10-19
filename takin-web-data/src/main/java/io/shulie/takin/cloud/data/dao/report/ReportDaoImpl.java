@@ -247,6 +247,11 @@ public class ReportDaoImpl implements ReportDao {
     }
 
     @Override
+    public void updateReportStopTime(Long jobId, Date stopTime) {
+        reportMapper.updateStopTimeByJobId(jobId, stopTime);
+    }
+
+    @Override
     public ReportResult getById(Long resultId) {
         if (resultId == null) {return null;}
         ReportEntity reportEntity = reportMapper.selectById(resultId);

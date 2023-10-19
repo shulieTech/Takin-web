@@ -1,6 +1,7 @@
 package io.shulie.takin.cloud.data.mapper.mysql;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
@@ -30,4 +31,6 @@ public interface ReportMapper extends BaseMapper<ReportEntity> {
     List<ReportEntity> queryBySceneIds(@Param("ids") List<Long> ids);
 
     void deleteReportById(@Param(value = "id") Long id);
+    @InterceptorIgnore(tenantLine = "true")
+    void updateStopTimeByJobId(@Param(value = "jobId") Long jobId, @Param(value = "stopTime") Date stopTime);
 }

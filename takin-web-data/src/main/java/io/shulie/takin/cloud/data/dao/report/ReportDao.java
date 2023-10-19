@@ -115,6 +115,8 @@ public interface ReportDao {
      */
     void updateReportEndTime(Long resultId, Date endTime);
 
+    void updateReportStopTime(Long jobId, Date stopTime);
+
     /**
      * 根据id查询报告
      *

@@ -56,4 +56,11 @@
   <update id="deleteReportById">
     update t_report set is_deleted = 1 where id = #{id}
   </update>
+
+  <select id="updateStopTimeByJobId">
+    update t_report
+    set stop_time = #{stopTime}
+    where job_id = #{jobId}
+    and stop_time is null
+  </select>
 </mapper>

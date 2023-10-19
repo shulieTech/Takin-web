@@ -79,6 +79,12 @@ public class ReportEntity {
     private Date endTime;
 
     /**
+     * 停止时间
+     */
+    @TableField(value = "stop_time")
+    private Date stopTime;
+
+    /**
      * 报表生成状态:0/就绪状态，1/生成中,2/完成生成
      */
     @TableField(value = "status")

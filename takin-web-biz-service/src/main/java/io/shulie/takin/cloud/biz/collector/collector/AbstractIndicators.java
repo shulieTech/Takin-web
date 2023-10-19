@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -465,7 +466,9 @@ public abstract class AbstractIndicators {
         if (redisClientUtil.hasKey(PressureStartCache.getJmeterStartFirstKey(resourceId))) {
             PressureTaskStopReq request = new PressureTaskStopReq();
             request.setPressureId(jobId);
-            pressureTaskApi.stop(request);
+            String stopTime = pressureTaskApi.stop(request);
+            //更新报告stopTime
+            reportDao.updateReportStopTime(jobId, DateUtil.parseDateTime(stopTime));
         } else {
             releaseResource(resourceId);
         }

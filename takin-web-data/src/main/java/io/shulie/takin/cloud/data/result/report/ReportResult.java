@@ -41,6 +41,8 @@ public class ReportResult extends ContextExt {
      */
     private Date endTime;
 
+    private Date stopTime;
+
     /**
      * 报表生成状态:0/就绪状态，1/生成中,2/完成生成
      */

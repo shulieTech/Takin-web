@@ -54,16 +54,14 @@ import io.shulie.takin.web.data.mapper.mysql.FileManageMapper;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
 import io.shulie.takin.web.data.mapper.mysql.ScriptCsvCreateTaskMapper;
 import io.shulie.takin.web.data.mapper.mysql.ScriptCsvDataSetMapper;
-import io.shulie.takin.web.data.model.mysql.FileManageEntity;
-import io.shulie.takin.web.data.model.mysql.SceneEntity;
-import io.shulie.takin.web.data.model.mysql.ScriptCsvCreateTaskEntity;
-import io.shulie.takin.web.data.model.mysql.ScriptCsvDataSetEntity;
+import io.shulie.takin.web.data.model.mysql.*;
 import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import io.shulie.takin.web.diff.api.DiffFileApi;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.api.traffic.TrafficRecorderExtApi;
+import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.traffic.TrafficRecorderExtResponse;
 import io.shulie.takin.web.ext.entity.traffic.TrafficRecorderQueryExt;
@@ -690,6 +688,9 @@ public class CsvManageServiceImpl implements CsvManageService {
     @Override
     public PagingList<ScriptCsvManageResponse> csvManage(PageScriptCssManageQueryRequest request) {
 
+        AuthQueryParamCommonExt authQueryParamCommonExt = new AuthQueryParamCommonExt();
+        WebPluginUtils.fillQueryParam(authQueryParamCommonExt);
+
         List<SceneResult> sceneResults = this.parseScene(request.getBusinessFlowName());
         if (sceneResults != null && sceneResults.isEmpty()) {
             return PagingList.empty();
@@ -700,7 +701,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         }
 
         if (request.getType() == 1) {
-            return this.taskManage(request, sceneResults, scriptCsvDataSetIds);
+            return this.taskManage(request, sceneResults, scriptCsvDataSetIds,authQueryParamCommonExt);
         }
         // 0:查csv列表
         // 查关联的脚步文件id
@@ -709,8 +710,12 @@ public class CsvManageServiceImpl implements CsvManageService {
         wrapper.in(!CollectionUtils.isEmpty(fileIds), FileManageEntity::getId, fileIds);
         wrapper.eq(FileManageEntity::getFileType, FileTypeEnum.DATA.getCode());
 
-        wrapper.and(tmp -> tmp.eq(FileManageEntity::getDeptId, WebPluginUtils.traceDeptId()).or().isNull(FileManageEntity::getDeptId));
-
+        if (!CollectionUtils.isEmpty(authQueryParamCommonExt.getDeptIdList())) {
+            wrapper.in(FileManageEntity::getDeptId, authQueryParamCommonExt.getDeptIdList());
+        }
+//        }else {
+//            //wrapper.and(tmp -> tmp.eq(FileManageEntity::getDeptId, WebPluginUtils.traceDeptId()).or().isNull(FileManageEntity::getDeptId));
+//        }
         wrapper.like(StringUtils.isNotBlank(request.getScriptCsvFileName()), FileManageEntity::getFileName, request.getScriptCsvFileName());
         wrapper.in(!CollectionUtils.isEmpty(scriptCsvDataSetIds), FileManageEntity::getScriptCsvDataSetId, scriptCsvDataSetIds);
         wrapper.orderByDesc(FileManageEntity::getUploadTime);
@@ -791,7 +796,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         return scriptFileRefResults.stream().map(ScriptFileRefResult::getFileId).collect(Collectors.toList());
     }
 
-    private PagingList<ScriptCsvManageResponse> taskManage(PageScriptCssManageQueryRequest request, List<SceneResult> sceneResults, List<Long> scriptCsvDataSetIds) {
+    private PagingList<ScriptCsvManageResponse> taskManage(PageScriptCssManageQueryRequest request, List<SceneResult> sceneResults, List<Long> scriptCsvDataSetIds,AuthQueryParamCommonExt authQueryParamCommonExt) {
         // 1:查任务列表
         // 1. 根据 businessFlowName
         List<Long> scriptCsvDataSetIdsByFile = this.parseScriptCsvFileName(request.getScriptCsvFileName());
@@ -813,7 +818,10 @@ public class CsvManageServiceImpl implements CsvManageService {
         if (sceneResults != null) {
             wrapper.in(ScriptCsvCreateTaskEntity::getBusinessFlowId, sceneResults.stream().map(SceneResult::getId).collect(Collectors.toList()));
         }
-        wrapper.eq(ScriptCsvCreateTaskEntity::getDeptId, WebPluginUtils.traceDeptId());
+        if (!CollectionUtils.isEmpty(authQueryParamCommonExt.getDeptIdList())) {
+            wrapper.in(ScriptCsvCreateTaskEntity::getDeptId, authQueryParamCommonExt.getDeptIdList());
+        }
+        //wrapper.eq(ScriptCsvCreateTaskEntity::getDeptId, WebPluginUtils.traceDeptId());
         wrapper.eq(request.getTaskState() != null, ScriptCsvCreateTaskEntity::getCreateStatus, request.getTaskState());
         wrapper.orderByDesc(ScriptCsvCreateTaskEntity::getUpdateTime);
 

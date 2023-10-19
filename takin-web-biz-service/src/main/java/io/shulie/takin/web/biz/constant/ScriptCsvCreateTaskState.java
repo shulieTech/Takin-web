@@ -7,4 +7,6 @@ public class ScriptCsvCreateTaskState {
     public static Integer GENERATED  = 2;
     public static Integer CANCELLED  = 3;
 
+    public static Integer FAIL  = 4;
+
 }

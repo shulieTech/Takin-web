@@ -843,6 +843,7 @@ public class CsvManageServiceImpl implements CsvManageService {
             response.setBusinessFlowName(sceneEntity != null ? sceneEntity.getSceneName() : null);
             // 任务相关
             response.setAliasName(t.getAliasName());
+            response.setRemark(t.getRemark());
             response.setId(t.getId());
             response.setTaskId(t.getId());
             response.setCreateType(1);
@@ -1238,6 +1239,15 @@ public class CsvManageServiceImpl implements CsvManageService {
                 scriptCsvCreateTaskMapper.updateById(scriptCsvCreateTaskEntity);
                 return;
             }
+            // 判断下文件数量 如果是0条 则任务失败
+            if(currentCreateScheduleDTO.getCurrent() == 0) {
+                RedisHelper.delete(CSV_TASK_REDIS_KEY);
+                scriptCsvCreateTaskEntity.setCreateStatus(ScriptCsvCreateTaskState.FAIL);
+                scriptCsvCreateTaskEntity.setRemark("生成文件的数据是0条，所以任务失败了");
+                scriptCsvCreateTaskMapper.updateById(scriptCsvCreateTaskEntity);
+                return;
+            }
+
             scriptCsvCreateTaskEntity.setRemark("文件生成已完成");
             scriptCsvCreateTaskEntity.setTaskEndTime(LocalDateTime.now());
             scriptCsvCreateTaskEntity.setCreateStatus(ScriptCsvCreateTaskState.GENERATED);

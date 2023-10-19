@@ -137,6 +137,9 @@ public class ScriptCsvManageResponse  extends AuthQueryResponseCommonExt {
     @JsonProperty("downloadUrl")
     private String uploadPath;
 
+    @ApiModelProperty(value = "备注")
+    private String remark;
+
     private String currentCreateScheduleString;
 
 

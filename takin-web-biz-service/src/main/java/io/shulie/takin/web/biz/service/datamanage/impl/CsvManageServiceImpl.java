@@ -405,6 +405,8 @@ public class CsvManageServiceImpl implements CsvManageService {
     public void createTask(List<ScriptCsvCreateTaskRequest> requests) {
         List<ScriptCsvCreateTaskEntity> taskEntityList = Lists.newArrayList();
         for (ScriptCsvCreateTaskRequest request : requests) {
+
+
             // 1. 创建任务
             ScriptCsvCreateTaskEntity scriptCsvCreateTask = new ScriptCsvCreateTaskEntity();
             // 校验 是否所以映射关系是否都配置了
@@ -430,6 +432,10 @@ public class CsvManageServiceImpl implements CsvManageService {
             scriptCsvCreateTask.setScriptCsvVariableJsonPath(JSON.toJSONString(request.getScriptCsvVariableJsonPath()));
 
             ScriptCsvDataTemplateResponse template = request.getTemplate();
+            // 校验下模板数据是不是空的
+            if(template.getTotal() == 0) {
+                throw new RuntimeException(scriptCsvDataSetEntity.getScriptCsvDataSetName() + "组件模板数据不允许为空");
+            }
 
             CurrentCreateScheduleDTO currentCreateScheduleDTO = new CurrentCreateScheduleDTO();
             currentCreateScheduleDTO.setCount(template.getCount() != null ? template.getCount() : template.getTotal());
@@ -461,10 +467,10 @@ public class CsvManageServiceImpl implements CsvManageService {
     public void cancelTask(ScriptCsvCreateTaskRequest request) {
         // 校验下状态，已完成的不允许取消任务
         ScriptCsvCreateTaskEntity scriptCsvCreateTaskEntity = scriptCsvCreateTaskMapper.selectById(request.getTaskId());
-        if(scriptCsvCreateTaskEntity == null) {
+        if (scriptCsvCreateTaskEntity == null) {
             throw new RuntimeException("任务不存在");
         }
-        if(ScriptCsvCreateTaskState.GENERATED.equals(scriptCsvCreateTaskEntity.getCreateStatus())) {
+        if (ScriptCsvCreateTaskState.GENERATED.equals(scriptCsvCreateTaskEntity.getCreateStatus())) {
             throw new RuntimeException("已生成的任务不允许取消");
         }
         ScriptCsvCreateTaskEntity entity = new ScriptCsvCreateTaskEntity();
@@ -703,7 +709,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         wrapper.in(!CollectionUtils.isEmpty(fileIds), FileManageEntity::getId, fileIds);
         wrapper.eq(FileManageEntity::getFileType, FileTypeEnum.DATA.getCode());
 
-        wrapper.and(tmp -> tmp.eq(FileManageEntity::getDeptId,WebPluginUtils.traceDeptId()).or().isNull(FileManageEntity::getDeptId));
+        wrapper.and(tmp -> tmp.eq(FileManageEntity::getDeptId, WebPluginUtils.traceDeptId()).or().isNull(FileManageEntity::getDeptId));
 
         wrapper.like(StringUtils.isNotBlank(request.getScriptCsvFileName()), FileManageEntity::getFileName, request.getScriptCsvFileName());
         wrapper.in(!CollectionUtils.isEmpty(scriptCsvDataSetIds), FileManageEntity::getScriptCsvDataSetId, scriptCsvDataSetIds);
@@ -796,9 +802,9 @@ public class CsvManageServiceImpl implements CsvManageService {
         List<Long> finalScriptCsvDataSetId = Lists.newArrayList();
         if (scriptCsvDataSetIds != null && scriptCsvDataSetIdsByFile != null) {
             finalScriptCsvDataSetId.addAll(scriptCsvDataSetIds.stream().filter(scriptCsvDataSetIdsByFile::contains).collect(Collectors.toList()));
-        }else if(scriptCsvDataSetIds != null) {
+        } else if (scriptCsvDataSetIds != null) {
             finalScriptCsvDataSetId.addAll(scriptCsvDataSetIds);
-        }else if(scriptCsvDataSetIdsByFile != null) {
+        } else if (scriptCsvDataSetIdsByFile != null) {
             finalScriptCsvDataSetId.addAll(scriptCsvDataSetIdsByFile);
         }
         // 3. 场景id
@@ -807,7 +813,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         if (sceneResults != null) {
             wrapper.in(ScriptCsvCreateTaskEntity::getBusinessFlowId, sceneResults.stream().map(SceneResult::getId).collect(Collectors.toList()));
         }
-        wrapper.eq(ScriptCsvCreateTaskEntity::getDeptId,WebPluginUtils.traceDeptId());
+        wrapper.eq(ScriptCsvCreateTaskEntity::getDeptId, WebPluginUtils.traceDeptId());
         wrapper.eq(request.getTaskState() != null, ScriptCsvCreateTaskEntity::getCreateStatus, request.getTaskState());
         wrapper.orderByDesc(ScriptCsvCreateTaskEntity::getUpdateTime);
 

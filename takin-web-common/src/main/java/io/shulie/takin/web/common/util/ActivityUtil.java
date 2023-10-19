@@ -1,10 +1,7 @@
 package io.shulie.takin.web.common.util;
 
-import java.util.UUID;
-
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
-import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import lombok.Data;
 import org.apache.commons.lang3.ObjectUtils;
@@ -175,7 +172,7 @@ public class ActivityUtil {
      */
     public static EntranceJoinEntity getEntranceJoinEntityByEntranceAndType(String entrance, Integer type) {
         return ActivityUtil.isNormalBusiness(type) ? ActivityUtil.covertEntrance(entrance)
-                : ActivityUtil.covertVirtualEntranceV2(entrance);
+                : ActivityUtil.covertVirtualEntrance(entrance);
     }
 
     public static EntranceJoinEntity covertEntranceV2(String dbEntrance) {

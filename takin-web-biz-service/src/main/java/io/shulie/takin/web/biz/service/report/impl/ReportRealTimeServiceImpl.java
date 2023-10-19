@@ -119,9 +119,10 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             endTime = report.getStopTime().getTime();
         } else {
             if (report.getEndTime() != null) {
-                endTime = report.getEndTime().getTime() - 6 * 1000L;
+                endTime = report.getEndTime().getTime();
             }
         }
+        endTime = endTime - 6 * 1000L;
         queryDTO.setEndTime(endTime);
         queryDTO.setSceneId(report.getSceneId());
         return getReportTraceDtoList(queryDTO);

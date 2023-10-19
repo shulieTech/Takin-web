@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -222,18 +223,16 @@ public class CsvManageServiceImpl implements CsvManageService {
         List<ScriptCsvDataSetEntity> deleteList = oldCsv.stream().filter(t -> !unchangeList.contains(this.getIndex(t))).collect(Collectors.toList());
 
         if (!CollectionUtils.isEmpty(deleteList)) {
-            // 1. 取消任务
+
             List<Long> csvDataSetIds = deleteList.stream().map(ScriptCsvDataSetEntity::getId).collect(Collectors.toList());
-            LambdaQueryWrapper<ScriptCsvCreateTaskEntity> taskWrapper = new LambdaQueryWrapper<>();
+
+            // 组件删除
+            scriptCsvDataSetMapper.deleteBatchIds(csvDataSetIds);
+
+            // 1. 删除任务
+            LambdaUpdateWrapper<ScriptCsvCreateTaskEntity> taskWrapper = new LambdaUpdateWrapper<>();
             taskWrapper.in(ScriptCsvCreateTaskEntity::getScriptCsvDataSetId, csvDataSetIds);
-            taskWrapper.in(ScriptCsvCreateTaskEntity::getCreateStatus, Arrays.asList(ScriptCsvCreateTaskState.IN_FORMATION, ScriptCsvCreateTaskState.BE_QUEUING));
-            List<ScriptCsvCreateTaskEntity> updateTaskList = scriptCsvCreateTaskMapper.selectList(taskWrapper);
-            updateTaskList.forEach(t -> {
-                t.setCreateStatus(ScriptCsvCreateTaskState.CANCELLED);
-                t.setRemark("文件重新上传，css组件变更");
-                t.setUpdateTime(LocalDateTime.now());
-            });
-            scriptCsvCreateTaskMapper.updateBatch(updateTaskList);
+            scriptCsvCreateTaskMapper.delete(taskWrapper);
             // 2. 文件删除
             LambdaQueryWrapper<FileManageEntity> wrapper = new LambdaQueryWrapper<>();
             wrapper.in(FileManageEntity::getScriptCsvDataSetId, csvDataSetIds);
@@ -242,6 +241,8 @@ public class CsvManageServiceImpl implements CsvManageService {
             FileDeleteParamReq fileDeleteParamReq = new FileDeleteParamReq();
             fileDeleteParamReq.setPaths(fileManageEntityList.stream().map(FileManageEntity::getUploadPath).collect(Collectors.toList()));
             fileApi.deleteFile(fileDeleteParamReq);
+
+            fileManageMapper.delete(wrapper);
 
             // 3. 文件关联关系 删除
             List<Long> fileIds = fileManageEntityList.stream().map(FileManageEntity::getId).collect(Collectors.toList());

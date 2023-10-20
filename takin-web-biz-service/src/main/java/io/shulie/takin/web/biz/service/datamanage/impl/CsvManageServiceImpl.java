@@ -272,7 +272,7 @@ public class CsvManageServiceImpl implements CsvManageService {
             BeanUtils.copyProperties(t, response);
             response.setIsSplit(t.getIsSplit() ? 1 : 0);
             response.setIsOrderSplit(t.getIsOrderSplit() ? 1 : 0);
-
+            response.setCreateTime(t.getCreateTime());
             FileManageEntity fileManageEntity = fileIdMap.get(response.getFileManageId());
             if (fileManageEntity != null) {
                 response.setAliasName(fileManageEntity.getAliasName());
@@ -281,7 +281,7 @@ public class CsvManageServiceImpl implements CsvManageService {
                 response.setCreateType(fileManageEntity.getCreateType());
             }
             return response;
-        }).collect(Collectors.toList());
+        }).sorted(Comparator.comparing(ScriptCsvDataSetResponse::getCreateTime).reversed()).collect(Collectors.toList());
     }
 
 
@@ -1011,11 +1011,12 @@ public class CsvManageServiceImpl implements CsvManageService {
                 // 进行适配，如果有组件
                 uploadResponse.setScriptCsvDataSetId(fileNameIdMap.get(uploadResponse.getFileName()));
             }
-            ScriptCsvDataSetEntity scriptCsvDataSetEntity = idFileNameMap.get(uploadResponse.getScriptCsvDataSetId());
-            uploadResponse.setScriptCsvDataSetName(scriptCsvDataSetEntity.getScriptCsvDataSetName());
-            uploadResponse.setScriptCsvVariableName(scriptCsvDataSetEntity.getScriptCsvVariableName());
-            uploadResponse.setScriptCsvFileName(scriptCsvDataSetEntity.getScriptCsvFileName());
-
+            if(uploadResponse.getScriptCsvDataSetId() != null) {
+                ScriptCsvDataSetEntity scriptCsvDataSetEntity = idFileNameMap.get(uploadResponse.getScriptCsvDataSetId());
+                uploadResponse.setScriptCsvDataSetName(scriptCsvDataSetEntity.getScriptCsvDataSetName());
+                uploadResponse.setScriptCsvVariableName(scriptCsvDataSetEntity.getScriptCsvVariableName());
+                uploadResponse.setScriptCsvFileName(scriptCsvDataSetEntity.getScriptCsvFileName());
+            }
         }
         return upload;
     }

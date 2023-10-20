@@ -18,6 +18,7 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadRespon
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -149,6 +150,11 @@ public class BusinessFlowController {
         needAuth = ActionTypeEnum.UPDATE
     )
     public ResponseResult<Boolean> matchActivity(@RequestBody @Valid SceneLinkRelateRequest sceneLinkRelateRequest) {
+        // 针对虚拟业务活动
+        if(BusinessTypeEnum.VIRTUAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
+            sceneLinkRelateRequest.setEntracePath(sceneLinkRelateRequest.getPath());
+            sceneLinkRelateRequest.setEntrance(sceneLinkRelateRequest.getPath());
+        }
         if (!checkPath(sceneLinkRelateRequest.getPath(),sceneLinkRelateRequest.getEntracePath())){
             return ResponseResult.fail("入口不匹配","");
         }

@@ -119,3 +119,7 @@ where dept_id is null
 update t_file_manage a set dept_id = (select dept_id from (select e.file_id,d.dept_id from (select b.dept_id,c.id from t_script_manage b,t_script_manage_deploy c where b.id = c.script_id
                                                                                            ) d, t_script_file_ref e  where d.id = e.script_deploy_id) f where f.file_id = a.id)
 where dept_id is null
+
+
+alter table t_file_manage
+    modify upload_time timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '上传时间';

@@ -750,7 +750,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         }
         // 0:查csv列表
         // 查关联的脚步文件id
-        List<Long> fileIds = this.parseFileId(sceneResults);
+        Set<Long> fileIds = this.parseFileId(sceneResults);
         LambdaQueryWrapper<FileManageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(!CollectionUtils.isEmpty(fileIds), FileManageEntity::getId, fileIds);
         wrapper.eq(FileManageEntity::getFileType, FileTypeEnum.DATA.getCode());
@@ -832,13 +832,29 @@ public class CsvManageServiceImpl implements CsvManageService {
 
     }
 
-    private List<Long> parseFileId(List<SceneResult> sceneResults) {
+    private Set<Long> parseFileId(List<SceneResult> sceneResults) {
+        Set<Long> fileIds = Sets.newHashSet();
         if (CollectionUtils.isEmpty(sceneResults)) {
-            return Lists.newArrayList();
+            return fileIds;
         }
+        // 将该场景下所有的文件展示出来
+        List<Long> sceneIds = sceneResults.stream().map(SceneResult::getId).collect(Collectors.toList());
+        LambdaQueryWrapper<ScriptCsvDataSetEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(ScriptCsvDataSetEntity::getBusinessFlowId,sceneIds);
+        List<ScriptCsvDataSetEntity> csvDataSetEntityList = scriptCsvDataSetMapper.selectList(wrapper);
+        List<Long> scriptCsvDataSetIds = csvDataSetEntityList.stream().map(ScriptCsvDataSetEntity::getId).collect(Collectors.toList());
+
+        LambdaQueryWrapper<FileManageEntity> fileWrapper = new LambdaQueryWrapper<>();
+        fileWrapper.in(FileManageEntity::getScriptCsvDataSetId,scriptCsvDataSetIds);
+        List<FileManageEntity> fileManageEntityList = fileManageMapper.selectList(fileWrapper);
+        fileIds.addAll(fileManageEntityList.stream().map(FileManageEntity::getId).collect(Collectors.toList()));
+
+
+        // 兼容老版本
         List<Long> scriptDeployIds = sceneResults.stream().map(SceneResult::getScriptDeployId).collect(Collectors.toList());
         List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectFileIdsByScriptDeployIds(scriptDeployIds);
-        return scriptFileRefResults.stream().map(ScriptFileRefResult::getFileId).collect(Collectors.toList());
+        fileIds.addAll(scriptFileRefResults.stream().map(ScriptFileRefResult::getFileId).collect(Collectors.toList()));
+        return fileIds;
     }
 
     private PagingList<ScriptCsvManageResponse> taskManage(PageScriptCssManageQueryRequest request, List<SceneResult> sceneResults, List<Long> scriptCsvDataSetIds,AuthQueryParamCommonExt authQueryParamCommonExt) {
@@ -959,7 +975,7 @@ public class CsvManageServiceImpl implements CsvManageService {
         }
 
         Map<String, Long> fileNameIdMap = setEntity.stream().collect(Collectors.toMap(ScriptCsvDataSetEntity::getScriptCsvFileName, ScriptCsvDataSetEntity::getId));
-        Map<Long, String> idFileNameMap = setEntity.stream().collect(Collectors.toMap(ScriptCsvDataSetEntity::getId, ScriptCsvDataSetEntity::getScriptCsvFileName));
+        Map<Long, ScriptCsvDataSetEntity> idFileNameMap = setEntity.stream().collect(Collectors.toMap(ScriptCsvDataSetEntity::getId, t -> t));
 
         for (MultipartFile multipartFile : file) {
             if (null == multipartFile || multipartFile.isEmpty()) {
@@ -968,7 +984,8 @@ public class CsvManageServiceImpl implements CsvManageService {
             String name = multipartFile.getOriginalFilename();
             if (scriptCsvDataSetId != null) {
                 // 只能上传csv
-                String fileName = idFileNameMap.get(scriptCsvDataSetId);
+                ScriptCsvDataSetEntity scriptCsvDataSetEntity = idFileNameMap.get(scriptCsvDataSetId);
+                String fileName = scriptCsvDataSetEntity.getScriptCsvFileName();
                 if (!name.contains(".csv") || !name.equals(fileName)) {
                     throw new RuntimeException("组件中上传文件仅允许.csv格式且文件名为" + fileName + "的数据");
                 }
@@ -994,6 +1011,10 @@ public class CsvManageServiceImpl implements CsvManageService {
                 // 进行适配，如果有组件
                 uploadResponse.setScriptCsvDataSetId(fileNameIdMap.get(uploadResponse.getFileName()));
             }
+            ScriptCsvDataSetEntity scriptCsvDataSetEntity = idFileNameMap.get(uploadResponse.getScriptCsvDataSetId());
+            uploadResponse.setScriptCsvDataSetName(scriptCsvDataSetEntity.getScriptCsvDataSetName());
+            uploadResponse.setScriptCsvVariableName(scriptCsvDataSetEntity.getScriptCsvVariableName());
+            uploadResponse.setScriptCsvFileName(scriptCsvDataSetEntity.getScriptCsvFileName());
 
         }
         return upload;

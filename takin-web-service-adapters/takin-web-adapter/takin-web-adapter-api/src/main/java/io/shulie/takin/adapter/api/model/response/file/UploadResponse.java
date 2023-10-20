@@ -51,4 +51,24 @@ public class UploadResponse {
 
     @ApiModelProperty(value = "文件组件Id")
     private Long scriptCsvDataSetId;
+
+    /**
+     * 脚本csv组件名
+     */
+    @ApiModelProperty("scriptCsvDataSetName")
+    private String scriptCsvDataSetName;
+
+    /**
+     * 脚本csv文件名
+     */
+    @ApiModelProperty("scriptCsvFileName")
+    private String scriptCsvFileName;
+
+    /**
+     * 脚本csv变量名
+     */
+    @ApiModelProperty("scriptCsvVariableName")
+    private String scriptCsvVariableName;
+
+
 }

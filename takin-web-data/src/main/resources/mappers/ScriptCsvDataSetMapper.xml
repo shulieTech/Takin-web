@@ -16,12 +16,13 @@
     <result column="is_order_split" jdbcType="BOOLEAN" property="isOrderSplit" />
     <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
     <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="delimiter" jdbcType="VARCHAR" property="delimiter" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, script_csv_data_set_name, script_csv_file_name, script_csv_variable_name, ignore_first_line, 
     script_deploy_id, business_flow_id, file_manage_id, is_split, is_order_split, CREATE_TIME, 
-    UPDATE_TIME
+    UPDATE_TIME, `delimiter`
   </sql>
   <update id="updateBatch" parameterType="java.util.List">
     <!--@mbg.generated-->
@@ -80,6 +81,11 @@
       <trim prefix="UPDATE_TIME = case" suffix="end,">
         <foreach collection="list" index="index" item="item">
           when id = #{item.id,jdbcType=BIGINT} then #{item.updateTime,jdbcType=TIMESTAMP}
+        </foreach>
+      </trim>
+      <trim prefix="`delimiter` = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.delimiter,jdbcType=VARCHAR}
         </foreach>
       </trim>
     </trim>
@@ -169,6 +175,13 @@
           </if>
         </foreach>
       </trim>
+      <trim prefix="`delimiter` = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          <if test="item.delimiter != null">
+            when id = #{item.id,jdbcType=BIGINT} then #{item.delimiter,jdbcType=VARCHAR}
+          </if>
+        </foreach>
+      </trim>
     </trim>
     where id in
     <foreach close=")" collection="list" item="item" open="(" separator=", ">
@@ -180,14 +193,15 @@
     insert into t_script_csv_data_set
     (script_csv_data_set_name, script_csv_file_name, script_csv_variable_name, ignore_first_line, 
       script_deploy_id, business_flow_id, file_manage_id, is_split, is_order_split, CREATE_TIME, 
-      UPDATE_TIME)
+      UPDATE_TIME, `delimiter`)
     values
     <foreach collection="list" item="item" separator=",">
       (#{item.scriptCsvDataSetName,jdbcType=VARCHAR}, #{item.scriptCsvFileName,jdbcType=VARCHAR}, 
         #{item.scriptCsvVariableName,jdbcType=VARCHAR}, #{item.ignoreFirstLine,jdbcType=BOOLEAN}, 
         #{item.scriptDeployId,jdbcType=BIGINT}, #{item.businessFlowId,jdbcType=BIGINT}, 
         #{item.fileManageId,jdbcType=BIGINT}, #{item.isSplit,jdbcType=BOOLEAN}, #{item.isOrderSplit,jdbcType=BOOLEAN}, 
-        #{item.createTime,jdbcType=TIMESTAMP}, #{item.updateTime,jdbcType=TIMESTAMP})
+        #{item.createTime,jdbcType=TIMESTAMP}, #{item.updateTime,jdbcType=TIMESTAMP}, #{item.delimiter,jdbcType=VARCHAR}
+        )
     </foreach>
   </insert>
   <insert id="insertOrUpdate" keyColumn="id" keyProperty="id" parameterType="io.shulie.takin.web.data.model.mysql.ScriptCsvDataSetEntity" useGeneratedKeys="true">
@@ -208,6 +222,7 @@
       is_order_split,
       CREATE_TIME,
       UPDATE_TIME,
+      `delimiter`,
     </trim>
     values
     <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -225,6 +240,7 @@
       #{isOrderSplit,jdbcType=BOOLEAN},
       #{createTime,jdbcType=TIMESTAMP},
       #{updateTime,jdbcType=TIMESTAMP},
+      #{delimiter,jdbcType=VARCHAR},
     </trim>
     on duplicate key update 
     <trim suffixOverrides=",">
@@ -242,6 +258,7 @@
       is_order_split = #{isOrderSplit,jdbcType=BOOLEAN},
       CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
       UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      `delimiter` = #{delimiter,jdbcType=VARCHAR},
     </trim>
   </insert>
   <insert id="insertOrUpdateSelective" keyColumn="id" keyProperty="id" parameterType="io.shulie.takin.web.data.model.mysql.ScriptCsvDataSetEntity" useGeneratedKeys="true">
@@ -284,6 +301,9 @@
       <if test="updateTime != null">
         UPDATE_TIME,
       </if>
+      <if test="delimiter != null">
+        `delimiter`,
+      </if>
     </trim>
     values
     <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -323,6 +343,9 @@
       <if test="updateTime != null">
         #{updateTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="delimiter != null">
+        #{delimiter,jdbcType=VARCHAR},
+      </if>
     </trim>
     on duplicate key update 
     <trim suffixOverrides=",">
@@ -361,6 +384,9 @@
       </if>
       <if test="updateTime != null">
         UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="delimiter != null">
+        `delimiter` = #{delimiter,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>

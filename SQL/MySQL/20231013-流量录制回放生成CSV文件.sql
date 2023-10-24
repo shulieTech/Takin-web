@@ -4,6 +4,7 @@ CREATE TABLE `t_script_csv_data_set` (
                                          `script_csv_file_name` varchar(200) DEFAULT NULL COMMENT '脚本csv文件名',
                                          `script_csv_variable_name` varchar(200) DEFAULT NULL COMMENT '脚本csv变量名',
                                          `ignore_first_line` tinyint(1) DEFAULT NULL COMMENT '是否忽略首行(0:否；1:是)',
+                                         `delimiter` varchar(64) DEFAULT NULL COMMENT '分隔符',
                                          `script_deploy_id` bigint(20) DEFAULT NULL COMMENT '脚本实例ID',
                                          `business_flow_id` bigint(20) DEFAULT NULL COMMENT '业务流程ID',
                                          `file_manage_id` bigint(20) DEFAULT NULL COMMENT '关联的文件ID',
@@ -14,6 +15,7 @@ CREATE TABLE `t_script_csv_data_set` (
                                          PRIMARY KEY (`id`) USING BTREE,
                                          KEY `business_flow_script_deploy_id` (`business_flow_id`,`script_deploy_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='csv组件表';
+
 
 CREATE TABLE `t_script_csv_create_task` (
                                             `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键id',

@@ -46,6 +46,12 @@ public class CurrentCreateScheduleDTO {
      */
     private Boolean ignoreFirstLine;
 
+    /**
+     * 分隔符
+     */
+    private String delimiter;
+
+
 
     /**
      * csv组件变量

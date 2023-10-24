@@ -85,4 +85,10 @@ public class ScriptCsvDataSetEntity {
      */
     @TableField(value = "UPDATE_TIME")
     private LocalDateTime updateTime;
+
+    /**
+     * 分隔符
+     */
+    @TableField(value = "`delimiter`")
+    private String delimiter;
 }

@@ -16,10 +16,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -80,6 +78,10 @@ public class FileManageDAOImpl implements FileManageDAO {
             if(entity.getDeptId() == null) {
                 entity.setDeptId(WebPluginUtils.traceDeptId());
             }
+            // 时间更新 by 何仲奇 2023.10.24
+            entity.setUploadTime(new Date());
+            entity.setGmtCreate(LocalDateTime.now());
+            entity.setGmtUpdate(LocalDateTime.now());
             fileManageMapper.insert(entity);
             return entity;
         }).collect(Collectors.toList());

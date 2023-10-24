@@ -127,7 +127,8 @@ public class ScriptDataController {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         List<String> csvList = request.stream().map(t -> t.getBusinessFlowId() + "-" + t.getScriptCsvDataSetId()).collect(Collectors.toList());
         OperationLogContextHolder.addVars("csvList", JSON.toJSONString(csvList));
-        return new ScriptManageStringResponse("任务已提交");
+        // by 何仲奇 2023.10.24
+        return new ScriptManageStringResponse("请到csv管理界面查看任务进度");
     }
 
     @ApiOperation("取消任务")

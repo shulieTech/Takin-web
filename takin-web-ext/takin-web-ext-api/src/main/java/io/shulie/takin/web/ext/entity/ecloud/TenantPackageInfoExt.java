@@ -28,4 +28,7 @@ public class TenantPackageInfoExt {
     private Integer duration;
 
     private Integer exclusiveEngine;
+
+    private Integer timeLimit;
+
 }

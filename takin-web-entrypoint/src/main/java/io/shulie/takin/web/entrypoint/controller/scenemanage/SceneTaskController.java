@@ -42,6 +42,7 @@ import io.shulie.takin.web.ext.entity.ecloud.TenantPackageInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 莫问
  * @date 2020-04-27
  */
+@Slf4j
 @RestController
 @RequestMapping(ApiUrls.TAKIN_API_URL + "scene/task/")
 @Api(tags = "场景任务", value = "场景任务")
@@ -139,6 +141,7 @@ public class SceneTaskController {
 
             return WebResponse.success(startTaskResponse);
         } catch (TakinWebException ex) {
+            log.error("io.shulie.takin.web.entrypoint.controller.scenemanage.SceneTaskController.start,error", ex);
             // 解除 场景锁
             redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
             SceneActionResp sceneStart = new SceneActionResp();

@@ -249,6 +249,7 @@ public class SceneServiceImpl implements SceneService {
             UUID uuid = UUID.randomUUID();
             fileManageCreateRequest.setUploadId(uuid.toString());
             String tempFile = tmpFilePath + "/" + uuid + "/" + fileManageCreateRequest.getFileName();
+            log.info("tempFile:{}", tempFile);;
             FileCreateByStringParamReq fileCreateByStringParamReq = new FileCreateByStringParamReq();
             fileCreateByStringParamReq.setFileContent(fileManageCreateRequest.getScriptContent());
             fileCreateByStringParamReq.setFilePath(tempFile);

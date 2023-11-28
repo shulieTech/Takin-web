@@ -24,13 +24,16 @@ import io.shulie.takin.web.biz.pojo.dto.scene.EngineMetricsDTO;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
+import io.shulie.takin.web.biz.pojo.response.SreResult;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
+import io.shulie.takin.web.biz.utils.SreHelper;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -79,6 +82,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 /**
@@ -408,21 +412,28 @@ public class ReportServiceImpl implements ReportService {
             }
         }
 
-        //todo 根据诊断id获取诊断结果，诊断id不可为空
-        if (activityResponse!=null&&activityResponse.getTopology()!=null) {
-            if (activityResponse.getTopology().getNodes() != null) {
-                List<ReportRiskItemOutput> reportRiskItemOutputList = getgetRiskItemListByDiagnosisId(reportLinkDiagramReq.getDiagnosisId());
-                List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> nodes = activityResponse.getTopology().getNodes();
-                for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : nodes) {
-                    node.get
-                }
+        if (activityResponse != null && activityResponse.getTopology() != null && activityResponse.getTopology().getNodes() != null) {
+            List<ReportRiskItemOutput> reportRiskItemOutputList = getgetRiskItemListByDiagnosisId(detail.getDiagnosisId());
+            if (CollectionUtils.isEmpty(reportRiskItemOutputList)){
+                return ResponseResult.success(activityResponse);
+            }
+            Map<String, ReportRiskItemOutput> riskItemMap = reportRiskItemOutputList.stream().collect(Collectors.toMap(ReportRiskItemOutput::getAppName, Function.identity(), (existing, replacement) -> existing));
+            List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> nodes = activityResponse.getTopology().getNodes();
+            for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : nodes) {
+                ReportRiskItemOutput riskItemOutput = riskItemMap.get(node.getLabel());
+                node.setRiskRank(riskItemOutput.getRanking());
             }
         }
-
         return ResponseResult.success(activityResponse);
     }
-
-    private List<ReportRiskItemOutput> getgetRiskItemListByDiagnosisId(Long diagnosisId){
+    private static List<ReportRiskItemOutput> getgetRiskItemListByDiagnosisId(Long diagnosisId) {
+        Map<String, Object> map = new HashMap<>();
+        Long task[] = {diagnosisId};
+        map.put("taskIdList", task);
+        List<ReportRiskItemOutput> reportRiskItemOutputList = SreHelper.builder().url("").httpMethod(HttpMethod.POST).param(map).list(ReportRiskItemOutput.class);
+        if (CollectionUtils.isNotEmpty(reportRiskItemOutputList)) {
+            return reportRiskItemOutputList;
+        }
         return null;
     }
 

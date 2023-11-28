@@ -36,6 +36,9 @@ public class ReportBusinessActivityDetailEntity {
     @TableField(value = "business_activity_id")
     private Long businessActivityId;
 
+    @TableField(value = "diagnosis_id")
+    private Long diagnosisId;
+
     /**
      * 业务活动名称
      */

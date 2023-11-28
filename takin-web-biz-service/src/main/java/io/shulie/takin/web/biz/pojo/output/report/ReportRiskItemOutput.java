@@ -48,4 +48,6 @@ public class ReportRiskItemOutput {
     private String influenceChainCount;
 
     private Integer ranking;
+
+    private String chainCode;
 }

@@ -1,5 +1,6 @@
 package io.shulie.takin.adapter.api.model.response.scenemanage;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -104,6 +105,10 @@ public class SceneRequest extends ContextExt {
         private Double sr;
         @ApiModelProperty(value = "目标SA(%)")
         private Double sa;
+        @ApiModelProperty(value = "sla自动设置开始时间")
+        private Date slaStartTime;
+        @ApiModelProperty(value = "sla自动设置结束时间")
+        private Date slaEndTime;
     }
 
     /**

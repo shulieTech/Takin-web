@@ -24,6 +24,7 @@ import io.shulie.takin.web.biz.pojo.dto.scene.EngineMetricsDTO;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 
 import java.io.IOException;
@@ -406,7 +407,23 @@ public class ReportServiceImpl implements ReportService {
                 activityResponse = JSON.parseObject(reportJson, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
             }
         }
+
+        //todo 根据诊断id获取诊断结果，诊断id不可为空
+        if (activityResponse!=null&&activityResponse.getTopology()!=null) {
+            if (activityResponse.getTopology().getNodes() != null) {
+                List<ReportRiskItemOutput> reportRiskItemOutputList = getgetRiskItemListByDiagnosisId(reportLinkDiagramReq.getDiagnosisId());
+                List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> nodes = activityResponse.getTopology().getNodes();
+                for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : nodes) {
+                    node.get
+                }
+            }
+        }
+
         return ResponseResult.success(activityResponse);
+    }
+
+    private List<ReportRiskItemOutput> getgetRiskItemListByDiagnosisId(Long diagnosisId){
+        return null;
     }
 
     @Override

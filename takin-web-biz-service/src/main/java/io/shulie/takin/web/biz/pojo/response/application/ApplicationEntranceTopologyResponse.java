@@ -141,6 +141,11 @@ public class ApplicationEntranceTopologyResponse {
 
         // TopologyOssNodeResponse
         private List<OssInfo> oss;
+
+        /**
+         * 风险排名
+         */
+        private Integer riskRank;
     }
 
     @Data

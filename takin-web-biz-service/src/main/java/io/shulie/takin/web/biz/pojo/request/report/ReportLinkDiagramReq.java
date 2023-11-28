@@ -18,10 +18,14 @@ public class ReportLinkDiagramReq {
     @ApiModelProperty("场景Id")
     @NotNull(message = "sceneId不允许为空")
     private Long sceneId;
-    
+
     @ApiModelProperty("报告id")
     private Long reportId;
-    
+
+    @ApiModelProperty("诊断id")
+    @NotBlank(message = "诊断id不允许为空")
+    private Long diagnosisId;
+
     @NotBlank(message = "参数xpathMd5不允许为空")
     @ApiModelProperty("xpathMd5")
     private String xpathMd5;

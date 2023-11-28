@@ -50,7 +50,7 @@ public class SceneMixApiImpl implements SceneMixApi {
     /**
      * 获取压测场景
      *
-     * @param sceneId 场景主键
+     * @param req 场景主键
      * @return 场景详情
      */
     @Override

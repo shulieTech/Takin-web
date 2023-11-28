@@ -56,7 +56,6 @@ public class NewSceneRequest {
 
     @ApiModelProperty(value = "数据验证配置")
     private DataValidation dataValidation;
-
     @Getter
     @Setter
     public static class DataValidation extends SceneRequest.DataValidation {
@@ -77,6 +76,9 @@ public class NewSceneRequest {
         @ApiModelProperty(value = "是否定时执行")
         @NotNull(message = "是否定时执行配置不能为空")
         private Boolean isScheduler;
+        @ApiModelProperty(value = "是否自动设置sla开关")
+        @NotNull(message = "是否自动设置sla开关不能为空")
+        private boolean autoStartSLAFlag;
         @ApiModelProperty(name = "executeTime", value = "定时执行时间")
         @JsonFormat(pattern = "yyyy-MM-dd hh:mm", timezone = "GMT+8")
         private Date executeTime;

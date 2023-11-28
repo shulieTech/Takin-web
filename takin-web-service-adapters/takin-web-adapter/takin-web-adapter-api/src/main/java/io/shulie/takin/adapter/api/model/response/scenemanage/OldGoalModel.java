@@ -1,10 +1,12 @@
 package io.shulie.takin.adapter.api.model.response.scenemanage;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.Goal;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -36,6 +38,17 @@ public class OldGoalModel {
     private Integer targetTps;
 
     /**
+     * 自动设置SLA开始时间
+     */
+    @JSONField(name = "slaStartTime")
+    private Date slaStartTime;
+
+    /**
+     * 自动设置SLA结束时间
+     */
+    @JSONField(name = "slaEndTime")
+    private Date slaEndTime;
+    /**
      * 从{@link Goal}转换
      *
      * @param goal 新的目标实体
@@ -47,6 +60,8 @@ public class OldGoalModel {
             setTargetTps(goal.getTps());
             setTargetSa(BigDecimal.valueOf(goal.getSa()));
             setTargetSuccessRate(BigDecimal.valueOf(goal.getSr()));
+            setSlaStartTime(goal.getSlaStartTime());
+            setSlaEndTime(goal.getSlaEndTime());
         }};
     }
 
@@ -61,6 +76,8 @@ public class OldGoalModel {
             setTps(getTargetTps());
             setSa(getTargetSa().doubleValue());
             setSr(getTargetSuccessRate().doubleValue());
+            setSlaStartTime(getSlaStartTime());
+            setSlaEndTime(getSlaEndTime());
         }};
     }
 }

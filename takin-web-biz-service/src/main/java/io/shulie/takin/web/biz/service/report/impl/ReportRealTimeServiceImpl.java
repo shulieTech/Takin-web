@@ -1,10 +1,6 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Collections;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -13,6 +9,7 @@ import javax.annotation.Resource;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import com.google.gson.reflect.TypeToken;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import io.shulie.takin.adapter.api.model.request.report.ScriptNodeTreeQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
@@ -21,6 +18,9 @@ import io.shulie.takin.cloud.data.dao.report.ReportBusinessActivityDetailDao;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
+import io.shulie.takin.web.biz.pojo.response.report.SreTraceDataVO;
+import io.shulie.takin.web.biz.utils.SreHelper;
+import io.shulie.takin.web.common.SreResponse;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +30,8 @@ import com.google.common.collect.Lists;
 import org.springframework.beans.BeanUtils;
 import com.google.common.collect.HashBiMap;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -76,6 +78,9 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     private ReportApi reportApi;
     @Resource
     private ReportBusinessActivityDetailDao businessActivityDetailDao;
+
+    @Value("${takin.sre.path:192.168.54.103:8501}")
+    private String sreUrl;
 
     @Override
     public PageInfo<ReportTraceDTO> getReportLinkList(ReportTraceQueryDTO queryDTO) {
@@ -374,6 +379,23 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             entranceList.add(dto);
         }
         return entranceList;
+    }
+
+    @Override
+    public SreResponse<SreTraceDataVO> getSreTraceDetail(String traceId) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("traceId", traceId);
+        TypeToken<SreResponse<SreTraceDataVO>> typeToken = new TypeToken<SreResponse<SreTraceDataVO>>() {
+        };
+//        String url = sreUrl + "/takin-sre/api/trace/getTraceTable";
+        String url = "http://192.168.54.103:8501" + "/takin-sre/api/trace/getTraceTable";
+        SreResponse<SreTraceDataVO> response = SreHelper.builder().url(url).param(map).httpMethod(HttpMethod.GET).queryList(typeToken);
+        return response;
+    }
+
+    public static void main(String[] args) {
+        ReportRealTimeServiceImpl reportRealTimeService = new ReportRealTimeServiceImpl();
+        System.out.println(JSON.toJSONString(reportRealTimeService.getSreTraceDetail("75021aac17012595677718500d000605001")));
     }
 
     private String buildAppName(EntryTraceInfoDTO takin) {

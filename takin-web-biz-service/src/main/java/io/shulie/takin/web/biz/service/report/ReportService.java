@@ -20,6 +20,11 @@ import io.shulie.takin.web.biz.pojo.output.report.SceneReportListOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.report.RiskListQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.report.RiskItemExtractionVO;
+import io.shulie.takin.web.common.SrePageData;
+import io.shulie.takin.web.common.SreResponse;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * @author qianshui
@@ -219,5 +224,7 @@ public interface ReportService {
      * @return
      */
     List<Long> nearlyHourReportIds(int minutes);
+
+    SreResponse<SrePageData<RiskItemExtractionVO>> getReportRiskItemPages(RiskListQueryRequest request);
 
 }

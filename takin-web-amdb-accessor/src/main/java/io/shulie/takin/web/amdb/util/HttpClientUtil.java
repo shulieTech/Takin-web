@@ -223,6 +223,7 @@ public class HttpClientUtil {
                 }
             } else {
                 log.error("error++,url:{},responseCode:{},responseMessage:{}", inputUrl, conn.getResponseCode(), conn.getResponseMessage());
+                throw new RuntimeException(String.format("http请求失败，请求路径为：%s,状态码为：%s,错误信息为：%s,请求method为：%s", inputUrl, conn.getResponseCode(), conn.getResponseMessage(),conn.getRequestMethod()));
             }
         } catch (Exception e) {
             log.error(e.getMessage());

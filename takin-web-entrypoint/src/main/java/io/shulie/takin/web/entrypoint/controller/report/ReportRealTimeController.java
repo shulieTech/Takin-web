@@ -4,7 +4,9 @@ import com.github.pagehelper.PageInfo;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.report.SreTraceDataVO;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
+import io.shulie.takin.web.common.SreResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
@@ -12,10 +14,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author qianshui
@@ -56,6 +55,12 @@ public class ReportRealTimeController {
     private ReportLinkDetailResponse getLinkDetail(@RequestParam String traceId,
         @RequestParam(defaultValue = "0") Integer id) {
         return reportRealTimeService.getLinkDetail(traceId, id);
+    }
+
+    @ApiOperation("获取sre的trace详情")
+    @PostMapping("/report/trace/sre/detail")
+    private SreResponse<SreTraceDataVO> getSreTraceDetail(@RequestParam String traceId) {
+        return reportRealTimeService.getSreTraceDetail(traceId);
     }
 
 }

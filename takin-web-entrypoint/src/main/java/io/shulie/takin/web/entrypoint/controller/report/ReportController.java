@@ -22,9 +22,13 @@ import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationList
 import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.report.RiskListQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.report.ReportJtlDownloadResponse;
+import io.shulie.takin.web.biz.pojo.response.report.RiskItemExtractionVO;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.common.SrePageData;
+import io.shulie.takin.web.common.SreResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
@@ -33,10 +37,7 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author 莫问
@@ -283,5 +284,13 @@ public class ReportController {
         reportService.modifyLinkDiagram(reportLinkDiagramReq);
         return ResponseResult.success();
     }
+
+    @PostMapping("/report/risk/item/pages")
+    @ApiOperation("获取报告风险列表")
+    public SreResponse<SrePageData<RiskItemExtractionVO>> getReportRiskItemPages(@RequestBody RiskListQueryRequest request) {
+        return reportService.getReportRiskItemPages(request);
+    }
+
+
 }
 

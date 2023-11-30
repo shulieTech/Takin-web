@@ -2,7 +2,7 @@ package io.shulie.takin.web.biz.service.report.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.gson.reflect.TypeToken;
 import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
@@ -24,14 +24,20 @@ import io.shulie.takin.web.biz.pojo.dto.scene.EngineMetricsDTO;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
-import io.shulie.takin.web.biz.pojo.response.SreResult;
+import io.shulie.takin.web.biz.pojo.request.report.RiskListQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
+import io.shulie.takin.web.biz.pojo.response.report.RiskItemExtractionVO;
 import io.shulie.takin.web.biz.utils.SreHelper;
+import io.shulie.takin.web.common.SrePageData;
+import io.shulie.takin.web.common.SreResponse;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -75,7 +81,6 @@ import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -128,6 +133,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Resource
     private ReportMapper reportMapper;
+
+    @Value("${takin.sre.path:192.168.54.103:8501}")
+    private String sreUrl;
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -413,7 +421,7 @@ public class ReportServiceImpl implements ReportService {
         }
 
         if (activityResponse != null && activityResponse.getTopology() != null && activityResponse.getTopology().getNodes() != null) {
-            List<ReportRiskItemOutput> reportRiskItemOutputList = getgetRiskItemListByDiagnosisId(detail.getDiagnosisId());
+            List<ReportRiskItemOutput> reportRiskItemOutputList = getRiskItemListByDiagnosisId(reportLinkDiagramReq);
             if (CollectionUtils.isEmpty(reportRiskItemOutputList)){
                 return ResponseResult.success(activityResponse);
             }
@@ -426,13 +434,20 @@ public class ReportServiceImpl implements ReportService {
         }
         return ResponseResult.success(activityResponse);
     }
-    private static List<ReportRiskItemOutput> getgetRiskItemListByDiagnosisId(Long diagnosisId) {
+    private static List<ReportRiskItemOutput> getRiskItemListByDiagnosisId(ReportLinkDiagramReq reportLinkDiagramReq) {
         Map<String, Object> map = new HashMap<>();
-        Long task[] = {diagnosisId};
-        map.put("taskIdList", task);
-        List<ReportRiskItemOutput> reportRiskItemOutputList = SreHelper.builder().url("").httpMethod(HttpMethod.POST).param(map).list(ReportRiskItemOutput.class);
-        if (CollectionUtils.isNotEmpty(reportRiskItemOutputList)) {
-            return reportRiskItemOutputList;
+        map.put("taskIdList", Arrays.asList(reportLinkDiagramReq.getDiagnosisId()));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        map.put("startTime", formatter.format(reportLinkDiagramReq.getStartTime()));
+        map.put("endTime", formatter.format(reportLinkDiagramReq.getEndTime()));
+        TypeToken<SreResponse<List<ReportRiskItemOutput>>> typeToken = new TypeToken<SreResponse<List<ReportRiskItemOutput>>>() {
+        };
+//        String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/order";
+        String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/order";
+        SreResponse<List<ReportRiskItemOutput>> response = SreHelper.builder().url(url).httpMethod(HttpMethod.POST).param(map).queryList(typeToken);
+        if (null != response && response.isSuccess()) {
+            return response.getData();
         }
         return null;
     }
@@ -817,6 +832,41 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<Long> nearlyHourReportIds(int minutes) {
         return reportDao.nearlyHourReportIds(minutes);
+    }
+
+    @Override
+    public SreResponse<SrePageData<RiskItemExtractionVO>> getReportRiskItemPages(RiskListQueryRequest request) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("startTime", request.getStartTime());
+        param.put("endTime", request.getEndTime());
+        param.put("taskIdList", request.getTaskIds());
+        param.put("tenantCode", request.getTenantCode());
+        param.put("page", request.getPage());
+        param.put("size", request.getSize());
+        TypeToken<SreResponse<SrePageData<RiskItemExtractionVO>>> typeToken = new TypeToken<SreResponse<SrePageData<RiskItemExtractionVO>>>() {
+        };
+//        String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/query";
+        String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/query";
+        SreResponse<SrePageData<RiskItemExtractionVO>> response = SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
+        return response;
+    }
+
+    public static void main(String[] args) throws ParseException {
+        ReportServiceImpl reportService = new ReportServiceImpl();
+//        RiskListQueryRequest request = new RiskListQueryRequest();
+//        request.setStartTime("2023-11-28 00:00:00");
+//        request.setEndTime("2023-11-28 23:00:00");
+//        request.setTaskIds(Arrays.asList(-1L));
+//        request.setTenantCode("wstest");
+//        request.setPage(1);
+//        request.setSize(10);
+//        System.out.println(JSON.toJSONString(reportService.getReportRiskItemPages(request)));
+        ReportLinkDiagramReq reportLinkDiagramReq = new ReportLinkDiagramReq();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        reportLinkDiagramReq.setEndTime(LocalDateTime.parse("2023-11-28 23:00:00", formatter));
+        reportLinkDiagramReq.setStartTime(LocalDateTime.parse("2023-11-28 00:00:00", formatter));
+        reportLinkDiagramReq.setDiagnosisId(-1L);
+        System.out.println(JSON.toJSONString(getRiskItemListByDiagnosisId(reportLinkDiagramReq)));
     }
 
     private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5) {

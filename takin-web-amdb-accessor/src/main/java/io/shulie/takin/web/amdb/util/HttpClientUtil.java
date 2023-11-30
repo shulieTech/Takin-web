@@ -1,12 +1,9 @@
 package io.shulie.takin.web.amdb.util;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Map;
@@ -73,7 +70,8 @@ public class HttpClientUtil {
                     log.error(e1.getMessage());
                 }
             } else {
-                log.error("http请求失败，请求路径为：{},状态码为：{},错误信息为:{}", url, conn.getResponseCode(), conn.getResponseMessage());
+                log.error("http请求失败，请求路径为：{},状态码为：{},错误信息为:{}", conn.getURL(), conn.getResponseCode(), conn.getResponseMessage());
+                throw new RuntimeException("http请求失败，请求路径为：" + conn.getURL() + ",状态码为：" + conn.getResponseCode() + ",错误信息为：" + conn.getResponseMessage());
             }
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -84,20 +82,27 @@ public class HttpClientUtil {
         }
         return sb.toString();
     }
-
     public static String parseParams(Object object) {
         String s = JSON.toJSONString(object);
         JSONObject jsonObject = JSON.parseObject(s);
         StringBuilder buffer = new StringBuilder();
         if (jsonObject != null && !jsonObject.isEmpty()) {
             for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
-                if (entry.getValue() == null) {
+                if (entry.getValue() == null || entry.getKey().isEmpty()) {
                     continue;
                 }
-                buffer.append(entry.getKey());
-                buffer.append("=");
-                buffer.append(UrlEncoded.encodeString(entry.getValue().toString(), "UTF-8"));
-                buffer.append("&");
+                try {
+                    buffer.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+                    buffer.append("=");
+                    buffer.append(URLEncoder.encode(entry.getValue().toString(), "UTF-8"));
+                    buffer.append("&");
+                } catch (UnsupportedEncodingException e) {
+                    // 这个异常实际上不会发生，因为 UTF-8 总是被支持的
+                    e.printStackTrace();
+                }
+            }
+            if (buffer.length() > 0) {
+                buffer.deleteCharAt(buffer.length() - 1); // 删除最后一个 "&"
             }
         }
         return buffer.toString();

@@ -16,6 +16,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @author qianshui
  * @date 2020/8/17 下午8:18
@@ -59,7 +61,7 @@ public class ReportRealTimeController {
 
     @ApiOperation("获取sre的trace详情")
     @PostMapping("/report/trace/sre/detail")
-    private SreResponse<SreTraceDataVO> getSreTraceDetail(@RequestParam String traceId) {
+    private SreResponse<List<SreTraceDataVO>> getSreTraceDetail(@RequestParam String traceId) {
         return reportRealTimeService.getSreTraceDetail(traceId);
     }
 

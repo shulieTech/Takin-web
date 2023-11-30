@@ -33,5 +33,5 @@ public interface ReportRealTimeService {
 
     List<EntranceRuleDTO> getEntryListByBusinessActivityIds(List<Long> businessActivityIds);
 
-    SreResponse<SreTraceDataVO> getSreTraceDetail(String traceId);
+    SreResponse<List<SreTraceDataVO>> getSreTraceDetail(String traceId);
 }

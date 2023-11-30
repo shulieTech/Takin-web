@@ -382,20 +382,21 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     }
 
     @Override
-    public SreResponse<SreTraceDataVO> getSreTraceDetail(String traceId) {
+    public SreResponse<List<SreTraceDataVO>> getSreTraceDetail(String traceId) {
         Map<String, Object> map = new HashMap<>();
         map.put("traceId", traceId);
-        TypeToken<SreResponse<SreTraceDataVO>> typeToken = new TypeToken<SreResponse<SreTraceDataVO>>() {
+        map.put("timestr", new Date().getTime());
+        TypeToken<SreResponse<List<SreTraceDataVO>>> typeToken = new TypeToken<SreResponse<List<SreTraceDataVO>>>() {
         };
 //        String url = sreUrl + "/takin-sre/api/trace/getTraceTable";
-        String url = "http://192.168.54.103:8501" + "/takin-sre/api/trace/getTraceTable";
-        SreResponse<SreTraceDataVO> response = SreHelper.builder().url(url).param(map).httpMethod(HttpMethod.GET).queryList(typeToken);
+        String url = "http://192.168.63.37:8501" + "/takin-sre/api/trace/getTraceTable";
+        SreResponse<List<SreTraceDataVO>> response = SreHelper.builder().url(url).param(map).httpMethod(HttpMethod.GET).queryList(typeToken);
         return response;
     }
 
     public static void main(String[] args) {
         ReportRealTimeServiceImpl reportRealTimeService = new ReportRealTimeServiceImpl();
-        System.out.println(JSON.toJSONString(reportRealTimeService.getSreTraceDetail("75021aac17012595677718500d000605001")));
+        System.out.println(JSON.toJSONString(reportRealTimeService.getSreTraceDetail("ffffffff17013481635971173d000000011")));
     }
 
     private String buildAppName(EntryTraceInfoDTO takin) {

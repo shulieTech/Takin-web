@@ -1,4 +1,5 @@
 package io.shulie.takin.web.biz.checker;
+
 import java.util.Date;
 
 import com.alibaba.fastjson.JSONObject;
@@ -51,34 +52,41 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
 
     private void doCheck(SceneManageWrapperOutput sceneData) {
         List<SceneManageWrapperOutput.SceneBusinessActivityRefOutput> businessActivityConfig = sceneData.getBusinessActivityConfig();
-        if (CollectionUtils.isEmpty(businessActivityConfig)){
+        if (CollectionUtils.isEmpty(businessActivityConfig)) {
             return;
         }
         List<Long> ids = businessActivityConfig.stream().map(SceneManageWrapperOutput.SceneBusinessActivityRefOutput::getBusinessActivityId).collect(Collectors.toList());
         List<BusinessLinkManageTableEntity> businessLinkManageTableEntities = businessLinkManageTableMapper.selectBatchIds(ids);
-        if (CollectionUtils.isEmpty(businessLinkManageTableEntities)){
+        if (CollectionUtils.isEmpty(businessLinkManageTableEntities)) {
             return;
         }
+        //是否自动设置sla
 
-        List<CollectorSlaRequest> collectorParam = getCollectorParam(businessLinkManageTableEntities, businessActivityConfig);
+        List<CollectorSlaRequest> collectorParam = getCollectorParam(businessLinkManageTableEntities, businessActivityConfig, true);
         String sendPost = HttpClientUtil.sendPost(collectorHost + "/api/clickhouse/getSlaParams", collectorParam);
         List<SlaParamResponse> slaParamResponses = JSONObject.parseArray(sendPost, SlaParamResponse.class);
         String sre = HttpClientUtil.sendPost(collectorHost + "/takin-sre/api/risk/pressure/config/sla", slaParamResponses);
     }
 
-    private List<CollectorSlaRequest> getCollectorParam(List<BusinessLinkManageTableEntity> entities, List<SceneManageWrapperOutput.SceneBusinessActivityRefOutput> activityRefOutputs){
+    private List<CollectorSlaRequest> getCollectorParam(List<BusinessLinkManageTableEntity> entities, List<SceneManageWrapperOutput.SceneBusinessActivityRefOutput> activityRefOutputs, boolean autoSetSla) {
+        List<CollectorSlaRequest> collectorSlaRequests = new ArrayList<>();
         Map<Long, List<SceneManageWrapperOutput.SceneBusinessActivityRefOutput>> longListMap = activityRefOutputs.stream().collect(Collectors.groupingBy(SceneManageWrapperOutput.SceneBusinessActivityRefOutput::getBusinessActivityId));
         entities.forEach(entity -> {
             CollectorSlaRequest collectorSlaRequest = new CollectorSlaRequest();
-            collectorSlaRequest.setStartDate(new Date());
-            collectorSlaRequest.setEndDate(new Date());
             collectorSlaRequest.setAppName(entity.getApplicationName());
             collectorSlaRequest.setRpc(entity.getApplicationName());
-            SceneManageWrapperOutput.SceneBusinessActivityRefOutput sceneBusinessActivityRefOutput = longListMap.get(entity.getLinkId()).get(0);
-
+            if (autoSetSla) {
+                collectorSlaRequest.setStartDate(new Date());
+                collectorSlaRequest.setEndDate(new Date());
+            } else {
+                SceneManageWrapperOutput.SceneBusinessActivityRefOutput sceneBusinessActivityRefOutput = longListMap.get(entity.getLinkId()).get(0);
+                collectorSlaRequest.setStartDate(new Date());
+                collectorSlaRequest.setEndDate(new Date());
+            }
+            collectorSlaRequests.add(collectorSlaRequest);
         });
 
-        return null;
+        return collectorSlaRequests;
     }
 
 

@@ -17,10 +17,7 @@ import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
 import io.shulie.takin.web.biz.pojo.output.report.SceneReportListOutput;
-import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
-import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
-import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.report.RiskListQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.report.*;
 import io.shulie.takin.web.biz.pojo.response.report.ReportRiskDiagnosisVO;
 import io.shulie.takin.web.biz.pojo.response.report.RiskItemExtractionVO;
 import io.shulie.takin.web.common.SrePageData;
@@ -230,4 +227,18 @@ public interface ReportService {
 
     SreResponse<List<ReportRiskDiagnosisVO>> getReportRiskDiagnosis(List<Long> taskIdList);
 
+    /**
+     * 发起风险诊断接口
+     */
+    SreResponse<Map<String, Object>> reportRiskDiagnosis(ReportRiskRequest request);
+
+    /**
+     * 删除诊断接口
+     */
+    SreResponse<String> deleteReportRiskDiagnosis(ReportRiskDeleteRequest request);
+
+    /**
+     * 删除诊断数据确认接口
+     */
+    SreResponse<String> deleteReportRiskDiagnosisConfirm(ReportRiskDeleteRequest request);
 }

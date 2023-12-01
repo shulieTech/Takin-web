@@ -23,8 +23,7 @@ import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.web.biz.pojo.dto.scene.EngineMetricsDTO;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 import io.shulie.takin.web.biz.pojo.output.report.*;
-import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
-import io.shulie.takin.web.biz.pojo.request.report.RiskListQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.report.*;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.report.ReportRiskDiagnosisVO;
 import io.shulie.takin.web.biz.pojo.response.report.RiskItemExtractionVO;
@@ -36,7 +35,6 @@ import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -66,8 +64,6 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
-import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.DistributedLock;
@@ -866,6 +862,70 @@ public class ReportServiceImpl implements ReportService {
         return null;
     }
 
+    /**
+     * 发起风险诊断接口
+     *
+     * @param request
+     */
+    @Override
+    public SreResponse<Map<String, Object>> reportRiskDiagnosis(ReportRiskRequest request) {
+        if (request!= null) {
+            Map<String, Object> param = new HashMap<>();
+            param.put("startTime", request.getStartTime());
+            param.put("endTime", request.getEndTime());
+            param.put("chainCodeList", request.getChainCodeList());
+            param.put("tenantCode", request.getTenantCode());
+            TypeToken<SreResponse<Map<String, Object>>> typeToken = new TypeToken<SreResponse<Map<String, Object>>>() {
+            };
+            String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis";
+            return SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
+        }
+        return null;
+    }
+
+
+    /**
+     * 删除诊断接口
+     *
+     * @param request
+     */
+    @Override
+    public SreResponse<String> deleteReportRiskDiagnosis(ReportRiskDeleteRequest request) {
+        if (request != null) {
+            Map<String, Object> param = new HashMap<>();
+            param.put("startTime", request.getStartTime());
+            param.put("endTime", request.getEndTime());
+            param.put("tenantCode", request.getTenantCode());
+            param.put("chainCode", request.getChainCode());
+            TypeToken<SreResponse<String>> typeToken = new TypeToken<SreResponse<String>>() {
+            };
+            String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/delete";
+            return SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
+        }
+        return null;
+    }
+
+    /**
+     * 删除诊断数据确认接口
+     *
+     * @param request
+     */
+    @Override
+    public SreResponse<String> deleteReportRiskDiagnosisConfirm(ReportRiskDeleteRequest request) {
+        if (request!= null) {
+            Map<String, Object> param = new HashMap<>();
+            param.put("startTime", request.getStartTime());
+            param.put("endTime", request.getEndTime());
+            param.put("tenantCode", request.getTenantCode());
+            param.put("chainCode", request.getChainCode());
+            TypeToken<SreResponse<String>> typeToken = new TypeToken<SreResponse<String>>() {
+            };
+            String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/delete/confirm";
+            return SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
+        }
+        return null;
+    }
+
     public static void main(String[] args) throws ParseException {
         ReportServiceImpl reportService = new ReportServiceImpl();
         RiskListQueryRequest request = new RiskListQueryRequest();
@@ -876,6 +936,7 @@ public class ReportServiceImpl implements ReportService {
         request.setPage(1);
         request.setSize(10);
         System.out.println(JSON.toJSONString(reportService.getReportRiskItemPages(request)));
+
         ReportLinkDiagramReq reportLinkDiagramReq = new ReportLinkDiagramReq();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         reportLinkDiagramReq.setEndTime(LocalDateTime.parse("2023-11-28 23:00:00", formatter));

@@ -26,6 +26,7 @@ import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq2;
 import io.shulie.takin.web.biz.pojo.request.report.RiskListQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
+import io.shulie.takin.web.biz.pojo.response.report.ReportRiskDiagnosisVO;
 import io.shulie.takin.web.biz.pojo.response.report.RiskItemExtractionVO;
 import io.shulie.takin.web.biz.utils.SreHelper;
 import io.shulie.takin.web.common.SrePageData;
@@ -849,6 +850,20 @@ public class ReportServiceImpl implements ReportService {
         String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/query";
         SreResponse<SrePageData<RiskItemExtractionVO>> response = SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
         return response;
+    }
+
+    @Override
+    public SreResponse<List<ReportRiskDiagnosisVO>> getReportRiskDiagnosis(List<Long> taskIdList) {
+        if (CollectionUtils.isNotEmpty(taskIdList)) {
+            Map<String, Object> param = new HashMap<>();
+            param.put("taskIdList", taskIdList);
+            TypeToken<SreResponse<List<ReportRiskDiagnosisVO>>> typeToken = new TypeToken<SreResponse<List<ReportRiskDiagnosisVO>>>() {
+            };
+            String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/status";
+            SreResponse<List<ReportRiskDiagnosisVO>> response = SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
+            return response;
+        }
+        return null;
     }
 
     public static void main(String[] args) throws ParseException {

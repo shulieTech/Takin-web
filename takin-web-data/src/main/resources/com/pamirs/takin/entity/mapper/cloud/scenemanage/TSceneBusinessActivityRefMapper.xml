@@ -8,6 +8,7 @@
         <result column="business_activity_name" property="businessActivityName" jdbcType="VARCHAR"/>
         <result column="application_ids" property="applicationIds" jdbcType="VARCHAR"/>
         <result column="bind_ref" property="bindRef" jdbcType="VARCHAR"/>
+        <result column="chain_code" property="chainCode" jdbcType="VARCHAR"/>
         <result column="is_deleted" property="isDeleted" jdbcType="TINYINT"/>
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
         <result column="create_name" property="createName" jdbcType="VARCHAR"/>

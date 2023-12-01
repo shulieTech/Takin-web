@@ -104,6 +104,8 @@ public interface SceneManageDTOConvert {
         dto.setTargetRT(jsonObject.getInteger(SceneManageConstant.RT));
         dto.setTargetSuccessRate(jsonObject.getBigDecimal(SceneManageConstant.SUCCESS_RATE));
         dto.setTargetSA(jsonObject.getBigDecimal(SceneManageConstant.SA));
+        dto.setSlaStartTime(jsonObject.getDate(SceneManageConstant.SRE_SLA_START_TIME));
+        dto.setSlaEndTime(jsonObject.getDate(SceneManageConstant.SRE_SLA_END_TIME));
     }
 
     /**

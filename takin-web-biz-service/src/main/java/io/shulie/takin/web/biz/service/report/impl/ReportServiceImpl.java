@@ -1,6 +1,11 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Date;
+
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.gson.reflect.TypeToken;
 import com.pamirs.takin.cloud.entity.dao.report.TReportBusinessActivityDetailMapper;
@@ -22,6 +27,8 @@ import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.web.biz.pojo.dto.scene.EngineMetricsDTO;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
+import io.shulie.takin.web.biz.pojo.input.sresla.CollectorSlaRequest;
+import io.shulie.takin.web.biz.pojo.input.sresla.SreSlaParamReq;
 import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.pojo.request.report.*;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
@@ -134,6 +141,9 @@ public class ReportServiceImpl implements ReportService {
     @Value("${takin.sre.path:192.168.54.103:8501}")
     private String sreUrl;
 
+    @Value("${takin.collector.host: localhost:10086}")
+    private String collectorHost;
+
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
         // 前端查询条件 传用户
@@ -208,7 +218,7 @@ public class ReportServiceImpl implements ReportService {
         req.setSceneId(sceneId);
         List<ReportDetailResp> respList = cloudReportApi.detailListBySceneId(req);
         List<SceneReportListOutput> outputList = new ArrayList<>();
-        if(CollectionUtils.isEmpty(respList)) {
+        if (CollectionUtils.isEmpty(respList)) {
             return outputList;
         }
         respList.stream().forEach(resp -> {
@@ -419,7 +429,7 @@ public class ReportServiceImpl implements ReportService {
 
         if (activityResponse != null && activityResponse.getTopology() != null && activityResponse.getTopology().getNodes() != null) {
             List<ReportRiskItemOutput> reportRiskItemOutputList = getRiskItemListByDiagnosisId(reportLinkDiagramReq);
-            if (CollectionUtils.isEmpty(reportRiskItemOutputList)){
+            if (CollectionUtils.isEmpty(reportRiskItemOutputList)) {
                 return ResponseResult.success(activityResponse);
             }
             Map<String, ReportRiskItemOutput> riskItemMap = reportRiskItemOutputList.stream().collect(Collectors.toMap(ReportRiskItemOutput::getAppName, Function.identity(), (existing, replacement) -> existing));
@@ -431,6 +441,7 @@ public class ReportServiceImpl implements ReportService {
         }
         return ResponseResult.success(activityResponse);
     }
+
     private static List<ReportRiskItemOutput> getRiskItemListByDiagnosisId(ReportLinkDiagramReq reportLinkDiagramReq) {
         Map<String, Object> map = new HashMap<>();
         map.put("taskIdList", Arrays.asList(reportLinkDiagramReq.getDiagnosisId()));
@@ -732,7 +743,7 @@ public class ReportServiceImpl implements ReportService {
         groupByFields.add("active_threads");
         enginePressureQuery.setGroupByFields(groupByFields);
         List<EngineMetricsDTO> engineMetricsDTOS = cloudReportService.listEnginePressure(enginePressureQuery, EngineMetricsDTO.class);
-        if (CollectionUtils.isNotEmpty(engineMetricsDTOS)){
+        if (CollectionUtils.isNotEmpty(engineMetricsDTOS)) {
             Map<Integer, List<EngineMetricsDTO>> listMap = engineMetricsDTOS.stream().collect(Collectors.groupingBy(EngineMetricsDTO::getActiveThreads));
             for (String num : concurrent) {
                 String rtString = "0";
@@ -741,16 +752,16 @@ public class ReportServiceImpl implements ReportService {
                 int threadNumInt = new BigDecimal(num).intValue();
                 List<EngineMetricsDTO> all = new ArrayList<>();
                 List<EngineMetricsDTO> metricsDTOS = listMap.get(threadNumInt);
-                if (CollectionUtils.isNotEmpty(metricsDTOS)){
+                if (CollectionUtils.isNotEmpty(metricsDTOS)) {
                     all.addAll(metricsDTOS);
                 }
                 if (parseDouble != threadNumInt) {
                     List<EngineMetricsDTO> otherMetricsDTOS = listMap.get(threadNumInt + 1);
-                    if (CollectionUtils.isNotEmpty(otherMetricsDTOS)){
+                    if (CollectionUtils.isNotEmpty(otherMetricsDTOS)) {
                         all.addAll(otherMetricsDTOS);
                     }
                 }
-                if (CollectionUtils.isNotEmpty(all)){
+                if (CollectionUtils.isNotEmpty(all)) {
                     double avgRt = all.stream().mapToDouble(o -> o.getAvgRt().doubleValue()).average().getAsDouble();
                     double avgTps = all.stream().mapToDouble(o -> o.getAvgTps().doubleValue()).average().getAsDouble();
                     rtString = avgRt + "";
@@ -775,27 +786,67 @@ public class ReportServiceImpl implements ReportService {
     public void modifyLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq) {
         reportLinkDiagramReq.setEndTime(LocalDateTime.now());
         ReportBusinessActivityDetailEntity detail = reportDao.getReportBusinessActivityDetail(reportLinkDiagramReq.getSceneId(), reportLinkDiagramReq.getXpathMd5(), reportLinkDiagramReq.getReportId());
-        if (detail == null){
+        if (detail == null) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_VALIDATE_ERROR, "重新生成拓扑图，没有获取到对应的数据!");
         }
         io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
+        if (StringUtils.isNotBlank(detail.getReportJson())) {
+            io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse response = JSON.parseObject(detail.getReportJson(), io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
+            activityResponse.setChainCode(response.getChainCode());
+        }
         // 将链路拓扑信息更新到表中
         reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
-    }
 
-    @Override
-    public void modifyLinkDiagrams(ReportLinkDiagramReq reportLinkDiagramReq, List<String> pathMd5List) {
-        reportLinkDiagramReq.setEndTime(LocalDateTime.now());
+        //清理接口数据
+        ReportRiskDeleteRequest request = new ReportRiskDeleteRequest();
+        request.setChainCode(activityResponse.getChainCode());
+        request.setStartTime(reportLinkDiagramReq.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        request.setEndTime(reportLinkDiagramReq.getEndTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        request.setTenantCode(WebPluginUtils.traceTenantCode());
+        deleteReportRiskDiagnosis(request);
 
-        List<ReportBusinessActivityDetailEntity> detailList = reportDao.getReportBusinessActivityDetails(reportLinkDiagramReq.getSceneId(), pathMd5List, reportLinkDiagramReq.getReportId());
-        if (CollectionUtils.isEmpty(detailList)){
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_VALIDATE_ERROR, "重新生成拓扑图，没有获取到对应的数据!");
-        }
-        for (ReportBusinessActivityDetailEntity detailEntity : detailList) {
-            io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = queryLinkDiagram(detailEntity.getBusinessActivityId(), reportLinkDiagramReq);
-            if (activityResponse != null){
-                reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), detailEntity.getBindRef(), JSON.toJSONString(activityResponse));
+        //等待清理完成
+        int i = 0;
+        while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            SreResponse<String> stringSreResponse = deleteReportRiskDiagnosisConfirm(request);
+            if (stringSreResponse.isSuccess()) {
+                JSONObject jsonObject = JSON.parseObject(stringSreResponse.getData());
+                if (jsonObject.getInteger("trace_all").equals(0) && jsonObject.getInteger("t_diagnose_index").equals(0)) {
+                    break;
+                }
+            }
+            i++;
+            log.info("等待清零完成。。。");
+            if (i > 60 * 3) {
+                throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "等待清理接口清理完成超过3分钟，请稍后重新刷新");
+            }
+        }
+
+        //同步数据
+        syncSreTraceData(request.getStartTime(), request.getEndTime(), activityResponse);
+
+        //发起诊断
+        ReportRiskRequest reportRiskReq = new ReportRiskRequest();
+        reportRiskReq.setStartTime(request.getStartTime());
+        reportRiskReq.setEndTime(request.getEndTime());
+        reportRiskReq.setTenantCode(WebPluginUtils.traceTenantCode());
+        //开始风险诊断
+        SreResponse<Map<String, Object>> mapSreResponse = reportRiskDiagnosis(reportRiskReq);
+        if (mapSreResponse.isSuccess()) {
+            Object o = mapSreResponse.getData().get(activityResponse.getChainCode());
+            if (o != null) {
+                activityResponse.setSreTaskId(o.toString());
+                reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
+            } else {
+                log.warn("没有获取到对应的SreTaskId");
+            }
+        } else {
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "调用风险诊断接口出现异常:" + mapSreResponse.getErrorMsg());
         }
     }
 
@@ -869,7 +920,7 @@ public class ReportServiceImpl implements ReportService {
      */
     @Override
     public SreResponse<Map<String, Object>> reportRiskDiagnosis(ReportRiskRequest request) {
-        if (request!= null) {
+        if (request != null) {
             Map<String, Object> param = new HashMap<>();
             param.put("startTime", request.getStartTime());
             param.put("endTime", request.getEndTime());
@@ -912,7 +963,7 @@ public class ReportServiceImpl implements ReportService {
      */
     @Override
     public SreResponse<String> deleteReportRiskDiagnosisConfirm(ReportRiskDeleteRequest request) {
-        if (request!= null) {
+        if (request != null) {
             Map<String, Object> param = new HashMap<>();
             param.put("startTime", request.getStartTime());
             param.put("endTime", request.getEndTime());
@@ -924,6 +975,19 @@ public class ReportServiceImpl implements ReportService {
             return SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
         }
         return null;
+    }
+
+    @Override
+    public void syncSreTraceData(String startTime, String endTime, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse) {
+        CollectorSlaRequest collectorSlaRequest = new CollectorSlaRequest();
+        collectorSlaRequest.setStartDate(startTime);
+        collectorSlaRequest.setEndDate(endTime);
+        collectorSlaRequest.setAppName(activityResponse.getApplicationName());
+        collectorSlaRequest.setRpc(activityResponse.getServiceName());
+        TypeToken<SreResponse<Object>> typeToken = new TypeToken<SreResponse<Object>>() {
+        };
+        SreHelper.builder().url(collectorHost + "/api/clickhouse/syncTrace")
+                .httpMethod(HttpMethod.POST).param(collectorSlaRequest).queryList(typeToken);
     }
 
     public static void main(String[] args) throws ParseException {

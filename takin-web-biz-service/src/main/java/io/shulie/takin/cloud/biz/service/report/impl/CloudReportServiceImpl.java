@@ -96,10 +96,12 @@ import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
+import io.shulie.takin.web.biz.pojo.request.report.ReportRiskRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.utils.ParsePressureTimeByModeUtils;
 import io.shulie.takin.web.biz.utils.ReportTimeUtils;
+import io.shulie.takin.web.common.SreResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
@@ -121,6 +123,7 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -183,6 +186,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     public static final String COMPARE = "<=";
 
     private static final BigDecimal ZERO = new BigDecimal("0");
+
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public PageInfo<CloudReportDTO> listReport(ReportQueryReq param) {
@@ -285,7 +290,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     public List<ReportDetailOutput> getReportListBySceneId(Long sceneId) {
         List<ReportResult> resultList = reportDao.selectBySceneId(sceneId);
         List<ReportDetailOutput> outputList = new ArrayList<>();
-        if(CollectionUtils.isEmpty(resultList)) {
+        if (CollectionUtils.isEmpty(resultList)) {
             return outputList;
         }
         resultList.stream().forEach(result -> {
@@ -1198,7 +1203,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         //保存报表结果
         saveReportResult(reportResult, statReport, isConclusion);
 
-        //保存所有的链路图
+        //保存所有的链路图,并发起数据同步和风险分析
         saveAllLinkDiagramInfo(reportId, reportResult.getStartTime());
 
         //先保存报告内容，再更新报告状态，防止报告内容没有填充，就触发finishReport操作
@@ -1237,6 +1242,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     private void saveAllLinkDiagramInfo(Long reportId, Date startTime) {
         try {
+            Map<String, ActivityResponse> dealData = new HashMap<>();
+            Date endTime = new Date();
+            List<String> chainCodeList = new ArrayList<>();
             List<ReportBusinessActivityDetailEntity> activityByReportIds = reportDao.getActivityByReportIds(Collections.singletonList(reportId));
             if (CollectionUtils.isNotEmpty(activityByReportIds)) {
                 activityByReportIds.forEach(detail -> {
@@ -1249,14 +1257,45 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                         reportLinkDiagramReq.setStartTime(localDateTime);
                         reportLinkDiagramReq.setEndTime(LocalDateTime.now());
                         reportLinkDiagramReq.setReportId(reportId);
+                        String reportJson = detail.getReportJson();
+
                         ActivityResponse activityResponse = reportService.queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
+                        if (StringUtils.isNotBlank(reportJson)) {
+                            ActivityResponse response = JSON.parseObject(reportJson, ActivityResponse.class);
+                            activityResponse.setChainCode(response.getChainCode());
+                            chainCodeList.add(response.getChainCode());
+                        }
+
                         if (activityResponse != null) {
                             // 将链路拓扑信息更新到表中
                             reportDao.modifyReportLinkDiagram(reportId, detail.getBindRef(), JSON.toJSONString(activityResponse));
+                            //压测数据同步到sre
+                            reportService.syncSreTraceData(simpleDateFormat.format(startTime), simpleDateFormat.format(endTime), activityResponse);
+                            dealData.put(detail.getBindRef(), activityResponse);
                         }
                     }
                 });
+                if (CollectionUtils.isNotEmpty(chainCodeList)) {
+                    ReportRiskRequest request = new ReportRiskRequest();
+                    request.setStartTime(simpleDateFormat.format(startTime));
+                    request.setEndTime(simpleDateFormat.format(endTime));
+                    request.setTenantCode(WebPluginUtils.traceTenantCode());
+                    //开始风险诊断
+                    SreResponse<Map<String, Object>> mapSreResponse = reportService.reportRiskDiagnosis(request);
+                    if (mapSreResponse.isSuccess()) {
+                        dealData.forEach((k, v) -> {
+                            Object o = mapSreResponse.getData().get(v.getChainCode());
+                            if (o != null) {
+                                v.setSreTaskId(o.toString());
+                                reportDao.modifyReportLinkDiagram(reportId, k, JSON.toJSONString(v));
+                            } else {
+                                log.warn("报告id:{},ref为:{}没有找到对应的任务ID", reportId, k);
+                            }
+                        });
+                    }
+                }
             }
+
         } catch (Throwable e) {
             log.error("生产报告保存链路拓扑图出现异常", e);
         }
@@ -1409,34 +1448,34 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
         //联通版新报告 根据压测时间段，统计性能指标明细、RT分位明细
         Report dbReport = tReportMapper.selectByPrimaryKey(reportId);
-        if(dbReport.getStartTime() != null && dbReport.getEndTime() != null) {
+        if (dbReport.getStartTime() != null && dbReport.getEndTime() != null) {
             Map<String, List<PressureTestTimeDTO>> timeMap = ParsePressureTimeByModeUtils.parsePtConfig2Map(dbReport.getStartTime(), dbReport.getEndTime(), dbReport.getPtConfig());
             List<ScriptNodeSummaryBean> refList = JSON.parseArray(dbReport.getScriptNodeTree(), ScriptNodeSummaryBean.class);
             //key=业务活动, value=线程组
             Map<String, String> httpThreadGroupMap = new HashMap<>();
             calcHttpAndThreadGroupRef(refList, httpThreadGroupMap);
-            for(ReportBusinessActivityDetail reportBusinessActivityDetail : reportBusinessActivityDetails) {
+            for (ReportBusinessActivityDetail reportBusinessActivityDetail : reportBusinessActivityDetails) {
                 if (StringUtils.isBlank(reportBusinessActivityDetail.getBindRef())) {
                     continue;
                 }
                 List<PressureTestTimeDTO> timeList = timeMap.get(httpThreadGroupMap.get(reportBusinessActivityDetail.getBindRef()));
-                if(CollectionUtils.isEmpty(timeList)) {
+                if (CollectionUtils.isEmpty(timeList)) {
                     continue;
                 }
                 List<Map<String, Object>> stepList = new ArrayList<>();
-                for(int i = 0; i < timeList.size(); i++) {
+                for (int i = 0; i < timeList.size(); i++) {
                     //统计某个业务活动的数据
                     long startTime = timeList.get(i).getStartTime().getTime();
                     long calcStartTime = startTime;
                     //查询>= <=，所以这里要+1
-                    if(i > 0) {
+                    if (i > 0) {
                         calcStartTime = startTime + 1L;
                     } else {
                         calcStartTime = ReportTimeUtils.beforeStartTime(startTime);
                     }
                     long endTime = timeList.get(i).getEndTime().getTime();
                     long calcEndime = endTime;
-                    if(i == timeList.size() - 1) {
+                    if (i == timeList.size() - 1) {
                         calcEndime = ReportTimeUtils.afterEndTime(endTime);
                     }
                     Map<String, Object> stepMap = new HashMap<>();
@@ -1444,7 +1483,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     Map<String, Integer> rtMap = reportEventService.queryAndCalcRtDistributeByTime(calcStartTime, calcEndime, jobId, reportBusinessActivityDetail.getBindRef());
                     stepMap.put("startTime", DateUtil.formatDateTime(DateUtil.date(startTime)));
                     stepMap.put("endTime", DateUtil.formatDateTime(DateUtil.date(endTime)));
-                    if(data != null) {
+                    if (data != null) {
                         stepMap.put("totalRequest", data.getTotalRequest());
                         stepMap.put("concurrent", data.getAvgConcurrenceNum());
                         stepMap.put("avgTps", data.getTps());
@@ -1456,7 +1495,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                         stepMap.put("successRate", data.getSuccessRate());
                         stepMap.put("sa", data.getSa());
                     }
-                    if(MapUtils.isNotEmpty(rtMap)) {
+                    if (MapUtils.isNotEmpty(rtMap)) {
                         stepMap.putAll(rtMap);
                     }
                     stepList.add(stepMap);
@@ -1464,7 +1503,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 ReportBusinessActivityDetail updateDetail = new ReportBusinessActivityDetail();
                 updateDetail.setId(reportBusinessActivityDetail.getId());
                 Map<String, Object> targetMap = JSON.parseObject(reportBusinessActivityDetail.getRtDistribute(), Map.class);
-                if(MapUtils.isEmpty(targetMap)) {
+                if (MapUtils.isEmpty(targetMap)) {
                     targetMap = new HashMap<>();
                 }
                 targetMap.put("stepData", stepList);
@@ -1550,7 +1589,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
         if (detail.getTargetTps() != null
                 && detail.getTargetTps().compareTo(ZERO) > 0
-                && detail.getTargetTps().compareTo(detail.getTps()) > 0){
+                && detail.getTargetTps().compareTo(detail.getTps()) > 0) {
             log.warn("报告{}压测不通过，业务活动={},指标={},targetValue={},realValue={}",
                     detail.getReportId(), detail.getBusinessActivityId(),
                     "TPS", detail.getTargetTps(), detail.getTps());
@@ -1599,16 +1638,16 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             reportResult.setAvgConcurrent(statReport.getAvgConcurrenceNum());
             reportResult.setConcurrent(statReport.getMaxConcurrenceNum());
             //保存最大 最小tps、最大、最小rt到features中
-            if(statReport.getMaxTps() != null) {
+            if (statReport.getMaxTps() != null) {
                 getReportFeatures(reportResult, "maxTps", statReport.getMaxTps().toString());
             }
-            if(statReport.getMinTps() != null) {
+            if (statReport.getMinTps() != null) {
                 getReportFeatures(reportResult, "minTps", statReport.getMinTps().toString());
             }
-            if(statReport.getMaxRt() != null) {
+            if (statReport.getMaxRt() != null) {
                 getReportFeatures(reportResult, "maxRt", statReport.getMaxRt().toString());
             }
-            if(statReport.getMinRt() != null) {
+            if (statReport.getMinRt() != null) {
                 getReportFeatures(reportResult, "minRt", statReport.getMinRt().toString());
             }
         }
@@ -1725,7 +1764,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             List<DistributeBean> distributeBeans = Lists.newArrayList();
             distributeMap.forEach((key, value) -> {
                 //联通报告，增加了stepData的key，这里把它去掉
-                if(!key.equals("stepData")) {
+                if (!key.equals("stepData")) {
                     DistributeBean distribute = new DistributeBean();
                     distribute.setLable(key);
                     distribute.setValue(COMPARE + value);
@@ -1946,15 +1985,15 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     }
 
     private void calcHttpAndThreadGroupRef(List<ScriptNodeSummaryBean> dataList, Map<String, String> dataMap) {
-        if(CollectionUtils.isEmpty(dataList)) {
+        if (CollectionUtils.isEmpty(dataList)) {
             return;
         }
         dataList.forEach(data -> {
-            if(data.getType().equals(NodeTypeEnum.THREAD_GROUP.name())) {
+            if (data.getType().equals(NodeTypeEnum.THREAD_GROUP.name())) {
                 String key = data.getXpathMd5();
                 List<String> sampleList = new ArrayList<>();
                 calcHttp(data.getChildren(), sampleList);
-                if(CollectionUtils.isNotEmpty(sampleList)) {
+                if (CollectionUtils.isNotEmpty(sampleList)) {
                     sampleList.stream().forEach(sampler -> dataMap.put(sampler, key));
                 }
             }
@@ -1962,12 +2001,12 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         });
     }
 
-    private void calcHttp(List<ScriptNodeSummaryBean> dataList, List<String> sampleList){
-        if(CollectionUtils.isEmpty(dataList)) {
+    private void calcHttp(List<ScriptNodeSummaryBean> dataList, List<String> sampleList) {
+        if (CollectionUtils.isEmpty(dataList)) {
             return;
         }
         dataList.forEach(data -> {
-            if(data.getType().equals(NodeTypeEnum.SAMPLER.name())) {
+            if (data.getType().equals(NodeTypeEnum.SAMPLER.name())) {
                 sampleList.add(data.getXpathMd5());
             }
             calcHttp(data.getChildren(), sampleList);

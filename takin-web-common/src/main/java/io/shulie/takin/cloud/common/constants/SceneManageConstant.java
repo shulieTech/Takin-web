@@ -57,6 +57,10 @@ public class SceneManageConstant {
 
     public static final String SA = "SA";
 
+    public static final String SRE_SLA_START_TIME = "slaStartTime";
+
+    public static final String SRE_SLA_END_TIME = "slaEndTime";
+
     // ---- SLA配置
 
     public static final String COMPARE_TYPE = "compareType";

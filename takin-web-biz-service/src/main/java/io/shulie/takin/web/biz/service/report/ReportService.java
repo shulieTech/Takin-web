@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.report;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -206,8 +208,6 @@ public interface ReportService {
 
     void modifyLinkDiagram(ReportLinkDiagramReq reportLinkDiagramReq);
 
-    void modifyLinkDiagrams(ReportLinkDiagramReq reportLinkDiagramReq, List<String> pathMd5List);
-
     /**
      * 根据报告ids查询报告详情
      * @param reportIds
@@ -241,4 +241,6 @@ public interface ReportService {
      * 删除诊断数据确认接口
      */
     SreResponse<String> deleteReportRiskDiagnosisConfirm(ReportRiskDeleteRequest request);
+
+    void syncSreTraceData(String startTime, String endTime, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse);
 }

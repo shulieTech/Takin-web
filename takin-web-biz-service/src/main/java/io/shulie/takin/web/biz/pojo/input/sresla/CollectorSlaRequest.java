@@ -10,12 +10,13 @@ import java.util.Date;
 @Data
 public class CollectorSlaRequest {
 
-    private Date startDate;
+    private String startDate;
 
-    private Date endDate;
+    private String endDate;
 
     private String appName;
 
     private String rpc;
 
+    private Long refId;
 }

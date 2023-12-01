@@ -168,6 +168,10 @@ public class SceneManageWrapperOutput extends ContextExt {
          */
         private Boolean hasPT;
 
+        private Date slaStartTime;
+        @ApiModelProperty(value = "sla自动设置结束时间")
+        private Date slaEndTime;
+
     }
 
     @Data

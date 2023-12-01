@@ -87,4 +87,6 @@ public class RiskItemExtractionVO implements Serializable {
     private Date gmtCreate;
 
     private Date gmtUpdate;
+    private String traceId;
+    private String spanId;
 }

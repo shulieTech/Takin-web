@@ -57,6 +57,9 @@ public class TraceClientImpl implements TraceClient {
 
     private static final String QUERY_TRACE_PATH = "/amdb/trace/getTraceDetail?traceId=@TraceId@";
 
+    private static final String QUERY_SRE_RISK_TRACE_PATH = "/amdb/trace/getSreRiskTraceDetail?traceId=@TraceId@";
+
+
     private static final String ENTRY_TRACE_PATH = "/amdb/trace/getEntryTraceList";
 
     /**
@@ -336,6 +339,34 @@ public class TraceClientImpl implements TraceClient {
             return list;
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION, e.getMessage());
+        }
+    }
+
+    /**
+     * 获取sre的trace详情
+     *
+     * @param traceId
+     * @param times
+     * @return
+     */
+    @Override
+    public RpcStack getSreRiskTraceDetailById(String traceId, String... times) {
+        try {
+            String url = properties.getUrl().getAmdb() + QUERY_SRE_RISK_TRACE_PATH.replace("@TraceId@", traceId);
+            url = url + "&tenantAppKey=" + WebPluginUtils.traceTenantAppKey() + "&envCode=" + WebPluginUtils.traceEnvCode();
+            if (times.length == 2) {
+                url += "&startTime=" + times[0] + "&endTime=" + times[1];
+            }
+            AmdbResult<List<RpcBased>> amdbResponse = AmdbHelper.builder().url(url)
+                    .eventName("查询Trace调用栈明细")
+                    .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
+                    .list(RpcBased.class);
+            if (CollectionUtils.isEmpty(amdbResponse.getData())) {
+                return null;
+            }
+            return ProtocolParserFactory.getFactory().parseRpcStackByRpcBase(traceId, amdbResponse.getData());
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(), e);
         }
     }
 }

@@ -66,4 +66,6 @@ public interface TraceClient {
     List<TraceMetricsAll> getSqlStatements(TraceMetricsRequest traceMetricsRequest);
 
     List<String> getEdgeIdsByLinkIds(List<ApplicationEntranceTopologyQueryRequest> traceMetricsRequest);
+
+    RpcStack getSreRiskTraceDetailById(String traceId, String... times);
 }

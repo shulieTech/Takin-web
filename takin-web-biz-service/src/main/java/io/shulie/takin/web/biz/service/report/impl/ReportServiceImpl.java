@@ -853,14 +853,14 @@ public class ReportServiceImpl implements ReportService {
 
     public static void main(String[] args) throws ParseException {
         ReportServiceImpl reportService = new ReportServiceImpl();
-//        RiskListQueryRequest request = new RiskListQueryRequest();
-//        request.setStartTime("2023-11-28 00:00:00");
-//        request.setEndTime("2023-11-28 23:00:00");
-//        request.setTaskIds(Arrays.asList(-1L));
-//        request.setTenantCode("wstest");
-//        request.setPage(1);
-//        request.setSize(10);
-//        System.out.println(JSON.toJSONString(reportService.getReportRiskItemPages(request)));
+        RiskListQueryRequest request = new RiskListQueryRequest();
+        request.setStartTime("2023-11-28 00:00:00");
+        request.setEndTime("2023-11-28 23:00:00");
+        request.setTaskIds(Arrays.asList(-1L));
+        request.setTenantCode("wstest");
+        request.setPage(1);
+        request.setSize(10);
+        System.out.println(JSON.toJSONString(reportService.getReportRiskItemPages(request)));
         ReportLinkDiagramReq reportLinkDiagramReq = new ReportLinkDiagramReq();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         reportLinkDiagramReq.setEndTime(LocalDateTime.parse("2023-11-28 23:00:00", formatter));

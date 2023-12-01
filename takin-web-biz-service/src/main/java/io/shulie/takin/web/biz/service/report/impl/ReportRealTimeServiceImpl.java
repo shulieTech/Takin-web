@@ -493,4 +493,44 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         entrance.setBusinessType(jsonObject.getInteger(ReportConstants.ACTIVITY_TYPE));
         return entrance;
     }
+
+    @Override
+    public ReportLinkDetailResponse getSreRiskLinkDetail(String traceId, Integer amdbReportTraceId) {
+        // 时间解析 查询前后30分钟
+        Long time = TraceIdUtil.getTraceIdTime(traceId);
+        RpcStack rpcStack = traceClient.getSreRiskTraceDetailById(traceId,
+                DateUtils.dateToString(new Date(time - 1000 * 60 * 30), DateUtils.FORMATE_YMDHMS).replace(" ", "%20"),
+                DateUtils.dateToString(new Date(time + 1000 * 60 * 30), DateUtils.FORMATE_YMDHMS).replace(" ", "%20"));
+
+        // 构造响应出参
+        ReportLinkDetailResponse response = new ReportLinkDetailResponse();
+        if (rpcStack == null || CollectionUtils.isEmpty(rpcStack.getRpcEntries())) {
+            log.error("amdb返回的流量明细为空！响应体RpcStack：{}", JSON.toJSONString(rpcStack));
+            //throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_LINK_DETAIL_THIRD_PARTY_ERROR, "amdb返回的流量明细为空！");
+            response.setTraces(Lists.newArrayList());
+            return response;
+        }
+
+        // 是否是压测流量判断
+        RpcEntry rpcEntry = rpcStack.getRpcEntries().get(0);
+        if (rpcEntry != null) {
+            response.setClusterTest(rpcEntry.isClusterTest());
+        }
+
+        response.setStartTime(rpcStack.getStartTime());
+        response.setEntryHostIp(rpcStack.getRootIp());
+
+        List<ReportTraceDetailDTO> vos = Lists.newArrayList();
+        BiMap<Integer, Integer> node = HashBiMap.create();
+        AtomicInteger integer = new AtomicInteger(0);
+        List<ReportTraceDetailDTO> dto = this.coverEntryList(0L, Lists.newArrayList(),
+                rpcStack.getRpcEntries(), vos, node, -1, integer);
+
+        List<ReportTraceDetailDTO> result = Lists.newArrayList();
+        this.coverResult(dto, amdbReportTraceId, result);
+
+        response.setTraces(result);
+        response.setTotalCost(rpcStack.getTotalCost());
+        return response;
+    }
 }

@@ -282,11 +282,9 @@ public class SceneController {
     @ApiOperation("获取压测场景详情 - 新")
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<SceneDetailResponse> detail(@RequestParam(required = false) Long sceneId) {
-        SceneManageQueryReq request = new SceneManageQueryReq() {
-            {
-                setSceneId(sceneId);
-            }
-        };
+        SceneManageQueryReq request = new SceneManageQueryReq();
+        request.setSceneId(sceneId);
+
         WebPluginUtils.fillCloudUserData(request);
         SceneDetailV2Response detailResult = multipleSceneApi.detail(request);
 

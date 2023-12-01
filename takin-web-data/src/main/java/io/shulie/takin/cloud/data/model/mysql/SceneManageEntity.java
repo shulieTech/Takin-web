@@ -9,7 +9,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.cloud.data.annocation.EnableSign;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * 压测场景 - 实体类
@@ -123,7 +126,8 @@ public class SceneManageEntity {
     private Integer isArchive;
     @TableField(value = "business_flow_id")
     private Long businessFlowId;
-
+    @TableField(value = "auto_start_sla_flag")
+    private Boolean autoStartSLAFlag;
 
 }
 

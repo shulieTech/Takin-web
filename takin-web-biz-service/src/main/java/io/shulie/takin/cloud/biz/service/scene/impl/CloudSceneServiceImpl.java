@@ -205,6 +205,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
                 setScriptType(scene.getScriptType());
                 setScriptId(Long.parseLong(scriptIdString));
                 setBusinessFlowId(Long.parseLong(businessFlowIdString));
+                setAutoStartSLAFlag(scene.getAutoStartSLAFlag());
             }};
         } catch (JSONException e) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "的拓展字段错误");

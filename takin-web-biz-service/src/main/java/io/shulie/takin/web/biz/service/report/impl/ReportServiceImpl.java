@@ -842,8 +842,8 @@ public class ReportServiceImpl implements ReportService {
         param.put("size", request.getSize());
         TypeToken<SreResponse<SrePageData<RiskItemExtractionVO>>> typeToken = new TypeToken<SreResponse<SrePageData<RiskItemExtractionVO>>>() {
         };
-//        String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/query";
-        String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/query";
+        String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/query";
+//        String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/query";
         SreResponse<SrePageData<RiskItemExtractionVO>> response = SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
         return response;
     }
@@ -855,7 +855,7 @@ public class ReportServiceImpl implements ReportService {
             param.put("taskIdList", taskIdList);
             TypeToken<SreResponse<List<ReportRiskDiagnosisVO>>> typeToken = new TypeToken<SreResponse<List<ReportRiskDiagnosisVO>>>() {
             };
-            String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/status";
+            String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/status";
             SreResponse<List<ReportRiskDiagnosisVO>> response = SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
             return response;
         }
@@ -877,7 +877,7 @@ public class ReportServiceImpl implements ReportService {
             param.put("tenantCode", request.getTenantCode());
             TypeToken<SreResponse<Map<String, Object>>> typeToken = new TypeToken<SreResponse<Map<String, Object>>>() {
             };
-            String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis";
+            String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis";
             return SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
         }
         return null;
@@ -899,7 +899,7 @@ public class ReportServiceImpl implements ReportService {
             param.put("chainCode", request.getChainCode());
             TypeToken<SreResponse<String>> typeToken = new TypeToken<SreResponse<String>>() {
             };
-            String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/delete";
+            String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/delete";
             return SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
         }
         return null;
@@ -920,7 +920,7 @@ public class ReportServiceImpl implements ReportService {
             param.put("chainCode", request.getChainCode());
             TypeToken<SreResponse<String>> typeToken = new TypeToken<SreResponse<String>>() {
             };
-            String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/delete/confirm";
+            String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/delete/confirm";
             return SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
         }
         return null;

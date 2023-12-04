@@ -795,7 +795,7 @@ public class ReportServiceImpl implements ReportService {
             activityResponse.setChainCode(response.getChainCode());
         }
         // 将链路拓扑信息更新到表中
-        reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
+        reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse), null);
 
         //清理接口数据
         ReportRiskDeleteRequest request = new ReportRiskDeleteRequest();
@@ -840,8 +840,7 @@ public class ReportServiceImpl implements ReportService {
         if (mapSreResponse.isSuccess()) {
             Object o = mapSreResponse.getData().get(activityResponse.getChainCode());
             if (o != null) {
-                activityResponse.setSreTaskId(o.toString());
-                reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
+                reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse), Long.parseLong(o.toString()));
             } else {
                 log.warn("没有获取到对应的SreTaskId");
             }

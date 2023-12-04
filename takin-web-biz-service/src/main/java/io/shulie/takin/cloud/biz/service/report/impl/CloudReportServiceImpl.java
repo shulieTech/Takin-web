@@ -1268,7 +1268,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
                         if (activityResponse != null) {
                             // 将链路拓扑信息更新到表中
-                            reportDao.modifyReportLinkDiagram(reportId, detail.getBindRef(), JSON.toJSONString(activityResponse));
+                            reportDao.modifyReportLinkDiagram(reportId, detail.getBindRef(), JSON.toJSONString(activityResponse), null);
                             //压测数据同步到sre
                             reportService.syncSreTraceData(simpleDateFormat.format(startTime), simpleDateFormat.format(endTime), activityResponse);
                             dealData.put(detail.getBindRef(), activityResponse);
@@ -1286,8 +1286,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                         dealData.forEach((k, v) -> {
                             Object o = mapSreResponse.getData().get(v.getChainCode());
                             if (o != null) {
-                                v.setSreTaskId(o.toString());
-                                reportDao.modifyReportLinkDiagram(reportId, k, JSON.toJSONString(v));
+                                reportDao.modifyReportLinkDiagram(reportId, k, JSON.toJSONString(v), Long.parseLong(o.toString()));
                             } else {
                                 log.warn("报告id:{},ref为:{}没有找到对应的任务ID", reportId, k);
                             }

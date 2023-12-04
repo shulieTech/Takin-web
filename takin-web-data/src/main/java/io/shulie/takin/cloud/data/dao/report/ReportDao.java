@@ -170,7 +170,7 @@ public interface ReportDao {
      * @param xpathMd5 业务活动xpathMd5值
      * @param linkDiagram 链路拓扑图json数据
      */
-    void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram);
+    void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram, Long diagnosisId);
 
     List<Long> nearlyHourReportIds(int minutes);
 }

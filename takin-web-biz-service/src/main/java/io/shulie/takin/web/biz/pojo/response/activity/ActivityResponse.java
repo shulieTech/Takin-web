@@ -96,5 +96,4 @@ public class ActivityResponse {
 
     private String chainCode;
 
-    private String sreTaskId;
 }

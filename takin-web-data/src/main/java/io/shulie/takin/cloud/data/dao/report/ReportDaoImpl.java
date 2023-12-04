@@ -352,11 +352,14 @@ public class ReportDaoImpl implements ReportDao {
     }
 
     @Override
-    public void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram) {
+    public void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram, Long diagnosisId) {
         LambdaUpdateWrapper<ReportBusinessActivityDetailEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
         updateWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5);
         updateWrapper.set(ReportBusinessActivityDetailEntity::getReportJson, linkDiagram);
+        if (diagnosisId != null){
+            updateWrapper.set(ReportBusinessActivityDetailEntity::getDiagnosisId, diagnosisId);
+        }
         detailMapper.update(null, updateWrapper);
     }
 

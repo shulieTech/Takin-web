@@ -31,6 +31,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,6 +54,8 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
 
     @Value("${sre.host: localhost:10086}")
     private String sreHost;
+
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public CheckResult check(StartConditionCheckerContext context) throws TakinCloudException {
@@ -161,11 +164,11 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
             if (autoSetSla) {
                 Calendar instance = Calendar.getInstance();
                 instance.add(Calendar.HOUR_OF_DAY, -24);
-                collectorSlaRequest.setStartDate(instance.getTime());
-                collectorSlaRequest.setEndDate(new Date());
+                collectorSlaRequest.setStartDate(simpleDateFormat.format(instance.getTime()));
+                collectorSlaRequest.setEndDate(simpleDateFormat.format(new Date()));
             } else {
-                collectorSlaRequest.setStartDate(sceneBusinessActivityRefOutput.getSlaStartTime());
-                collectorSlaRequest.setEndDate(sceneBusinessActivityRefOutput.getSlaEndTime());
+                collectorSlaRequest.setStartDate(simpleDateFormat.format(sceneBusinessActivityRefOutput.getSlaStartTime()));
+                collectorSlaRequest.setEndDate(simpleDateFormat.format(sceneBusinessActivityRefOutput.getSlaEndTime()));
             }
             collectorSlaRequests.add(collectorSlaRequest);
         });

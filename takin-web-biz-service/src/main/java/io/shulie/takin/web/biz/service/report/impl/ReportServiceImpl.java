@@ -1,9 +1,5 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.Date;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -25,18 +21,18 @@ import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
+import io.shulie.takin.sre.common.constant.SreRiskUrlConstant;
 import io.shulie.takin.web.biz.pojo.dto.scene.EngineMetricsDTO;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
 import io.shulie.takin.web.biz.pojo.input.sresla.CollectorSlaRequest;
-import io.shulie.takin.web.biz.pojo.input.sresla.SreSlaParamReq;
 import io.shulie.takin.web.biz.pojo.output.report.*;
 import io.shulie.takin.web.biz.pojo.request.report.*;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.report.ReportRiskDiagnosisVO;
 import io.shulie.takin.web.biz.pojo.response.report.RiskItemExtractionVO;
 import io.shulie.takin.web.biz.utils.SreHelper;
-import io.shulie.takin.web.common.SrePageData;
-import io.shulie.takin.web.common.SreResponse;
+import io.shulie.takin.sre.common.result.SrePageData;
+import io.shulie.takin.sre.common.result.SreResponse;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 
 import java.io.IOException;
@@ -892,7 +888,7 @@ public class ReportServiceImpl implements ReportService {
         param.put("size", request.getSize());
         TypeToken<SreResponse<SrePageData<RiskItemExtractionVO>>> typeToken = new TypeToken<SreResponse<SrePageData<RiskItemExtractionVO>>>() {
         };
-        String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/query";
+        String url = sreUrl + SreRiskUrlConstant.GET_REPORT_RISK_ITEM_PAGES_URL;
         SreResponse<SrePageData<RiskItemExtractionVO>> response = SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
         return response;
     }
@@ -904,7 +900,7 @@ public class ReportServiceImpl implements ReportService {
             param.put("taskIdList", taskIdList);
             TypeToken<SreResponse<List<ReportRiskDiagnosisVO>>> typeToken = new TypeToken<SreResponse<List<ReportRiskDiagnosisVO>>>() {
             };
-            String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/status";
+            String url = sreUrl + SreRiskUrlConstant.GET_REPORT_RISK_DIAGNOSIS_URL;
             SreResponse<List<ReportRiskDiagnosisVO>> response = SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
             return response;
         }
@@ -926,7 +922,7 @@ public class ReportServiceImpl implements ReportService {
             param.put("tenantCode", request.getTenantCode());
             TypeToken<SreResponse<Map<String, Object>>> typeToken = new TypeToken<SreResponse<Map<String, Object>>>() {
             };
-            String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis";
+            String url = sreUrl + SreRiskUrlConstant.REPORT_RISK_DIAGNOSIS_URL;
             return SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
         }
         return null;
@@ -948,7 +944,7 @@ public class ReportServiceImpl implements ReportService {
             param.put("chainCode", request.getChainCode());
             TypeToken<SreResponse<String>> typeToken = new TypeToken<SreResponse<String>>() {
             };
-            String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/delete";
+            String url = sreUrl + SreRiskUrlConstant.GET_REPORT_RISK_DIAGNOSIS_DELETE_URL;
             return SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
         }
         return null;
@@ -969,7 +965,7 @@ public class ReportServiceImpl implements ReportService {
             param.put("chainCode", request.getChainCode());
             TypeToken<SreResponse<String>> typeToken = new TypeToken<SreResponse<String>>() {
             };
-            String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/delete/confirm";
+            String url = sreUrl + SreRiskUrlConstant.GET_REPORT_RISK_DIAGNOSIS_CONFIRM_URL;
             return SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
         }
         return null;

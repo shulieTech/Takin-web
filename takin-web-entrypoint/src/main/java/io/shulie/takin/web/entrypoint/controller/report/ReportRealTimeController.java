@@ -4,9 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.report.SreTraceDataVO;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
-import io.shulie.takin.web.common.SreResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
@@ -15,8 +13,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * @author qianshui

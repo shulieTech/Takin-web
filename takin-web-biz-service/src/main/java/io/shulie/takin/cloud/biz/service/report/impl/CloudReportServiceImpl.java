@@ -101,7 +101,7 @@ import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.utils.ParsePressureTimeByModeUtils;
 import io.shulie.takin.web.biz.utils.ReportTimeUtils;
-import io.shulie.takin.web.common.SreResponse;
+import io.shulie.takin.sre.common.result.SreResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;

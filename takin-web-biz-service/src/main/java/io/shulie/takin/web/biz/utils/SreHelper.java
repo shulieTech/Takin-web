@@ -3,25 +3,18 @@ package io.shulie.takin.web.biz.utils;
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
 import io.shulie.takin.web.biz.pojo.response.SreResult;
-import io.shulie.takin.web.common.SrePageData;
-import io.shulie.takin.web.common.SreResponse;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.sre.common.result.SreResponse;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * amdb帮助类

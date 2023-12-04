@@ -20,7 +20,7 @@ import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.web.biz.pojo.response.report.SreTraceDataVO;
 import io.shulie.takin.web.biz.utils.SreHelper;
-import io.shulie.takin.web.common.SreResponse;
+import io.shulie.takin.sre.common.result.SreResponse;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import lombok.extern.slf4j.Slf4j;
 

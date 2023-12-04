@@ -1,4 +1,4 @@
-package io.shulie.takin.web.common;
+package io.shulie.takin.sre.common.result;
 
 import lombok.Data;
 

@@ -8,9 +8,7 @@ import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.report.SreTraceDataVO;
-import io.shulie.takin.web.common.SreResponse;
-import io.shulie.takin.web.common.common.Response;
-import org.springframework.web.bind.annotation.RequestParam;
+import io.shulie.takin.sre.common.result.SreResponse;
 
 /**
  * @author qianshui

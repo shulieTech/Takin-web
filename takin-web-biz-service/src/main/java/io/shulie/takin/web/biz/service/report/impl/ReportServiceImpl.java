@@ -894,7 +894,6 @@ public class ReportServiceImpl implements ReportService {
         TypeToken<SreResponse<SrePageData<RiskItemExtractionVO>>> typeToken = new TypeToken<SreResponse<SrePageData<RiskItemExtractionVO>>>() {
         };
         String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/query";
-//        String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/query";
         SreResponse<SrePageData<RiskItemExtractionVO>> response = SreHelper.builder().param(param).url(url).httpMethod(HttpMethod.POST).queryList(typeToken);
         return response;
     }

@@ -37,8 +37,6 @@ public class SreHelper {
     }
 
     public static class SreBuilder {
-        private final String tenantAppKey = "tenantAppKey";
-        private final String envCode = "envCode";
         /**
          * HTTP请求 默认GET请求
          */
@@ -51,14 +49,6 @@ public class SreHelper {
          * amdb 入参
          */
         private Object param;
-        /**
-         * 事件（此次调用做什么 比如 amdb查询应用节点数据）
-         */
-        private String eventName;
-        /**
-         * 若报错指定的异常
-         */
-        private TakinWebExceptionEnum exception;
 
         public SreBuilder httpMethod(HttpMethod httpMethod) {
             this.httpMethod = httpMethod;
@@ -71,26 +61,7 @@ public class SreHelper {
         }
 
         public SreBuilder param(Object param) {
-            String str = JSON.toJSONString(param);
-            if (str.contains("{") && str.contains("}")) {
-//                if (!str.contains(tenantAppKey)) {
-//                    throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, tenantAppKey + " 不能为空！");
-//                }
-//                if (!str.contains(envCode)) {
-//                    throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, envCode + " 不能为空！");
-//                }
-            }
             this.param = param;
-            return this;
-        }
-
-        public SreBuilder eventName(String eventName) {
-            this.eventName = eventName;
-            return this;
-        }
-
-        public SreBuilder exception(TakinWebExceptionEnum exception) {
-            this.exception = exception;
             return this;
         }
 
@@ -103,8 +74,6 @@ public class SreHelper {
          */
         public <T> T one(Class<T> clazz) {
             Assert.notNull(this.url, "url 不能为空！");
-            Assert.notNull(this.exception, "exception 不能为空！");
-            Assert.notNull(this.eventName, "eventName 不能为空！");
             if (this.httpMethod == null) {
                 this.httpMethod = HttpMethod.GET;
             }
@@ -112,16 +81,12 @@ public class SreHelper {
             String responseEntity = "";
             if (this.httpMethod.equals(HttpMethod.GET)) {
                 responseEntity = (this.param == null ? HttpClientUtil.sendGet(url) : HttpClientUtil.sendGet(url, this.param));
-                this.eventName += "【GET】";
             } else if (this.httpMethod.equals(HttpMethod.POST)) {
                 Assert.notNull(this.param, "param 不能为空！");
                 responseEntity = HttpClientUtil.sendPost(url, this.param);
-                this.eventName += "【POST】";
             }
-            this.eventName = "Sre" + this.eventName;
             if (StringUtils.isBlank(responseEntity)) {
-                log.error("{}返回为空,请求地址：{}，请求参数：{}，响应体为空", this.eventName, this.url, JSON.toJSONString(this.param));
-                throw new TakinWebException(this.exception, this.eventName + "返回为空！");
+                log.error("请求地址：{}，请求参数：{}，响应体为空", this.url, JSON.toJSONString(this.param));
             }
             SreResult<T> sreResult = JSONUtil.toBean(responseEntity, new TypeReference<SreResult<T>>() {
             }, true);
@@ -150,23 +115,20 @@ public class SreHelper {
                 String responseEntity = "";
                 if (this.httpMethod.equals(HttpMethod.GET)) {
                     responseEntity = (this.param == null ? HttpClientUtil.sendGet(url) : HttpClientUtil.sendGet(url, this.param));
-                    this.eventName += "【GET】";
                 } else if (this.httpMethod.equals(HttpMethod.POST)) {
                     Assert.notNull(this.param, "param 不能为空！");
                     responseEntity = HttpClientUtil.sendPost(url, this.param);
-                    this.eventName += "【POST】";
                 }
-                this.eventName = "Sre" + this.eventName;
                 if (StringUtils.isBlank(responseEntity)) {
-                    log.info("{}返回为空,请求地址：{}，请求参数：{}", this.eventName, this.url, JSON.toJSONString(this.param));
-                    return SreResponse.fail(String.format("%s返回为空,请求地址：%s，请求参数：%s", this.eventName, this.url, JSON.toJSONString(this.param)));
+                    log.info("请求地址：{}，请求参数：{}", this.url, JSON.toJSONString(this.param));
+                    return SreResponse.fail(String.format("请求地址：%s，请求参数：%s", this.url, JSON.toJSONString(this.param)));
                 }
                 Gson gson = new Gson();
                 Type type = typeToken.getType();
                 SreResponse<T> sreResponse = gson.fromJson(responseEntity, type);
                 if (sreResponse == null || !sreResponse.isSuccess()) {
-                    log.error("{}返回异常,请求地址：{}，请求参数：{}，响应体：{}", this.eventName, this.url, JSON.toJSONString(this.param), responseEntity);
-                    return SreResponse.fail(String.format("%s返回异常,请求地址：%s，请求参数：%s，响应体：%s", this.eventName, this.url, JSON.toJSONString(this.param), responseEntity));
+                    log.error("请求地址：{}，请求参数：{}，响应体：{}", this.url, JSON.toJSONString(this.param), responseEntity);
+                    return SreResponse.fail(String.format("请求地址：%s，请求参数：%s，响应体：%s", this.url, JSON.toJSONString(this.param), responseEntity));
                 }
                 return sreResponse;
             }catch (Exception e) {

@@ -351,6 +351,9 @@
                 <includes>
                     <include>**/*</include>
                 </includes>
+                <excludes>
+                    <exclude>**/*.ttf</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>
@@ -377,7 +380,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>

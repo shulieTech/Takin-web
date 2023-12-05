@@ -1835,6 +1835,10 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (CollectionUtils.isEmpty(reportBusinessActivityDetails)) {
             return null;
         }
+        List<Long> allDiagnosisIds = reportBusinessActivityDetails.stream().filter(a->Objects.nonNull(a.getDiagnosisId()))
+                .map(ReportBusinessActivityDetail::getDiagnosisId)
+                .collect(Collectors.toList());
+
         if (StringUtils.isNotBlank(reportResult.getScriptNodeTree())) {
             //需要把activityId塞到节点树里
             DocumentContext context = JsonPath.parse(reportResult.getScriptNodeTree());
@@ -1847,6 +1851,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                         resultMap.put(detail.getBindRef(), tmpMap);
                         JsonPathUtil.putNodesToJson(context, resultMap);
                     });
+
+
             List<ScriptNodeTreeResp> result = JSONArray.parseArray(context.jsonString(), ScriptNodeTreeResp.class);
             if (result.size() == 1) {
                 String ptConfigCopy = reportResult.getPtConfig();
@@ -1863,11 +1869,13 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 PtConfigExt ptConfig = JSON.parseObject(ptConfigCopy, PtConfigExt.class);
                 // 遍历填充压力模式
                 result.get(0).getChildren().forEach(t -> {
+
                     // 根据MD5获取线程组配置
                     ThreadGroupConfigExt threadGroupConfig = ptConfig.getThreadGroupConfigMap().get(t.getXpathMd5());
                     // 填充压力模式
                     fullScriptNodeTreePressureType(t, threadGroupConfig == null ? null : threadGroupConfig.getType());
                 });
+                result.get(0).setTaskIds(allDiagnosisIds);
             }
             return result;
         } else {
@@ -1875,6 +1883,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             all.setTestName("全局趋势");
             all.setName("all");
             all.setXpathMd5("all");
+            all.setTaskIds(allDiagnosisIds);
             List<ScriptNodeTreeResp> list = reportBusinessActivityDetails.stream()
                     .filter(Objects::nonNull)
                     .map(detail -> new ScriptNodeTreeResp() {{

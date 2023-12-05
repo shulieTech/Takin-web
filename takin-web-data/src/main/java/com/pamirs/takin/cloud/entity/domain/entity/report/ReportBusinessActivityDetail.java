@@ -126,4 +126,9 @@ public class ReportBusinessActivityDetail {
     private Date gmtCreate;
 
     private Date gmtUpdate;
+
+    /**
+     * 诊断ID
+     */
+    private Long diagnosisId;
 }

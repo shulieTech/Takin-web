@@ -42,4 +42,10 @@ public class ScriptNodeTreeResp extends AbstractEntry {
     @ApiModelProperty(value = "施压类型")
     private Integer pressureType;
 
+    /**
+     * 风险任务ID
+     */
+    @ApiModelProperty(value = "风险任务ID")
+    private List<Long> taskIds;
+
 }

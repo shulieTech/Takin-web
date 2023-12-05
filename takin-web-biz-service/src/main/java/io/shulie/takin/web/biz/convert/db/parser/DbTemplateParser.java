@@ -70,57 +70,54 @@ public class DbTemplateParser extends AbstractTemplateParser {
     @Override
     public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum, ShadowTemplateSelect select) {
         List list = Lists.newArrayList();
-
         if (DsTypeEnum.SHADOW_TABLE.getCode().equals(dsType)) {
             list.add(new ListStyle());
-        } else {
-            List<String> attributeArray;
-            if (select.isNewVersion()) {
-                List<InputWithSelectStyle.NodeDetail> dataSource_username = new ArrayList<>();
-                dataSource_username.add(new InputWithSelectStyle.NodeDetail(key7, "1"));
-                dataSource_username.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
-                List<String> keys_username = Arrays.asList(key3, key4);
-                InputWithSelectStyle.NodeInfo nodeInfo_username = new InputWithSelectStyle.NodeInfo(keys_username, dataSource_username);
-                InputWithSelectStyle selectStyle_username = new InputWithSelectStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT,
-                        StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo_username);
-                list.add(selectStyle_username);
-            } else {
-                list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
-            }
-            list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
-            if (select.isNewVersion()) {
-                List<InputWithSelectStyle.NodeDetail> dataSource_pwd = new ArrayList<>();
-                dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key8, "1"));
-                dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
-                dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key9, "3"));
-
-                List<String> keys_pwd = Arrays.asList(key3, key4);
-                InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
-                InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT,
-                        StyleEnums.SELECT_WITH_INPUT_PWD.getCode(), nodeInfo_pwd);
-                list.add(selectStyle_pwd);
-            } else {
-                list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
-            }
-
-            if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
-                attributeArray = this.reflex();
-            } else {
-                attributeArray = this.getAttributeArray(templateEnum);
-            }
-            attributeArray.forEach(key -> {
-                List<InputWithSelectStyle.NodeDetail> dataSource = new ArrayList<>();
-                dataSource.add(new InputWithSelectStyle.NodeDetail(key1, "1"));
-                dataSource.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
-
-                List<String> keys = Arrays.asList(key3, key4);
-                InputWithSelectStyle.NodeInfo nodeInfo = new InputWithSelectStyle.NodeInfo(keys, dataSource);
-                InputWithSelectStyle selectStyle = new InputWithSelectStyle(key, Objects.equals(DRIVER_CLASSNAME, key) ? DRIVER_CLASSNAME_SHOW_NAME : key,
-                        StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo);
-                list.add(selectStyle);
-            });
-
+            return list;
         }
+
+        if (select.isNewVersion()) {
+            List<InputWithSelectStyle.NodeDetail> dataSource_username = new ArrayList<>();
+            dataSource_username.add(new InputWithSelectStyle.NodeDetail(key7, "1"));
+            dataSource_username.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
+            List<String> keys_username = Arrays.asList(key3, key4);
+            InputWithSelectStyle.NodeInfo nodeInfo_username = new InputWithSelectStyle.NodeInfo(keys_username, dataSource_username);
+            InputWithSelectStyle selectStyle_username = new InputWithSelectStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo_username);
+            list.add(selectStyle_username);
+        } else {
+            list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
+        }
+        list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
+        if (select.isNewVersion()) {
+            List<InputWithSelectStyle.NodeDetail> dataSource_pwd = new ArrayList<>();
+            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key8, "1"));
+            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
+            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key9, "3"));
+
+            List<String> keys_pwd = Arrays.asList(key3, key4);
+            InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
+            InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.SELECT_WITH_INPUT_PWD.getCode(), nodeInfo_pwd);
+            list.add(selectStyle_pwd);
+        } else {
+            list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
+        }
+
+        List<String> attributeArray;
+        if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
+            attributeArray = this.reflex();
+        } else {
+            attributeArray = this.getAttributeArray(templateEnum);
+        }
+        attributeArray.forEach(key -> {
+            List<InputWithSelectStyle.NodeDetail> dataSource = new ArrayList<>();
+            dataSource.add(new InputWithSelectStyle.NodeDetail(key1, "1"));
+            dataSource.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
+
+            List<String> keys = Arrays.asList(key3, key4);
+            InputWithSelectStyle.NodeInfo nodeInfo = new InputWithSelectStyle.NodeInfo(keys, dataSource);
+            InputWithSelectStyle selectStyle = new InputWithSelectStyle(key, Objects.equals(DRIVER_CLASSNAME, key) ? DRIVER_CLASSNAME_SHOW_NAME : key, StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo);
+            list.add(selectStyle);
+        });
+
         return list;
     }
 
@@ -145,19 +142,15 @@ public class DbTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setIsManual(convert.getSource());
 
         String shaDowFileExtedn = convert.getShaDowFileExtedn();
-        if (StringUtils.isBlank(convert.getShaDowFileExtedn())
-                || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())) {
+        if (StringUtils.isBlank(convert.getShaDowFileExtedn()) || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())) {
             shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
         }
-        if (StringUtils.isNotBlank(shaDowFileExtedn) &&
-                (DsTypeEnum.SHADOW_REDIS_SERVER.getCode().equals(convert.getDsType())
-                        || DsTypeEnum.SHADOW_DB.getCode().equals(convert.getDsType()))) {
+        if (StringUtils.isNotBlank(shaDowFileExtedn) && (DsTypeEnum.SHADOW_REDIS_SERVER.getCode().equals(convert.getDsType()) || DsTypeEnum.SHADOW_DB.getCode().equals(convert.getDsType()))) {
             shaDowFileExtedn = buildNewShadow(shaDowFileExtedn, appName);
         }
         shadowDetailResponse.setShadowInfo(shaDowFileExtedn);
         shadowDetailResponse.setConnectionPool(convert.getConnPoolName());
-        List<ShadowDetailResponse.TableInfo> tableInfos = this.buildTableData(convert.getApplicationId(),
-                convert.getUrl(), convert.getUserName());
+        List<ShadowDetailResponse.TableInfo> tableInfos = this.buildTableData(convert.getApplicationId(), convert.getUrl(), convert.getUserName());
         shadowDetailResponse.setTables(tableInfos);
         return shadowDetailResponse;
     }
@@ -194,10 +187,10 @@ public class DbTemplateParser extends AbstractTemplateParser {
         String shadowPwdStr = extObj.getString("shadowPwd");
         if (StringUtils.isBlank(shadowPwdStr)) {
             pwdMap.put("tag", "1");
-        } else if("true".equals(extFlag)){
+        } else if ("true".equals(extFlag)) {
             pwdMap.put("tag", "2");
             pwdMap.put("context", shadowPwdStr);
-        } else if("3".equals(extFlag)){
+        } else if ("3".equals(extFlag)) {
             pwdMap.put("tag", "3");
             pwdMap.put("context", shadowPwdStr);
         }
@@ -213,10 +206,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
         List<ApplicationBizTableDTO> amdbTableDatas = applicationClient.getApplicationTable(detailResult.getApplicationName(), url, userName);
         List<ShadowDetailResponse.TableInfo> list = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(amdbTableDatas)) {
-            list.addAll(amdbTableDatas
-                    .stream()
-                    .map(x -> new ShadowDetailResponse.TableInfo(x.getBizDatabase(), x.getTableName()))
-                    .collect(Collectors.toList()));
+            list.addAll(amdbTableDatas.stream().map(x -> new ShadowDetailResponse.TableInfo(x.getBizDatabase(), x.getTableName())).collect(Collectors.toList()));
         }
 
         List<ApplicationDsDbTableDetailResult> results = dsDbTableDAO.getList(url, appId, userName);
@@ -224,10 +214,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
             return list;
         }
 
-        List<ShadowDetailResponse.TableInfo> resultsConvert = results
-                .stream()
-                .map(x -> new ShadowDetailResponse.TableInfo(x.getBizDataBase(), x.getBizTable(), x.getManualTag(), x.getShadowTable(), x.getIsCheck()))
-                .collect(Collectors.toList());
+        List<ShadowDetailResponse.TableInfo> resultsConvert = results.stream().map(x -> new ShadowDetailResponse.TableInfo(x.getBizDataBase(), x.getBizTable(), x.getManualTag(), x.getShadowTable(), x.getIsCheck())).collect(Collectors.toList());
 
         Map<String, ShadowDetailResponse.TableInfo> map = new HashMap<>();
         list.forEach(x -> {
@@ -311,8 +298,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
                 return attributeArray;
             }
             Object t = templateEnum.getaClass().newInstance();
-            if (Template.class.isAssignableFrom(t
-                    .getClass())) {
+            if (Template.class.isAssignableFrom(t.getClass())) {
                 Template tem = (Template) t;
                 ConnectpoolConfigTemplateDetailResult template = connectpoolConfigTemplateDAO.queryOne(tem.getName());
                 if (Objects.nonNull(template) && StringUtils.isNotBlank(template.getShadowdbAttribute())) {

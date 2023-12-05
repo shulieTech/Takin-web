@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.checker;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.google.gson.reflect.TypeToken;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
@@ -9,6 +10,7 @@ import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.mapper.mysql.ReportBusinessActivityDetailMapper;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.sre.common.constant.SreRiskUrlConstant;
 import io.shulie.takin.web.biz.pojo.input.sresla.CollectorSlaRequest;
 import io.shulie.takin.web.biz.pojo.input.sresla.SreSlaParamReq;
 import io.shulie.takin.web.biz.pojo.input.sresla.SreSyncLinkReq;
@@ -46,13 +48,13 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
     @Resource
     private ReportDao reportDao;
 
-    @Value("${collector.host: localhost:10086}")
+    @Value("${takin.collector.url: localhost:10086}")
     private String collectorHost;
 
-    @Value("${sre.host: localhost:10086}")
+    @Value("${takin.sre.url: localhost:10086}")
     private String sreHost;
 
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public CheckResult check(StartConditionCheckerContext context) throws TakinCloudException {
@@ -92,11 +94,27 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
         collectorParam.forEach(collectorSlaRequest -> {
             TypeToken<SreResponse<List<SreSlaParamReq>>> typeToken = new TypeToken<SreResponse<List<SreSlaParamReq>>>() {
             };
-            SreResponse<List<SreSlaParamReq>> response = SreHelper.builder().url(collectorHost + "/api/clickhouse/getSlaParams")
-                    .httpMethod(HttpMethod.POST).param(collectorParam).queryList(typeToken);
+            SreResponse<List<SreSlaParamReq>> response = SreHelper.builder().url(collectorHost + SreRiskUrlConstant.GET_SRE_SLA_PARAMS_FROM_COLLECTOR)
+                    .httpMethod(HttpMethod.POST).timeout(1000 * 60 * 5).param(collectorSlaRequest).queryList(typeToken);
 
             if (!response.isSuccess()) {
-                throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "设置sla请求trace出现异常:" + response.getErrorMsg());
+                //todo mock
+                List<SreSlaParamReq> data = new ArrayList<>();
+                SreSlaParamReq slaParamReq = new SreSlaParamReq();
+                slaParamReq.setChainCode("xxxxxx");
+                slaParamReq.setTenantCode("wstest");
+                slaParamReq.setService("/ultra-bos-client-serving/group/create");
+                slaParamReq.setMethod("unknown");
+                slaParamReq.setAppName("bos_client_xx_cs");
+                slaParamReq.setSlaCode("three.party.interface.ability");
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("dsl_risk_level1", 110.23);
+                jsonObject.put("dsl_risk_level2", 110.23 * 2);
+                slaParamReq.setSlaConfig(jsonObject.toJSONString());
+
+                data.add(slaParamReq);
+                response.setData(data);
+                //throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "设置sla请求trace出现异常:" + response.getErrorMsg());
             }
 
             if (CollectionUtils.isNotEmpty(response.getData())) {
@@ -133,7 +151,7 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
         //设置sla
         TypeToken<SreResponse<Object>> typeToken = new TypeToken<SreResponse<Object>>() {
         };
-        SreResponse<Object> response = SreHelper.builder().url(sreHost + "/takin-sre/api/risk/pressure/config/sla")
+        SreResponse<Object> response = SreHelper.builder().url(sreHost + SreRiskUrlConstant.SET_SRE_CONFIG_SLA)
                 .httpMethod(HttpMethod.POST).param(params).queryList(typeToken);
         if (!response.isSuccess()) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "设置sla失败:" + response.getErrorMsg());
@@ -141,7 +159,7 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
         //同步链路接口,sreSyncLinkReqs
         TypeToken<SreResponse<Object>> syncLink = new TypeToken<SreResponse<Object>>() {
         };
-        SreResponse<Object> syncLinkResponse = SreHelper.builder().url(sreHost + "/takin-sre/api/risk/pressure/config/chain")
+        SreResponse<Object> syncLinkResponse = SreHelper.builder().url(sreHost + SreRiskUrlConstant.SET_SRE_CONFIG_CHAIN)
                 .httpMethod(HttpMethod.POST).param(sreSyncLinkReqs).queryList(syncLink);
         if (!syncLinkResponse.isSuccess()) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "设置sla失败:" + syncLinkResponse.getErrorMsg());
@@ -157,7 +175,7 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
             ActivityUtil.EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(entity.getEntrace());
             collectorSlaRequest.setRpc(entranceJoinEntity.getServiceName());
             SceneManageWrapperOutput.SceneBusinessActivityRefOutput sceneBusinessActivityRefOutput = longListMap.get(entity.getLinkId()).get(0);
-            collectorSlaRequest.setRefId(sceneBusinessActivityRefOutput.getId());
+            collectorSlaRequest.setRefId(sceneBusinessActivityRefOutput.getBusinessActivityId());
             if (autoSetSla) {
                 Calendar instance = Calendar.getInstance();
                 instance.add(Calendar.HOUR_OF_DAY, -24);

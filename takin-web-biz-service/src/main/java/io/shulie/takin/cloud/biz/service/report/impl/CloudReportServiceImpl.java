@@ -1204,7 +1204,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         saveReportResult(reportResult, statReport, isConclusion);
 
         //保存所有的链路图,并发起数据同步和风险分析
-        saveAllLinkDiagramInfo(reportId, reportResult.getStartTime());
+        saveAllLinkDiagramInfo(reportResult);
 
         //先保存报告内容，再更新报告状态，防止报告内容没有填充，就触发finishReport操作
         if (updateVersion) {
@@ -1240,8 +1240,10 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     }
 
-    private void saveAllLinkDiagramInfo(Long reportId, Date startTime) {
+    private void saveAllLinkDiagramInfo(ReportResult reportResult) {
         try {
+            Long reportId = reportResult.getId();
+            Date startTime = reportResult.getStartTime();
             Map<String, ActivityResponse> dealData = new HashMap<>();
             Date endTime = new Date();
             List<String> chainCodeList = new ArrayList<>();
@@ -1258,8 +1260,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                         reportLinkDiagramReq.setEndTime(LocalDateTime.now());
                         reportLinkDiagramReq.setReportId(reportId);
                         String reportJson = detail.getReportJson();
-
-                        ActivityResponse activityResponse = reportService.queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
+                        //todo mock
+                        ActivityResponse activityResponse = new ActivityResponse();
+//                        ActivityResponse activityResponse = reportService.queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
                         if (StringUtils.isNotBlank(reportJson)) {
                             ActivityResponse response = JSON.parseObject(reportJson, ActivityResponse.class);
                             activityResponse.setChainCode(response.getChainCode());
@@ -1270,7 +1273,11 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                             // 将链路拓扑信息更新到表中
                             reportDao.modifyReportLinkDiagram(reportId, detail.getBindRef(), JSON.toJSONString(activityResponse), null);
                             //压测数据同步到sre
-                            reportService.syncSreTraceData(simpleDateFormat.format(startTime), simpleDateFormat.format(endTime), activityResponse);
+                            try {
+                                reportService.syncSreTraceData(simpleDateFormat.format(startTime), simpleDateFormat.format(endTime), activityResponse);
+                            } catch (Exception e) {
+                                log.error("生成报告同步trace数据出现异常", e);
+                            }
                             dealData.put(detail.getBindRef(), activityResponse);
                         }
                     }
@@ -1279,18 +1286,23 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     ReportRiskRequest request = new ReportRiskRequest();
                     request.setStartTime(simpleDateFormat.format(startTime));
                     request.setEndTime(simpleDateFormat.format(endTime));
-                    request.setTenantCode(WebPluginUtils.traceTenantCode());
-                    //开始风险诊断
-                    SreResponse<Map<String, Object>> mapSreResponse = reportService.reportRiskDiagnosis(request);
-                    if (mapSreResponse.isSuccess()) {
-                        dealData.forEach((k, v) -> {
-                            Object o = mapSreResponse.getData().get(v.getChainCode());
-                            if (o != null) {
-                                reportDao.modifyReportLinkDiagram(reportId, k, JSON.toJSONString(v), Long.parseLong(o.toString()));
-                            } else {
-                                log.warn("报告id:{},ref为:{}没有找到对应的任务ID", reportId, k);
-                            }
-                        });
+                    request.setTenantCode(reportResult.getTenantCode());
+                    request.setChainCodeList(chainCodeList);
+                    try {
+                        //开始风险诊断
+                        SreResponse<Map<String, Object>> mapSreResponse = reportService.reportRiskDiagnosis(request);
+                        if (mapSreResponse.isSuccess()) {
+                            dealData.forEach((k, v) -> {
+                                Object o = mapSreResponse.getData().get(v.getChainCode());
+                                if (o != null) {
+                                    reportDao.modifyReportLinkDiagram(reportId, k, JSON.toJSONString(v), Long.parseLong(o.toString()));
+                                } else {
+                                    log.warn("报告id:{},ref为:{}没有找到对应的任务ID", reportId, k);
+                                }
+                            });
+                        }
+                    } catch (Exception e) {
+                        log.error("生成报告风险诊断出现异常", e);
                     }
                 }
             }

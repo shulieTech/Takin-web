@@ -42,6 +42,10 @@ public class SreHelper {
          * amdb 入参
          */
         private Object param;
+        /**
+         * 超时时间
+         */
+        private Integer timeout = null;
 
         public SreBuilder httpMethod(HttpMethod httpMethod) {
             this.httpMethod = httpMethod;
@@ -55,6 +59,11 @@ public class SreHelper {
 
         public SreBuilder param(Object param) {
             this.param = param;
+            return this;
+        }
+
+        public SreBuilder timeout(Integer timeout) {
+            this.timeout = timeout;
             return this;
         }
 
@@ -76,7 +85,7 @@ public class SreHelper {
                 responseEntity = (this.param == null ? HttpClientUtil.sendGet(url) : HttpClientUtil.sendGet(url, this.param));
             } else if (this.httpMethod.equals(HttpMethod.POST)) {
                 Assert.notNull(this.param, "param 不能为空！");
-                responseEntity = HttpClientUtil.sendPost(url, this.param);
+                responseEntity = HttpClientUtil.sendPost(url, this.param, timeout);
             }
             if (StringUtils.isBlank(responseEntity)) {
                 log.error("请求地址：{}，请求参数：{}，响应体为空", this.url, JSON.toJSONString(this.param));
@@ -110,7 +119,7 @@ public class SreHelper {
                     responseEntity = (this.param == null ? HttpClientUtil.sendGet(url) : HttpClientUtil.sendGet(url, this.param));
                 } else if (this.httpMethod.equals(HttpMethod.POST)) {
                     Assert.notNull(this.param, "param 不能为空！");
-                    responseEntity = HttpClientUtil.sendPost(url, this.param);
+                    responseEntity = HttpClientUtil.sendPost(url, this.param, timeout);
                 }
                 if (StringUtils.isBlank(responseEntity)) {
                     log.info("请求地址：{}，请求参数：{}", this.url, JSON.toJSONString(this.param));

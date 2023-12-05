@@ -134,10 +134,10 @@ public class ReportServiceImpl implements ReportService {
     @Resource
     private ReportMapper reportMapper;
 
-    @Value("${takin.sre.path:192.168.54.103:8501}")
+    @Value("${takin.sre.url:192.168.54.103:8501}")
     private String sreUrl;
 
-    @Value("${takin.collector.host: localhost:10086}")
+    @Value("${takin.collector.url: localhost:10086}")
     private String collectorHost;
 
     @Override
@@ -980,7 +980,7 @@ public class ReportServiceImpl implements ReportService {
         collectorSlaRequest.setRpc(activityResponse.getServiceName());
         TypeToken<SreResponse<Object>> typeToken = new TypeToken<SreResponse<Object>>() {
         };
-        SreHelper.builder().url(collectorHost + "/api/clickhouse/syncTrace")
+        SreHelper.builder().url(collectorHost + SreRiskUrlConstant.COLLECTOR_SYNC_TRACE)
                 .httpMethod(HttpMethod.POST).param(collectorSlaRequest).queryList(typeToken);
     }
 

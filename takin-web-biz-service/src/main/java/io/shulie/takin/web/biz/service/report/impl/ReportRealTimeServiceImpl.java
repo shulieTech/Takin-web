@@ -79,7 +79,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     @Resource
     private ReportBusinessActivityDetailDao businessActivityDetailDao;
 
-    @Value("${takin.sre.path:192.168.54.103:8501}")
+    @Value("${takin.sre.url:192.168.54.103:8501}")
     private String sreUrl;
 
     @Override

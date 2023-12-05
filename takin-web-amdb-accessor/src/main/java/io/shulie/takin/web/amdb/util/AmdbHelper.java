@@ -110,7 +110,7 @@ public class AmdbHelper {
                 this.eventName += "【GET】";
             } else if (this.httpMethod.equals(HttpMethod.POST)) {
                 Assert.notNull(this.param, "param 不能为空！");
-                responseEntity = HttpClientUtil.sendPost(url, this.param);
+                responseEntity = HttpClientUtil.sendPost(url, this.param, null);
                 this.eventName += "【POST】";
             }
             this.eventName = "AMDB" + this.eventName;
@@ -156,7 +156,7 @@ public class AmdbHelper {
                 this.eventName += "【GET】";
             } else if (this.httpMethod.equals(HttpMethod.POST)) {
                 Assert.notNull(this.param, "param 不能为空！");
-                responseEntity = HttpClientUtil.sendPost(url, this.param);
+                responseEntity = HttpClientUtil.sendPost(url, this.param, null);
                 this.eventName += "【POST】";
             }
             this.eventName = "AMDB" + this.eventName;

@@ -82,6 +82,7 @@ public class HttpClientUtil {
         }
         return sb.toString();
     }
+
     public static String parseParams(Object object) {
         String s = JSON.toJSONString(object);
         JSONObject jsonObject = JSON.parseObject(s);
@@ -172,7 +173,7 @@ public class HttpClientUtil {
         return sb.toString();
     }
 
-    public static String sendPost(String inputUrl, Object object) {
+    public static String sendPost(String inputUrl, Object object, Integer timeout) {
         if (!(object instanceof JSON)) {
             object = JSON.toJSON(object);
         }
@@ -202,8 +203,13 @@ public class HttpClientUtil {
             // 设置文件类型:
             conn.setRequestProperty("contentType", "application/json");
             conn.setRequestProperty("Content-Type", "application/json;");
-            conn.setConnectTimeout(10000);
-            conn.setReadTimeout(10000);
+            if (timeout == null) {
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(10000);
+            } else {
+                conn.setConnectTimeout(timeout);
+                conn.setReadTimeout(timeout);
+            }
             // 开始连接请求
             conn.connect();
             OutputStream out = new DataOutputStream(conn.getOutputStream());
@@ -228,7 +234,7 @@ public class HttpClientUtil {
                 }
             } else {
                 log.error("error++,url:{},responseCode:{},responseMessage:{}", inputUrl, conn.getResponseCode(), conn.getResponseMessage());
-                throw new RuntimeException(String.format("http请求失败，请求路径为：%s,状态码为：%s,错误信息为：%s,请求method为：%s", inputUrl, conn.getResponseCode(), conn.getResponseMessage(),conn.getRequestMethod()));
+                throw new RuntimeException(String.format("http请求失败，请求路径为：%s,状态码为：%s,错误信息为：%s,请求method为：%s", inputUrl, conn.getResponseCode(), conn.getResponseMessage(), conn.getRequestMethod()));
             }
         } catch (Exception e) {
             log.error(e.getMessage());

@@ -16,4 +16,6 @@ public interface SreRiskUrlConstant {
     String SET_SRE_CONFIG_CHAIN = "/takin-sre/api/risk/pressure/config/chain";
     String GET_SRE_SLA_PARAMS_FROM_COLLECTOR = "/api/clickhouse/getSlaParams";
     String COLLECTOR_SYNC_TRACE = "/api/clickhouse/syncTrace";
+
+    String GET_REPORT_RISK_ITEM_CONDITION_URL = "/api/risk/extraction/risk/item/";
 }

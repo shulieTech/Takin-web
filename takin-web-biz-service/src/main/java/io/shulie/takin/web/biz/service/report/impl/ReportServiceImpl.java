@@ -38,6 +38,7 @@ import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -982,6 +983,15 @@ public class ReportServiceImpl implements ReportService {
         };
         SreHelper.builder().url(collectorHost + SreRiskUrlConstant.COLLECTOR_SYNC_TRACE)
                 .httpMethod(HttpMethod.POST).param(collectorSlaRequest).queryList(typeToken);
+    }
+
+    @Override
+    public SreResponse<List<String>> riskItemQueryCondition(ReportRiskItemCondition request) {
+        TypeToken<SreResponse<List<String>>> typeToken = new TypeToken<SreResponse<List<String>>>() {
+        };
+        Map<String, Object> param = new HashMap<>();
+        param.put("startTime", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        return SreHelper.builder().url(sreUrl + SreRiskUrlConstant.GET_REPORT_RISK_ITEM_CONDITION_URL + request.getCondition().getValue()).httpMethod(HttpMethod.GET).param(param).queryList(typeToken);
     }
 
     public static void main(String[] args) throws ParseException {

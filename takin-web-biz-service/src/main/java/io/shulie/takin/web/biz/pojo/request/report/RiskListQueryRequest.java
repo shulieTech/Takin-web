@@ -17,6 +17,8 @@ import java.util.List;
 public class RiskListQueryRequest {
     private List<Long> taskIds;
     private String appName;
+    private String serviceName;
+    private String riskName;
     private String tenantCode;
     private String startTime;
     private String endTime;

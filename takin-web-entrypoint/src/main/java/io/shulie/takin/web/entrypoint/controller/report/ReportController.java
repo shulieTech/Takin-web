@@ -20,9 +20,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.report.*;
-import io.shulie.takin.web.biz.pojo.request.report.ReportLinkDiagramReq;
-import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.report.RiskListQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.report.*;
 import io.shulie.takin.web.biz.pojo.response.report.ReportJtlDownloadResponse;
 import io.shulie.takin.web.biz.pojo.response.report.ReportRiskDiagnosisVO;
 import io.shulie.takin.web.biz.pojo.response.report.RiskItemExtractionVO;
@@ -290,6 +288,12 @@ public class ReportController {
     @ApiOperation("获取报告风险列表")
     public SreResponse<SrePageData<RiskItemExtractionVO>> getReportRiskItemPages(@RequestBody RiskListQueryRequest request) {
         return reportService.getReportRiskItemPages(request);
+    }
+
+    @PostMapping("/report/risk/diagnosis/riskItemQueryCondition")
+    @ApiOperation("风险列表下拉")
+    public SreResponse<List<String>> riskItemQueryCondition(@RequestBody ReportRiskItemCondition request) {
+        return reportService.riskItemQueryCondition(request);
     }
 
     @GetMapping("/report/risk/diagnosis")

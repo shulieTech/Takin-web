@@ -4,7 +4,6 @@ import lombok.Data;
 
 @Data
 public class ECloudResponse {
-
     private boolean result;
 
     private String errmsg;
@@ -12,4 +11,7 @@ public class ECloudResponse {
     private int code = 200;
 
     private String msg;
+
+    private String authorizecode;
+
 }

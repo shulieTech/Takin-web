@@ -990,7 +990,7 @@ public class ReportServiceImpl implements ReportService {
         TypeToken<SreResponse<List<String>>> typeToken = new TypeToken<SreResponse<List<String>>>() {
         };
         Map<String, Object> param = new HashMap<>();
-        param.put("timestr", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        param.put("timestr", new Date().getTime());
         return SreHelper.builder().url(sreUrl + SreRiskUrlConstant.GET_REPORT_RISK_ITEM_CONDITION_URL + request.getCondition().getValue()).httpMethod(HttpMethod.GET).param(param).queryList(typeToken);
     }
 

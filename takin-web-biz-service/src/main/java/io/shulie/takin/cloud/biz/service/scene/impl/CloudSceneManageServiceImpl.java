@@ -84,6 +84,8 @@ import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.utils.FileEncoder;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -1053,12 +1055,16 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         wrapperOutput.setScriptType(sceneManageResult.getScriptType());
         wrapperOutput.setPressureTestSceneName(sceneManageResult.getSceneName());
         wrapperOutput.setType(sceneManageResult.getType());
-
+        wrapperOutput.setAutoStartSLAFlag(sceneManageResult.getAutoStartSLAFlag());
         // 状态适配
         wrapperOutput.setStatus(SceneManageStatusEnum.getAdaptStatus(sceneManageResult.getStatus()));
         wrapperOutput.setUserId(sceneManageResult.getUserId());
         wrapperOutput.setEnvCode(sceneManageResult.getEnvCode());
         wrapperOutput.setTenantId(sceneManageResult.getTenantId());
+        TenantInfoExt tenantInfo = WebPluginUtils.getTenantInfo(sceneManageResult.getTenantId());
+        if (tenantInfo != null){
+            wrapperOutput.setTenantCode(tenantInfo.getTenantCode());
+        }
         wrapperOutput.setUpdateTime(DateUtil.formatDateTime(sceneManageResult.getUpdateTime()));
         wrapperOutput.setLastPtTime(DateUtil.formatDateTime(sceneManageResult.getLastPtTime()));
         wrapperOutput.setLastPtDateTime(sceneManageResult.getLastPtTime());

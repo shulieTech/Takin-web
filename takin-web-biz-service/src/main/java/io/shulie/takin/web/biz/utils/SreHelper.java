@@ -123,14 +123,17 @@ public class SreHelper {
                 }
                 if (StringUtils.isBlank(responseEntity)) {
                     log.info("请求地址：{}，请求参数：{}", this.url, JSON.toJSONString(this.param));
-                    return SreResponse.fail(String.format("请求地址：%s，请求参数：%s", this.url, JSON.toJSONString(this.param)));
+                    return SreResponse.fail("没有获取到响应体");
                 }
                 Gson gson = new Gson();
                 Type type = typeToken.getType();
                 SreResponse<T> sreResponse = gson.fromJson(responseEntity, type);
-                if (sreResponse == null || !sreResponse.isSuccess()) {
+                if (sreResponse == null ) {
                     log.error("请求地址：{}，请求参数：{}，响应体：{}", this.url, JSON.toJSONString(this.param), responseEntity);
-                    return SreResponse.fail(String.format("请求地址：%s，请求参数：%s，响应体：%s", this.url, JSON.toJSONString(this.param), responseEntity));
+                    return SreResponse.fail("没有获取到响应体");
+                }
+                if (!sreResponse.isSuccess()){
+                    return sreResponse;
                 }
                 return sreResponse;
             }catch (Exception e) {

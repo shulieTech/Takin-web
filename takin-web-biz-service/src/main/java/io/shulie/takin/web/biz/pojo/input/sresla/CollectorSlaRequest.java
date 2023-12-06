@@ -19,4 +19,6 @@ public class CollectorSlaRequest {
     private String rpc;
 
     private Long refId;
+
+    private String tenantCode;
 }

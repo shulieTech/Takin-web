@@ -147,6 +147,8 @@ public class SceneManageWrapperOutput extends ContextExt {
 
     private Long deptId;
 
+    private Boolean autoStartSLAFlag;
+
     @Data
     @EqualsAndHashCode(callSuper = true)
     public static class SceneBusinessActivityRefOutput extends SceneBusinessActivityRefBean {

@@ -90,31 +90,17 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
         //是否自动设置sla
         List<SreSlaParamReq> params = new ArrayList<>();
         List<SreSyncLinkReq> sreSyncLinkReqs = new ArrayList<>();
-        List<CollectorSlaRequest> collectorParam = getCollectorParam(businessLinkManageTableEntities, businessActivityConfig, true);
+        List<CollectorSlaRequest> collectorParam = getCollectorParam(businessLinkManageTableEntities, businessActivityConfig, sceneData.getAutoStartSLAFlag());
         collectorParam.forEach(collectorSlaRequest -> {
+            collectorSlaRequest.setTenantCode(sceneData.getTenantCode());
             TypeToken<SreResponse<List<SreSlaParamReq>>> typeToken = new TypeToken<SreResponse<List<SreSlaParamReq>>>() {
             };
+            long currentTimeMillis = System.currentTimeMillis();
             SreResponse<List<SreSlaParamReq>> response = SreHelper.builder().url(collectorHost + SreRiskUrlConstant.GET_SRE_SLA_PARAMS_FROM_COLLECTOR)
-                    .httpMethod(HttpMethod.POST).timeout(1000 * 60 * 5).param(collectorSlaRequest).queryList(typeToken);
-
+                    .httpMethod(HttpMethod.POST).timeout(1000 * 20).param(collectorSlaRequest).queryList(typeToken);
+            System.out.println("请求耗时为:" + (System.currentTimeMillis() - currentTimeMillis));
             if (!response.isSuccess()) {
-                //todo mock
-                List<SreSlaParamReq> data = new ArrayList<>();
-                SreSlaParamReq slaParamReq = new SreSlaParamReq();
-                slaParamReq.setChainCode("xxxxxx");
-                slaParamReq.setTenantCode("wstest");
-                slaParamReq.setService("/ultra-bos-client-serving/group/create");
-                slaParamReq.setMethod("unknown");
-                slaParamReq.setAppName("bos_client_xx_cs");
-                slaParamReq.setSlaCode("three.party.interface.ability");
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("dsl_risk_level1", 110.23);
-                jsonObject.put("dsl_risk_level2", 110.23 * 2);
-                slaParamReq.setSlaConfig(jsonObject.toJSONString());
-
-                data.add(slaParamReq);
-                response.setData(data);
-                //throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "设置sla请求trace出现异常:" + response.getErrorMsg());
+                throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "设置sla请求trace出现异常:" + response.getErrorMsg());
             }
 
             if (CollectionUtils.isNotEmpty(response.getData())) {
@@ -166,7 +152,7 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
         }
     }
 
-    private List<CollectorSlaRequest> getCollectorParam(List<BusinessLinkManageTableEntity> entities, List<SceneManageWrapperOutput.SceneBusinessActivityRefOutput> activityRefOutputs, boolean autoSetSla) {
+    private List<CollectorSlaRequest> getCollectorParam(List<BusinessLinkManageTableEntity> entities, List<SceneManageWrapperOutput.SceneBusinessActivityRefOutput> activityRefOutputs, Boolean autoSetSla) {
         List<CollectorSlaRequest> collectorSlaRequests = new ArrayList<>();
         Map<Long, List<SceneManageWrapperOutput.SceneBusinessActivityRefOutput>> longListMap = activityRefOutputs.stream().collect(Collectors.groupingBy(SceneManageWrapperOutput.SceneBusinessActivityRefOutput::getBusinessActivityId));
         entities.forEach(entity -> {
@@ -176,7 +162,7 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
             collectorSlaRequest.setRpc(entranceJoinEntity.getServiceName());
             SceneManageWrapperOutput.SceneBusinessActivityRefOutput sceneBusinessActivityRefOutput = longListMap.get(entity.getLinkId()).get(0);
             collectorSlaRequest.setRefId(sceneBusinessActivityRefOutput.getBusinessActivityId());
-            if (autoSetSla) {
+            if (autoSetSla == null || autoSetSla) {
                 Calendar instance = Calendar.getInstance();
                 instance.add(Calendar.HOUR_OF_DAY, -24);
                 collectorSlaRequest.setStartDate(simpleDateFormat.format(instance.getTime()));

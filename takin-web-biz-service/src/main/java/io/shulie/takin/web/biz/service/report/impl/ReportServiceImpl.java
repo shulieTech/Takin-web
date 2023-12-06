@@ -991,7 +991,8 @@ public class ReportServiceImpl implements ReportService {
         };
         Map<String, Object> param = new HashMap<>();
         param.put("timestr", new Date().getTime());
-        return SreHelper.builder().url(sreUrl + SreRiskUrlConstant.GET_REPORT_RISK_ITEM_CONDITION_URL + request.getCondition().getValue()).httpMethod(HttpMethod.GET).param(param).queryList(typeToken);
+
+        return SreHelper.builder().url(sreUrl + SreRiskUrlConstant.GET_REPORT_RISK_ITEM_CONDITION_URL + request.getCondition().getValue()).httpMethod(HttpMethod.GET).queryList(typeToken);
     }
 
     public static void main(String[] args) throws ParseException {

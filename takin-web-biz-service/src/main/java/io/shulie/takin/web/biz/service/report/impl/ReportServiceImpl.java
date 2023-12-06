@@ -884,7 +884,7 @@ public class ReportServiceImpl implements ReportService {
         param.put("startTime", request.getStartTime());
         param.put("endTime", request.getEndTime());
         param.put("taskIdList", request.getTaskIds());
-        param.put("tenantCode", request.getTenantCode());
+        param.put("tenantCode", WebPluginUtils.traceTenantCode());
         param.put("page", request.getPage());
         param.put("size", request.getSize());
         TypeToken<SreResponse<SrePageData<RiskItemExtractionVO>>> typeToken = new TypeToken<SreResponse<SrePageData<RiskItemExtractionVO>>>() {
@@ -899,6 +899,7 @@ public class ReportServiceImpl implements ReportService {
         if (CollectionUtils.isNotEmpty(taskIdList)) {
             Map<String, Object> param = new HashMap<>();
             param.put("taskIdList", taskIdList);
+            param.put("tenantCode", WebPluginUtils.traceTenantCode());
             TypeToken<SreResponse<List<ReportRiskDiagnosisVO>>> typeToken = new TypeToken<SreResponse<List<ReportRiskDiagnosisVO>>>() {
             };
             String url = sreUrl + SreRiskUrlConstant.GET_REPORT_RISK_DIAGNOSIS_URL;

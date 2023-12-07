@@ -5,12 +5,13 @@ import java.util.Map;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
+import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import org.apache.ibatis.annotations.Param;
 
 /**
  * @author -
  */
-public interface TReportBusinessActivityDetailMapper extends BaseMapper<ReportBusinessActivityDetail> {
+public interface TReportBusinessActivityDetailMapper extends BaseMapper<ReportBusinessActivityDetailEntity> {
 
     /**
      * 插入

@@ -3,6 +3,8 @@ package com.pamirs.takin.cloud.entity.domain.entity.report;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
@@ -107,28 +109,36 @@ public class ReportBusinessActivityDetail {
     /**
      * 最小rt
      */
+ 
     private BigDecimal minRt;
 
     /**
      * 是否通过
      */
+ 
     private Integer passFlag;
 
     /**
      * RT分布
      */
+ 
     private String rtDistribute;
 
+ 
     private String features;
 
+ 
     private Integer isDeleted;
 
+ 
     private Date gmtCreate;
 
+ 
     private Date gmtUpdate;
 
     /**
      * 诊断ID
      */
+ 
     private Long diagnosisId;
 }

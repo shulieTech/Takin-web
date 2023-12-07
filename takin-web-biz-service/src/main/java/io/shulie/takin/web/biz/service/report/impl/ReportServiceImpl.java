@@ -443,16 +443,16 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private List<ReportRiskItemOutput> getRiskItemListByDiagnosisId(ReportLinkDiagramReq reportLinkDiagramReq) {
-        LambdaQueryWrapper<ReportBusinessActivityDetail> activityDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetail::getReportId, reportLinkDiagramReq.getReportId());
-        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetail::getBindRef, reportLinkDiagramReq.getXpathMd5());
-        activityDetailLambdaQueryWrapper.isNotNull(ReportBusinessActivityDetail::getDiagnosisId);
-        activityDetailLambdaQueryWrapper.select(ReportBusinessActivityDetail::getDiagnosisId);
-        List<ReportBusinessActivityDetail> businessActivityDetails = tReportBusinessActivityDetailMapper.selectList(activityDetailLambdaQueryWrapper);
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> activityDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportLinkDiagramReq.getReportId());
+        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, reportLinkDiagramReq.getXpathMd5());
+        activityDetailLambdaQueryWrapper.isNotNull(ReportBusinessActivityDetailEntity::getDiagnosisId);
+        activityDetailLambdaQueryWrapper.select(ReportBusinessActivityDetailEntity::getDiagnosisId);
+        List<ReportBusinessActivityDetailEntity> businessActivityDetails = tReportBusinessActivityDetailMapper.selectList(activityDetailLambdaQueryWrapper);
         if (CollectionUtils.isEmpty(businessActivityDetails)) {
             return Collections.emptyList();
         }
-        List<Long> diagnosisIds = businessActivityDetails.stream().map(ReportBusinessActivityDetail::getDiagnosisId).collect(Collectors.toList());
+        List<Long> diagnosisIds = businessActivityDetails.stream().map(ReportBusinessActivityDetailEntity::getDiagnosisId).collect(Collectors.toList());
         Map<String, Object> map = new HashMap<>();
         map.put("taskIdList", diagnosisIds);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -914,16 +914,16 @@ public class ReportServiceImpl implements ReportService {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         param.put("startTime", simpleDateFormat.format(report.getStartTime()));
         param.put("endTime", simpleDateFormat.format(report.getEndTime()));
-        LambdaQueryWrapper<ReportBusinessActivityDetail> activityDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetail::getReportId, request.getReportId());
-        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetail::getBindRef, request.getXpathMd5());
-        activityDetailLambdaQueryWrapper.isNotNull(ReportBusinessActivityDetail::getDiagnosisId);
-        activityDetailLambdaQueryWrapper.select(ReportBusinessActivityDetail::getDiagnosisId);
-        List<ReportBusinessActivityDetail> businessActivityDetails = tReportBusinessActivityDetailMapper.selectList(activityDetailLambdaQueryWrapper);
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> activityDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, request.getReportId());
+        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, request.getXpathMd5());
+        activityDetailLambdaQueryWrapper.isNotNull(ReportBusinessActivityDetailEntity::getDiagnosisId);
+        activityDetailLambdaQueryWrapper.select(ReportBusinessActivityDetailEntity::getDiagnosisId);
+        List<ReportBusinessActivityDetailEntity> businessActivityDetails = tReportBusinessActivityDetailMapper.selectList(activityDetailLambdaQueryWrapper);
         if (CollectionUtils.isEmpty(businessActivityDetails)){
             return SreResponse.fail("没有找到对应的风险诊断id");
         }
-        List<Long> diagnosisIds = businessActivityDetails.stream().map(ReportBusinessActivityDetail::getDiagnosisId).collect(Collectors.toList());
+        List<Long> diagnosisIds = businessActivityDetails.stream().map(ReportBusinessActivityDetailEntity::getDiagnosisId).collect(Collectors.toList());
         param.put("taskIdList", diagnosisIds);
         param.put("tenantCode", WebPluginUtils.traceTenantCode());
         param.put("page", request.getPage());

@@ -3,13 +3,14 @@ package com.pamirs.takin.cloud.entity.dao.report;
 import java.util.List;
 import java.util.Map;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import org.apache.ibatis.annotations.Param;
 
 /**
  * @author -
  */
-public interface TReportBusinessActivityDetailMapper {
+public interface TReportBusinessActivityDetailMapper extends BaseMapper<ReportBusinessActivityDetail> {
 
     /**
      * 插入

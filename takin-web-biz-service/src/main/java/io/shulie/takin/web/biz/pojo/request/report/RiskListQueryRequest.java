@@ -16,6 +16,8 @@ import java.util.List;
 @ApiModel(value = "RiskListQueryRequest", description = "报告风险列表")
 public class RiskListQueryRequest {
     private List<Long> taskIds;
+    private String reportId;
+    private String xpathMd5;
     private String appName;
     private String serviceName;
     private String riskName;

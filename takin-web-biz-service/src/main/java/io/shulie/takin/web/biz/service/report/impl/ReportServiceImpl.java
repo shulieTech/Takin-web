@@ -894,10 +894,28 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public SreResponse<SrePageData<RiskItemExtractionVO>> getReportRiskItemPages(RiskListQueryRequest request) {
+        LambdaQueryWrapper<ReportEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ReportEntity::getId, request.getReportId());
+        queryWrapper.select(ReportEntity::getStartTime, ReportEntity::getEndTime);
+        ReportEntity report = reportMapper.selectOne(queryWrapper);
+        if (Objects.isNull(report)) {
+            return SreResponse.fail("没有找到对应的报告");
+        }
         Map<String, Object> param = new HashMap<>();
-        param.put("startTime", request.getStartTime());
-        param.put("endTime", request.getEndTime());
-        param.put("taskIdList", request.getTaskIds());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        param.put("startTime", simpleDateFormat.format(report.getStartTime()));
+        param.put("endTime", simpleDateFormat.format(report.getEndTime()));
+        LambdaQueryWrapper<ReportBusinessActivityDetail> activityDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetail::getReportId, request.getReportId());
+        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetail::getBindRef, request.getXpathMd5());
+        activityDetailLambdaQueryWrapper.isNotNull(ReportBusinessActivityDetail::getDiagnosisId);
+        activityDetailLambdaQueryWrapper.select(ReportBusinessActivityDetail::getDiagnosisId);
+        List<ReportBusinessActivityDetail> businessActivityDetails = tReportBusinessActivityDetailMapper.selectList(activityDetailLambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(businessActivityDetails)){
+            return SreResponse.fail("没有找到对应的风险诊断id");
+        }
+        List<Long> diagnosisIds = businessActivityDetails.stream().map(ReportBusinessActivityDetail::getDiagnosisId).collect(Collectors.toList());
+        param.put("taskIdList", diagnosisIds);
         param.put("tenantCode", WebPluginUtils.traceTenantCode());
         param.put("page", request.getPage());
         param.put("size", request.getSize());

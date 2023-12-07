@@ -18,4 +18,6 @@ public interface SreRiskUrlConstant {
     String COLLECTOR_SYNC_TRACE = "/api/clickhouse/syncTrace";
 
     String GET_REPORT_RISK_ITEM_CONDITION_URL = "/takin-sre/api/risk/extraction/risk/item/";
+
+    String GET_RISK_ITEM_APP_RATE="/takin-sre/api/risk/pressure/diagnosis/order";
 }

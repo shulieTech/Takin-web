@@ -442,22 +442,31 @@ public class ReportServiceImpl implements ReportService {
         return ResponseResult.success(activityResponse);
     }
 
-    private static List<ReportRiskItemOutput> getRiskItemListByDiagnosisId(ReportLinkDiagramReq reportLinkDiagramReq) {
+    private List<ReportRiskItemOutput> getRiskItemListByDiagnosisId(ReportLinkDiagramReq reportLinkDiagramReq) {
+        LambdaQueryWrapper<ReportBusinessActivityDetail> activityDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetail::getReportId, reportLinkDiagramReq.getReportId());
+        activityDetailLambdaQueryWrapper.eq(ReportBusinessActivityDetail::getBindRef, reportLinkDiagramReq.getXpathMd5());
+        activityDetailLambdaQueryWrapper.isNotNull(ReportBusinessActivityDetail::getDiagnosisId);
+        activityDetailLambdaQueryWrapper.select(ReportBusinessActivityDetail::getDiagnosisId);
+        List<ReportBusinessActivityDetail> businessActivityDetails = tReportBusinessActivityDetailMapper.selectList(activityDetailLambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(businessActivityDetails)) {
+            return Collections.emptyList();
+        }
+        List<Long> diagnosisIds = businessActivityDetails.stream().map(ReportBusinessActivityDetail::getDiagnosisId).collect(Collectors.toList());
         Map<String, Object> map = new HashMap<>();
-        map.put("taskIdList", Arrays.asList(reportLinkDiagramReq.getDiagnosisId()));
+        map.put("taskIdList", diagnosisIds);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         map.put("startTime", formatter.format(reportLinkDiagramReq.getStartTime()));
         map.put("endTime", formatter.format(reportLinkDiagramReq.getEndTime()));
         TypeToken<SreResponse<List<ReportRiskItemOutput>>> typeToken = new TypeToken<SreResponse<List<ReportRiskItemOutput>>>() {
         };
-//        String url = sreUrl + "/takin-sre/api/risk/pressure/diagnosis/order";
-        String url = "http://192.168.63.37:8501" + "/takin-sre/api/risk/pressure/diagnosis/order";
+        String url = sreUrl + SreRiskUrlConstant.GET_RISK_ITEM_APP_RATE;
         SreResponse<List<ReportRiskItemOutput>> response = SreHelper.builder().url(url).httpMethod(HttpMethod.POST).param(map).queryList(typeToken);
         if (null != response && response.isSuccess()) {
             return response.getData();
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -1027,26 +1036,6 @@ public class ReportServiceImpl implements ReportService {
 
         return SreHelper.builder().url(sreUrl + SreRiskUrlConstant.GET_REPORT_RISK_ITEM_CONDITION_URL + request.getCondition().getValue()).httpMethod(HttpMethod.GET).queryList(typeToken);
     }
-
-    public static void main(String[] args) throws ParseException {
-        ReportServiceImpl reportService = new ReportServiceImpl();
-        RiskListQueryRequest request = new RiskListQueryRequest();
-        request.setStartTime("2023-11-28 00:00:00");
-        request.setEndTime("2023-11-28 23:00:00");
-        request.setTaskIds(Arrays.asList(-1L));
-        request.setTenantCode("wstest");
-        request.setPage(1);
-        request.setSize(10);
-        System.out.println(JSON.toJSONString(reportService.getReportRiskItemPages(request)));
-
-        ReportLinkDiagramReq reportLinkDiagramReq = new ReportLinkDiagramReq();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        reportLinkDiagramReq.setEndTime(LocalDateTime.parse("2023-11-28 23:00:00", formatter));
-        reportLinkDiagramReq.setStartTime(LocalDateTime.parse("2023-11-28 00:00:00", formatter));
-        reportLinkDiagramReq.setDiagnosisId(-1L);
-        System.out.println(JSON.toJSONString(getRiskItemListByDiagnosisId(reportLinkDiagramReq)));
-    }
-
     private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5) {
         if (scriptNodeSummaryBean.getXpathMd5().equals(xpathMd5)) {
             return scriptNodeSummaryBean;

@@ -807,10 +807,10 @@ public class ReportServiceImpl implements ReportService {
         log.info("清理sre接口数据完成");
 
         //等待清理完成
-        int i = 0;
+        long startClearTime = System.currentTimeMillis();
         while (true) {
             try {
-                Thread.sleep(3000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -821,9 +821,8 @@ public class ReportServiceImpl implements ReportService {
                     break;
                 }
             }
-            i++;
             log.info("等待清零完成。。。");
-            if (i > 20 * 2) {
+            if ((System.currentTimeMillis() - startClearTime) > 1000 * 60 * 2) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "等待清理接口清理完成超过2分钟，请稍后重新刷新");
             }
         }
@@ -832,6 +831,12 @@ public class ReportServiceImpl implements ReportService {
         //同步数据
         syncSreTraceData(request.getStartTime(), request.getEndTime(), activityResponse);
         log.info("同步数据到sre完成");
+        try {
+            //同步数据之后等5s，等待数据消费写入ck
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         //开始风险诊断
         ReportRiskRequest reportRiskReq = new ReportRiskRequest();

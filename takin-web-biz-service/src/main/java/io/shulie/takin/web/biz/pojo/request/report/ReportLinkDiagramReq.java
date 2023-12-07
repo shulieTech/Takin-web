@@ -23,7 +23,7 @@ public class ReportLinkDiagramReq {
     private Long reportId;
 
     @ApiModelProperty("诊断id")
-    @NotBlank(message = "诊断id不允许为空")
+    @NotNull(message = "诊断id不允许为空")
     private Long diagnosisId;
 
     @NotBlank(message = "参数xpathMd5不允许为空")

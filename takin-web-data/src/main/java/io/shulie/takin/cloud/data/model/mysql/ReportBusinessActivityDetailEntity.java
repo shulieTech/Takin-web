@@ -161,4 +161,7 @@ public class ReportBusinessActivityDetailEntity {
     
     @TableField(value = "report_json")
     private String reportJson;
+
+    @TableField(value = "chain_code")
+    private String chainCode;
 }

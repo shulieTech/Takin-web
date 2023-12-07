@@ -44,8 +44,6 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
     @Resource
     private BusinessLinkManageTableMapper businessLinkManageTableMapper;
     @Resource
-    private ReportBusinessActivityDetailMapper detailMapper;
-    @Resource
     private ReportDao reportDao;
 
     @Value("${takin.collector.url: localhost:10086}")
@@ -97,7 +95,7 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
             };
             long currentTimeMillis = System.currentTimeMillis();
             SreResponse<List<SreSlaParamReq>> response = SreHelper.builder().url(collectorHost + SreRiskUrlConstant.GET_SRE_SLA_PARAMS_FROM_COLLECTOR)
-                    .httpMethod(HttpMethod.POST).timeout(1000 * 20).param(collectorSlaRequest).queryList(typeToken);
+                    .httpMethod(HttpMethod.POST).timeout(1000 * 25).param(collectorSlaRequest).queryList(typeToken);
             System.out.println("请求耗时为:" + (System.currentTimeMillis() - currentTimeMillis));
             if (!response.isSuccess()) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "设置sla请求trace出现异常:" + response.getErrorMsg());
@@ -109,13 +107,9 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
                 //将chainCode设置到压测报告业务活动中
                 String chainCode = response.getData().get(0).getChainCode();
                 ReportBusinessActivityDetailEntity detailEntity = detailsByReportId.stream().filter(o -> o.getBusinessActivityId().equals(collectorSlaRequest.getRefId())).findFirst().get();
-                ActivityResponse activityResponse = new ActivityResponse();
-                if (StringUtils.isNotBlank(detailEntity.getReportJson())) {
-                    activityResponse = JSON.parseObject(detailEntity.getReportJson(), ActivityResponse.class);
-                }
-                activityResponse.setChainCode(chainCode);
-                detailEntity.setReportJson(JSON.toJSONString(activityResponse));
-                detailMapper.updateById(detailEntity);
+
+                detailEntity.setChainCode(chainCode);
+                reportDao.modifyReportBusinessActivity(detailEntity.getReportId(), detailEntity.getBusinessActivityId(), null, chainCode);
 
                 SreSyncLinkReq sreSyncLinkReq = new SreSyncLinkReq();
                 sreSyncLinkReq.setChainCode(chainCode);

@@ -10,8 +10,8 @@ public interface SreRiskUrlConstant {
     String GET_REPORT_RISK_ITEM_PAGES_URL = "/takin-sre/api/risk/pressure/diagnosis/query";
     String GET_REPORT_RISK_DIAGNOSIS_URL = "/takin-sre/api/risk/pressure/diagnosis/status";
     String REPORT_RISK_DIAGNOSIS_URL = "/takin-sre/api/risk/pressure/diagnosis";
-    String GET_REPORT_RISK_DIAGNOSIS_CONFIRM_URL = "/takin-sre/api/risk/pressure/diagnosis/delete/confirm";
-    String GET_REPORT_RISK_DIAGNOSIS_DELETE_URL = "/takin-sre/api/risk/pressure/diagnosis/delete";
+    String GET_REPORT_RISK_DIAGNOSIS_CONFIRM_URL = "/takin-sre/api/risk/pressure/clear/data/check";
+    String GET_REPORT_RISK_DIAGNOSIS_DELETE_URL = "/takin-sre/api/risk/pressure/clear/data";
     String SET_SRE_CONFIG_SLA = "/takin-sre/api/risk/pressure/config/sla";
     String SET_SRE_CONFIG_CHAIN = "/takin-sre/api/risk/pressure/config/chain";
     String GET_SRE_SLA_PARAMS_FROM_COLLECTOR = "/api/clickhouse/getSlaParams";

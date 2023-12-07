@@ -81,6 +81,7 @@ import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -140,6 +141,8 @@ public class ReportServiceImpl implements ReportService {
 
     @Value("${takin.collector.url: localhost:10086}")
     private String collectorHost;
+
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -787,26 +790,27 @@ public class ReportServiceImpl implements ReportService {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_VALIDATE_ERROR, "重新生成拓扑图，没有获取到对应的数据!");
         }
         io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse = queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
-        if (StringUtils.isNotBlank(detail.getReportJson())) {
-            io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse response = JSON.parseObject(detail.getReportJson(), io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse.class);
-            activityResponse.setChainCode(response.getChainCode());
-        }
         // 将链路拓扑信息更新到表中
-        reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse), null);
+        reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
+        log.info("更新链路拓扑图到表中完成");
 
+        //sre的逻辑使用报告结束时间
+        ReportResult reportResult = reportDao.getById(reportLinkDiagramReq.getReportId());
+        Date endTime = reportResult.getEndTime();
         //清理接口数据
         ReportRiskDeleteRequest request = new ReportRiskDeleteRequest();
-        request.setChainCode(activityResponse.getChainCode());
+        request.setChainCode(detail.getChainCode());
         request.setStartTime(reportLinkDiagramReq.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        request.setEndTime(reportLinkDiagramReq.getEndTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        request.setEndTime(simpleDateFormat.format(endTime));
         request.setTenantCode(WebPluginUtils.traceTenantCode());
         deleteReportRiskDiagnosis(request);
+        log.info("清理sre接口数据完成");
 
         //等待清理完成
         int i = 0;
         while (true) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -819,25 +823,30 @@ public class ReportServiceImpl implements ReportService {
             }
             i++;
             log.info("等待清零完成。。。");
-            if (i > 60 * 3) {
-                throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "等待清理接口清理完成超过3分钟，请稍后重新刷新");
+            if (i > 20 * 2) {
+                throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "等待清理接口清理完成超过2分钟，请稍后重新刷新");
             }
         }
+        log.info("确定清理sre接口数据完成");
 
         //同步数据
         syncSreTraceData(request.getStartTime(), request.getEndTime(), activityResponse);
+        log.info("同步数据到sre完成");
 
-        //发起诊断
+        //开始风险诊断
         ReportRiskRequest reportRiskReq = new ReportRiskRequest();
         reportRiskReq.setStartTime(request.getStartTime());
+        reportRiskReq.setChainCodeList(Collections.singletonList(detail.getChainCode()));
         reportRiskReq.setEndTime(request.getEndTime());
-        reportRiskReq.setTenantCode(WebPluginUtils.traceTenantCode());
-        //开始风险诊断
+        TenantInfoExt tenantInfo = WebPluginUtils.getTenantInfo(reportResult.getTenantId());
+        reportRiskReq.setTenantCode(tenantInfo == null ? WebPluginUtils.traceTenantCode() : tenantInfo.getTenantCode());
         SreResponse<Map<String, Object>> mapSreResponse = reportRiskDiagnosis(reportRiskReq);
+        log.info("发起诊断完成");
         if (mapSreResponse.isSuccess()) {
-            Object o = mapSreResponse.getData().get(activityResponse.getChainCode());
+            Object o = mapSreResponse.getData().get(detail.getChainCode());
             if (o != null) {
-                reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse), Long.parseLong(o.toString()));
+                //将风险id存入表中
+                reportDao.modifyReportBusinessActivity(reportLinkDiagramReq.getReportId(), detail.getBusinessActivityId(), Long.parseLong(o.toString()), null);
             } else {
                 log.warn("没有获取到对应的SreTaskId");
             }
@@ -983,7 +992,7 @@ public class ReportServiceImpl implements ReportService {
         TypeToken<SreResponse<Object>> typeToken = new TypeToken<SreResponse<Object>>() {
         };
         SreHelper.builder().url(collectorHost + SreRiskUrlConstant.COLLECTOR_SYNC_TRACE)
-                .httpMethod(HttpMethod.POST).param(collectorSlaRequest).queryList(typeToken);
+                .httpMethod(HttpMethod.POST).timeout(1000 * 60 * 3).param(collectorSlaRequest).queryList(typeToken);
     }
 
     @Override

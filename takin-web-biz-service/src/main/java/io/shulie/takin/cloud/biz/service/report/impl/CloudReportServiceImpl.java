@@ -105,6 +105,7 @@ import io.shulie.takin.sre.common.result.SreResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
@@ -187,7 +188,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     private static final BigDecimal ZERO = new BigDecimal("0");
 
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public PageInfo<CloudReportDTO> listReport(ReportQueryReq param) {
@@ -1182,6 +1183,10 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             log.error("not find reportId= {}", reportId);
             return;
         }
+        TenantInfoExt tenantInfo = WebPluginUtils.getTenantInfo(reportResult.getTenantId());
+        if (tenantInfo != null) {
+            reportResult.setTenantCode(tenantInfo.getTenantCode());
+        }
         // 默认为true
         boolean updateVersion = System.currentTimeMillis() >= 0;
         log.info("ReportId={}, tenantId={}, CompareResult={}", reportId, reportResult.getTenantId(), updateVersion);
@@ -1245,7 +1250,12 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             Long reportId = reportResult.getId();
             Date startTime = reportResult.getStartTime();
             Map<String, ActivityResponse> dealData = new HashMap<>();
-            Date endTime = new Date();
+            Date endTime;
+            if (reportResult.getEndTime() != null) {
+                endTime = reportResult.getEndTime();
+            } else {
+                endTime = new Date();
+            }
             List<String> chainCodeList = new ArrayList<>();
             List<ReportBusinessActivityDetailEntity> activityByReportIds = reportDao.getActivityByReportIds(Collections.singletonList(reportId));
             if (CollectionUtils.isNotEmpty(activityByReportIds)) {
@@ -1259,26 +1269,21 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                         reportLinkDiagramReq.setStartTime(localDateTime);
                         reportLinkDiagramReq.setEndTime(LocalDateTime.now());
                         reportLinkDiagramReq.setReportId(reportId);
-                        String reportJson = detail.getReportJson();
-                        //todo mock
-                        ActivityResponse activityResponse = new ActivityResponse();
-//                        ActivityResponse activityResponse = reportService.queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
-                        if (StringUtils.isNotBlank(reportJson)) {
-                            ActivityResponse response = JSON.parseObject(reportJson, ActivityResponse.class);
-                            activityResponse.setChainCode(response.getChainCode());
-                            chainCodeList.add(response.getChainCode());
+                        ActivityResponse activityResponse = reportService.queryLinkDiagram(detail.getBusinessActivityId(), reportLinkDiagramReq);
+                        if (StringUtils.isNotBlank(detail.getChainCode())) {
+                            chainCodeList.add(detail.getChainCode());
                         }
 
                         if (activityResponse != null) {
                             // 将链路拓扑信息更新到表中
-                            reportDao.modifyReportLinkDiagram(reportId, detail.getBindRef(), JSON.toJSONString(activityResponse), null);
+                            reportDao.modifyReportLinkDiagram(reportId, detail.getBindRef(), JSON.toJSONString(activityResponse));
                             //压测数据同步到sre
                             try {
                                 reportService.syncSreTraceData(simpleDateFormat.format(startTime), simpleDateFormat.format(endTime), activityResponse);
                             } catch (Exception e) {
                                 log.error("生成报告同步trace数据出现异常", e);
                             }
-                            dealData.put(detail.getBindRef(), activityResponse);
+                            dealData.put(detail.getChainCode(), activityResponse);
                         }
                     }
                 });
@@ -1293,9 +1298,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                         SreResponse<Map<String, Object>> mapSreResponse = reportService.reportRiskDiagnosis(request);
                         if (mapSreResponse.isSuccess()) {
                             dealData.forEach((k, v) -> {
-                                Object o = mapSreResponse.getData().get(v.getChainCode());
+                                Object o = mapSreResponse.getData().get(k);
                                 if (o != null) {
-                                    reportDao.modifyReportLinkDiagram(reportId, k, JSON.toJSONString(v), Long.parseLong(o.toString()));
+                                    reportDao.modifyReportBusinessActivity(reportId, v.getActivityId(), Long.parseLong(o.toString()), null);
                                 } else {
                                     log.warn("报告id:{},ref为:{}没有找到对应的任务ID", reportId, k);
                                 }
@@ -1835,7 +1840,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (CollectionUtils.isEmpty(reportBusinessActivityDetails)) {
             return null;
         }
-        List<Long> allDiagnosisIds = reportBusinessActivityDetails.stream().filter(a->Objects.nonNull(a.getDiagnosisId()))
+        List<Long> allDiagnosisIds = reportBusinessActivityDetails.stream().filter(a -> Objects.nonNull(a.getDiagnosisId()))
                 .map(ReportBusinessActivityDetail::getDiagnosisId)
                 .collect(Collectors.toList());
 

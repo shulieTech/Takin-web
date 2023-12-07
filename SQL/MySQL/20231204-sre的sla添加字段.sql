@@ -4,3 +4,6 @@ ALTER TABLE `trodb`.`t_scene_manage`
 
 ALTER TABLE `trodb`.`t_report_business_activity_detail`
     ADD COLUMN `diagnosis_id` bigint NULL COMMENT 'sre任务ID' AFTER `report_json`;
+
+ALTER TABLE `trodb`.`t_report_business_activity_detail`
+    ADD COLUMN `chain_code` varchar(64) NULL COMMENT 'sre的链路code' AFTER `diagnosis_id`;

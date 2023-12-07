@@ -352,11 +352,28 @@ public class ReportDaoImpl implements ReportDao {
     }
 
     @Override
-    public void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram, Long diagnosisId) {
+    public void modifyReportLinkDiagram(Long reportId,String xpathMd5,String linkDiagram) {
         LambdaUpdateWrapper<ReportBusinessActivityDetailEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
         updateWrapper.eq(ReportBusinessActivityDetailEntity::getBindRef, xpathMd5);
         updateWrapper.set(ReportBusinessActivityDetailEntity::getReportJson, linkDiagram);
+        detailMapper.update(null, updateWrapper);
+    }
+
+    @Override
+    public void modifyReportBusinessActivity(Long reportId,Long activityId, Long diagnosisId, String chainCode) {
+        if (reportId == null || activityId == null){
+            return;
+        }
+        if (diagnosisId == null && StringUtils.isBlank(chainCode)){
+            return;
+        }
+        LambdaUpdateWrapper<ReportBusinessActivityDetailEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
+        updateWrapper.eq(ReportBusinessActivityDetailEntity::getBusinessActivityId, activityId);
+        if (StringUtils.isNotBlank(chainCode)){
+            updateWrapper.set(ReportBusinessActivityDetailEntity::getChainCode, chainCode);
+        }
         if (diagnosisId != null){
             updateWrapper.set(ReportBusinessActivityDetailEntity::getDiagnosisId, diagnosisId);
         }

@@ -57,8 +57,8 @@ public class ReportRealTimeController {
 
     @ApiOperation("获取sre的trace详情")
     @PostMapping("/report/trace/sre/detail")
-    private ReportLinkDetailResponse getSreTraceDetail(String traceId, Integer amdbReportTraceId) {
-        return reportRealTimeService.getSreRiskLinkDetail(traceId, amdbReportTraceId);
+    private ReportLinkDetailResponse getSreTraceDetail(@RequestParam String traceId, @RequestParam(defaultValue = "0") Integer id) {
+        return reportRealTimeService.getSreRiskLinkDetail(traceId, id);
     }
 
 }

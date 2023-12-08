@@ -1280,8 +1280,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                             //压测数据同步到sre
                             try {
                                 reportService.syncSreTraceData(simpleDateFormat.format(startTime), simpleDateFormat.format(endTime), activityResponse);
-                                //同步数据之后等5s，等待数据消费写入ck
-                                Thread.sleep(1000 * 5);
+                                //同步数据之后等10s，等待数据消费写入ck
+                                Thread.sleep(1000 * 10);
                             } catch (Exception e) {
                                 log.error("生成报告同步trace数据出现异常", e);
                             }

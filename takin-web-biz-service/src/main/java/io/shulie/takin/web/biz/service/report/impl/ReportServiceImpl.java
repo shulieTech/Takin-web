@@ -439,7 +439,7 @@ public class ReportServiceImpl implements ReportService {
                 if (Objects.isNull(riskItemOutput)) {
                     continue;
                 }
-                node.setRiskRank(riskItemOutput.getRanking());
+                node.setRiskRank(riskItemOutput.getRank());
             }
         }
         return ResponseResult.success(activityResponse);
@@ -462,6 +462,7 @@ public class ReportServiceImpl implements ReportService {
 
         map.put("startTime", formatter.format(reportLinkDiagramReq.getStartTime()));
         map.put("endTime", formatter.format(reportLinkDiagramReq.getEndTime()));
+        map.put("tenantCode", WebPluginUtils.traceTenantCode());
         TypeToken<SreResponse<List<ReportRiskItemOutput>>> typeToken = new TypeToken<SreResponse<List<ReportRiskItemOutput>>>() {
         };
         String url = sreUrl + SreRiskUrlConstant.GET_RISK_ITEM_APP_RATE;
@@ -1036,7 +1037,7 @@ public class ReportServiceImpl implements ReportService {
         };
         Map<String, Object> param = new HashMap<>();
         param.put("timestr", new Date().getTime());
-
+        param.put("tenantCode", WebPluginUtils.traceTenantCode());
         return SreHelper.builder().url(sreUrl + SreRiskUrlConstant.GET_REPORT_RISK_ITEM_CONDITION_URL + request.getCondition().getValue()).httpMethod(HttpMethod.GET).queryList(typeToken);
     }
     private ScriptNodeSummaryBean getCurrentValue(ScriptNodeSummaryBean scriptNodeSummaryBean, String xpathMd5) {

@@ -436,6 +436,9 @@ public class ReportServiceImpl implements ReportService {
             List<ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse> nodes = activityResponse.getTopology().getNodes();
             for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : nodes) {
                 ReportRiskItemOutput riskItemOutput = riskItemMap.get(node.getLabel());
+                if (Objects.isNull(riskItemOutput)) {
+                    continue;
+                }
                 node.setRiskRank(riskItemOutput.getRanking());
             }
         }

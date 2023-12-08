@@ -101,7 +101,7 @@ public class RiskItemExtractionVO implements Serializable {
     private Double sla;
 
     /**
-     * 评价调用次数
+     * 平均调用次数
      */
     private Double avgCall;
 

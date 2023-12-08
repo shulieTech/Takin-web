@@ -354,23 +354,16 @@ public abstract class AbstractIndicators {
     protected void notifyFinish(ResourceContext context) {
         String resourceId = context.getResourceId();
         // 清除 SLA配置  生成报告拦截 状态拦截
-        //todo mock 让报告过去
-        Event event = new Event();
-        event.setEventName("finished");
-        TaskResult result = new TaskResult(context.getSceneId(), context.getReportId(), context.getTenantId());
-        result.setResourceId(context.getResourceId());
-        event.setExt(result);
-        eventCenterTemplate.doEvents(event);
-//        if (!Objects.equals(context.getPressureType(), PressureSceneEnum.INSPECTION_MODE.getCode())
-//            && redisClientUtil.lockExpire(PressureStartCache.getResourceFinishEventKey(resourceId),
-//            String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)) {
-//            Event event = new Event();
-//            event.setEventName("finished");
-//            TaskResult result = new TaskResult(context.getSceneId(), context.getReportId(), context.getTenantId());
-//            result.setResourceId(context.getResourceId());
-//            event.setExt(result);
-//            eventCenterTemplate.doEvents(event);
-//        }
+        if (!Objects.equals(context.getPressureType(), PressureSceneEnum.INSPECTION_MODE.getCode())
+            && redisClientUtil.lockExpire(PressureStartCache.getResourceFinishEventKey(resourceId),
+            String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)) {
+            Event event = new Event();
+            event.setEventName("finished");
+            TaskResult result = new TaskResult(context.getSceneId(), context.getReportId(), context.getTenantId());
+            result.setResourceId(context.getResourceId());
+            event.setExt(result);
+            eventCenterTemplate.doEvents(event);
+        }
     }
 
     protected void notifyEnd(ResourceContext context, Date time) {

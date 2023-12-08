@@ -66,10 +66,8 @@ public class ApplicationChecker implements StartConditionChecker {
     @Override
     public CheckResult check(StartConditionCheckerContext context) {
         try {
-            //todo mock
+            doCheck(context);
             return CheckResult.success(type());
-//            doCheck(context);
-//            return CheckResult.success(type());
         } catch (Exception e) {
             return CheckResult.fail(type(), e.getMessage());
         }

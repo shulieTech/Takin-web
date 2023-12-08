@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.report.RiskTraceDetailRequest;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
@@ -57,8 +58,8 @@ public class ReportRealTimeController {
 
     @ApiOperation("获取sre的trace详情")
     @PostMapping("/report/trace/sre/detail")
-    private ReportLinkDetailResponse getSreTraceDetail(@RequestParam String traceId, @RequestParam(defaultValue = "0") Integer id) {
-        return reportRealTimeService.getSreRiskLinkDetail(traceId, id);
+    private ReportLinkDetailResponse getSreTraceDetail(@RequestBody RiskTraceDetailRequest request) {
+        return reportRealTimeService.getSreRiskLinkDetail(request.getTraceId(), request.getId());
     }
 
 }

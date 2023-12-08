@@ -89,4 +89,29 @@ public class RiskItemExtractionVO implements Serializable {
     private Date gmtUpdate;
     private String traceId;
     private String spanId;
+
+    /**
+     * 平均rt
+     */
+    private Double avgRt;
+
+    /**
+     * sla
+     */
+    private Double sla;
+
+    /**
+     * 评价调用次数
+     */
+    private Double avgCall;
+
+    /**
+     * 预计提升
+     */
+    private Double ExpectedImprovement;
+
+    /**
+     * 风险详情
+     */
+    private String detail;
 }

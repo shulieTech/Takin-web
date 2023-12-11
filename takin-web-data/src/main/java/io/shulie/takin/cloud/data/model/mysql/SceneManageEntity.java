@@ -127,7 +127,7 @@ public class SceneManageEntity {
     private Integer isArchive;
     @TableField(value = "business_flow_id")
     private Long businessFlowId;
-    @TableField(value = "auto_start_sla_flag", typeHandler = IntegerTypeHandler.class)
+    @TableField(value = "auto_start_sla_flag", typeHandler = IntegerToBooleanTypeHandler.class)
     private Boolean autoStartSLAFlag;
 
 }

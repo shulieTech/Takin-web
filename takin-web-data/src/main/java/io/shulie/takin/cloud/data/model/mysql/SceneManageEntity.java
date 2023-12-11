@@ -9,11 +9,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.cloud.data.annocation.EnableSign;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.apache.ibatis.type.IntegerTypeHandler;
 
-import javax.validation.constraints.NotNull;
 
 /**
  * 压测场景 - 实体类

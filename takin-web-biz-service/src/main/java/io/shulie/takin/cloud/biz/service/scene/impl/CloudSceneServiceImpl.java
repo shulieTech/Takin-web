@@ -13,6 +13,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneService;
@@ -390,7 +391,9 @@ public class CloudSceneServiceImpl implements CloudSceneService {
      */
     @Override
     public SceneManageEntity getScene(long sceneId) throws TakinCloudException {
-        SceneManageEntity scene = sceneManageMapper.selectById(sceneId);
+        LambdaQueryWrapper<SceneManageEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(SceneManageEntity::getId, sceneId);
+        SceneManageEntity scene = sceneManageMapper.selectOne(lambdaQueryWrapper);
         if (scene == null) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, "未找到场景:" + sceneId);
         }

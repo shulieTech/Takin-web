@@ -1055,7 +1055,7 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         wrapperOutput.setScriptType(sceneManageResult.getScriptType());
         wrapperOutput.setPressureTestSceneName(sceneManageResult.getSceneName());
         wrapperOutput.setType(sceneManageResult.getType());
-        wrapperOutput.setAutoStartSLAFlag(sceneManageResult.getAutoStartSLAFlag());
+        wrapperOutput.setAutoStartSLAFlag(Optional.ofNullable(sceneManageResult.getAutoStartSLAFlag()).orElse(false));
         // 状态适配
         wrapperOutput.setStatus(SceneManageStatusEnum.getAdaptStatus(sceneManageResult.getStatus()));
         wrapperOutput.setUserId(sceneManageResult.getUserId());

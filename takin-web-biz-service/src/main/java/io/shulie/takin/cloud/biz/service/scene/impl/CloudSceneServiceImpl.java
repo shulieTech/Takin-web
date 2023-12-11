@@ -1,12 +1,7 @@
 package io.shulie.takin.cloud.biz.service.scene.impl;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -205,7 +200,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
                 setScriptType(scene.getScriptType());
                 setScriptId(Long.parseLong(scriptIdString));
                 setBusinessFlowId(Long.parseLong(businessFlowIdString));
-                setAutoStartSLAFlag(scene.getAutoStartSLAFlag());
+                setAutoStartSLAFlag(Optional.ofNullable(scene.getAutoStartSLAFlag()).orElse(false));
             }};
         } catch (JSONException e) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "的拓展字段错误");

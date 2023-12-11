@@ -1371,7 +1371,7 @@ public class CsvManageServiceImpl implements CsvManageService {
                 return;
             }
             // 判断下文件数量 如果是0条 则任务失败
-            if (currentCreateScheduleDTO.getCurrent() == 0) {
+            if (currentCreateScheduleDTO == null || currentCreateScheduleDTO.getCurrent() == 0) {
                 RedisHelper.delete(CSV_TASK_REDIS_KEY);
                 scriptCsvCreateTaskEntity.setCreateStatus(ScriptCsvCreateTaskState.FAIL);
                 scriptCsvCreateTaskEntity.setRemark("生成文件的数据是0条，所以任务失败了");

@@ -71,7 +71,6 @@ public class SceneRequest extends ContextExt {
         @NotNull(message = "业务流程主键不能为空")
         private Long businessFlowId;
         @ApiModelProperty(value = "是否自动设置sla开关")
-        @NotNull(message = "是否自动设置sla开关不能为空")
         private boolean autoStartSLAFlag;
     }
 

@@ -99,6 +99,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
         } catch (Exception e) {
             // 发生异常则回滚数据
             platformTransactionManager.rollback(transactionStatus);
+            log.error("创建压测场景失败", e);
             throw e;
         }
     }
@@ -145,6 +146,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
         } catch (Exception e) {
             // 发生异常则回滚数据
             platformTransactionManager.rollback(transactionStatus);
+            log.error("更新压测场景失败", e);
             throw e;
         }
     }
@@ -203,6 +205,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
                 setAutoStartSLAFlag(Optional.ofNullable(scene.getAutoStartSLAFlag()).orElse(false));
             }};
         } catch (JSONException e) {
+            log.error("场景{}的拓展字段错误", sceneId, e);
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "的拓展字段错误");
         }
     }
@@ -311,8 +314,8 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             // 填充结果
             stringResult.forEach((key, value) -> result.put(key, JSONObject.parseObject(value, OldGoalModel.class).convert()));
             return result;
-        } catch (
-                JSONException e) {
+        } catch (JSONException e) {
+            log.error("场景{}的拓展字段错误", sceneId, e);
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "施压目标解析错误");
         }
     }
@@ -330,6 +333,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             return JSONObject.parseObject(scene.getPtConfig(), new TypeReference<PtConfigExt>() {
             });
         } catch (JSONException e) {
+            log.error("场景{}的拓展字段错误", sceneId, e);
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "压测线程组解析错误");
         }
     }
@@ -367,6 +371,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
                 }};
             }).collect(Collectors.toList());
         } catch (JSONException e) {
+            log.error("场景{}SLA条件错误", sceneId, e);
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "SLA条件错误");
         }
     }

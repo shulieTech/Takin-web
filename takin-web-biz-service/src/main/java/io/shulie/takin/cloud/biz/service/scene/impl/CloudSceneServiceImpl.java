@@ -184,26 +184,32 @@ public class CloudSceneServiceImpl implements CloudSceneService {
     public BasicInfo getBasicInfo(long sceneId) {
         try {
             SceneManageEntity scene = getScene(sceneId);
+            if (Objects.isNull(scene)) {
+                return null;
+            }
+            BasicInfo basicInfo = new BasicInfo();
             // 解析拓展字段
             String featureString = scene.getFeatures();
-            Map<String, ?> feature = JSONObject.parseObject(featureString, new TypeReference<Map<String, ?>>() {
-            });
-            // 获取值
-            String scriptIdString, businessFlowIdString;
-            Object scriptIdResult = feature.get("scriptId");
-            scriptIdString = scriptIdResult == null ? "-1" : scriptIdResult.toString();
-            Object businessFlowIdResult = feature.get("businessFlowId");
-            businessFlowIdString = businessFlowIdResult == null ? "-1" : businessFlowIdResult.toString();
+            if (StringUtils.isNotBlank(featureString)) {
+                Map<String, ?> feature = JSONObject.parseObject(featureString, new TypeReference<Map<String, ?>>() {
+                });
+                // 获取值
+                String scriptIdString, businessFlowIdString;
+                Object scriptIdResult = feature.get("scriptId");
+                scriptIdString = scriptIdResult == null ? "-1" : scriptIdResult.toString();
+                Object businessFlowIdResult = feature.get("businessFlowId");
+                businessFlowIdString = businessFlowIdResult == null ? "-1" : businessFlowIdResult.toString();
+                basicInfo.setScriptId(Long.parseLong(scriptIdString));
+                basicInfo.setBusinessFlowId(Long.parseLong(businessFlowIdString));
+            }
+
+            basicInfo.setSceneId(scene.getId());
+            basicInfo.setName(scene.getSceneName());
+            basicInfo.setType(scene.getType());
+            basicInfo.setScriptType(scene.getScriptType());
+            basicInfo.setAutoStartSLAFlag(Optional.ofNullable(scene.getAutoStartSLAFlag()).orElse(false));
             // 组装返回数据
-            return new BasicInfo() {{
-                setSceneId(scene.getId());
-                setName(scene.getSceneName());
-                setType(scene.getType());
-                setScriptType(scene.getScriptType());
-                setScriptId(Long.parseLong(scriptIdString));
-                setBusinessFlowId(Long.parseLong(businessFlowIdString));
-                setAutoStartSLAFlag(Optional.ofNullable(scene.getAutoStartSLAFlag()).orElse(false));
-            }};
+            return basicInfo;
         } catch (JSONException e) {
             log.error("场景{}的拓展字段错误", sceneId, e);
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "的拓展字段错误");
@@ -222,9 +228,8 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             SceneManageEntity scene = getScene(sceneId);
             String analysisResultString = scene.getScriptAnalysisResult();
             if (StrUtil.isNotBlank(analysisResultString)) {
-                return JSONObject.parseObject(analysisResultString,
-                        new TypeReference<List<ScriptNode>>() {
-                        });
+                return JSONObject.parseObject(analysisResultString, new TypeReference<List<ScriptNode>>() {
+                });
             }
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, sceneId + "的脚本解析结果不存在");
         } catch (JSONException e) {

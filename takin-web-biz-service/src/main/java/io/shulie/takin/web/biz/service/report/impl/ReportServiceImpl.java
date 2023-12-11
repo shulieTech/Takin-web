@@ -142,6 +142,9 @@ public class ReportServiceImpl implements ReportService {
     @Value("${takin.collector.url: localhost:10086}")
     private String collectorHost;
 
+    @Value("${report.start.risk: true}")
+    private boolean reportStartRisk;
+
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -807,6 +810,11 @@ public class ReportServiceImpl implements ReportService {
         reportDao.modifyReportLinkDiagram(reportLinkDiagramReq.getReportId(), reportLinkDiagramReq.getXpathMd5(), JSON.toJSONString(activityResponse));
         log.info("更新链路拓扑图到表中完成");
 
+        //添加开启风险计算配置
+        if (!reportStartRisk){
+            return;
+        }
+
         //sre的逻辑使用报告结束时间
         ReportResult reportResult = reportDao.getById(reportLinkDiagramReq.getReportId());
         Date endTime = reportResult.getEndTime();
@@ -845,8 +853,8 @@ public class ReportServiceImpl implements ReportService {
         syncSreTraceData(request.getStartTime(), request.getEndTime(), activityResponse);
         log.info("同步数据到sre完成");
         try {
-            //同步数据之后等5s，等待数据消费写入ck
-            Thread.sleep(5000);
+            //同步数据之后等10s，等待数据消费写入ck
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

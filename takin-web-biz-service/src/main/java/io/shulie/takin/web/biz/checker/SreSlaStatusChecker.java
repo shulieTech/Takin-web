@@ -52,10 +52,17 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
     @Value("${takin.sre.url: localhost:10086}")
     private String sreHost;
 
+    @Value("${report.start.risk: true}")
+    private boolean reportStartRisk;
+
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public CheckResult check(StartConditionCheckerContext context) throws TakinCloudException {
+        //如果报告中不需要，直接返回成功
+        if (!reportStartRisk) {
+            return CheckResult.success(type());
+        }
         SceneManageWrapperOutput sceneData = context.getSceneData();
         Long reportId = context.getReportId();
         try {

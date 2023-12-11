@@ -183,6 +183,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private String pressureEngineJtlPath;
     @Value("${pressure.engine.log.path:/data/nfs_dir/logs}")
     private String pressureEngineLogPath;
+    @Value("${report.start.risk: true}")
+    private boolean reportStartRisk;
 
     public static final String COMPARE = "<=";
 
@@ -1278,18 +1280,20 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                             // 将链路拓扑信息更新到表中
                             reportDao.modifyReportLinkDiagram(reportId, detail.getBindRef(), JSON.toJSONString(activityResponse));
                             //压测数据同步到sre
-                            try {
-                                reportService.syncSreTraceData(simpleDateFormat.format(startTime), simpleDateFormat.format(endTime), activityResponse);
-                                //同步数据之后等10s，等待数据消费写入ck
-                                Thread.sleep(1000 * 10);
-                            } catch (Exception e) {
-                                log.error("生成报告同步trace数据出现异常", e);
+                            if (reportStartRisk) {
+                                try {
+                                    reportService.syncSreTraceData(simpleDateFormat.format(startTime), simpleDateFormat.format(endTime), activityResponse);
+                                    //同步数据之后等10s，等待数据消费写入ck
+                                    Thread.sleep(1000 * 10);
+                                } catch (Exception e) {
+                                    log.error("生成报告同步trace数据出现异常", e);
+                                }
+                                dealData.put(detail.getChainCode(), activityResponse);
                             }
-                            dealData.put(detail.getChainCode(), activityResponse);
                         }
                     }
                 });
-                if (CollectionUtils.isNotEmpty(chainCodeList)) {
+                if (CollectionUtils.isNotEmpty(chainCodeList) && reportStartRisk) {
                     ReportRiskRequest request = new ReportRiskRequest();
                     request.setStartTime(simpleDateFormat.format(startTime));
                     request.setEndTime(simpleDateFormat.format(endTime));

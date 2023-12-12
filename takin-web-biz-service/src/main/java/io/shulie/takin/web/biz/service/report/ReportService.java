@@ -239,7 +239,7 @@ public interface ReportService {
      */
     SreResponse<String> deleteReportRiskDiagnosisConfirm(ReportRiskDeleteRequest request);
 
-    void syncSreTraceData(String startTime, String endTime, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse);
+    SreResponse<String> syncSreTraceData(String startTime, String endTime, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse);
 
     SreResponse<List<String>> riskItemQueryCondition(ReportRiskItemCondition request);
 }

@@ -1027,15 +1027,15 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public void syncSreTraceData(String startTime, String endTime, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse) {
+    public SreResponse<String> syncSreTraceData(String startTime, String endTime, io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse activityResponse) {
         CollectorSlaRequest collectorSlaRequest = new CollectorSlaRequest();
         collectorSlaRequest.setStartDate(startTime);
         collectorSlaRequest.setEndDate(endTime);
         collectorSlaRequest.setAppName(activityResponse.getApplicationName());
         collectorSlaRequest.setRpc(activityResponse.getServiceName());
-        TypeToken<SreResponse<Object>> typeToken = new TypeToken<SreResponse<Object>>() {
+        TypeToken<SreResponse<String>> typeToken = new TypeToken<SreResponse<String>>() {
         };
-        SreHelper.builder().url(collectorHost + SreRiskUrlConstant.COLLECTOR_SYNC_TRACE)
+        return SreHelper.builder().url(collectorHost + SreRiskUrlConstant.COLLECTOR_SYNC_TRACE)
                 .httpMethod(HttpMethod.POST).timeout(1000 * 60 * 3).param(collectorSlaRequest).queryList(typeToken);
     }
 

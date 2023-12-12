@@ -102,7 +102,7 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
             };
             long currentTimeMillis = System.currentTimeMillis();
             SreResponse<List<SreSlaParamReq>> response = SreHelper.builder().url(collectorHost + SreRiskUrlConstant.GET_SRE_SLA_PARAMS_FROM_COLLECTOR)
-                    .httpMethod(HttpMethod.POST).timeout(1000 * 25).param(collectorSlaRequest).queryList(typeToken);
+                    .httpMethod(HttpMethod.POST).timeout(1000 * 50).param(collectorSlaRequest).queryList(typeToken);
             System.out.println("请求耗时为:" + (System.currentTimeMillis() - currentTimeMillis));
             if (!response.isSuccess()) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, "设置sla请求trace出现异常:" + response.getErrorMsg());

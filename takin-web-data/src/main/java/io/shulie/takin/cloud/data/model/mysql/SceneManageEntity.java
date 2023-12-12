@@ -126,7 +126,6 @@ public class SceneManageEntity {
     private Long businessFlowId;
     @TableField(value = "auto_start_sla_flag")
     private boolean autoStartSLAFlag;
-
 }
 
 

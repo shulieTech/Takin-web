@@ -147,7 +147,7 @@ public class SceneManageWrapperOutput extends ContextExt {
 
     private Long deptId;
 
-    private Boolean autoStartSLAFlag;
+    private boolean autoStartSLAFlag;
 
     @Data
     @EqualsAndHashCode(callSuper = true)

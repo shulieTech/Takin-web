@@ -13,6 +13,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneService;
@@ -207,7 +208,8 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             basicInfo.setName(scene.getSceneName());
             basicInfo.setType(scene.getType());
             basicInfo.setScriptType(scene.getScriptType());
-            basicInfo.setAutoStartSLAFlag(Optional.ofNullable(scene.getAutoStartSLAFlag()).orElse(false));
+            int num = Optional.ofNullable(scene.getAutoStartSLAFlag()).orElse(0);
+            basicInfo.setAutoStartSLAFlag(num == 1 ? true : false);
             // 组装返回数据
             return basicInfo;
         } catch (JSONException e) {
@@ -390,7 +392,9 @@ public class CloudSceneServiceImpl implements CloudSceneService {
      */
     @Override
     public SceneManageEntity getScene(long sceneId) throws TakinCloudException {
-        SceneManageEntity scene = sceneManageMapper.selectById(sceneId);
+        LambdaQueryWrapper<SceneManageEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(SceneManageEntity::getId, sceneId);
+        SceneManageEntity scene = sceneManageMapper.selectOne(lambdaQueryWrapper);
         if (scene == null) {
             throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, "未找到场景:" + sceneId);
         }
@@ -424,10 +428,9 @@ public class CloudSceneServiceImpl implements CloudSceneService {
      */
     private Long createScene(BasicInfo basicInfo,
                              PtConfigExt config, List<?> analysisResult, DataValidation dataValidation) {
-        Map<String, Object> feature = assembleFeature(basicInfo.getScriptId(), basicInfo.getBusinessFlowId(), dataValidation);
+        Map<String, Object> feature = assembleFeature(basicInfo, dataValidation);
         // 组装数据实体类
-        SceneManageEntity sceneEntity = assembleSceneEntity(basicInfo.getSceneId(), basicInfo.getType(), basicInfo.getName(),
-                basicInfo.getScriptType(), config, feature, analysisResult);
+        SceneManageEntity sceneEntity = assembleSceneEntity(basicInfo, config, feature, analysisResult);
         sceneEntity.setBusinessFlowId(Long.valueOf(String.valueOf(feature.getOrDefault("businessFlowId","0"))));
         // 设置创建者信息
         sceneEntity.setUserId(CloudPluginUtils.getUserId());
@@ -469,10 +472,9 @@ public class CloudSceneServiceImpl implements CloudSceneService {
      */
     private int updateStepScene(BasicInfo basicInfo,
                                 PtConfigExt config, List<?> analysisResult, DataValidation dataValidation) {
-        Map<String, Object> feature = assembleFeature(basicInfo.getScriptId(), basicInfo.getBusinessFlowId(), dataValidation);
+        Map<String, Object> feature = assembleFeature(basicInfo, dataValidation);
         // 组装数据实体类
-        SceneManageEntity sceneEntity = assembleSceneEntity(basicInfo.getSceneId(), basicInfo.getType(), basicInfo.getName(),
-                basicInfo.getScriptType(), config, feature, analysisResult);
+        SceneManageEntity sceneEntity = assembleSceneEntity(basicInfo, config, feature, analysisResult);
         // 执行数据库操作
         int updateRows = sceneManageMapper.updateById(sceneEntity);
         log.info("更新了业务活动「{}」。自增主键：{}。操作行数：{}。", basicInfo.getName(), sceneEntity.getId(), updateRows);
@@ -613,15 +615,13 @@ public class CloudSceneServiceImpl implements CloudSceneService {
     /**
      * 组装拓展字段
      *
-     * @param scriptId       脚本主键
-     * @param businessFlowId 业务流程主键
      * @param dataValidation 数据验证配置
      * @return 拓展字段的JSON对象
      */
-    private Map<String, Object> assembleFeature(long scriptId, long businessFlowId, DataValidation dataValidation) {
+    private Map<String, Object> assembleFeature(BasicInfo basicInfo, DataValidation dataValidation) {
         return new HashMap<String, Object>(3) {{
-            put("scriptId", scriptId);
-            put("businessFlowId", businessFlowId);
+            put("scriptId", basicInfo.getScriptId());
+            put("businessFlowId", basicInfo.getBusinessFlowId());
             put("dataValidation", dataValidation);
         }};
     }
@@ -629,21 +629,17 @@ public class CloudSceneServiceImpl implements CloudSceneService {
     /**
      * 组装场景实体类
      *
-     * @param sceneId        场景主键
-     * @param type           场景类型
-     * @param name           场景名称
-     * @param scriptType     脚本类型
      * @param config         施压线程组配置
      * @param feature        拓展字段
      * @param analysisResult 脚本解析结果
      * @return 场景实体类
      */
-    private SceneManageEntity assembleSceneEntity(Long sceneId, int type, String name, int scriptType, PtConfigExt config, Object feature, Object analysisResult) {
+    private SceneManageEntity assembleSceneEntity(BasicInfo basicInfo, PtConfigExt config, Object feature, Object analysisResult) {
         return new SceneManageEntity() {{
-            setType(type);
-            setId(sceneId);
-            setSceneName(name);
-            setScriptType(scriptType);
+            setType(basicInfo.getType());
+            setId(basicInfo.getSceneId());
+            setSceneName(basicInfo.getName());
+            setScriptType(basicInfo.getScriptType());
             setPtConfig(JSONObject.toJSONString(config));
             setFeatures(JSONObject.toJSONString(feature));
             setScriptAnalysisResult(JSONObject.toJSONString(analysisResult));
@@ -654,6 +650,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             Date now = new Date();
             setCreateTime(now);
             setUpdateTime(now);
+            setAutoStartSLAFlag(basicInfo.isAutoStartSLAFlag() ? 1 : 0);
         }};
     }
 }

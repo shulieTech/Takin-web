@@ -95,7 +95,7 @@ public class SreSlaStatusChecker extends AbstractIndicators implements StartCond
         //是否自动设置sla
         List<SreSlaParamReq> params = new ArrayList<>();
         List<SreSyncLinkReq> sreSyncLinkReqs = new ArrayList<>();
-        List<CollectorSlaRequest> collectorParam = getCollectorParam(businessLinkManageTableEntities, businessActivityConfig, sceneData.getAutoStartSLAFlag());
+        List<CollectorSlaRequest> collectorParam = getCollectorParam(businessLinkManageTableEntities, businessActivityConfig, sceneData.isAutoStartSLAFlag());
         collectorParam.forEach(collectorSlaRequest -> {
             collectorSlaRequest.setTenantCode(sceneData.getTenantCode());
             TypeToken<SreResponse<List<SreSlaParamReq>>> typeToken = new TypeToken<SreResponse<List<SreSlaParamReq>>>() {

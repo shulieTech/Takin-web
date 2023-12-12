@@ -43,13 +43,13 @@ public class OldGoalModel {
      * 自动设置SLA开始时间
      */
     @JSONField(name = "slaStartTime")
-    private Date slaStartTime;
+    private String slaStartTime;
 
     /**
      * 自动设置SLA结束时间
      */
     @JSONField(name = "slaEndTime")
-    private Date slaEndTime;
+    private String slaEndTime;
 
     /**
      * 从{@link Goal}转换
@@ -57,19 +57,14 @@ public class OldGoalModel {
      * @param goal 新的目标实体
      * @return 旧的目标实体
      */
-    public static OldGoalModel convert(Goal goal) throws Exception {
+    public static OldGoalModel convert(Goal goal) {
         return new OldGoalModel() {{
             setTargetRt(goal.getRt());
             setTargetTps(goal.getTps());
             setTargetSa(BigDecimal.valueOf(goal.getSa()));
             setTargetSuccessRate(BigDecimal.valueOf(goal.getSr()));
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            if (StringUtils.isNotBlank(goal.getSlaStartTime())) {
-                setSlaStartTime(sdf.parse(goal.getSlaStartTime()));
-            }
-            if (StringUtils.isNotBlank(goal.getSlaEndTime())) {
-                setSlaEndTime(sdf.parse(goal.getSlaEndTime()));
-            }
+            setSlaStartTime(goal.getSlaStartTime());
+            setSlaEndTime(goal.getSlaEndTime());
         }};
     }
 

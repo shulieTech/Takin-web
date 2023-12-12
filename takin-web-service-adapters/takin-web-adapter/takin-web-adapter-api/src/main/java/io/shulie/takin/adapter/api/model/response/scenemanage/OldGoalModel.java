@@ -58,14 +58,14 @@ public class OldGoalModel {
      * @return 旧的目标实体
      */
     public static OldGoalModel convert(Goal goal) {
-        return new OldGoalModel() {{
-            setTargetRt(goal.getRt());
-            setTargetTps(goal.getTps());
-            setTargetSa(BigDecimal.valueOf(goal.getSa()));
-            setTargetSuccessRate(BigDecimal.valueOf(goal.getSr()));
-            setSlaStartTime(goal.getSlaStartTime());
-            setSlaEndTime(goal.getSlaEndTime());
-        }};
+        OldGoalModel oldGoalModel = new OldGoalModel();
+        oldGoalModel.setTargetRt(goal.getRt());
+        oldGoalModel.setTargetTps(goal.getTps());
+        oldGoalModel.setTargetSa(BigDecimal.valueOf(goal.getSa()));
+        oldGoalModel.setTargetSuccessRate(BigDecimal.valueOf(goal.getSr()));
+        oldGoalModel.setSlaStartTime(goal.getSlaStartTime());
+        oldGoalModel.setSlaEndTime(goal.getSlaEndTime());
+        return oldGoalModel;
     }
 
     /**
@@ -74,13 +74,13 @@ public class OldGoalModel {
      * @return 新的目标实体
      */
     public Goal convert() {
-        return new Goal() {{
-            setRt(getTargetRt());
-            setTps(getTargetTps());
-            setSa(getTargetSa().doubleValue());
-            setSr(getTargetSuccessRate().doubleValue());
-            setSlaStartTime(getSlaStartTime());
-            setSlaEndTime(getSlaEndTime());
-        }};
+        Goal goal = new Goal();
+        goal.setRt(getTargetRt());
+        goal.setTps(getTargetTps());
+        goal.setSa(getTargetSa().doubleValue());
+        goal.setSr(getTargetSuccessRate().doubleValue());
+        goal.setSlaStartTime(getSlaStartTime());
+        goal.setSlaEndTime(getSlaEndTime());
+        return goal;
     }
 }

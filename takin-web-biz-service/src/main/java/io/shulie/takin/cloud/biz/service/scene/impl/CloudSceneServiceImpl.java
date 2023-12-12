@@ -319,7 +319,13 @@ public class CloudSceneServiceImpl implements CloudSceneService {
                     .collect(Collectors.toMap(SceneBusinessActivityRefEntity::getBindRef, SceneBusinessActivityRefEntity::getGoalValue));
             Map<String, Goal> result = new HashMap<>(stringResult.size());
             // 填充结果
-            stringResult.forEach((key, value) -> result.put(key, JSONObject.parseObject(value, OldGoalModel.class).convert()));
+            stringResult.forEach((k,v)->{
+                Goal goal = JSONObject.parseObject(v, OldGoalModel.class).convert();
+                if (Objects.isNull(goal)){
+                    return;
+                }
+                result.put(k, goal);
+            });
             return result;
         } catch (JSONException e) {
             log.error("场景{}的拓展字段错误", sceneId, e);

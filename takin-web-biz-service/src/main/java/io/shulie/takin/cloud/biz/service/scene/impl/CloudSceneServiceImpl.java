@@ -506,7 +506,11 @@ public class CloudSceneServiceImpl implements CloudSceneService {
                 }
                 List<String> applicationIdList = t.getApplicationId().stream().filter(StrUtil::isNotBlank).collect(Collectors.toList());
                 setApplicationIds(String.join(",", applicationIdList));
-                setGoalValue(JSONObject.toJSONString(OldGoalModel.convert(goal), SerializerFeature.PrettyFormat));
+                try {
+                    setGoalValue(JSONObject.toJSONString(OldGoalModel.convert(goal), SerializerFeature.PrettyFormat));
+                } catch (Exception e) {
+                    log.error("buildBusinessActivity压测目标转换失败", e);
+                }
                 // 其它字段默认值
                 LocalDateTime now = LocalDateTime.now();
                 setIsDeleted(0);

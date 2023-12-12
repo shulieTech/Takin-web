@@ -108,9 +108,9 @@ public class SceneRequest extends ContextExt {
         @ApiModelProperty(value = "目标SA(%)")
         private Double sa;
         @ApiModelProperty(value = "sla自动设置开始时间")
-        private Date slaStartTime;
+        private String slaStartTime;
         @ApiModelProperty(value = "sla自动设置结束时间")
-        private Date slaEndTime;
+        private String slaEndTime;
     }
 
     /**

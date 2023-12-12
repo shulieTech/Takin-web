@@ -1,6 +1,7 @@
 package io.shulie.takin.adapter.api.model.response.scenemanage;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.alibaba.fastjson.annotation.JSONField;
@@ -8,6 +9,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.Goal;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 旧的压测目标模型
@@ -48,20 +50,26 @@ public class OldGoalModel {
      */
     @JSONField(name = "slaEndTime")
     private Date slaEndTime;
+
     /**
      * 从{@link Goal}转换
      *
      * @param goal 新的目标实体
      * @return 旧的目标实体
      */
-    public static OldGoalModel convert(Goal goal) {
+    public static OldGoalModel convert(Goal goal) throws Exception {
         return new OldGoalModel() {{
             setTargetRt(goal.getRt());
             setTargetTps(goal.getTps());
             setTargetSa(BigDecimal.valueOf(goal.getSa()));
             setTargetSuccessRate(BigDecimal.valueOf(goal.getSr()));
-            setSlaStartTime(goal.getSlaStartTime());
-            setSlaEndTime(goal.getSlaEndTime());
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            if (StringUtils.isNotBlank(goal.getSlaStartTime())) {
+                setSlaStartTime(sdf.parse(goal.getSlaStartTime()));
+            }
+            if (StringUtils.isNotBlank(goal.getSlaEndTime())) {
+                setSlaEndTime(sdf.parse(goal.getSlaEndTime()));
+            }
         }};
     }
 

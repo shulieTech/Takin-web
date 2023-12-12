@@ -208,7 +208,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             basicInfo.setName(scene.getSceneName());
             basicInfo.setType(scene.getType());
             basicInfo.setScriptType(scene.getScriptType());
-            basicInfo.setAutoStartSLAFlag(Optional.ofNullable(scene.getAutoStartSLAFlag()).orElse(false));
+            basicInfo.setAutoStartSLAFlag(Optional.ofNullable(scene.isAutoStartSLAFlag()).orElse(false));
             // 组装返回数据
             return basicInfo;
         } catch (JSONException e) {

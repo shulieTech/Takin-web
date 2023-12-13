@@ -3,6 +3,7 @@ package io.shulie.takin.adapter.api.model.response.scenemanage;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
@@ -73,14 +74,17 @@ public class OldGoalModel {
      *
      * @return 新的目标实体
      */
-    public Goal convert() {
+    public static Goal convert(OldGoalModel oldGoalModel) {
+        if (Objects.isNull(oldGoalModel)) {
+            return null;
+        }
         Goal goal = new Goal();
-        goal.setRt(getTargetRt());
-        goal.setTps(getTargetTps());
-        goal.setSa(getTargetSa().doubleValue());
-        goal.setSr(getTargetSuccessRate().doubleValue());
-        goal.setSlaStartTime(getSlaStartTime());
-        goal.setSlaEndTime(getSlaEndTime());
+        goal.setRt(oldGoalModel.getTargetRt());
+        goal.setTps(oldGoalModel.getTargetTps());
+        goal.setSa(oldGoalModel.getTargetSa().doubleValue());
+        goal.setSr(oldGoalModel.getTargetSuccessRate().doubleValue());
+        goal.setSlaStartTime(oldGoalModel.getSlaStartTime());
+        goal.setSlaEndTime(oldGoalModel.getSlaEndTime());
         return goal;
     }
 }

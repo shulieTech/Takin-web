@@ -15,6 +15,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.common.collect.Maps;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneService;
 import io.shulie.takin.cloud.common.constants.SceneManageConstant;
@@ -43,6 +44,7 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.Goal;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.MonitoringGoal;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -314,14 +316,20 @@ public class CloudSceneServiceImpl implements CloudSceneService {
             // 获取关联的信息
             List<SceneBusinessActivityRefEntity> activityRefList = sceneBusinessActivityRefMapper.selectList(Wrappers.lambdaQuery(SceneBusinessActivityRefEntity.class)
                     .eq(SceneBusinessActivityRefEntity::getSceneId, scene.getId()));
+            if (CollectionUtils.isEmpty(activityRefList)) {
+                return Maps.newHashMap();
+            }
             // 构建mao结构
             Map<String, String> stringResult = activityRefList.stream()
                     .collect(Collectors.toMap(SceneBusinessActivityRefEntity::getBindRef, SceneBusinessActivityRefEntity::getGoalValue));
             Map<String, Goal> result = new HashMap<>(stringResult.size());
             // 填充结果
-            stringResult.forEach((k,v)->{
-                Goal goal = JSONObject.parseObject(v, OldGoalModel.class).convert();
-                if (Objects.isNull(goal)){
+            stringResult.forEach((k,v)-> {
+                if (StrUtil.isBlank(v)) {
+                    return;
+                }
+                Goal goal = OldGoalModel.convert(JSONObject.parseObject(v, OldGoalModel.class));
+                if (Objects.isNull(goal)) {
                     return;
                 }
                 result.put(k, goal);

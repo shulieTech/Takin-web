@@ -103,18 +103,6 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             log.debug("没有需要处理的报告！");
             return;
         }
-        results = results.stream().filter(o -> o.getSceneId() == 49).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(results)) {
-            log.debug("过滤场景之后没有报告了！");
-            return;
-        }
-
-        results.forEach(reportResult -> {
-            String lockKey = String.format("finishPushData:%s:%s:%s", reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId());
-            lock(lockKey, "1");
-            redisTemplate.expire(lockKey, Duration.ofSeconds(60 * 30L));
-        });
-
         List<Long> reportIds = CommonUtil.getList(results, ReportResult::getId);
         log.info("找到需要处理的报告：" + JsonHelper.bean2Json(reportIds));
         results.stream().filter(Objects::nonNull).forEach(this::combineMetricsData);
@@ -144,7 +132,7 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             Long sceneId = r.getSceneId();
             Long reportId = r.getId();
             Long customerId = r.getTenantId();
-            String lockKey = String.format("finishPushData-temp:%s:%s:%s", sceneId, reportId, customerId);
+            String lockKey = String.format("finishPushData:%s:%s:%s", sceneId, reportId, customerId);
             if (!lock(lockKey, "1")) {
                 return;
             }

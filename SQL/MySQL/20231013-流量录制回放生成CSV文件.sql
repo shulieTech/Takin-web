@@ -125,3 +125,6 @@ where dept_id is null
 
 alter table t_file_manage
     modify upload_time timestamp(3) default CURRENT_TIMESTAMP(3) not null comment '上传时间';
+
+ALTER TABLE `t_script_csv_create_task`
+    ADD COLUMN `UPDATE_TIME` datetime NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间' AFTER `CREATE_TIME`;

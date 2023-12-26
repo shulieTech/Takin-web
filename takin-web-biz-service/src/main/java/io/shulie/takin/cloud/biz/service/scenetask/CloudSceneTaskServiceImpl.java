@@ -172,7 +172,6 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         return sceneActionOutput;
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public SceneActionOutput startTask(SceneTaskStartInput input) {
         log.info("启动任务接收到入参：{}", JsonUtil.toJson(input));
         SceneManageQueryOptions options = new SceneManageQueryOptions();

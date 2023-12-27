@@ -1271,18 +1271,19 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
     @IntrestFor(event = PressureStartCache.CHECK_SUCCESS_EVENT, order = 1)
     public void tryRun(Event event) {
         ResourceContext context = (ResourceContext) event.getExt();
-        Long sceneId = context.getSceneId();
-        String tryRunKey = PressureStartCache.getTryRunKey(sceneId);
-        if (redisClientUtil.hasKey(tryRunKey)) {
-            String tryRun = redisClientUtil.getString(tryRunKey);
-            redisClientUtil.del(tryRunKey);
-            try {
+        try {
+            Long sceneId = context.getSceneId();
+            String tryRunKey = PressureStartCache.getTryRunKey(sceneId);
+            if (redisClientUtil.hasKey(tryRunKey)) {
+                String tryRun = redisClientUtil.getString(tryRunKey);
+                redisClientUtil.del(tryRunKey);
                 SceneTaskStartInput input = JsonHelper.json2Bean(tryRun, SceneTaskStartInput.class);
                 fillContext(input);
-                startTask(input);
-            } catch (Exception e) {
-                startFail(context.getResourceId(), e.getMessage());
+                start(input);
             }
+        } catch (Exception e) {
+            log.error("tryRun error", e);
+            startFail(context.getResourceId(), e.getMessage());
         }
     }
 

@@ -225,6 +225,10 @@ public class SceneServiceImpl implements SceneService {
         }
         List<ScriptNode> result = Lists.newArrayList();
         for (ScriptNode node : nodes) {
+            if (StringUtils.equalsAnyIgnoreCase(node.getName(), "BeanShellSampler", "JSR223Sampler","DebugSampler")) {
+                node.setRequestPath(buildUnknowSamplerName(node.getName()));
+                node.setIdentification(node.getRequestPath());
+            }
             result.add(node);
             if (CollectionUtils.isEmpty(node.getChildren())) {
                 continue;
@@ -554,7 +558,6 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void matchActivity(SceneLinkRelateRequest sceneLinkRelateRequest) {
         SceneResult sceneDetail = sceneDao.getSceneDetail(sceneLinkRelateRequest.getBusinessFlowId());
         if (sceneDetail == null) {
@@ -740,7 +743,6 @@ public class SceneServiceImpl implements SceneService {
         sceneDao.update(sceneUpdateParam);
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public SceneResult updateBusinessFlow(Long businessFlowId, FileManageUpdateRequest scriptFile,
                                           BusinessFlowDataFileRequest businessFlowDataFileRequest, List<ScriptNode> data,
                                           List<PluginConfigCreateRequest> pluginList) {
@@ -870,10 +872,10 @@ public class SceneServiceImpl implements SceneService {
                 //默认不匹配
                 scriptJmxNode.setStatus(0);
                 // 支持beanshell,默认匹配
-                if (scriptJmxNode.getName().equals("BeanShellSampler")) {
-                    scriptJmxNode.setEntrace("|beanshell");
-                    scriptJmxNode.setRequestPath("|beanshell");
-                    scriptJmxNode.setIdentification("takin|beanshell");
+                if (StringUtils.equalsAnyIgnoreCase(scriptJmxNode.getName(), "BeanShellSampler", "JSR223Sampler","DebugSampler")) {
+                    scriptJmxNode.setEntrace(buildUnknowSamplerName(scriptJmxNode.getName()));
+                    scriptJmxNode.setRequestPath(scriptJmxNode.getEntrace());
+                    scriptJmxNode.setIdentification(scriptJmxNode.getEntrace());
                     scriptJmxNode.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
                 }
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {
@@ -911,6 +913,19 @@ public class SceneServiceImpl implements SceneService {
         }
     }
 
+//    private void dealScriptNodeMd5(List<ScriptNode> testPlan) {
+//        for(ScriptNode node : testPlan) {
+//            if("JavaSampler".equals(node.getName())) {
+//                node.setMd5(node.getTestName());
+//                node.setXpathMd5(node.getTestName());
+//            }
+//            List<ScriptNode> children = node.getChildren();
+//            if(CollectionUtil.isNotEmpty(children)) {
+//                dealScriptNodeMd5(children);
+//            }
+//        }
+//    }
+
     @Override
     public List<ApplicationDetailResult> getAppsByFlowId(Long flowId) {
         // 根据业务流程ids获取业务活动ids
@@ -937,5 +952,9 @@ public class SceneServiceImpl implements SceneService {
     @Override
     public void update(SceneUpdateParam param) {
         sceneDao.update(param);
+    }
+
+    private String buildUnknowSamplerName(String samplerName) {
+        return StringUtils.lowerCase("takin|"+samplerName);
     }
 }

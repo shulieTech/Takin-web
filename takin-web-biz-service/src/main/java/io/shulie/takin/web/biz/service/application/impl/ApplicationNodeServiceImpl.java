@@ -1,15 +1,5 @@
 package io.shulie.takin.web.biz.service.application.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.http.DateUtil;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
@@ -40,17 +30,13 @@ import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.pojo.dto.probe.ApplicationNodeProbeOperateDTO;
 import io.shulie.takin.web.common.pojo.dto.probe.MatchApplicationNodeProbeStateDTO;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationNodeParam;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationNodeListResult;
-import io.shulie.takin.web.data.result.application.ApplicationNodeProbeResult;
-import io.shulie.takin.web.data.result.application.ApplicationNodeResult;
-import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.data.result.application.*;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -59,6 +45,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author mubai
@@ -105,6 +95,7 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
         queryParam.setPageSize(request.getPageSize());
         queryParam.setApplicationNames(Collections.singletonList(applicationVo.getApplicationName()));
         queryParam.setIp(request.getIp());
+        queryParam.setProbeStatus(0);
         PagingList<ApplicationNodeResult> applicationNodes = applicationNodeDAO.pageNodes(queryParam);
         if (CollectionUtils.isEmpty(applicationNodes.getList())) {
             return PagingList.of(Lists.newArrayList(),applicationNodes.getTotal());
@@ -319,6 +310,7 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
         queryParam.setCurrent(0);
         queryParam.setPageSize(99999);
         queryParam.setApplicationNames(Arrays.asList(applicationVo.getApplicationName()));
+        queryParam.setProbeStatus(0);
         PagingList<ApplicationNodeResult> applicationNodes = applicationNodeDAO.pageNodes(queryParam);
         List<ApplicationNodeResult> applicationNodeResultList = applicationNodes.getList();
         if (CollectionUtils.isNotEmpty(applicationNodeResultList)) {

@@ -60,4 +60,7 @@ public class ReportCountDTO implements Serializable {
     @ApiModelProperty(value = "告警数")
     private Integer warnCount;
 
+    @ApiModelProperty(value = "MOCK数")
+    private Integer mockCount;
+
 }

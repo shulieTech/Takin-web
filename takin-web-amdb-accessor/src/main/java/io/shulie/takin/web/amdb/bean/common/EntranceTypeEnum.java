@@ -11,6 +11,7 @@ public enum EntranceTypeEnum {
     RABBITMQ("RABBITMQ"),
     KAFKA("KAFKA"),
     ELASTICJOB("ELASTICJOB"),
+    JMETER("JMETER"),
     GRPC("GRPC");
 
     private String type;

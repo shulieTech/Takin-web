@@ -30,7 +30,7 @@ public class ReportRealTimeController {
     private ReportRealTimeService reportRealTimeService;
 
     @GetMapping("/report/realtime/link/list")
-    @ApiOperation("实况链路列表")
+    @ApiOperation("请求流量明细")
     private Response getLinkList(ReportTraceQueryDTO queryDTO) {
         queryDTO.setQueryType(2);
         if (queryDTO.getReportId() != null) {

@@ -2,7 +2,9 @@ package io.shulie.takin.web.entrypoint.controller.file;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -10,21 +12,25 @@ import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ArrayUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
 import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
+import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.sdk.model.request.file.DeleteTempRequest;
 import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,6 +59,10 @@ public class FileController {
 
     @Resource
     private CloudFileApi cloudFileApi;
+    @Resource
+    private SceneManageApi sceneManageApi;
+
+    private static final String ERROR_MESSAGE = "脚本中存在未支持的节点:%s";
 
     @ApiOperation("|_ 文件下载")
     @GetMapping("/download")
@@ -73,7 +83,7 @@ public class FileController {
 
     @PostMapping("/upload")
     @ApiOperation(value = "文件上传")
-    public List<UploadResponse> upload(List<MultipartFile> file) {
+    public List<UploadResponse> upload(List<MultipartFile> file, @RequestParam(value = "parseJmx", required = false) Boolean parseJmx) {
         if (CollectionUtil.isEmpty(file)) {
             throw new RuntimeException("上传文件不能为空");
         }
@@ -86,6 +96,20 @@ public class FileController {
             setFileList(FileUtil.convertMultipartFileList(file));
         }});
         FileUtil.deleteTempFile(file);
+        if(parseJmx != null && parseJmx && CollectionUtils.isNotEmpty(response)) {
+            ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
+            analyzeRequest.setScriptFile(response.get(0).getDownloadUrl());
+            List<ScriptNode> data = sceneManageApi.scriptAnalyze(analyzeRequest);
+            //判断节点中是否包含未知取样器
+            Set<String> nameSet = new HashSet<>();
+            errorNode(data, nameSet);
+            if(nameSet.size() == 0) {
+                response.get(0).setJmxCheckSuccess(true);
+            } else {
+                response.get(0).setJmxCheckSuccess(false);
+                response.get(0).setJmxCheckErrorMsg(String.format(ERROR_MESSAGE, String.join(",", nameSet)));
+            }
+        }
         return response;
     }
 
@@ -148,4 +172,15 @@ public class FileController {
         return arrayList;
     }
 
+    private void errorNode(List<ScriptNode> data, Set<String> nameSet) {
+        if(CollectionUtils.isEmpty(data)) {
+            return;
+        }
+        for(ScriptNode scriptNode : data) {
+            if(scriptNode.getSamplerType() == SamplerTypeEnum.UNKNOWN) {
+                nameSet.add(StringUtils.replace(scriptNode.getTestName(), ","," "));
+            }
+            errorNode(scriptNode.getChildren(), nameSet);
+        }
+    }
 }

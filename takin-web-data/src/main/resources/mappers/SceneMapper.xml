@@ -13,10 +13,15 @@
         <result column="IS_DELETED" jdbcType="TINYINT" property="isDeleted"/>
         <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="SCRIPT_JMX_NODE" jdbcType="VARCHAR" property="scriptJmxNode"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         ID, SCENE_NAME, BUSINESS_LINK, SCENE_LEVEL, IS_CORE, IS_CHANGED, IS_DELETED, CREATE_TIME,
         UPDATE_TIME
     </sql>
+
+    <select id="querySceneByScriptDeployId" resultType="io.shulie.takin.web.data.model.mysql.SceneEntity">
+        select script_jmx_node from t_scene where script_deploy_id = #{script_deploy_id}
+    </select>
 </mapper>

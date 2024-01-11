@@ -283,4 +283,10 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         log.debug("reportId={} calcApplicationSummary success，cost time={}s", reportId,
                 (System.currentTimeMillis() - startTime) / 1000);
     }
+
+    @Override
+    public void calcMockSummary(Long reportId) {
+        //汇总最近5s的mock数据
+        
+    }
 }

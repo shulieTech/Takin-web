@@ -57,4 +57,6 @@ public class ReportSummaryEntity extends TenantBaseEntity {
      */
     @TableField(value = "warn_count")
     private Integer warnCount;
+    @TableField(value = "mock_count")
+    private Integer mockCount;
 }

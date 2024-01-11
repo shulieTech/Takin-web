@@ -32,9 +32,9 @@ import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import io.shulie.amdb.common.enums.RpcType;
+import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
@@ -79,6 +79,7 @@ import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
+import io.shulie.takin.web.biz.service.scriptmanage.ScriptDeployService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.FileUtils;
 import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
@@ -201,8 +202,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     private SceneService sceneService;
     @Resource
     private SceneManageService sceneManageService;
-
-
+    @Resource
+    private ScriptDeployService scriptDeployService;
     @Override
     public void stop(Long scriptDeployId) {
         String lockKey = String.format(LockKeyConstants.LOCK_SCRIPT_DEBUG_STOP, scriptDeployId);
@@ -306,9 +307,18 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
 
             // 脚本检查
             log.info("调试 --> 脚本校验!");
-            List<String> errorMessages = this.checkScriptCorrelationAndGetError(debugCloudRequest);
-            if (!errorMessages.isEmpty()) {
-                response.setErrorMessages(errorMessages);
+            List<String> errorList = new ArrayList<>();
+            List<String> origErrorList = this.checkScriptCorrelationAndGetError(debugCloudRequest);
+            //脚本文件缺失性检查
+            if(CollectionUtils.isNotEmpty(origErrorList)) {
+                errorList.addAll(origErrorList);
+            }
+            List<String> newErrorList = scriptDeployService.checkLeakFile(scriptDeployId, PressureSceneEnum.FLOW_DEBUG);
+            if(CollectionUtils.isNotEmpty(newErrorList)) {
+                errorList.addAll(newErrorList);
+            }
+            if (CollectionUtils.isNotEmpty(errorList)) {
+                response.setErrorMessages(errorList);
                 return response;
             }
             //填充当前用户信息为操作人

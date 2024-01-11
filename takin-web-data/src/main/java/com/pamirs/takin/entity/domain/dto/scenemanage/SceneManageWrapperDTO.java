@@ -86,4 +86,6 @@ public class SceneManageWrapperDTO implements Serializable {
      */
     private Boolean isAbsoluteScriptPath = false;
 
+    private String features;
+
 }

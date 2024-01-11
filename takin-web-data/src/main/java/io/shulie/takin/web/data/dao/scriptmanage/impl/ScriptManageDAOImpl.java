@@ -24,6 +24,7 @@ import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.ScriptFileRefMapper;
 import io.shulie.takin.web.data.mapper.mysql.ScriptManageDeployMapper;
 import io.shulie.takin.web.data.mapper.mysql.ScriptManageMapper;
+import io.shulie.takin.web.data.model.mysql.FileManageEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptExecuteResultEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptManageEntity;
@@ -424,7 +425,7 @@ public class ScriptManageDAOImpl
 
     @Override
     public List<String> listFilePathByScriptDeployId(Long scriptDeployId) {
-        return scriptFileRefMapper.listUploadPathByScriptDeployId(scriptDeployId);
+        return scriptFileRefMapper.listFileMangerByScriptDeployId(scriptDeployId).stream().map(FileManageEntity::getUploadPath).collect(Collectors.toList());
     }
 
 }

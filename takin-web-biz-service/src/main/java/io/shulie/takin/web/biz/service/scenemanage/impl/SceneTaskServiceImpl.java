@@ -34,9 +34,9 @@ import com.pamirs.takin.entity.domain.entity.TBaseConfig;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParamNew;
 import com.pamirs.takin.entity.domain.vo.report.ScenePluginParam;
+import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
-import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
 import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
 import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
@@ -71,6 +71,7 @@ import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
+import io.shulie.takin.web.biz.service.scriptmanage.ScriptDeployService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.FileUtils;
 import io.shulie.takin.web.biz.utils.TenantKeyUtils;
@@ -169,7 +170,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private SceneDAO sceneDAO;
     @Autowired
     private PradarZkConfigDAO pradarZkConfigDAO;
-
+    @Resource
+    private ScriptDeployService scriptDeployService;
 
     /**
      * 是否是预发环境
@@ -651,6 +653,21 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         // 压测脚本文件检查
         String scriptCorrelation = this.checkScriptCorrelation(sceneData);
         errorMsg.append(scriptCorrelation == null ? "" : scriptCorrelation);
+        //文件缺失性相关检查
+        try {
+            JSONObject jsonObject = JSON.parseObject(sceneData.getFeatures());
+            if (jsonObject != null && jsonObject.getLong("businessFlowId") != null) {
+                List<String> errorList = scriptDeployService.checkLeakFile(jsonObject.getLong("businessFlowId"), PressureSceneEnum.DEFAULT);
+                if (CollectionUtils.isNotEmpty(errorList)) {
+                    if (errorMsg.length() > 0) {
+                        errorMsg.append(Constants.SPLIT);
+                    }
+                    errorMsg.append(String.join(Constants.SPLIT, errorList));
+                }
+            }
+        } catch (Exception e) {
+            log.error("处理场景={},文件缺失性相关检查异常:{}", sceneData.getId(), e.getMessage());
+        }
         if (errorMsg.length() > 0) {
             String msg;
             if (errorMsg.toString().endsWith(Constants.SPLIT)) {

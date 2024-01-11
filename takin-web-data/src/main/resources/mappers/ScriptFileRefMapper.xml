@@ -10,13 +10,19 @@
         <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
         <result column="gmt_update" jdbcType="TIMESTAMP" property="gmtUpdate"/>
     </resultMap>
+
+    <resultMap id="FileResultMap" type="io.shulie.takin.web.data.model.mysql.FileManageEntity">
+        <id column="file_name" jdbcType="VARCHAR" property="fileName"/>
+        <result column="file_type" jdbcType="INTEGER" property="fileType"/>
+        <result column="upload_path" jdbcType="VARCHAR" property="uploadPath"/>
+    </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         id, file_id, script_deploy_id, gmt_create, gmt_update
     </sql>
 
-    <select id="listUploadPathByScriptDeployId" resultType="java.lang.String">
-        SELECT f.upload_path FROM t_script_file_ref sf LEFT JOIN t_file_manage f ON f.id = sf.file_id
+    <select id="listFileMangerByScriptDeployId" resultMap="FileResultMap">
+        SELECT f.file_name, f.file_type, f.upload_path FROM t_script_file_ref sf LEFT JOIN t_file_manage f ON f.id = sf.file_id
         WHERE sf.script_deploy_id = #{scriptDeployId}
     </select>
 

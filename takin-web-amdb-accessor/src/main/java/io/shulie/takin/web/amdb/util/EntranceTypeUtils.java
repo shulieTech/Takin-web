@@ -54,6 +54,10 @@ public class EntranceTypeUtils {
                 info.setRpcType(RpcType.TYPE_RPC + "");
                 info.setMiddlewareName(entranceTypeEnum.getType());
                 return info;
+            case JMETER:
+                info.setRpcType(RpcType.TYPE_WEB_SERVER + "");
+                info.setMiddlewareName(entranceTypeEnum.getType());
+                return info;
             default:
                 return info;
         }

@@ -30,4 +30,6 @@ public interface ReportTaskService {
      */
     void calcApplicationSummary(Long reportId);
 
+    void calcMockSummary(Long reportId);
+
 }

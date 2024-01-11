@@ -90,6 +90,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             dto.setBottleneckInterfaceCount(0);
             dto.setBusinessActivityCount(0);
             dto.setNotpassBusinessActivityCount(0);
+            dto.setMockCount(0);
             return dto;
         }
         return convert2ReportCountDTO(data);
@@ -259,6 +260,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         dto.setApplicationCount(result.getApplicationCount());
         dto.setMachineCount(result.getMachineCount());
         dto.setWarnCount(result.getWarnCount());
+        dto.setMockCount(result.getMockCount());
         return dto;
     }
 

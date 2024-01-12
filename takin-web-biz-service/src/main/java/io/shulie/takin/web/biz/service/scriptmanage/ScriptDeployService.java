@@ -10,8 +10,8 @@ public interface ScriptDeployService {
      * 进行文件缺失校验：csv文件、jar包
      * csv文件根据文件名一个个进行匹配
      * jar包，只要有一个JavaRequest的请求，就必须有jar包，jar包对不对不管
-     * @param scriptDeployId
+     * @param masterId
      * @return
      */
-    List<String> checkLeakFile(Long scriptDeployId, PressureSceneEnum pressureSceneEnum);
+    List<String> checkLeakFile(Long masterId, PressureSceneEnum pressureSceneEnum);
 }

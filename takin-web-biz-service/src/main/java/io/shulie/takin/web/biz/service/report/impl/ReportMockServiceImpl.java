@@ -109,11 +109,15 @@ public class ReportMockServiceImpl implements ReportMockService {
         mockEntity.setReportId(mockRequest.getReportId());
         mockEntity.setStartTime(mockRequest.getStartTime());
         mockEntity.setEndTime(mockRequest.getEndTime());
-        mockEntity.setAppName(mockResponse.getAppName());
+        mockEntity.setTenantId(mockRequest.getTenantId());
+        mockEntity.setEnvCode(mockRequest.getEnvCode());
+
         mockEntity.setMockName(mockCallResult.getMockName());
         mockEntity.setMockScript(mockCallResult.getMockScript());
         mockEntity.setMockType(mockCallResult.getMockType());
         mockEntity.setMockStatus(mockCallResult.getMockStatus());
+        mockEntity.setAppName(mockCallResult.getAppName());
+
         mockEntity.setFailureCount(mockResponse.getFailureCount());
         mockEntity.setSuccessCount(mockResponse.getSuccessCount());
         mockEntity.setAvgRt(mockResponse.getAvgRt());

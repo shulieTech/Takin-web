@@ -162,20 +162,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 if (!webResponse) {
                     log.info("压测结束失败 Report :{}，cloud更新失败", reportId);
                 }
-                /**
-                 * 查询报告，汇总mock信息
-                 */
-                log.info("查询报告，汇总mock信息 Report :{}", reportId);
-                ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
-                if (reportDetailOutput != null && reportDetailOutput.getEndTime() != null) {
-                    ReportMockRequest mockRequest = new ReportMockRequest();
-                    mockRequest.setReportId(reportId);
-                    mockRequest.setStartTime(reportDetailOutput.getStartTime());
-                    mockRequest.setEndTime(DateUtil.formatDateTime(reportDetailOutput.getEndTime()));
-                    mockRequest.setTenantId(reportDetailOutput.getTenantId());
-                    mockRequest.setEnvCode(reportDetailOutput.getEnvCode());
-                    reportMockService.saveReportMockData(mockRequest);
-                }
 //                Boolean isLeaked = leakVerifyResultDAO.querySceneIsLeaked(reportId);
 //                if (isLeaked) {
 //                    //存在漏数，压测失败，修改压测报告状态 1：通过 0：不通过
@@ -263,6 +249,25 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 //            } catch (Exception e) {
 //                log.error("reportId = {}: Bottleneck handling,errorMsg= {} ", reportId, e.getMessage());
 //            }
+            try {
+                // mock信息
+                ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
+                if (reportDetailDTO != null && reportDetailDTO.getEndTime() != null) {
+                    ReportMockRequest mockRequest = new ReportMockRequest();
+                    mockRequest.setReportId(reportId);
+                    mockRequest.setStartTime(reportDetailDTO.getStartTime());
+                    if(reportDetailDTO.getEndTime() != null) {
+                        mockRequest.setEndTime(DateUtil.formatDateTime(reportDetailDTO.getEndTime()));
+                    } else {
+                        mockRequest.setEndTime(DateUtil.formatDateTime(new Date()));
+                    }
+                    mockRequest.setTenantId(reportDetailDTO.getTenantId());
+                    mockRequest.setEnvCode(reportDetailDTO.getEnvCode());
+                    reportMockService.saveReportMockData(mockRequest);
+                }
+            } catch (Exception e) {
+                log.error("reportId = {}: ReportMock handling,errorMsg= {} ", reportId, e.getMessage());
+            }
             try {
                 //then 报告汇总接口
                 summaryService.calcReportSummay(reportId);

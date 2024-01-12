@@ -95,17 +95,17 @@ public class SummaryService {
     }
 
     public void calcReportSummay(Long reportId) {
-        Integer bottleneckInterfaceCount = convertLong(reportBottleneckInterfaceDAO.selectCountByReportId(reportId));
+        Integer bottleneckInterfaceCount = 0; //convertLong(reportBottleneckInterfaceDAO.selectCountByReportId(reportId));
 
         Integer appCount = 0;
         Integer totalCount = 0;
         Integer riskCount = 0;
-        Map<String, Object> countMap = reportApplicationSummaryDAO.selectCountByReportId(reportId);
-        if (MapUtils.isNotEmpty(countMap)) {
-            appCount = convertLong((Long)countMap.get("count"));
-            totalCount = convertBigDecimal((BigDecimal)countMap.get("totalSum"));
-            riskCount = convertBigDecimal((BigDecimal)countMap.get("riskSum"));
-        }
+//        Map<String, Object> countMap = reportApplicationSummaryDAO.selectCountByReportId(reportId);
+//        if (MapUtils.isNotEmpty(countMap)) {
+//            appCount = convertLong((Long)countMap.get("count"));
+//            totalCount = convertBigDecimal((BigDecimal)countMap.get("totalSum"));
+//            riskCount = convertBigDecimal((BigDecimal)countMap.get("riskSum"));
+//        }
 
         Integer warnCount = 0;
         Integer businessCount = 0;
@@ -120,7 +120,7 @@ public class SummaryService {
         warnCount = warnCount != null ? warnCount : 0;
         businessCount = businessCount != null ? businessCount : 0;
         passBusinessCount = passBusinessCount != null ? passBusinessCount : 0;
-        Long mockCount =reportMockDAO.selectCountMockByReportId(reportId);
+        Long mockCount = reportMockDAO.selectCountMockByReportId(reportId);
         mockCount = mockCount != null ? mockCount : 0;
         ReportSummaryCreateParam reportSummary = new ReportSummaryCreateParam();
         reportSummary.setReportId(reportId);

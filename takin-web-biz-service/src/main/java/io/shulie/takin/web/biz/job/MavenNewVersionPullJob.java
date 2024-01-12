@@ -37,8 +37,8 @@ import org.springframework.stereotype.Component;
  * @author liqiyu
  */
 @Component
-@ElasticSchedulerJob(jobName = "MavenNewVersionPullJob", cron = "0 0 3 * * ? *",
-    description = "定时查询阿里云maven仓库是否有新的maven版本")
+//@ElasticSchedulerJob(jobName = "MavenNewVersionPullJob", cron = "0 0 3 * * ? *",
+//    description = "定时查询阿里云maven仓库是否有新的maven版本")
 @Slf4j
 public class MavenNewVersionPullJob implements SimpleJob {
 

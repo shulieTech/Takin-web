@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.job;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
@@ -10,6 +11,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
@@ -20,13 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author 无涯
  * @date 2021/7/13 23:10
  */
-//@Component
-//@ElasticSchedulerJob(jobName = "calcTpsTargetJob",
-//        // 分片序列号和参数用等号分隔 不需要参数可以不加
-//        //shardingItemParameters = "0=0,1=1,2=2",
-//        isSharding = true,
-//        cron = "*/10 * * * * ?",
-//        description = "获取tps指标图")
+@Component
+@ElasticSchedulerJob(jobName = "calcReportMockJob", cron = "*/30 * * * * ?", description = "计算压测报告mock数据")
 @Slf4j
 public class CalcReportMockJob extends AbstractSceneTask implements SimpleJob {
 

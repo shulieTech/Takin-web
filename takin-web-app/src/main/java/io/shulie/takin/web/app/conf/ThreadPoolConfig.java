@@ -89,7 +89,7 @@ public class ThreadPoolConfig {
 
     @Bean(name = "collectDataThreadPool_one")
     public ThreadPoolExecutor collectDataThreadPool_one() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-two-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-one-%d").build();
         return new ThreadPoolExecutor(10, 50, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
@@ -110,21 +110,21 @@ public class ThreadPoolConfig {
 
     @Bean(name = "reportMockThreadPool")
     public ThreadPoolExecutor reportMockThreadPool() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("report-mock-data-%d").build();
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "reportMockThreadPool_one")
     public ThreadPoolExecutor reportMockThreadPool_one() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-two-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("report-mock-data-one-%d").build();
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "reportMockThreadPool_two")
     public ThreadPoolExecutor reportMockThreadPool_two() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-two-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("report-mock-data-two-%d").build();
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }

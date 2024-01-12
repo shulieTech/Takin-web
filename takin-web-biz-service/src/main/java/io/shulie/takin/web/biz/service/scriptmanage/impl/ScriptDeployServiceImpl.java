@@ -25,14 +25,21 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
     @Resource
     private ScriptFileRefMapper scriptFileRefMapper;
 
+    /**
+     * 调试传scriptDeployId
+     * 压测传业务流程id
+     * @param masterId
+     * @param pressureSceneEnum
+     * @return
+     */
     @Override
-    public List<String> checkLeakFile(Long scriptDeployId, PressureSceneEnum pressureSceneEnum) {
+    public List<String> checkLeakFile(Long masterId, PressureSceneEnum pressureSceneEnum) {
         List<String> errorList = new ArrayList<>();
         SceneEntity sceneEntity = null;
         if(pressureSceneEnum == PressureSceneEnum.FLOW_DEBUG) {
-            sceneEntity = sceneMapper.querySceneByScriptDeployId(scriptDeployId);
+            sceneEntity = sceneMapper.querySceneByScriptDeployId(masterId);
         } else {
-            sceneEntity = sceneMapper.selectById(scriptDeployId);
+            sceneEntity = sceneMapper.selectById(masterId);
         }
         if(sceneEntity == null || sceneEntity.getScriptJmxNode() == null) {
             return errorList;
@@ -42,7 +49,7 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
         List<ScriptNode> nodeList = JSON.parseArray(sceneEntity.getScriptJmxNode(), ScriptNode.class);
         ParseScriptNodeVO nodeVO = new ParseScriptNodeVO();
         checkScriptNode(nodeList, nodeVO);
-        List<FileManageEntity> fileList = scriptFileRefMapper.listFileMangerByScriptDeployId(scriptDeployId);
+        List<FileManageEntity> fileList = scriptFileRefMapper.listFileMangerByScriptDeployId(sceneEntity.getScriptDeployId());
         if(nodeVO.getJavaRequestCount() > 0 && CollectionUtils.isEmpty(fileList.stream().filter(data -> data.getFileType() == FileTypeEnum.DATA.getCode() && data.getFileName().endsWith(".jar")).collect(Collectors.toList()))) {
             errorList.add(String.format("jar包缺失:脚本中包含%s个Java请求", nodeVO.getJavaRequestCount()));
         }

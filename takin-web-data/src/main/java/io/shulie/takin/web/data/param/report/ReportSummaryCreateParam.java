@@ -48,4 +48,5 @@ public class ReportSummaryCreateParam extends TenantCommonExt {
      * 告警次数
      */
     private Integer warnCount;
+    private Integer mockCount;
 }

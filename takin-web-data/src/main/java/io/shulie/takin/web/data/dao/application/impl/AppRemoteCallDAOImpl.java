@@ -31,6 +31,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
+import io.shulie.takin.web.common.enums.ds.DsManageStatusEnum;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.mapper.mysql.AppRemoteCallMapper;
@@ -38,6 +39,7 @@ import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
 import io.shulie.takin.web.data.param.application.AppRemoteCallCreateParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
+import io.shulie.takin.web.data.result.application.AppMockCallResult;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -226,6 +228,26 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         lambdaQueryWrapper.eq(AppRemoteCallEntity::getIsDeleted,false);
         List<AppRemoteCallEntity> entities = this.list(lambdaQueryWrapper);
         return getAppRemoteCallResults(entities);
+    }
+
+    @Override
+    public List<AppMockCallResult> getRemoteCallMockList(Long applicationId) {
+        List<AppRemoteCallEntity> entities = this.baseMapper.getMockListByApplicationId(applicationId);
+        List<AppMockCallResult> resultList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(entities)) {
+            return resultList;
+        }
+        for(AppRemoteCallEntity entity : entities) {
+            AppMockCallResult result = new AppMockCallResult();
+            result.setAppId(entity.getApplicationId());
+            result.setAppName(entity.getAppName());
+            result.setMockName(entity.getInterfaceName());
+            result.setMockType(AppRemoteCallConfigEnum.getEnum(entity.getType()).getConfigName());
+            result.setMockScript(entity.getMockReturnValue());
+            result.setMockStatus(DsManageStatusEnum.ENABLE.getDesc());
+            resultList.add(result);
+        }
+        return resultList;
     }
 
     private List<AppRemoteCallResult> getAppRemoteCallResults(List<AppRemoteCallEntity> entities) {

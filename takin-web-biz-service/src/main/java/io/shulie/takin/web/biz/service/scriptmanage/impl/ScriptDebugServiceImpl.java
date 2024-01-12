@@ -2,13 +2,7 @@ package io.shulie.takin.web.biz.service.scriptmanage.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -364,7 +358,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             //兜底时长
             final LocalDateTime dateTime = LocalDateTime.now().plusHours(hours);
             //组装
-            SceneTaskDto taskDto = new SceneTaskDto(reportId, ContextSourceEnum.JOB_SCRIPT_DEBUG, dateTime);
+            SceneTaskDto taskDto = new SceneTaskDto(reportId, ContextSourceEnum.JOB_SCRIPT_DEBUG, new Date(), dateTime);
             //任务添加到redis队列
             final String reportKeyName = WebRedisKeyConstant.getTaskList();
             final String reportKey = WebRedisKeyConstant.getReportKey(reportId);

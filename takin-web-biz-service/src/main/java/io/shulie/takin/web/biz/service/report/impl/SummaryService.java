@@ -20,10 +20,7 @@ import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
-import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
-import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
-import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
-import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
+import io.shulie.takin.web.data.dao.report.*;
 import io.shulie.takin.web.data.param.report.ReportApplicationSummaryCreateParam;
 import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
 import io.shulie.takin.web.data.param.report.ReportSummaryCreateParam;
@@ -60,6 +57,8 @@ public class SummaryService {
 
     @Resource
     private ReportMachineDAO reportMachineDAO;
+    @Resource
+    private ReportMockDAO reportMockDAO;
 
     @Autowired
     private ReportDataCache reportDataCache;
@@ -121,7 +120,8 @@ public class SummaryService {
         warnCount = warnCount != null ? warnCount : 0;
         businessCount = businessCount != null ? businessCount : 0;
         passBusinessCount = passBusinessCount != null ? passBusinessCount : 0;
-
+        Long mockCount =reportMockDAO.selectCountMockByReportId(reportId);
+        mockCount = mockCount != null ? mockCount : 0;
         ReportSummaryCreateParam reportSummary = new ReportSummaryCreateParam();
         reportSummary.setReportId(reportId);
         reportSummary.setBottleneckInterfaceCount(bottleneckInterfaceCount);
@@ -131,6 +131,7 @@ public class SummaryService {
         reportSummary.setApplicationCount(appCount);
         reportSummary.setMachineCount(totalCount);
         reportSummary.setWarnCount(warnCount);
+        reportSummary.setMockCount(mockCount.intValue());
         reportSummary.setTenantId(WebPluginUtils.traceTenantId());
         reportSummary.setEnvCode(WebPluginUtils.traceEnvCode());
         reportSummaryDAO.insertOrUpdate(reportSummary);

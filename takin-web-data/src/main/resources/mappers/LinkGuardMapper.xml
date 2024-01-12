@@ -19,4 +19,9 @@
         id, application_name, application_id, method_info, groovy, create_time, update_time,
         is_deleted, is_enable
     </sql>
+
+    <select id="queryListByApplicationId" resultMap="BaseResultMap">
+        select * from t_link_guard
+        where application_id = #{applicationId} and is_deleted = 0
+    </select>
 </mapper>

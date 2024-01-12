@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--suppress ALL -->
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ReportMockMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.ReportMockEntity">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="report_id" jdbcType="BIGINT" property="reportId"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="app_name" jdbcType="VARCHAR" property="appName"/>
+        <result column="mock_name" jdbcType="VARCHAR" property="mockName"/>
+        <result column="mock_script" jdbcType="VARCHAR" property="mockScript"/>
+        <result column="mock_status" jdbcType="VARCHAR" property="mockStatus"/>
+        <result column="mock_type" jdbcType="VARCHAR" property="mockType"/>
+        <result column="failure_count" jdbcType="INTEGER" property="failureCount"/>
+        <result column="success_count" jdbcType="INTEGER" property="successCount"/>
+        <result column="avg_rt" jdbcType="DECIMAL" property="avgRt"/>
+    </resultMap>
+    <update id="updateReportMockEntity">
+        update t_report_mock
+        set failure_count = #{failureCount,jdbcType=INTEGER},
+            success_count = #{successCount,jdbcType=INTEGER},
+            avg_rt = #{avgRt,jdbcType=DECIMAL},
+            end_time = #{endTime,jdbcType=TIMESTAMP},
+            start_time = #{startTime,jdbcType=TIMESTAMP}
+        where report_id = #{reportId,jdbcType=BIGINT} and app_name = #{appName,jdbcType=VARCHAR} and mock_name = #{mockName,jdbcType=VARCHAR}
+    </update>
+</mapper>

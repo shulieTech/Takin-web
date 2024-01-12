@@ -41,4 +41,17 @@ public class WebRedisKeyConstant {
             : WebRedisKeyConstant.SCENE_REPORTID_KEY;
         return reportKeyName;
     }
+
+    /**
+     * 应用缓存key 应用ID 租户 环境
+     */
+    public final static String APPLICATION_CACHE_KEY = "takin:application@%s:%s:%s";
+    /**
+     * 远程mock数据缓存key 应用ID 租户 环境
+     */
+    public final static String REMOTE_MOCK_CACHE_KEY = "takin:remote:mock@%s:%s:%s";
+    /**
+     * 本地mock数据缓存key 应用ID 租户 环境
+     */
+    public final static String LOCAL_MOCK_CACHE_KEY = "takin:local:mock@%s:%s:%s";
 }

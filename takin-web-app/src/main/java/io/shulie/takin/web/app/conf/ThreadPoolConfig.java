@@ -108,6 +108,27 @@ public class ThreadPoolConfig {
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
+    @Bean(name = "reportMockThreadPool")
+    public ThreadPoolExecutor reportMockThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-%d").build();
+        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    @Bean(name = "reportMockThreadPool_one")
+    public ThreadPoolExecutor reportMockThreadPool_one() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-two-%d").build();
+        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    @Bean(name = "reportMockThreadPool_two")
+    public ThreadPoolExecutor reportMockThreadPool_two() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-two-%d").build();
+        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
     /**
      * 漏数验证单独做
      *

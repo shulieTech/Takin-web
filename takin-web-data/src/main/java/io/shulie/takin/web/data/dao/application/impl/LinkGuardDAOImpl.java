@@ -9,6 +9,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.web.common.constant.GuardEnableConstants;
+import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
+import io.shulie.takin.web.data.result.application.AppMockCallResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
 import io.shulie.takin.web.data.mapper.mysql.LinkGuardMapper;
@@ -114,4 +116,23 @@ public class LinkGuardDAOImpl extends ServiceImpl<LinkGuardMapper, LinkGuardEnti
         }).collect(Collectors.toList());
     }
 
+    @Override
+    public List<AppMockCallResult> listAppMockCallResultByAppId(Long appId) {
+        List<LinkGuardEntity> entities = this.baseMapper.queryListByApplicationId(appId);
+        List<AppMockCallResult> resultList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(entities)){
+            return resultList;
+        }
+        for(LinkGuardEntity entity : entities) {
+            AppMockCallResult result = new AppMockCallResult();
+            result.setAppId(entity.getApplicationId());
+            result.setAppName(entity.getApplicationName());
+            result.setMockName(entity.getMethodInfo());
+            result.setMockType(AppRemoteCallConfigEnum.RETURN_MOCK.getConfigName());
+            result.setMockScript(entity.getGroovy());
+            result.setMockStatus(entity.getIsEnable() != null && entity.getIsEnable() == 1 ? "启用" : "禁用");
+            resultList.add(result);
+        }
+        return resultList;
+    }
 }

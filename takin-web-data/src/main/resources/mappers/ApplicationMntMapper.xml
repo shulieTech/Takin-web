@@ -124,6 +124,11 @@
         WHERE application_name = #{applicationName}
     </select>
 
+    <select id="queryIdByName" resultType="java.lang.Long">
+        SELECT APPLICATION_ID
+        from t_application_mnt
+        WHERE tenant_id = #{tenantId} and env_code = #{envCode} and application_name = #{applicationName}
+    </select>
 
     <update id="updateApplicationAgentVersion">
         UPDATE t_application_mnt

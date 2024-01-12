@@ -55,4 +55,9 @@
     <select id="getListWithOutTenant" resultType="io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity">
         select * from t_app_remote_call
     </select>
+
+    <select id="getMockListByApplicationId" resultMap="BaseResultMap">
+        select * from t_app_remote_call
+        where application_id = #{applicationId} and type in (2, 3, 4) and is_deleted = 0
+    </select>
 </mapper>

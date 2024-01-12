@@ -15,16 +15,6 @@
 
 package io.shulie.takin.web.data.dao.application;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -47,18 +37,8 @@ import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
-import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
-import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
-import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
-import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
-import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
-import io.shulie.takin.web.data.param.application.QueryApplicationParam;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
-import io.shulie.takin.web.data.result.application.ApplicationResult;
-import io.shulie.takin.web.data.result.application.InstanceInfoResult;
-import io.shulie.takin.web.data.result.application.LibraryResult;
+import io.shulie.takin.web.data.param.application.*;
+import io.shulie.takin.web.data.result.application.*;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
@@ -67,6 +47,11 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -497,6 +482,11 @@ public class ApplicationDAOImpl
     }
 
     @Override
+    public Long queryIdByName(String applicationName, Long tenantId, String envCode) {
+        return applicationMntMapper.queryIdByName(applicationName, tenantId, envCode);
+    }
+
+    @Override
     public List<String> queryIdsByNameAndTenant(List<String> names, Long tenantId, String envCode) {
         return applicationMntMapper.queryIdsByNameAndTenant(names, tenantId, envCode);
     }
@@ -638,6 +628,7 @@ public class ApplicationDAOImpl
 
     @Override
     public String getIdByName(String applicationName) {
+
         return applicationMntMapper.getIdByName(applicationName);
     }
 

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import io.shulie.takin.web.data.model.mysql.LinkGuardEntity;
 import io.shulie.takin.web.data.param.application.LinkGuardCreateParam;
 import io.shulie.takin.web.data.param.application.LinkGuardUpdateUserParam;
+import io.shulie.takin.web.data.result.application.AppMockCallResult;
 import io.shulie.takin.web.data.result.linkguard.LinkGuardResult;
 
 /**
@@ -42,5 +43,7 @@ public interface LinkGuardDAO extends IService<LinkGuardEntity> {
     void updateAppName(Long applicationId, String appName);
 
     List<LinkGuardResult> selectByAppNameUnderCurrentUser(Long appId);
+
+    List<AppMockCallResult> listAppMockCallResultByAppId(Long appId);
 
 }

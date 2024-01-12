@@ -1,13 +1,7 @@
 package io.shulie.takin.web.biz.service.scenemanage.impl;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -354,7 +348,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             Long endTime = sceneData.getPressureTestSecond() + taskDelayTime;
             final LocalDateTime dateTime = LocalDateTime.now().plusSeconds(endTime);
             //组装
-            SceneTaskDto taskDto = new SceneTaskDto(reportId, ContextSourceEnum.JOB_SCENE, dateTime);
+            SceneTaskDto taskDto = new SceneTaskDto(reportId, ContextSourceEnum.JOB_SCENE, new Date(), dateTime);
             //任务添加到redis队列
             final String reportKeyName = isInnerPre == 1 ? WebRedisKeyConstant.SCENE_REPORTID_KEY_FOR_INNER_PRE
                     : WebRedisKeyConstant.SCENE_REPORTID_KEY;

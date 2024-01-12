@@ -8,14 +8,7 @@ import java.util.stream.Collectors;
 import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
-import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
-import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportPradarLinkDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
+import com.pamirs.takin.entity.domain.dto.report.*;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
@@ -127,6 +120,16 @@ public class ReportLocalController {
         queryParam.setReportId(reportId);
         queryParam.setApplicationName(applicationName);
         return Response.success(reportLocalService.listMachineDetail(queryParam));
+    }
+
+    @GetMapping("/report/mock/list")
+    @ApiOperation("报告挡板列表")
+    public Response<List<ReportMockDTO>> getMockList(Long reportId, Integer current,
+                                                     Integer pageSize) {
+        ReportLocalQueryParam queryParam = new ReportLocalQueryParam();
+        queryParam.setReportId(reportId);
+        initPageParam(queryParam, current, pageSize);
+        return Response.success(reportLocalService.listReportMock(queryParam));
     }
 
     @GetMapping("/report/link/list")

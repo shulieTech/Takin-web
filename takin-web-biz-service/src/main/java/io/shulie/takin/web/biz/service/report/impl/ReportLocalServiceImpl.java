@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
@@ -15,32 +16,20 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
-import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
-import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
+import com.pamirs.takin.entity.domain.dto.report.*;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
-import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
-import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
-import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
-import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
+import io.shulie.takin.web.data.dao.report.*;
 import io.shulie.takin.web.data.param.report.ReportApplicationSummaryQueryParam;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
-import io.shulie.takin.web.data.result.report.ReportApplicationSummaryResult;
-import io.shulie.takin.web.data.result.report.ReportBottleneckInterfaceResult;
-import io.shulie.takin.web.data.result.report.ReportMachineResult;
-import io.shulie.takin.web.data.result.report.ReportSummaryResult;
+import io.shulie.takin.web.data.result.report.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +50,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     private ReportApplicationSummaryDAO reportApplicationSummaryDAO;
     @Resource
     private ReportMachineDAO reportMachineDAO;
+    @Resource
+    private ReportMockDAO reportMockDAO;
 
     @Autowired
     private ReportRealTimeService reportRealTimeService;
@@ -203,6 +194,18 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return pageInfo;
     }
 
+    @Override
+    public PageInfo<ReportMockDTO> listReportMock(ReportLocalQueryParam queryParam) {
+        Page page = PageHelper.startPage(queryParam.getCurrentPage() + 1, queryParam.getPageSize());
+        List<ReportMockResult> dataList = reportMockDAO.selectByExample(queryParam);
+        if (CollectionUtils.isEmpty(dataList)) {
+            return new PageInfo<>(Lists.newArrayList());
+        }
+        List<ReportMockDTO> resultList = convert2ReportMockDTO(dataList);
+        PageInfo pageInfo = new PageInfo<>(resultList);
+        pageInfo.setTotal(page.getTotal());
+        return pageInfo;
+    }
     //@Override
     //public Long getTraceFailedCount(Long reportId) {
     //    WebResponse reportByReportId = null;
@@ -274,6 +277,18 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             dto.setTps(data.getTps());
             dto.setRt(data.getRt());
             dto.setSuccessRate(new BigDecimal("100"));
+            dataList.add(dto);
+        });
+        return dataList;
+    }
+
+    private List<ReportMockDTO> convert2ReportMockDTO(List<ReportMockResult> results) {
+        List<ReportMockDTO> dataList = Lists.newArrayList();
+        results.forEach(data -> {
+            ReportMockDTO dto = new ReportMockDTO();
+            BeanUtils.copyProperties(data, dto);
+            dto.setStartTime(DateUtil.formatDateTime(data.getStartTime()));
+            dto.setEndTime(DateUtil.formatDateTime(data.getEndTime()));
             dataList.add(dto);
         });
         return dataList;

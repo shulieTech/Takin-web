@@ -1,11 +1,14 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.pojo.request.report.ReportMockRequest;
 import io.shulie.takin.web.biz.service.DistributedLock;
+import io.shulie.takin.web.biz.service.report.ReportMockService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
@@ -20,9 +23,11 @@ import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -81,6 +86,10 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 
     @Autowired
     private DistributedLock distributedLock;
+    @Autowired
+    private ReportMockService reportMockService;
+    @Value("${report.mock.period:30}")
+    private Integer reportMockPeriod;
 
     @Override
     public Boolean finishReport(Long reportId, TenantCommonExt commonExt) {
@@ -121,8 +130,12 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 return false;
             }
             Date endTime = reportDetailDTO.getEndTime();
+            Date start = null;
+            if(StringUtils.isNotBlank(reportDetailDTO.getStartTime())) {
+                start = DateUtil.parseDateTime(reportDetailDTO.getStartTime());
+            }
             //更新任务的结束时间
-            if (!this.updateTaskEndTime(reportId, commonExt, endTime)) {
+            if (!this.updateTaskEndTime(reportId, commonExt, start, endTime)) {
                 return false;
             }
 
@@ -149,7 +162,20 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 if (!webResponse) {
                     log.info("压测结束失败 Report :{}，cloud更新失败", reportId);
                 }
-
+                /**
+                 * 查询报告，汇总mock信息
+                 */
+                log.info("查询报告，汇总mock信息 Report :{}", reportId);
+                ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(reportId);
+                if (reportDetailOutput != null && reportDetailOutput.getEndTime() != null) {
+                    ReportMockRequest mockRequest = new ReportMockRequest();
+                    mockRequest.setReportId(reportId);
+                    mockRequest.setStartTime(reportDetailOutput.getStartTime());
+                    mockRequest.setEndTime(DateUtil.formatDateTime(reportDetailOutput.getEndTime()));
+                    mockRequest.setTenantId(reportDetailOutput.getTenantId());
+                    mockRequest.setEnvCode(reportDetailOutput.getEnvCode());
+                    reportMockService.saveReportMockData(mockRequest);
+                }
 //                Boolean isLeaked = leakVerifyResultDAO.querySceneIsLeaked(reportId);
 //                if (isLeaked) {
 //                    //存在漏数，压测失败，修改压测报告状态 1：通过 0：不通过
@@ -181,7 +207,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         return true;
     }
 
-    private boolean updateTaskEndTime(Long reportId, TenantCommonExt commonExt, Date endTime) {
+    private boolean updateTaskEndTime(Long reportId, TenantCommonExt commonExt, Date startTime, Date endTime) {
         if (endTime == null) {
             return false;
         }
@@ -192,7 +218,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             log.error("endTime日期转化有误，endTime={}", JSON.toJSONString(endTime), e);
             return false;
         }
-        SceneTaskDto task = new SceneTaskDto(commonExt, reportId);
+        SceneTaskDto task = new SceneTaskDto(commonExt, reportId, startTime);
         task.setEndTime(endTimeLocal);
         String reportKey = null;
         try {
@@ -285,8 +311,20 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     }
 
     @Override
-    public void calcMockSummary(Long reportId) {
+    public void calcMockSummary(Long reportId, Date startTime, Long tenantId, String envCode) {
         //汇总最近5s的mock数据
-        
+        Date nowDate = new Date();
+        Date calStartTime = DateUtil.offsetSecond(nowDate, -1 * reportMockPeriod);
+        //如果计算开始时间早于startTime，按startTime计算
+        if(startTime != null && calStartTime.before(startTime)) {
+            calStartTime = startTime;
+        }
+        ReportMockRequest mockRequest = new ReportMockRequest();
+        mockRequest.setReportId(reportId);
+        mockRequest.setStartTime(DateUtil.formatDateTime(calStartTime));
+        mockRequest.setEndTime(DateUtil.formatDateTime(nowDate));
+        mockRequest.setTenantId(tenantId);
+        mockRequest.setEnvCode(envCode);
+        reportMockService.saveReportMockData(mockRequest);
     }
 }

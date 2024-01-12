@@ -3,13 +3,7 @@ package io.shulie.takin.web.biz.service.report;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
-import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
-import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
-import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
+import com.pamirs.takin.entity.domain.dto.report.*;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 
 /**
@@ -31,6 +25,8 @@ public interface ReportLocalService {
     List<ApplicationDTO> listApplication(Long reportId, String applicationName);
 
     PageInfo<MachineDetailDTO> listMachineDetail(ReportLocalQueryParam queryParam);
+
+    PageInfo<ReportMockDTO> listReportMock(ReportLocalQueryParam queryParam);
 
     Long getTraceFailedCount(Long reportId);
 }

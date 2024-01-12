@@ -24,6 +24,7 @@ import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
 import io.shulie.takin.web.data.param.application.AppRemoteCallCreateParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
+import io.shulie.takin.web.data.result.application.AppMockCallResult;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 
 /**
@@ -108,6 +109,13 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
      * @return
      */
     List<AppRemoteCallResult> selectByAppNameUnderCurrentUser(String appName);
+
+    /**
+     * 查询应用的所有mock信息
+     * @param applicationId
+     * @return
+     */
+    List<AppMockCallResult> getRemoteCallMockList(Long applicationId);
 
     /**
      * 更新应用名

@@ -82,6 +82,10 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
         @Param("tenantId") Long tenantId, @Param("envCode") String envCode);
 
     Long queryIdByApplicationName(@Param("applicationName") String applicationName);
+    @InterceptorIgnore(tenantLine = "true")
+    Long queryIdByName(@Param("applicationName") String applicationName,
+                       @Param("tenantId") Long tenantId,
+                       @Param("envCode") String envCode);
 
     /**
      * 更新 agentVersion

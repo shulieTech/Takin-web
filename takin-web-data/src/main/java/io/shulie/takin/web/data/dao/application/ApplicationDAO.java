@@ -223,6 +223,8 @@ public interface ApplicationDAO {
      */
     Long queryIdByApplicationName(String applicationName);
 
+    Long queryIdByName(String applicationName,Long tenantId, String envCode);
+
     /**
      * 返回id
      *

@@ -48,18 +48,24 @@ public class ThreadPoolUtil implements ApplicationContextAware {
                     "collectDataThreadPool_one",
                     "collectDataThreadPool_two",
                     "collectDataThreadPool_three");
+    List<String> reportMockList =
+            Arrays.asList("reportMockThreadPool",
+                    "reportMockThreadPool_one",
+                    "reportMockThreadPool_two");
 
     private static AtomicLong atomicMachine = new AtomicLong(0);
     private static AtomicLong atomicTps = new AtomicLong(0);
     private static AtomicLong atomicSummary = new AtomicLong(0);
     private static AtomicLong atomicFinish = new AtomicLong(0);
     private static AtomicLong atomicCollectData = new AtomicLong(0);
+    private static AtomicLong atomicReportMock = new AtomicLong(0);
 
     static List<ThreadPoolExecutor> syncMachineDataJobThreadPools = new ArrayList<>();
     static List<ThreadPoolExecutor> reportTpsThreadPools = new ArrayList<>();
     static List<ThreadPoolExecutor> reportSummaryThreadPools = new ArrayList<>();
     static List<ThreadPoolExecutor> reportFinishThreadPools = new ArrayList<>();
     static List<ThreadPoolExecutor> collectDataThreadPools = new ArrayList<>();
+    static List<ThreadPoolExecutor> reportMockThreadPools = new ArrayList<>();
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -87,6 +93,10 @@ public class ThreadPoolUtil implements ApplicationContextAware {
         collectDataList.stream().forEach(pool -> {
             collectDataThreadPools.add(applicationContext.getBean(pool, ThreadPoolExecutor.class));
         });
+
+        reportMockList.stream().forEach(pool -> {
+            reportMockThreadPools.add(applicationContext.getBean(pool, ThreadPoolExecutor.class));
+        });
     }
 
     public static ThreadPoolExecutor getSyncMachinePool() {
@@ -107,5 +117,9 @@ public class ThreadPoolUtil implements ApplicationContextAware {
 
     public static ThreadPoolExecutor getCollectDataThreadPool() {
         return collectDataThreadPools.get((int) Math.abs(atomicCollectData.getAndIncrement() % collectDataThreadPools.size()));
+    }
+
+    public static ThreadPoolExecutor getReportMockThreadPool() {
+        return reportMockThreadPools.get((int) Math.abs(atomicReportMock.getAndIncrement() % reportMockThreadPools.size()));
     }
 }

@@ -1,6 +1,7 @@
 package io.shulie.takin.web.common.pojo.dto;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -17,16 +18,17 @@ public class SceneTaskDto extends TenantCommonExt {
     public SceneTaskDto(){
 
     }
-    public SceneTaskDto(TenantCommonExt commonExt,Long reportId){
+    public SceneTaskDto(TenantCommonExt commonExt, Long reportId, Date startTime){
         this.setEnvCode(commonExt.getEnvCode());
         this.setTenantId(commonExt.getTenantId());
         this.setSource(commonExt.getSource());
         this.setTenantCode(commonExt.getTenantCode());
         this.setTenantAppKey(commonExt.getTenantAppKey());
         this.setReportId(reportId);
+        this.setStartTime(startTime);
     }
 
-    public SceneTaskDto(Long reportId, ContextSourceEnum source,LocalDateTime endTime){
+    public SceneTaskDto(Long reportId, ContextSourceEnum source, Date startTime, LocalDateTime endTime){
         if (null == reportId ){
             throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON,"报告ID不能为空！");
         }
@@ -37,6 +39,7 @@ public class SceneTaskDto extends TenantCommonExt {
         this.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         this.setReportId(reportId);
         this.setEndTime(endTime);
+        this.setStartTime(startTime);
     }
 
     /**
@@ -45,4 +48,6 @@ public class SceneTaskDto extends TenantCommonExt {
     private Long reportId;
 
     private LocalDateTime endTime;
+
+    private Date startTime;
 }

@@ -439,6 +439,6 @@
                 <inherited>false</inherited>
             </plugin>
         </plugins>
-        <finalName>${project.version}-${timestamp}</finalName>
+        <finalName>${project.version}</finalName>
     </build>
 </project>

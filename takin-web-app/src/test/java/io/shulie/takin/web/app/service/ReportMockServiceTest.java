@@ -18,9 +18,9 @@ public class ReportMockServiceTest {
     public void testSaveReportMockData() {
         ReportMockRequest mockRequest = new ReportMockRequest();
         mockRequest.setReportId(37995L);
-        mockRequest.setStartTime("2024-01-12 15:36:58");
-        mockRequest.setEndTime("2024-01-12 15:38:58");
-        mockRequest.setTenantId(1L);
+        mockRequest.setStartTime("2024-01-14 10:36:58");
+        mockRequest.setEndTime("2024-01-14 12:38:58");
+        mockRequest.setTenantId(6L);
         mockRequest.setEnvCode("test");
         reportMockService.saveReportMockData(mockRequest);
     }

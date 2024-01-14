@@ -28,7 +28,7 @@ public class ScriptDebugServiceTest {
     @Test
     public void test(){
         ScriptDebugDoDebugRequest request = new ScriptDebugDoDebugRequest();
-        request.setScriptDeployId(17182L);
+        request.setScriptDeployId(17186L);
         request.setRequestNum(1);
         request.setConcurrencyNum(1);
         scriptDebugService.debug(request);

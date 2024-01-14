@@ -2,7 +2,11 @@ package io.shulie.takin.web.biz.service.report.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.common.constant.Constants;
+import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.ListHelper;
+import io.shulie.takin.web.amdb.api.TraceClient;
+import io.shulie.takin.web.amdb.bean.query.trace.TraceMockQueryDTO;
+import io.shulie.takin.web.amdb.bean.result.trace.TraceMockDTO;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.request.report.ReportMockRequest;
 import io.shulie.takin.web.biz.pojo.request.report.ReportMockResponse;
@@ -13,13 +17,18 @@ import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
 import io.shulie.takin.web.data.dao.report.ReportMockDAO;
 import io.shulie.takin.web.data.param.report.ReportMockCreateParam;
 import io.shulie.takin.web.data.result.application.AppMockCallResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class ReportMockServiceImpl implements ReportMockService {
     @Resource
     private ReportMockDAO reportMockDAO;
@@ -36,33 +46,29 @@ public class ReportMockServiceImpl implements ReportMockService {
     private AppRemoteCallDAO appRemoteCallDAO;
     @Resource
     private LinkGuardDAO linkGuardDAO;
+    @Resource
+    private TraceClient traceClient;
 
     @Autowired
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
     @Override
     public void saveReportMockData(ReportMockRequest request) {
-        ReportMockResponse mockResponse = new ReportMockResponse();
-        mockResponse.setAppName("demo");
-        mockResponse.setServiceName("a");
-        mockResponse.setMethodName("b");
-        mockResponse.setFailureCount(1L);
-        mockResponse.setSuccessCount(2L);
-        mockResponse.setAvgRt(120.22);
-
-        ReportMockResponse mockResponse2 = new ReportMockResponse();
-        mockResponse2.setAppName("demo");
-        mockResponse2.setServiceName("/a/b");
-        mockResponse2.setMethodName("GET");
-        mockResponse2.setFailureCount(2L);
-        mockResponse2.setSuccessCount(3L);
-        mockResponse2.setAvgRt(130.22);
-        List<ReportMockResponse> responseList = new ArrayList<>();
-        responseList.add(mockResponse);
-        responseList.add(mockResponse2);
-        if(CollectionUtils.isEmpty(responseList)) {
+        TraceMockQueryDTO queryDTO = new TraceMockQueryDTO();
+        queryDTO.setStartTime(DateUtils.strToDate(request.getStartTime(), null).getTime());
+        queryDTO.setEndTime(DateUtils.strToDate(request.getEndTime(), null).getTime());
+        queryDTO.setTaskId(String.valueOf(request.getReportId()));
+        TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(request.getTenantId());
+        if(tenantInfoExt == null) {
+            log.error("找不到租户信息:id={}", request.getTenantId());
+        }
+        queryDTO.setTenantAppKey(tenantInfoExt.getTenantAppKey());
+        queryDTO.setEnvCode(request.getEnvCode());
+        List<TraceMockDTO> traceMockDTOList = traceClient.listTraceMock(queryDTO);
+        if(CollectionUtils.isEmpty(traceMockDTOList)) {
             return;
         }
+        List<ReportMockResponse> responseList = convert2ReportMockResponseList(traceMockDTOList);
         //查询mock列表原数据
         List<String> appNameList = responseList.stream().map(ReportMockResponse::getAppName).distinct().collect(Collectors.toList());
         List<AppMockCallResult> mockList = new ArrayList<>();
@@ -165,5 +171,35 @@ public class ReportMockServiceImpl implements ReportMockService {
         List<AppMockCallResult> resultList = linkGuardDAO.listAppMockCallResultByAppId(applicationId);
         redisTemplate.opsForValue().set(key, JSON.toJSONString(resultList), 5L, TimeUnit.MINUTES);
         return resultList;
+    }
+    private List<ReportMockResponse> convert2ReportMockResponseList(List<TraceMockDTO> dtoList) {
+        List<ReportMockResponse> responseList = new ArrayList<>();
+        Map<String, List<TraceMockDTO>> dtoMap = ListHelper.transferToListMap(dtoList, data -> data.getAppName()+Constants.SPLIT_COMMA+data.getServiceName()+Constants.SPLIT_COMMA+data.getMethodName(), data -> data);
+        dtoMap.forEach((key, value) -> {
+            String[] keys = key.split(Constants.SPLIT_COMMA);
+            String appName = keys[0];
+            String serviceName = keys[1];
+            String methodName = keys[2];
+            Long successCount = 0L;
+            Long failureCount = 0L;
+            Double totalCost = 0.0;
+            ReportMockResponse response = new ReportMockResponse();
+            for(TraceMockDTO mockDTO : value) {
+                if(StringUtils.equalsAny(mockDTO.getResultCode(), "00", "200")) {
+                    successCount += mockDTO.getCount();
+                } else {
+                    failureCount += mockDTO.getCount();
+                }
+                totalCost += mockDTO.getTotalCost();
+            }
+            response.setAppName(appName);
+            response.setServiceName(serviceName);
+            response.setMethodName(methodName);
+            response.setSuccessCount(successCount);
+            response.setFailureCount(failureCount);
+            response.setAvgRt(new BigDecimal(totalCost).divide(new BigDecimal(successCount + failureCount), 2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            responseList.add(response);
+        });
+        return  responseList;
     }
 }

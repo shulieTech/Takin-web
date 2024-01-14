@@ -23,7 +23,7 @@ public class AgentHeartbeatConfigClearJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        log.info("执行过期配置清理任务。。");
+        //log.info("执行过期配置清理任务。。");
         reportDetailService.clearExpiredData();
     }
 }

@@ -159,6 +159,8 @@ public class Constants {
      */
     public static final String SPLIT = "|";
 
+    public static final String SPLIT_COMMA = "###";
+
     /**
      * Y 与 N 常量
      */

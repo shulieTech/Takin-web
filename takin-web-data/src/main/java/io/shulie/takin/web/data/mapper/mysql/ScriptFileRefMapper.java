@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.mapper.mysql;
 
 import java.util.List;
 
+import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.shulie.takin.web.data.model.mysql.FileManageEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptFileRefEntity;
@@ -14,6 +15,7 @@ public interface ScriptFileRefMapper extends BaseMapper<ScriptFileRefEntity> {
      * @param scriptDeployId 脚本发布id
      * @return 文件路径列表
      */
+    @InterceptorIgnore(tenantLine = "true")
     List<FileManageEntity> listFileMangerByScriptDeployId(Long scriptDeployId);
 
 }

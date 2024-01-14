@@ -36,20 +36,23 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
     public List<String> checkLeakFile(Long masterId, PressureSceneEnum pressureSceneEnum) {
         List<String> errorList = new ArrayList<>();
         SceneEntity sceneEntity = null;
+        Long scriptDeployId;
         if(pressureSceneEnum == PressureSceneEnum.FLOW_DEBUG) {
             sceneEntity = sceneMapper.querySceneByScriptDeployId(masterId);
+            scriptDeployId = masterId;
         } else {
             sceneEntity = sceneMapper.selectById(masterId);
-        }
-        if(sceneEntity == null || sceneEntity.getScriptJmxNode() == null) {
-            return errorList;
+            if(sceneEntity == null || sceneEntity.getScriptJmxNode() == null) {
+                return errorList;
+            }
+            scriptDeployId = sceneEntity.getScriptDeployId();
         }
         //1. 列出所有csv文件
         //2. 判断是否有JavaRequest
         List<ScriptNode> nodeList = JSON.parseArray(sceneEntity.getScriptJmxNode(), ScriptNode.class);
         ParseScriptNodeVO nodeVO = new ParseScriptNodeVO();
         checkScriptNode(nodeList, nodeVO);
-        List<FileManageEntity> fileList = scriptFileRefMapper.listFileMangerByScriptDeployId(sceneEntity.getScriptDeployId());
+        List<FileManageEntity> fileList = scriptFileRefMapper.listFileMangerByScriptDeployId(scriptDeployId);
         if(nodeVO.getJavaRequestCount() > 0 && CollectionUtils.isEmpty(fileList.stream().filter(data -> data.getFileType() == FileTypeEnum.DATA.getCode() && data.getFileName().endsWith(".jar")).collect(Collectors.toList()))) {
             errorList.add(String.format("jar包缺失:脚本中包含%s个Java请求", nodeVO.getJavaRequestCount()));
         }

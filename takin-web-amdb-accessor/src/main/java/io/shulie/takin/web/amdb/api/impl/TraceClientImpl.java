@@ -20,7 +20,9 @@ import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.trace.TraceMockQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
+import io.shulie.takin.web.amdb.bean.result.trace.TraceMockDTO;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -59,6 +61,7 @@ public class TraceClientImpl implements TraceClient {
      * trace日志
      */
     private static final String ENTRY_TRACE_LOG_PATH = "/amdb/trace/getAllTraceList";
+    private static final String TRACE_MOCK_DATA_PATH = "/amdb/trace/getMockDataList";
 
     @Autowired
     private AmdbClientProperties properties;
@@ -208,6 +211,22 @@ public class TraceClientImpl implements TraceClient {
                 .eventName("查询trace日志列表")
                 .list(TTrackClickhouseModel.class);
             return PagingList.of(response.getData(), response.getTotal());
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+        }
+    }
+
+    @Override
+    public List<TraceMockDTO> listTraceMock(TraceMockQueryDTO query) {
+        String url = properties.getUrl().getAmdb() + TRACE_MOCK_DATA_PATH;
+        try {
+            AmdbResult<List<TraceMockDTO>> response = AmdbHelper.builder().url(url)
+                    .httpMethod(HttpMethod.GET)
+                    .param(query)
+                    .exception(TakinWebExceptionEnum.APPLICATION_TRACE_MOCK_ERROR)
+                    .eventName("查询trace-mock列表")
+                    .list(TraceMockDTO.class);
+            return response.getData();
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
         }

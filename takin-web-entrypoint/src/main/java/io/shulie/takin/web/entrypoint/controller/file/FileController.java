@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
 import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
@@ -92,22 +93,28 @@ public class FileController {
                 throw new RuntimeException("上传文件不能为空");
             }
         }
+        List<File> files = FileUtil.convertMultipartFileList(file);
         List<UploadResponse> response = cloudFileApi.upload(new UploadRequest() {{
-            setFileList(FileUtil.convertMultipartFileList(file));
+            setFileList(files);
         }});
         FileUtil.deleteTempFile(file);
         if(parseJmx != null && parseJmx && CollectionUtils.isNotEmpty(response)) {
-            ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
-            analyzeRequest.setScriptFile(response.get(0).getDownloadUrl());
-            List<ScriptNode> data = sceneManageApi.scriptAnalyze(analyzeRequest);
-            //判断节点中是否包含未知取样器
-            Set<String> nameSet = new HashSet<>();
-            errorNode(data, nameSet);
-            if(nameSet.size() == 0) {
-                response.get(0).setJmxCheckSuccess(true);
-            } else {
+            try {
+                ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
+                analyzeRequest.setScriptFile(response.get(0).getDownloadUrl());
+                List<ScriptNode> data = JmxUtil.buildNodeTree(files.get(0));
+                //判断节点中是否包含未知取样器
+                Set<String> nameSet = new HashSet<>();
+                errorNode(data, nameSet);
+                if (nameSet.size() == 0) {
+                    response.get(0).setJmxCheckSuccess(true);
+                } else {
+                    response.get(0).setJmxCheckSuccess(false);
+                    response.get(0).setJmxCheckErrorMsg(String.format(ERROR_MESSAGE, String.join(",", nameSet)));
+                }
+            } catch (Exception e) {
                 response.get(0).setJmxCheckSuccess(false);
-                response.get(0).setJmxCheckErrorMsg(String.format(ERROR_MESSAGE, String.join(",", nameSet)));
+                response.get(0).setJmxCheckErrorMsg("解析异常:"+e.getMessage());
             }
         }
         return response;

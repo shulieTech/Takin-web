@@ -11,6 +11,7 @@ public class ReportMockCreateParam implements Serializable {
     private String endTime;
     private String appName;
     private String mockName;
+    private String middlewareName;
     private String mockType;
     private String mockScript;
     private String mockStatus;

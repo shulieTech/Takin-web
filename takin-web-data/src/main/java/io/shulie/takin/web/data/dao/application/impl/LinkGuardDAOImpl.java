@@ -131,6 +131,7 @@ public class LinkGuardDAOImpl extends ServiceImpl<LinkGuardMapper, LinkGuardEnti
             result.setMockType(AppRemoteCallConfigEnum.RETURN_MOCK.getConfigName());
             result.setMockScript(entity.getGroovy());
             result.setMockStatus(entity.getIsEnable() != null && entity.getIsEnable() == 1 ? "启用" : "禁用");
+            result.setMiddlewareName("local");
             resultList.add(result);
         }
         return resultList;

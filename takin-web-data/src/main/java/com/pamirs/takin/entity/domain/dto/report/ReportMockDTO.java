@@ -11,11 +11,13 @@ public class ReportMockDTO implements Serializable {
     private String startTime;
     private String endTime;
     private String appName;
+    private String middlewareName;
     private String mockName;
     private String mockType;
     private String mockScript;
     private String mockStatus;
     private Long failureCount;
     private Long successCount;
+    private String successRate;
     private Double avgRt;
 }

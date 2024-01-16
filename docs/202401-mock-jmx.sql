@@ -9,6 +9,7 @@ CREATE TABLE `trodb`.`t_report_mock` (
   `start_time` datetime NOT NULL,
   `end_time` datetime NOT NULL,
   `app_name` varchar(256) NOT NULL,
+  `middleware_name` varchar(64) NOT NULL,
   `mock_name` varchar(256) NOT NULL,
   `mock_type` varchar(128) NOT NULL COMMENT '挡板 返回值mock groovy脚本mock 转发mock',
   `mock_script` text NOT NULL COMMENT 'mock脚本',

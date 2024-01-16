@@ -289,6 +289,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             BeanUtils.copyProperties(data, dto);
             dto.setStartTime(DateUtil.formatDateTime(data.getStartTime()));
             dto.setEndTime(DateUtil.formatDateTime(data.getEndTime()));
+            dto.setSuccessRate(new BigDecimal(dto.getSuccessCount() * 100).divide(new BigDecimal(dto.getFailureCount() + dto.getSuccessCount()), 2, RoundingMode.HALF_UP) + "%");
             dataList.add(dto);
         });
         return dataList;

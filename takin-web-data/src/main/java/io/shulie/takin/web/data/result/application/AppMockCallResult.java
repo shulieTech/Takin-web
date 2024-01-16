@@ -14,4 +14,5 @@ public class AppMockCallResult implements Serializable {
     private String mockType;
     private String mockScript;
     private String mockStatus;
+    private String middlewareName;
 }

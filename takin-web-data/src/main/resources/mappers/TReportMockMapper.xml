@@ -8,6 +8,7 @@
         <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
         <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
         <result column="app_name" jdbcType="VARCHAR" property="appName"/>
+        <result column="middleware_name" jdbcType="VARCHAR" property="middlewareName"/>
         <result column="mock_name" jdbcType="VARCHAR" property="mockName"/>
         <result column="mock_script" jdbcType="VARCHAR" property="mockScript"/>
         <result column="mock_status" jdbcType="VARCHAR" property="mockStatus"/>

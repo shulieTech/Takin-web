@@ -123,6 +123,7 @@ public class ReportMockServiceImpl implements ReportMockService {
         mockEntity.setMockType(mockCallResult.getMockType());
         mockEntity.setMockStatus(mockCallResult.getMockStatus());
         mockEntity.setAppName(mockCallResult.getAppName());
+        mockEntity.setMiddlewareName(mockCallResult.getMiddlewareName());
 
         mockEntity.setFailureCount(mockResponse.getFailureCount());
         mockEntity.setSuccessCount(mockResponse.getSuccessCount());

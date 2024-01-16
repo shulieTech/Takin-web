@@ -1,23 +1,30 @@
 package io.shulie.takin.web.biz.service.scriptmanage.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.FileTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.vo.ParseScriptNodeVO;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDeployService;
 import io.shulie.takin.web.biz.utils.JarUtils;
+import io.shulie.takin.web.common.constant.FeaturesConstants;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
 import io.shulie.takin.web.data.mapper.mysql.ScriptFileRefMapper;
+import io.shulie.takin.web.data.mapper.mysql.ScriptManageDeployMapper;
 import io.shulie.takin.web.data.model.mysql.FileManageEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +33,21 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
     private SceneMapper sceneMapper;
     @Resource
     private ScriptFileRefMapper scriptFileRefMapper;
+    @Resource
+    private ScriptManageDeployMapper scriptManageDeployMapper;
+
+    private static Map<String, String> skipPluginsMap = new HashMap<>();
+
+    static {
+        /**
+         * key 对应JmxUtils中的自定义采样器
+         * value 对应t_engine_plugin_info表的plugin_type字段
+         */
+        skipPluginsMap.put("io.github.ningyu.jmeter.plugin.dubbo.sample.DubboSample", "dubbo");
+        skipPluginsMap.put("io.shulie.jmeter.plugins.rabbit.RabbitPublisherSampler", "rabbitmq");
+        skipPluginsMap.put("ShulieKafkaDataSetSampler", "kafka-data_set");
+        skipPluginsMap.put("io.shulie.jmeter.plugins.kafka.dataset.Sampler", "kafka");
+    }
 
     /**
      * 调试传scriptDeployId
@@ -49,6 +71,16 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
             }
             scriptDeployId = sceneEntity.getScriptDeployId();
         }
+        ScriptManageDeployEntity scriptManageDeployEntity = scriptManageDeployMapper.selectById(scriptDeployId);
+        if(scriptManageDeployEntity == null) {
+            return errorList;
+        }
+        JSONObject jsonObject = JSON.parseObject(scriptManageDeployEntity.getFeature());
+        List<String> pluginTypeList = new ArrayList<>();
+        if(jsonObject.containsKey(FeaturesConstants.PLUGIN_CONFIG)) {
+            List<PluginConfigCreateRequest> pluginList = JSON.parseArray(jsonObject.getString(FeaturesConstants.PLUGIN_CONFIG), PluginConfigCreateRequest.class);
+            pluginTypeList.addAll(pluginList.stream().map(PluginConfigCreateRequest::getType).collect(Collectors.toList()));
+        }
         //1. 列出所有csv文件
         //2. 判断是否有JavaRequest|JDBCRequest
         List<ScriptNode> nodeList = JSON.parseArray(sceneEntity.getScriptJmxNode(), ScriptNode.class);
@@ -61,18 +93,26 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
         }
         List<String> jarList = fileList.stream().filter(data -> data.getFileType() == FileTypeEnum.DATA.getCode() && data.getFileName().endsWith(".jar")).map(FileManageEntity::getUploadPath).collect(Collectors.toList());
         //JDBC取样器
-        if(nodeVO.getJdbcRequestCount() > 0) {
+        if(nodeVO.getJdbcRequestClass().size() > 0) {
             for(String jdbcRequestClass : nodeVO.getJdbcRequestClass()) {
                 if(!findClassFromJar(jdbcRequestClass, jarList)) {
                     errorList.add(String.format("jar包缺失@JDBC取样器:类%s找不到依赖包", jdbcRequestClass));
                 }
             }
         }
-        //JAVA取样器 jar包或者插件
-        if(nodeVO.getJavaRequestCount() > 0) {
+        //JAVA取样器 jar包
+        if(nodeVO.getJavaRequestClass().size() > 0) {
             for(String javaRequestClass : nodeVO.getJavaRequestClass()) {
                 if(!findClassFromJar(javaRequestClass, jarList)) {
                     errorList.add(String.format("jar包缺失@Java取样器:类%s找不到依赖包", javaRequestClass));
+                }
+            }
+        }
+        //插件取样器
+        if(nodeVO.getPluginRequestClass().size() > 0) {
+            for(String pluginRequestClass : nodeVO.getPluginRequestClass()) {
+                if(!pluginTypeList.contains(skipPluginsMap.get(pluginRequestClass))) {
+                    errorList.add(String.format("插件包缺失:%s找不到插件包", pluginRequestClass));
                 }
             }
         }
@@ -99,10 +139,9 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
             nodeVO.getCsvFileSet().addAll(scriptNode.getCsvSet());
             nodeVO.getJdbcRequestClass().addAll(scriptNode.getDriverSet());
             if(StringUtils.equalsAny(scriptNode.getName(), "JavaSampler")) {
-                nodeVO.setJavaRequestCount(nodeVO.getJavaRequestCount() + 1);
                 nodeVO.getJavaRequestClass().add(scriptNode.getProps().get("classname"));
-            } else if(StringUtils.equalsAny(scriptNode.getName(), "JDBCSampler")) {
-                nodeVO.setJdbcRequestCount(nodeVO.getJdbcRequestCount() + 1);
+            } else if(skipPluginsMap.containsKey(scriptNode.getName())) {
+                nodeVO.getPluginRequestClass().add(scriptNode.getName());
             }
             checkScriptNode(scriptNode.getChildren(), nodeVO);
         }

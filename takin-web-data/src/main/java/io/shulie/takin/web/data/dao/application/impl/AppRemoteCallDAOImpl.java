@@ -245,6 +245,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
             result.setMockType(AppRemoteCallConfigEnum.getEnum(entity.getType()).getConfigName());
             result.setMockScript(entity.getMockReturnValue());
             result.setMockStatus(DsManageStatusEnum.ENABLE.getDesc());
+            result.setMiddlewareName(entity.getInterfaceChildType());
             resultList.add(result);
         }
         return resultList;

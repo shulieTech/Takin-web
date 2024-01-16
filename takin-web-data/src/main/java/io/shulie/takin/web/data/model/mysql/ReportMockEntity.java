@@ -22,6 +22,8 @@ public class ReportMockEntity extends TenantBaseEntity {
     private Date endTime;
     @TableField(value = "app_name")
     private String appName;
+    @TableField(value = "middleware_name")
+    private String middlewareName;
     @TableField(value = "mock_name")
     private String mockName;
     @TableField(value = "mock_type")

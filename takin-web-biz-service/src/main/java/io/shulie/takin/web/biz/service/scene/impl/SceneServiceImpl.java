@@ -26,10 +26,7 @@ import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateReque
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
@@ -135,6 +132,8 @@ public class SceneServiceImpl implements SceneService {
     private PradarZkConfigDAO pradarZkConfigDAO;
 
     private static final String SCRIPT_HTTP_REQUEST_MAX_NUM_KEY = "/pradar/config/jmx/http/limit";
+
+    private static final String ERROR_MESSAGE = "脚本中存在未支持的节点:%s";
 
     @Override
     public List<SceneLinkRelateResult> nodeLinkToBusinessActivity(List<ScriptNode> nodes, Long sceneId) {
@@ -349,6 +348,19 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Override
+    public ScriptNodeParsedResponse parseScriptNode(List<ScriptNode> scriptNodes) {
+        ScriptNodeParsedResponse response = new ScriptNodeParsedResponse();
+        //判断节点中是否包含未知取样器
+        Set<String> nameSet = new HashSet<>();
+        errorNode(scriptNodes, nameSet);
+        if (nameSet.size() > 0) {
+            response.setJmxCheckSuccess(false);
+            response.setJmxCheckErrorMsg(String.format(ERROR_MESSAGE, String.join(",", nameSet)));
+        }
+        return response;
+    }
+
+    @Override
     public BusinessFlowDetailResponse getBusinessFlowDetail(Long id) {
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
         SceneResult sceneResult = sceneDao.getSceneDetail(id);
@@ -357,6 +369,7 @@ public class SceneServiceImpl implements SceneService {
         }
 
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
+        ScriptNodeParsedResponse parsedResponse = this.parseScriptNode(scriptNodes);
         //将节点树处理成线程组在最外层的形式
         List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.THREAD_GROUP, scriptNodes);
         List<ScriptJmxNode> scriptJmxNodes = LinkManageConvert.INSTANCE.ofScriptNodeList(scriptNodeByType);
@@ -377,6 +390,8 @@ public class SceneServiceImpl implements SceneService {
                 }
             }
             result = LinkManageConvert.INSTANCE.ofBusinessFlowDetailResponse(scriptManageDeployDetail);
+            scriptFile.setJmxCheckSuccess(parsedResponse.getJmxCheckSuccess());
+            scriptFile.setJmxCheckErrorMsg(parsedResponse.getJmxCheckErrorMsg());
             result.setScriptFile(scriptFile);
             int fileManageNum = result.getFileManageResponseList() == null ? 0 : result.getFileManageResponseList().size();
             result.setFileNum(fileManageNum);
@@ -902,5 +917,17 @@ public class SceneServiceImpl implements SceneService {
         // 根据应用名称, 用户id, 获得应用列表
         List<ApplicationDetailResult> applicationPage = applicationDAO.getApplicationList(new ArrayList<>(applicationNames));
         return applicationPage;
+    }
+
+    private void errorNode(List<ScriptNode> data, Set<String> nameSet) {
+        if(CollectionUtils.isEmpty(data)) {
+            return;
+        }
+        for(ScriptNode scriptNode : data) {
+            if(scriptNode.getSamplerType() == SamplerTypeEnum.UNKNOWN) {
+                nameSet.add(org.apache.commons.lang.StringUtils.replace(scriptNode.getTestName(), ","," "));
+            }
+            errorNode(scriptNode.getChildren(), nameSet);
+        }
     }
 }

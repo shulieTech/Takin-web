@@ -15,18 +15,17 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
-import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.sdk.model.request.file.DeleteTempRequest;
 import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.ScriptNodeParsedResponse;
+import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -61,9 +60,7 @@ public class FileController {
     @Resource
     private CloudFileApi cloudFileApi;
     @Resource
-    private SceneManageApi sceneManageApi;
-
-    private static final String ERROR_MESSAGE = "脚本中存在未支持的节点:%s";
+    private SceneService sceneService;
 
     @ApiOperation("|_ 文件下载")
     @GetMapping("/download")
@@ -93,30 +90,21 @@ public class FileController {
                 throw new RuntimeException("上传文件不能为空");
             }
         }
-        List<File> files = FileUtil.convertMultipartFileList(file);
         List<UploadResponse> response = cloudFileApi.upload(new UploadRequest() {{
-            setFileList(files);
+            setFileList(FileUtil.convertMultipartFileList(file));
         }});
-        FileUtil.deleteTempFile(file);
         if(parseJmx != null && parseJmx && CollectionUtils.isNotEmpty(response)) {
             try {
-                ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
-                analyzeRequest.setScriptFile(response.get(0).getDownloadUrl());
-                List<ScriptNode> data = JmxUtil.buildNodeTree(files.get(0));
-                //判断节点中是否包含未知取样器
-                Set<String> nameSet = new HashSet<>();
-                errorNode(data, nameSet);
-                if (nameSet.size() == 0) {
-                    response.get(0).setJmxCheckSuccess(true);
-                } else {
-                    response.get(0).setJmxCheckSuccess(false);
-                    response.get(0).setJmxCheckErrorMsg(String.format(ERROR_MESSAGE, String.join(",", nameSet)));
-                }
+                List<ScriptNode> data = JmxUtil.buildNodeTree(response.get(0).getDownloadUrl());
+                ScriptNodeParsedResponse parsedResponse = sceneService.parseScriptNode(data);
+                response.get(0).setJmxCheckSuccess(parsedResponse.getJmxCheckSuccess());
+                response.get(0).setJmxCheckErrorMsg(parsedResponse.getJmxCheckErrorMsg());
             } catch (Exception e) {
                 response.get(0).setJmxCheckSuccess(false);
                 response.get(0).setJmxCheckErrorMsg("解析异常:"+e.getMessage());
             }
         }
+        FileUtil.deleteTempFile(file);
         return response;
     }
 
@@ -177,17 +165,5 @@ public class FileController {
         arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH));
         arrayList.add(uploadPath);
         return arrayList;
-    }
-
-    private void errorNode(List<ScriptNode> data, Set<String> nameSet) {
-        if(CollectionUtils.isEmpty(data)) {
-            return;
-        }
-        for(ScriptNode scriptNode : data) {
-            if(scriptNode.getSamplerType() == SamplerTypeEnum.UNKNOWN) {
-                nameSet.add(StringUtils.replace(scriptNode.getTestName(), ","," "));
-            }
-            errorNode(scriptNode.getChildren(), nameSet);
-        }
     }
 }

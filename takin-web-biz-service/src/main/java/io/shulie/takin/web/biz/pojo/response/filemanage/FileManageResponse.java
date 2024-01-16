@@ -74,4 +74,10 @@ public class FileManageResponse implements Serializable {
 
     @ApiModelProperty(value = "是否是大文件")
     private Integer isBigFile;
+
+    @ApiModelProperty("jmx校验结果")
+    private Boolean jmxCheckSuccess = true;
+
+    @ApiModelProperty("jmx校验异常信息")
+    private String jmxCheckErrorMsg;
 }

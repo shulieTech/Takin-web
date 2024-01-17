@@ -18,6 +18,7 @@ import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -35,8 +36,9 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
     private ScriptFileRefMapper scriptFileRefMapper;
     @Resource
     private ScriptManageDeployMapper scriptManageDeployMapper;
-
     private static Map<String, String> skipPluginsMap = new HashMap<>();
+    @Value("${debug.pressure.pre.check.enable:true}")
+    private Boolean debugPressurePreCheckEnable;
 
     static {
         /**
@@ -59,6 +61,9 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
     @Override
     public List<String> checkLeakFile(Long masterId, PressureSceneEnum pressureSceneEnum) {
         List<String> errorList = new ArrayList<>();
+        if(!debugPressurePreCheckEnable) {
+            return errorList;
+        }
         SceneEntity sceneEntity = null;
         Long scriptDeployId;
         if(pressureSceneEnum == PressureSceneEnum.FLOW_DEBUG) {
@@ -86,8 +91,6 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
         List<ScriptNode> nodeList = JSON.parseArray(sceneEntity.getScriptJmxNode(), ScriptNode.class);
         ParseScriptNodeVO nodeVO = new ParseScriptNodeVO();
         checkScriptNode(nodeList, nodeVO);
-        //java取样器的类排除同插件名一致的
-        nodeVO.getJavaRequestClass().removeAll(skipPluginsMap.keySet());
         List<FileManageEntity> fileList = scriptFileRefMapper.listFileMangerByScriptDeployId(scriptDeployId);
         nodeVO.getCsvFileSet().removeAll(fileList.stream().filter(data -> data.getFileType() == FileTypeEnum.DATA.getCode()).map(FileManageEntity::getFileName).collect(Collectors.toList()));
         if(CollectionUtils.isNotEmpty(nodeVO.getCsvFileSet())) {
@@ -114,7 +117,7 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
         if(nodeVO.getPluginRequestClass().size() > 0) {
             for(String pluginRequestClass : nodeVO.getPluginRequestClass()) {
                 if(!pluginTypeList.contains(skipPluginsMap.get(pluginRequestClass))) {
-                    errorList.add(String.format("插件包缺失:%s找不到插件包", pluginRequestClass));
+                    errorList.add(String.format("插件包缺失:类%s找不到插件包", pluginRequestClass));
                 }
             }
         }

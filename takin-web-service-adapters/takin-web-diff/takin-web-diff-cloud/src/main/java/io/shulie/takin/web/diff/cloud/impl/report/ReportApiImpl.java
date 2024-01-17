@@ -44,11 +44,12 @@ public class ReportApiImpl implements ReportApi {
                 return value;
             }
             String id = key.split(":")[1];
-            if (key.startsWith("ReportApi#tempReportDetail")) {
-                ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
-                req.setSceneId(Long.parseLong(id));
-                value = cloudReportApi.tempReportDetail(req);
-            } else if (key.startsWith("ReportApi#getReportByReportId")) {
+//            if (key.startsWith("ReportApi#tempReportDetail")) {
+//                ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
+//                req.setSceneId(Long.parseLong(id));
+//                value = cloudReportApi.tempReportDetail(req);
+//            }
+            if (key.startsWith("ReportApi#getReportByReportId")) {
                 ReportDetailByIdReq req = new ReportDetailByIdReq();
                 req.setReportId(Long.parseLong(id));
                 value = cloudReportApi.getReportByReportId(req);
@@ -73,8 +74,9 @@ public class ReportApiImpl implements ReportApi {
 
     @Override
     public ReportDetailResp tempReportDetail(ReportDetailBySceneIdReq req) {
-        String key = String.format("ReportApi#tempReportDetail:%d", req.getSceneId());
-        return (ReportDetailResp) cloudReportCache.get(key);
+        //String key = String.format("ReportApi#tempReportDetail:%d", req.getSceneId());
+        //return (ReportDetailResp) cloudReportCache.get(key);
+        return cloudReportApi.tempReportDetail(req);
     }
 
 

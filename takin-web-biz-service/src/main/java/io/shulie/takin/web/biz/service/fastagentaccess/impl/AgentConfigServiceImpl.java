@@ -516,8 +516,10 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
                 queryRequest.setProjectName(query.getProjectName());
                 queryRequest.setIsEffect(false);
                 queryRequest.setNeedEffectValue(false);
-                PagingList<AgentConfigEffectListResponse> effectListResponsePagingList = queryConfigEffectList(
-                    queryRequest);
+//                PagingList<AgentConfigEffectListResponse> effectListResponsePagingList = queryConfigEffectList(
+//                    queryRequest);
+                //这里之前就一直报错，没什么用 直接初始化一个空的ERROR i.s.takin.web.amdb.api.impl.AgentConfigClientImpl - 前往amdb查询配置生效列表返回异常,响应信息：{"error":{"msg":"系统异常 : Content type 'application/x-www-form-urlencoded;charset=UTF-8' not supported","code":"AMDB_9999_U0001"},"total":0,"success":false}
+                PagingList<AgentConfigEffectListResponse> effectListResponsePagingList = PagingList.empty();
                 if (effectListResponsePagingList.getTotal() > 0) {
                     item.setIsEffect(false);
                     notEffectList.add(item);

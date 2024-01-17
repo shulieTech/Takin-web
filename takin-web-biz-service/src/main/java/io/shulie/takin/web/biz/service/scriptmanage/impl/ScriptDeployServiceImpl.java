@@ -77,7 +77,7 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
         }
         JSONObject jsonObject = JSON.parseObject(scriptManageDeployEntity.getFeature());
         List<String> pluginTypeList = new ArrayList<>();
-        if(jsonObject.containsKey(FeaturesConstants.PLUGIN_CONFIG)) {
+        if(jsonObject != null && jsonObject.containsKey(FeaturesConstants.PLUGIN_CONFIG)) {
             List<PluginConfigCreateRequest> pluginList = JSON.parseArray(jsonObject.getString(FeaturesConstants.PLUGIN_CONFIG), PluginConfigCreateRequest.class);
             pluginTypeList.addAll(pluginList.stream().map(PluginConfigCreateRequest::getType).collect(Collectors.toList()));
         }
@@ -86,6 +86,8 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
         List<ScriptNode> nodeList = JSON.parseArray(sceneEntity.getScriptJmxNode(), ScriptNode.class);
         ParseScriptNodeVO nodeVO = new ParseScriptNodeVO();
         checkScriptNode(nodeList, nodeVO);
+        //java取样器的类排除同插件名一致的
+        nodeVO.getJavaRequestClass().removeAll(skipPluginsMap.keySet());
         List<FileManageEntity> fileList = scriptFileRefMapper.listFileMangerByScriptDeployId(scriptDeployId);
         nodeVO.getCsvFileSet().removeAll(fileList.stream().filter(data -> data.getFileType() == FileTypeEnum.DATA.getCode()).map(FileManageEntity::getFileName).collect(Collectors.toList()));
         if(CollectionUtils.isNotEmpty(nodeVO.getCsvFileSet())) {

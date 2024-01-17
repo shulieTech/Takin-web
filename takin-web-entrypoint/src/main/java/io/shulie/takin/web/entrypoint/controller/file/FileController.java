@@ -1,23 +1,13 @@
 package io.shulie.takin.web.entrypoint.controller.file;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
-import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.sdk.model.request.file.DeleteTempRequest;
 import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.ScriptNodeParsedResponse;
 import io.shulie.takin.web.biz.service.scene.SceneService;
@@ -26,20 +16,21 @@ import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -59,6 +50,8 @@ public class FileController {
 
     @Resource
     private CloudFileApi cloudFileApi;
+
+    private SceneManageApi sceneManageApi;
     @Resource
     private SceneService sceneService;
 
@@ -95,7 +88,9 @@ public class FileController {
         }});
         if(parseJmx != null && parseJmx && CollectionUtils.isNotEmpty(response)) {
             try {
-                List<ScriptNode> data = JmxUtil.buildNodeTree(response.get(0).getDownloadUrl());
+                ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
+                analyzeRequest.setScriptFile(response.get(0).getDownloadUrl());
+                List<ScriptNode> data = sceneManageApi.scriptAnalyze(analyzeRequest);
                 ScriptNodeParsedResponse parsedResponse = sceneService.parseScriptNode(data);
                 response.get(0).setJmxCheckSuccess(parsedResponse.getJmxCheckSuccess());
                 response.get(0).setJmxCheckErrorMsg(parsedResponse.getJmxCheckErrorMsg());

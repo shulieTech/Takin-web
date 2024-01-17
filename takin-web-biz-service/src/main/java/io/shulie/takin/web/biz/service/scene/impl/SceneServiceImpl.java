@@ -12,7 +12,6 @@ import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileDeleteParamReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SynchronizeRequest;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -252,14 +251,6 @@ public class SceneServiceImpl implements SceneService {
             fileCreateByStringParamReq.setFileContent(fileManageCreateRequest.getScriptContent());
             fileCreateByStringParamReq.setFilePath(tempFile);
             String fileMd5 = fileApi.createFileByPathAndString(fileCreateByStringParamReq);
-            //校验文件内容
-            ScriptNodeParsedResponse parsedResponse = this.parseScriptNode(JmxUtil.buildNodeTree(tempFile));
-            if(parsedResponse.getJmxCheckSuccess() == false) {
-                FileDeleteParamReq deleteParamReq = new FileDeleteParamReq();
-                deleteParamReq.setPaths(Collections.singletonList(tempFile));
-                fileApi.deleteFile(deleteParamReq);
-                throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, parsedResponse.getJmxCheckErrorMsg());
-            }
             fileManageCreateRequest.setMd5(fileMd5);
             fileManageCreateRequest.setId(null);
             fileManageCreateRequest.setScriptContent(null);

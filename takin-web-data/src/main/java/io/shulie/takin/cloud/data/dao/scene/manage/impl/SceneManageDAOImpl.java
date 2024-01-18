@@ -1,11 +1,5 @@
 package io.shulie.takin.cloud.data.dao.scene.manage.impl;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -24,6 +18,12 @@ import io.shulie.takin.cloud.data.util.MPUtil;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author 无涯
@@ -77,19 +77,20 @@ public class SceneManageDAOImpl
                 .filter(StrUtil::isNotBlank).collect(Collectors.toList());
         // 组装查询条件
         LambdaQueryWrapper<SceneManageEntity> wrapper = Wrappers.lambdaQuery(SceneManageEntity.class)
-            .eq(!Objects.isNull(queryBean.getSceneId()), SceneManageEntity::getId, queryBean.getSceneId())
-            .in(!CollectionUtils.isEmpty(queryBean.getSceneIds()), SceneManageEntity::getId, queryBean.getSceneIds())
-            .like(!StrUtil.isBlank(queryBean.getSceneName()), SceneManageEntity::getSceneName, queryBean.getSceneName())
-            .eq(!Objects.isNull(queryBean.getStatus()), SceneManageEntity::getStatus, queryBean.getStatus())
-            .eq(!Objects.isNull(queryBean.getType()), SceneManageEntity::getType, queryBean.getType())
-            .le(!Objects.isNull(queryBean.getLastPtEndTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtEndTime())
-            .ge(!Objects.isNull(queryBean.getLastPtStartTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtStartTime())
-            .eq(Objects.nonNull(queryBean.getIsArchive()), SceneManageEntity::getIsArchive, queryBean.getIsArchive())
-            .eq(SceneManageEntity::getTenantId, CloudPluginUtils.getContext().getTenantId())
-            .eq(SceneManageEntity::getEnvCode, CloudPluginUtils.getContext().getEnvCode())
-            .in(userIdList.size() > 0, SceneManageEntity::getUserId, userIdList)
-            .orderByDesc(SceneManageEntity::getLastPtTime)
-            .orderByDesc(SceneManageEntity::getId);
+                .eq(!Objects.isNull(queryBean.getSceneId()), SceneManageEntity::getId, queryBean.getSceneId())
+                .in(!CollectionUtils.isEmpty(queryBean.getSceneIds()), SceneManageEntity::getId, queryBean.getSceneIds())
+                .like(!StrUtil.isBlank(queryBean.getSceneName()), SceneManageEntity::getSceneName, queryBean.getSceneName())
+                .eq(!Objects.isNull(queryBean.getStatus()), SceneManageEntity::getStatus, queryBean.getStatus())
+                .eq(!Objects.isNull(queryBean.getType()), SceneManageEntity::getType, queryBean.getType())
+                .le(!Objects.isNull(queryBean.getLastPtEndTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtEndTime())
+                .ge(!Objects.isNull(queryBean.getLastPtStartTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtStartTime())
+                .eq(Objects.nonNull(queryBean.getIsArchive()), SceneManageEntity::getIsArchive, queryBean.getIsArchive())
+                .eq(SceneManageEntity::getTenantId, CloudPluginUtils.getContext().getTenantId())
+                .eq(SceneManageEntity::getEnvCode, CloudPluginUtils.getContext().getEnvCode())
+                .in(userIdList.size() > 0, SceneManageEntity::getUserId, userIdList)
+                .orderByDesc(SceneManageEntity::getLastPtTime)
+                .orderByDesc(SceneManageEntity::getUpdateTime)
+                .orderByDesc(SceneManageEntity::getId);
         return this.baseMapper.selectList(wrapper);
     }
 

@@ -1,24 +1,10 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -33,24 +19,10 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
 import com.pamirs.takin.entity.domain.entity.scenemanage.SceneBusinessActivityRef;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
+import com.pamirs.takin.entity.domain.vo.scenemanage.*;
 import io.shulie.takin.adapter.api.entrypoint.scene.manage.CloudSceneManageApi;
 import io.shulie.takin.adapter.api.model.common.TimeBean;
-import io.shulie.takin.adapter.api.model.request.scenemanage.ReportActivityResp;
-import io.shulie.takin.adapter.api.model.request.scenemanage.ReportDetailByIdsReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneIpNumReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageDeleteReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageQueryByIdsReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageQueryReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageWrapperReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneScriptRefOpen;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneStartPreCheckReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptCheckAndUpdateReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.*;
 import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptCheckAndUpdateReq.EnginePlugin;
 import io.shulie.takin.adapter.api.model.request.scenetask.SceneStartCheckResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageListResp;
@@ -70,13 +42,8 @@ import io.shulie.takin.web.biz.pojo.request.scene.ListSceneReportRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.*;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse.SceneMachineCluster;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneTagRefResponse;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.WatchmanClusterResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
@@ -119,6 +86,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui

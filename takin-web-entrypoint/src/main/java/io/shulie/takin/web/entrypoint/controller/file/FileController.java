@@ -47,10 +47,9 @@ public class FileController {
      */
     @Value("${takin.data.path}")
     private String uploadPath;
-
     @Resource
     private CloudFileApi cloudFileApi;
-
+    @Resource
     private SceneManageApi sceneManageApi;
     @Resource
     private SceneService sceneService;

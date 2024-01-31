@@ -1,10 +1,10 @@
 package io.shulie.takin.web.biz.pojo.response.application;
 
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * @author liuchuan
@@ -29,6 +29,9 @@ public class ApplicationListResponseV2 {
 
     @ApiModelProperty("负责人")
     private String userName;
+
+    @ApiModelProperty("负责人CN")
+    private String nickName;
 
     @ApiModelProperty("应用名称")
     private String applicationName;

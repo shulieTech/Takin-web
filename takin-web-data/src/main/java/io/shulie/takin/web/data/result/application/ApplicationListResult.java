@@ -1,8 +1,8 @@
 package io.shulie.takin.web.data.result.application;
 
-import java.util.Date;
-
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * @author liuchuan
@@ -20,6 +20,8 @@ public class ApplicationListResult {
 
     private String userName;
 
+    private String nickName;
+
     private Date updateTime;
 
     private Integer accessStatus;
@@ -28,5 +30,7 @@ public class ApplicationListResult {
      * 节点数量
      */
     private Integer nodeNum;
+
+    private Long userId;
 
 }

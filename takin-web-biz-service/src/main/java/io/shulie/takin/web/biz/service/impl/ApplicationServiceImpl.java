@@ -1367,7 +1367,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<ApplicationListResponseV2> responseList = records.stream().map(result -> {
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
             response.setId(result.getApplicationId().toString());
-
+            UserExt userExt = WebPluginUtils.getUserExtByUserId(result.getUserId());
+            if (Objects.nonNull(userExt)){
+                response.setNickName(Optional.ofNullable(userExt.getNick()).orElse(""));
+            }
             // 跟应用详情再对比下,同步下状态
             Response<ApplicationVo> vo = this.getApplicationInfo(response.getId());
             if (vo.getSuccess() && vo.getData() != null) {

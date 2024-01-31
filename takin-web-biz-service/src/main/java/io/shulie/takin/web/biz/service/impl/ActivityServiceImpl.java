@@ -79,6 +79,7 @@ import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -515,7 +516,6 @@ public class ActivityServiceImpl implements ActivityService {
         WebPluginUtils.fillQueryParam(param);
 
         PagingList<ActivityListResult> activityListResultPagingList = activityDAO.pageActivities(param);
-
         List<ActivityListResponse> responses = activityListResultPagingList.getList().stream()
                 .map(result -> {
                     ActivityListResponse response = new ActivityListResponse();
@@ -533,6 +533,10 @@ public class ActivityServiceImpl implements ActivityService {
                     response.setCanDelete(result.getCanDelete());
                     response.setBusinessDomain(result.getBusinessDomain());
                     response.setActivityLevel(result.getActivityLevel());
+                    UserExt userExt = WebPluginUtils.getUserExtByUserId(result.getUserId());
+                    if (Objects.nonNull(userExt)){
+                        response.setNickName(Optional.ofNullable(userExt.getNick()).orElse(""));
+                    }
                     WebPluginUtils.fillQueryResponse(response);
                     return response;
                 }).collect(Collectors.toList());

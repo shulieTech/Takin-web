@@ -1,12 +1,5 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
@@ -28,6 +21,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author 无涯
@@ -59,12 +60,12 @@ public class TraceManageJob implements SimpleJob {
             return;
         }
         Map<Tenant, List<TraceManageDeployResult>> map = deployResults.stream().collect(
-            Collectors.groupingBy(deploy -> new Tenant(deploy.getUserId(), deploy.getEnvCode())));
+            Collectors.groupingBy(deploy -> new Tenant(deploy.getTenantId(), deploy.getEnvCode())));
         for (Entry<Tenant, List<TraceManageDeployResult>> entry : map.entrySet()) {
             // 分布式锁
             Tenant key = entry.getKey();
-            Long tenantId = key.getTenantId();
-            String envCode = key.getEnvCode();
+            Long tenantId = Optional.ofNullable(key.getTenantId()).orElse(1L);
+            String envCode = Optional.ofNullable(key.getEnvCode()).orElse("test");
             String lockKey = JobRedisUtils.getJobRedis(tenantId, envCode, shardingContext.getJobName());
             if (distributedLock.checkLock(lockKey)) {
                 continue;

@@ -42,6 +42,8 @@ public class ContextExt {
 
     String userAppKey;
 
+    String nickName;
+
     public String getFilterSql() {
         if (StringUtils.isBlank(filterSql)) {
             return null;
@@ -60,5 +62,6 @@ public class ContextExt {
         this.setUserName(null);
         this.setTenantCode(null);
         this.setUserAppKey(null);
+        this.setNickName(null);
     }
 }

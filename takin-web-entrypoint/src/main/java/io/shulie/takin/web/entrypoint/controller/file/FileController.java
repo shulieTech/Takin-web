@@ -1,13 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.file;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
@@ -24,14 +16,15 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -80,9 +73,9 @@ public class FileController {
                 throw new RuntimeException("上传文件不能为空");
             }
         }
-        return cloudFileApi.upload(new UploadRequest() {{
-            setFileList(file);
-        }});
+        UploadRequest uploadRequest = new UploadRequest();
+        uploadRequest.setFileList(file);
+        return cloudFileApi.upload(uploadRequest);
     }
 
     @PostMapping("/attachment/upload")
@@ -91,9 +84,10 @@ public class FileController {
         if (file == null || file.size() == 0) {
             return WebResponse.fail("上传文件不能为空");
         }
-        List<UploadResponse> response = cloudFileApi.upload(new UploadRequest() {{
-            setFileList(file);
-        }});
+
+        UploadRequest uploadRequest = new UploadRequest();
+        uploadRequest.setFileList(file);
+        List<UploadResponse> response = cloudFileApi.upload(uploadRequest);
         FileUtil.deleteTempFile(file);
         List<FileDTO> dtoList = response.stream()
                 .map(t -> BeanUtil.copyProperties(t, FileDTO.class))

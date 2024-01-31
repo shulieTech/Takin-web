@@ -665,6 +665,7 @@ public class SceneServiceImpl implements SceneService {
                 UserExt user = userMap.get(r.getUserId());
                 if (user != null) {
                     r.setUserName(user.getName());
+                    r.setNickName(user.getNick());
                 }
             });
         }

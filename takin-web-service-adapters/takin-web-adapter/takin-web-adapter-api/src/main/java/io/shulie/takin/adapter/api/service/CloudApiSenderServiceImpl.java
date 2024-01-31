@@ -1,12 +1,5 @@
 package io.shulie.takin.adapter.api.service;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.net.url.UrlQuery;
@@ -24,6 +17,13 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Cloud接口统一发送服务
@@ -285,13 +285,14 @@ public class CloudApiSenderServiceImpl implements CloudApiSenderService {
     private ContextExt drawDataTraceContext(ContextExt param) {
         // 纯净对象
         ContextExt context = new ContextExt(
-            param.getUserId(),
-            param.getTenantId(),
-            param.getEnvCode(),
-            param.getFilterSql(),
-            param.getUserName(),
-            param.getTenantCode(),
-            param.getUserAppKey());
+                param.getUserId(),
+                param.getTenantId(),
+                param.getEnvCode(),
+                param.getFilterSql(),
+                param.getUserName(),
+                param.getTenantCode(),
+                param.getUserAppKey(),
+                param.getNickName());
         // 清理原来的上下文
         param.clean();
         // 返回对象

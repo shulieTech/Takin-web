@@ -1,31 +1,12 @@
 package io.shulie.takin.cloud.biz.service.scene.impl;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -37,11 +18,7 @@ import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneManageMapper;
 import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneScriptRefMapper;
 import com.pamirs.takin.cloud.entity.dao.scene.manage.TSceneSlaRefMapper;
 import com.pamirs.takin.cloud.entity.domain.entity.report.Report;
-import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneBusinessActivityRef;
-import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneManage;
-import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneRef;
-import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneScriptRef;
-import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneSlaRef;
+import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.*;
 import com.pamirs.takin.cloud.entity.domain.vo.scenemanage.SceneManageStartRecordVO;
 import io.shulie.takin.adapter.api.model.common.RuleBean;
 import io.shulie.takin.adapter.api.model.common.TimeBean;
@@ -53,11 +30,7 @@ import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
 import io.shulie.takin.cloud.biz.cloudserver.SceneManageDTOConvert;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.config.AppConfig;
-import io.shulie.takin.cloud.biz.input.scenemanage.SceneBusinessActivityRefInput;
-import io.shulie.takin.cloud.biz.input.scenemanage.SceneManageQueryInput;
-import io.shulie.takin.cloud.biz.input.scenemanage.SceneManageWrapperInput;
-import io.shulie.takin.cloud.biz.input.scenemanage.SceneScriptRefInput;
-import io.shulie.takin.cloud.biz.input.scenemanage.SceneSlaRefInput;
+import io.shulie.takin.cloud.biz.input.scenemanage.*;
 import io.shulie.takin.cloud.biz.notify.StartFailEventSource;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageListOutput;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
@@ -78,11 +51,7 @@ import io.shulie.takin.cloud.common.constants.SceneManageConstant;
 import io.shulie.takin.cloud.common.enums.PressureModeEnum;
 import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.enums.TimeUnitEnum;
-import io.shulie.takin.cloud.common.enums.scenemanage.FileTypeEnum;
-import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageErrorEnum;
-import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
-import io.shulie.takin.cloud.common.enums.scenemanage.SceneQueryStatusEnum;
-import io.shulie.takin.cloud.common.enums.scenemanage.SceneRunTaskStatusEnum;
+import io.shulie.takin.cloud.common.enums.scenemanage.*;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
@@ -115,6 +84,8 @@ import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.utils.FileEncoder;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -123,6 +94,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static io.shulie.takin.cloud.common.constants.FileConstants.JAR_SUFFIX;
 
@@ -378,7 +358,9 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         if (CollectionUtils.isEmpty(queryList)) {
             return new PageInfo<>(Lists.newArrayList());
         }
+
         List<SceneManageListOutput> resultList = queryList.stream().map(t -> new SceneManageListOutput() {{
+
             setStatus(t.getStatus());
             setFeatures(t.getFeatures());
             setId(t.getId());
@@ -392,6 +374,10 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
             setTenantId(t.getTenantId());
             setUserId(t.getUserId());
             setUserName(null);
+            UserExt userExt = WebPluginUtils.getUserExtByUserId(t.getUserId());
+            if (Objects.nonNull(userExt)){
+                setNickName(Optional.ofNullable(userExt.getNick()).orElse(""));
+            }
             setScriptAnalysisResult(t.getScriptAnalysisResult());
         }}).collect(Collectors.toList());
         Map<Long, Integer> threadNum = new HashMap<>(1);

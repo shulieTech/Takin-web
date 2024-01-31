@@ -30,4 +30,7 @@ public class UserCommonExt extends TenantCommonExt {
 
     @ApiModelProperty(value = "部门Id")
     private Long deptId;
+
+    @ApiModelProperty(value = "用户名称CN")
+    private String nickName;
 }

@@ -43,6 +43,7 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,6 +128,10 @@ public class ReportServiceImpl implements ReportService {
             ReportDTO result = BeanUtil.copyProperties(t, ReportDTO.class);
             result.setUserName(userName);
             result.setUserId(userId);
+           if (MapUtils.isNotEmpty(userMap)){
+               String nickName = Optional.ofNullable(userMap.get(userId).getNick()).orElse("");
+               result.setNickName(nickName);
+           }
             return result;
         }).collect(Collectors.toList());
         return ResponseResult.success(dtoList, reportResponseList.getTotalNum());

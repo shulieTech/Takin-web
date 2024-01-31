@@ -118,7 +118,9 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -1840,17 +1842,18 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             jtlPath = realJtlPath + "/" + resourceId + "/" + jobId;
             logPath = realLogPath + "/" + resourceId + "/" + jobId;
         }
-        if (new File(jtlPath + "/" + "Jmeter.zip").exists()) {
+
+        if (new File(jtlPath + "/" + "Jmeter.tar.gz").exists()) {
             // 2.存在直接返回
-            return jtlPath + "/" + "Jmeter.zip";
+            return jtlPath + "/" + "Jmeter.tar.gz";
         } else if (needZip) {
             // 开始压缩
-            String command = StrUtil.indexedFormat("sudo zip -r -j {0}/Jmeter.zip {0} {1}", jtlPath, logPath);
+            String command = StrUtil.indexedFormat("tar -czf  {0}/Jmeter.tar.gz -C {0} . -C {1} .", jtlPath, logPath);
             log.info("压测日志打包成文件:{}", command);
             Boolean result = LinuxHelper.executeLinuxCmd(command);
             if (result) {
                 // 返回成功
-                return jtlPath + "/" + "Jmeter.zip";
+                return jtlPath + "/" + "Jmeter.tar.gz";
             }
             throw new TakinCloudException(TakinCloudExceptionEnum.FILE_ZIP_ERROR, "查看" + jtlPath);
         } else {

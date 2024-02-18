@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.pojo.output.report;
 
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -34,5 +35,20 @@ public class NodeCompareTargetOut implements Serializable {
         private Double service1Rt;
         @ApiModelProperty("服务Rt2")
         private Double service2Rt;
+        @ApiModelProperty("服务Rt3")
+        private Double service3Rt;
+        @ApiModelProperty("服务Rt4")
+        private Double service4Rt;
+
+    }
+
+    public static TopologyNode createTopologyNode(ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node, String service, String method) {
+        NodeCompareTargetOut.TopologyNode topologyNode = new NodeCompareTargetOut.TopologyNode();
+        topologyNode.setId(node.getId());
+        topologyNode.setLabel(node.getLabel());
+        topologyNode.setService1Rt(node.getServiceRt());
+        topologyNode.setService(service);
+        topologyNode.setMethodName(method);
+        return topologyNode;
     }
 }

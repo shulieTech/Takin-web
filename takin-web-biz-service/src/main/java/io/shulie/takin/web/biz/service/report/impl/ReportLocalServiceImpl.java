@@ -516,7 +516,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 return Response.fail("报告不存在");
             }
             //根据业务活动id获取节点信息
-            List<ReportActivityInfoQueryRequest> activityInfoQueryRequests = reportEntityList.stream().map(reportEntity -> genActivityInfo(nodeCompareTargetInput.getActivityId(), reportEntity)).collect(Collectors.toList());
+            List<ReportActivityInfoQueryRequest> activityInfoQueryRequests = reportEntityList.stream()
+                    .map(reportEntity -> genActivityInfo(nodeCompareTargetInput.getActivityId(), reportEntity)).collect(Collectors.toList());
             //根据业务活动id，报告id获取压测时候节点的信息
             if (CollectionUtils.isEmpty(activityInfoQueryRequests)) {
                 return Response.success(new NodeCompareTargetOut());
@@ -534,15 +535,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             List<ReportActivityResponse> activityResponses = reportBusinessActivityDetailEntities.stream().map(reportBusinessActivityDetailEntity -> {
                 ActivityResponse activityResponse = JSON.parseObject(reportBusinessActivityDetailEntity.getReportJson(), ActivityResponse.class);
                 ReportActivityResponse response = BeanUtil.copyProperties(activityResponse, ReportActivityResponse.class);
+                response.setReportId(reportBusinessActivityDetailEntity.getReportId());
                 return response;
-            }).collect(Collectors.toList());
+            }).sorted(Comparator.comparing(ReportActivityResponse::getReportId)).collect(Collectors.toList());
 
             //统计转换压测时候节点的信息
             if (CollectionUtils.isEmpty(activityResponses)) {
                 return Response.success(new NodeCompareTargetOut());
             }
             NodeCompareTargetOut nodeCompareTargetOut = new NodeCompareTargetOut();
-            nodeCompareTargetOut.setReportIds(nodeCompareTargetInput.getReportIds());
+            nodeCompareTargetOut.setReportIds(nodeCompareTargetInput.getReportIds().stream().sorted().collect(Collectors.toList()));
             NodeCompareTargetOut.TopologyNode root = new NodeCompareTargetOut.TopologyNode();
             ReportActivityResponse response = activityResponses.get(0);
             root.setId(response.getLinkId());
@@ -569,59 +571,67 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     }
 
     private static Map<String, NodeCompareTargetOut.TopologyNode> genNodeCompareTargetOut(List<ReportActivityResponse> activityResponseList) {
-        NodeCompareTargetOut.TopologyNode topologyNode = new NodeCompareTargetOut.TopologyNode();
-        List<Map<String, NodeCompareTargetOut.TopologyNode>> list = new ArrayList<>();
-        for (ReportActivityResponse activityResponse : activityResponseList) {
-            topologyNode.setId(activityResponse.getLinkId());
-            topologyNode.setMethodName(activityResponse.getMethod());
-            topologyNode.setService(activityResponse.getServiceName());
-            topologyNode.setLabel(activityResponse.getApplicationName());
-            Map<String, NodeCompareTargetOut.TopologyNode> map = new HashMap<>();
-            if (activityResponse.getTopology() != null && CollectionUtils.isNotEmpty(activityResponse.getTopology().getNodes())) {
-                for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponse.getTopology().getNodes()) {
-                    NodeCompareTargetOut.TopologyNode topologyNodeTree = new NodeCompareTargetOut.TopologyNode();
-                    topologyNodeTree.setId(node.getId());
-                    topologyNodeTree.setLabel(node.getLabel());
-                    topologyNodeTree.setService1Rt(node.getServiceRt());
-                    topologyNodeTree.setService(activityResponse.getServiceName());
-                    topologyNodeTree.setMethodName(activityResponse.getMethod());
-                    if (CollectionUtils.isEmpty(node.getUpAppNames())) {
-                        map.put(node.getLabel(), topologyNodeTree);
-                    }
-                    for (String upAppName : node.getUpAppNames()) {
-                        map.put(node.getLabel() + "&&&&&&" + upAppName, topologyNodeTree);
-                    }
-                }
-            }
-            list.add(map);
-        }
-        Map<String, NodeCompareTargetOut.TopologyNode> newNodeMap = new HashMap<>();
+        Set<String> allNodeKey = new HashSet<>();
+        List<Map<String, NodeCompareTargetOut.TopologyNode>> list = activityResponseList.stream()
+                .filter(a -> Objects.nonNull(a.getTopology()) && CollectionUtils.isNotEmpty(a.getTopology().getNodes()))
+                .map(activityResponse -> {
+                    Map<String, NodeCompareTargetOut.TopologyNode> map = new LinkedHashMap<>();
+                    activityResponse.getTopology().getNodes().forEach(node -> {
+                        NodeCompareTargetOut.TopologyNode topologyNode = NodeCompareTargetOut.createTopologyNode(node, activityResponse.getServiceName(), activityResponse.getMethod());
+                        if (CollectionUtils.isEmpty(node.getUpAppNames())) {
+                            map.put(node.getLabel(), topologyNode);
+                        }
+                        node.getUpAppNames().forEach(name -> {
+                            String key = node.getLabel() + "&&&&&&" + name;
+                            map.put(key, topologyNode);
+                            allNodeKey.add(key);
+                        });
+                    });
+                    return map;
+                }).collect(Collectors.toList());
+
         if (CollectionUtils.isEmpty(list)) {
-            return newNodeMap;
+            return Collections.EMPTY_MAP;
         }
-        //list可能有一个或者两个元素，后一个元素的getService1Rt赋值给前一个元素的getService2Rt，最后返回前一个元素
-        if (list.size() == 1) {
-            return list.get(0);
-        } else if (list.size() == 2) {
-            Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap1 = list.get(0);
-            Map<String, NodeCompareTargetOut.TopologyNode> topologyNodeMap2 = list.get(1);
-            Set<String> keys1 = list.get(0).keySet();
-            for (String s : keys1) {
-                NodeCompareTargetOut.TopologyNode topologyNode1 = topologyNodeMap1.get(s);
-                NodeCompareTargetOut.TopologyNode topologyNode2 = topologyNodeMap2.get(s);
-                if (topologyNode1 == null || topologyNode2 == null) {
-                    continue;
-                }
-                topologyNode1.setService2Rt(topologyNode2.getService1Rt());
-                newNodeMap.put(s, topologyNode1);
-            }
-        } else {
-            return newNodeMap;
+
+        Map<String, NodeCompareTargetOut.TopologyNode> newNodeMap = list.get(0);
+        for (int i = 1; i < list.size(); i++) {
+            Map<String, NodeCompareTargetOut.TopologyNode> currentMap = newNodeMap;
+            Map<String, NodeCompareTargetOut.TopologyNode> nextMap = list.get(i);
+            processMap(currentMap, nextMap, i, allNodeKey);
+            newNodeMap.putAll(currentMap);
         }
         return newNodeMap;
     }
 
-    private NodeCompareTargetOut.TopologyNode genNodeTree(NodeCompareTargetOut.TopologyNode root, Map<String, NodeCompareTargetOut.TopologyNode> map) {
+
+    // 处理每个map的方法
+    private static void processMap(Map<String, NodeCompareTargetOut.TopologyNode> currentMap,
+                                   Map<String, NodeCompareTargetOut.TopologyNode> nextMap, int caseIndex,Set<String> allNodeKeys) {
+        for (String key : allNodeKeys) {
+            NodeCompareTargetOut.TopologyNode parent = currentMap.get(key);
+            NodeCompareTargetOut.TopologyNode child = nextMap.get(key);
+            if (Objects.isNull(parent) || Objects.isNull(child)) {
+                continue;
+            }
+            switch (caseIndex) {
+                case 1:
+                    parent.setService2Rt(child.getService1Rt());
+                    break;
+                case 2:
+                    parent.setService3Rt(child.getService1Rt());
+                    break;
+                case 3:
+                    parent.setService4Rt(child.getService1Rt());
+                    break;
+                default:
+                    break;
+            }
+            currentMap.put(key, parent);
+        }
+    }
+
+    private static NodeCompareTargetOut.TopologyNode genNodeTree(NodeCompareTargetOut.TopologyNode root, Map<String, NodeCompareTargetOut.TopologyNode> map) {
         if (Objects.isNull(root) || MapUtils.isEmpty(map)) {
             return root;
         }
@@ -650,6 +660,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 NodeCompareTargetOut.TopologyNode topologyNode = map.get(key);
                 root.setService1Rt(topologyNode.getService1Rt());
                 root.setService2Rt(topologyNode.getService2Rt());
+                root.setService3Rt(topologyNode.getService3Rt());
+                root.setService4Rt(topologyNode.getService4Rt());
             }
 
         }

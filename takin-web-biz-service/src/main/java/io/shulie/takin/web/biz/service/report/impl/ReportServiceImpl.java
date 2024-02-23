@@ -1,17 +1,5 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
@@ -19,23 +7,11 @@ import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
-import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
-import io.shulie.takin.adapter.api.model.request.report.ReportDetailByIdReq;
-import io.shulie.takin.adapter.api.model.request.report.ReportDetailBySceneIdReq;
-import io.shulie.takin.adapter.api.model.request.report.ReportQueryReq;
-import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
-import io.shulie.takin.adapter.api.model.request.report.ScriptNodeTreeQueryReq;
-import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
-import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
-import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
-import io.shulie.takin.adapter.api.model.response.report.MetricesResponse;
-import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportDetailResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportResp;
-import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
-import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.adapter.api.model.request.report.*;
+import io.shulie.takin.adapter.api.model.response.report.*;
 import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
@@ -62,6 +38,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -327,6 +309,15 @@ public class ReportServiceImpl implements ReportService {
         }finally {
             distributedLock.unLock(lockKey);
         }
+    }
+
+    @Override
+    public boolean deleteReportById(List<Long> reportIds) {
+        if (CollectionUtils.isEmpty(reportIds)) {
+            return false;
+        }
+        int num = this.cloudReportApi.deleteReportByIds(reportIds);
+        return reportIds.size() == num;
     }
 
 }

@@ -1,9 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.report;
 
-import java.util.List;
-
-import javax.annotation.Resource;
-
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
@@ -29,10 +25,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author 莫问
@@ -175,6 +171,17 @@ public class ReportController {
     )
     public ResponseResult<String> getExportDownLoadUrl(Long reportId) {
         return ResponseResult.success(reportService.downloadPDFPath(reportId));
+    }
+
+
+    @PostMapping("/report/deleteReportById")
+    @ApiOperation("删除报告")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
+            needAuth = ActionTypeEnum.DELETE
+    )
+    public ResponseResult<Boolean> deleteReportById(List<Long> reportIds){
+        return ResponseResult.success(reportService.deleteReportById(reportIds));
     }
 
 }

@@ -162,17 +162,19 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 
             List<ReportMachineUpdateParam> insertList = Lists.newArrayList();
             appMap.values().forEach(value -> {
-
                 if(CollectionUtils.isEmpty(value)) {
                     return;
                 }
-                BaseAppVo baseAppVo = value.stream().filter(base -> {
+                List<BaseAppVo> baseAppVos = value.stream().filter(base -> {
                     // agentId 是否在线 只有不等于空
-                    if(CollectionUtils.isNotEmpty(onlineAgentIds) && !onlineAgentIds.contains(base.getAgentIp())) {
+                    if (CollectionUtils.isNotEmpty(onlineAgentIds) && !onlineAgentIds.contains(base.getAgentIp())) {
                         return false;
                     }
                     return true;
-                }).collect(Collectors.toList()).get(0);
+                }).collect(Collectors.toList());
+
+                BaseAppVo baseAppVo = CollectionUtils.isEmpty(baseAppVos) ? null : baseAppVos.get(0);
+
                 if (baseAppVo != null) {
                     ReportMachineUpdateParam tmp = new ReportMachineUpdateParam();
                     tmp.setReportId(baseAppVo.getReportId());

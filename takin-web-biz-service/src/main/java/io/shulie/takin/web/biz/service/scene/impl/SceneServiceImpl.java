@@ -225,7 +225,7 @@ public class SceneServiceImpl implements SceneService {
         }
         List<ScriptNode> result = Lists.newArrayList();
         for (ScriptNode node : nodes) {
-            if (StringUtils.equalsAnyIgnoreCase(node.getName(), "BeanShellSampler", "JSR223Sampler","DebugSampler")) {
+            if (StringUtils.equalsAnyIgnoreCase(node.getName(), "BeanShellSampler","JSR223Sampler","DebugSampler")) {
                 node.setRequestPath(buildUnknowSamplerName(node.getName()));
                 node.setIdentification(node.getRequestPath());
             }
@@ -873,7 +873,7 @@ public class SceneServiceImpl implements SceneService {
                 //默认不匹配
                 scriptJmxNode.setStatus(0);
                 // 支持beanshell,默认匹配
-                if (StringUtils.equalsAnyIgnoreCase(scriptJmxNode.getName(), "BeanShellSampler", "JSR223Sampler","DebugSampler")) {
+                if (StringUtils.equalsAnyIgnoreCase(scriptJmxNode.getName(), "BeanShellSampler","JSR223Sampler", "DebugSampler")) {
                     scriptJmxNode.setEntrace(buildUnknowSamplerName(scriptJmxNode.getName()));
                     scriptJmxNode.setRequestPath(scriptJmxNode.getEntrace());
                     scriptJmxNode.setIdentification(scriptJmxNode.getEntrace());

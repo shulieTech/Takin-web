@@ -1254,7 +1254,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      * @return -
      */
     @Override
-    public boolean updateReportBusinessActivity(Long jobId, Long sceneId, Long reportId, Long tenantId) {
+        public boolean updateReportBusinessActivity(Long jobId, Long sceneId, Long reportId, Long tenantId) {
         //报表活动
         List<ReportBusinessActivityDetail> reportBusinessActivityDetails = tReportBusinessActivityDetailMapper
                 .queryReportBusinessActivityDetailByReportId(reportId);
@@ -1487,34 +1487,79 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         return null;
     }
 
+//    /**
+
+//     *
+//     * @return -
+//     */
+
+
     /**
+     * 判断活动是否满足预设指标
      * 活动是否满足预设指标
      * 1.目标成功率 < 实际成功率
      * 2.目标SA > 实际SA
      * 3.目标RT > 实际RT
      * 4.目标TPS < 实际TPS
-     *
-     * @return -
+     * @return 满足返回true,否则返回false
      */
-    private boolean isPass(ReportBusinessActivityDetail detail) {
-        if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(
-                detail.getSuccessRate()) > 0) {
-            return false;
-        } else if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
-            return false;
-        } else if (isTargetBiggerThanZero(detail.getTargetRt()) && detail.getTargetRt().compareTo(detail.getRt()) < 0) {
-            return false;
-        } else {
-            return !isTargetBiggerThanZero(detail.getTargetTps()) || detail.getTargetTps().compareTo(detail.getTps()) <= 0;
+    private static boolean isPass(ReportBusinessActivityDetail detail) {
+
+        // 1. 检查指标目标值是否全为0
+        if (areAllTargetsZero(detail)) {
+            return true;
         }
+
+        // 2. 检查每个指标
+        if (!isSuccessRatePass(detail)) {
+            return false;
+        }
+
+        if (!isSAPass(detail)) {
+            return false;
+        }
+
+        if (!isRTPass(detail)) {
+            return false;
+        }
+
+        if (!isTPSPass(detail)) {
+            return false;
+        }
+
+        // 所有检查通过,满足预设指标
+        return true;
+
     }
 
-    private boolean isTargetBiggerThanZero(BigDecimal target) {
-        if (Objects.nonNull(target)) {
-            return target.compareTo(new BigDecimal(0)) > 0;
-        }
-        return false;
+    // 检查目标值是否全部为0
+    private static boolean areAllTargetsZero(ReportBusinessActivityDetail detail) {
+        return detail.getTargetSuccessRate().compareTo(BigDecimal.ZERO) <= 0
+                && detail.getTargetSa().compareTo(BigDecimal.ZERO) <= 0
+                && detail.getTargetRt().compareTo(BigDecimal.ZERO) <= 0
+                && detail.getTargetTps().compareTo(BigDecimal.ZERO) <= 0;
     }
+
+    // 检查成功率指标
+    private static boolean isSuccessRatePass(ReportBusinessActivityDetail detail) {
+        return detail.getTargetSuccessRate().compareTo(detail.getSuccessRate()) <= 0;
+    }
+
+    // 检查SA指标
+    private static boolean isSAPass(ReportBusinessActivityDetail detail) {
+        return detail.getTargetSa().compareTo(detail.getSa()) <= 0;
+    }
+
+    // 检查RT指标
+    private static boolean isRTPass(ReportBusinessActivityDetail detail) {
+        return detail.getTargetRt().compareTo(detail.getRt()) >= 0;
+    }
+
+    // 检查TPS指标
+    private static boolean isTPSPass(ReportBusinessActivityDetail detail) {
+        return detail.getTargetTps().compareTo(detail.getTps()) <= 0;
+    }
+
 
     /**
      * 保存报表结果

@@ -25,7 +25,7 @@ public interface ReportRealTimeService {
      * @param amdbReportTraceId amdb 报告踪迹详情的主键id
      * @return 报告链路详情
      */
-    ReportLinkDetailResponse getLinkDetail(String traceId, Integer amdbReportTraceId);
+    ReportLinkDetailResponse getLinkDetail(String traceId, Integer amdbReportTraceId, Boolean onlyShowError, Boolean sortAsCost);
 
     List<EntranceRuleDTO> getEntryListByBusinessActivityIds(List<Long> businessActivityIds);
 }

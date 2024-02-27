@@ -51,11 +51,16 @@ public class ReportRealTimeController {
             dataType = "string", paramType = "query"),
         @ApiImplicitParam(name = "id", value = "amdb 报告踪迹详情的主键id",
             dataType = "integer", paramType = "query", defaultValue = "0"),
+        @ApiImplicitParam(name = "onlyShowError", value = "onlyShowError", required = false,
+                    dataType = "boolean", paramType = "query"),
+        @ApiImplicitParam(name = "sortAsCost", value = "sortAsCost", required = false,
+                    dataType = "boolean", paramType = "query"),
     })
     @GetMapping("/report/link/detail")
     private ReportLinkDetailResponse getLinkDetail(@RequestParam String traceId,
-        @RequestParam(defaultValue = "0") Integer id) {
-        return reportRealTimeService.getLinkDetail(traceId, id);
+        @RequestParam(defaultValue = "0") Integer id,
+        @RequestParam(defaultValue = "false") Boolean onlyShowError, @RequestParam(defaultValue = "false") Boolean sortAsCost) {
+        return reportRealTimeService.getLinkDetail(traceId, id, onlyShowError, sortAsCost);
     }
 
 }

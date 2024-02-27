@@ -1,10 +1,6 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Collections;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -122,7 +118,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     }
 
     @Override
-    public ReportLinkDetailResponse getLinkDetail(String traceId, Integer amdbReportTraceId) {
+    public ReportLinkDetailResponse getLinkDetail(String traceId, Integer amdbReportTraceId, Boolean onlyShowError, Boolean sortAsCost) {
         // 时间解析 查询前后30分钟
         Long time = TraceIdUtil.getTraceIdTime(traceId);
         RpcStack rpcStack = traceClient.getTraceDetailById(traceId,
@@ -155,10 +151,22 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
 
         List<ReportTraceDetailDTO> result = Lists.newArrayList();
         this.coverResult(dto, amdbReportTraceId, result);
-
+        if(sortAsCost) {
+            sortAsCostTraceLink(result);
+        }
         response.setTraces(result);
         response.setTotalCost(rpcStack.getTotalCost());
         return response;
+    }
+
+    private void sortAsCostTraceLink(List<ReportTraceDetailDTO> resultList) {
+        if(CollectionUtils.isEmpty(resultList)) {
+            return;
+        }
+        resultList.stream().sorted(Comparator.comparing(ReportTraceDetailDTO::getCostTime).reversed());
+        for(ReportTraceDetailDTO detailDTO : resultList) {
+            sortAsCostTraceLink(detailDTO.getNextNodes());
+        }
     }
 
     /**

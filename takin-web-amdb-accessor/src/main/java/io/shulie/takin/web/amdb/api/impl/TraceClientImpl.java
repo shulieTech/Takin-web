@@ -243,7 +243,7 @@ public class TraceClientImpl implements TraceClient {
                     .httpMethod(HttpMethod.GET)
                     .param(query)
                     .exception(TakinWebExceptionEnum.APPLICATION_TRACE_MOCK_ERROR)
-                    .eventName("查询trace-mock列表")
+                    .eventName("查询trace-mock-exist列表")
                     .list(TraceMockDTO.class);
             return CollectionUtils.isNotEmpty(response.getData());
         } catch (Exception e) {

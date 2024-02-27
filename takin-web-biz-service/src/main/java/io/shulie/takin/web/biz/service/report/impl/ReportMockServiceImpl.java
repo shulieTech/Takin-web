@@ -61,8 +61,10 @@ public class ReportMockServiceImpl implements ReportMockService {
         TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(request.getTenantId());
         if(tenantInfoExt == null) {
             log.error("找不到租户信息:id={}", request.getTenantId());
+            queryDTO.setTenantAppKey("-1");
+        } else {
+            queryDTO.setTenantAppKey(tenantInfoExt.getTenantAppKey());
         }
-        queryDTO.setTenantAppKey(tenantInfoExt.getTenantAppKey());
         queryDTO.setEnvCode(request.getEnvCode());
         //优化-先判断有无mock，有再执行mock汇总
         Boolean existMock = traceClient.existTraceMock(queryDTO);

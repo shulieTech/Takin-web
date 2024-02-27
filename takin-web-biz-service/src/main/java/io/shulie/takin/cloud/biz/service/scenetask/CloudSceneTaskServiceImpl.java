@@ -180,6 +180,19 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         options.setIncludeSLA(true);
         SceneManageWrapperOutput sceneData = cloudSceneManageService.getSceneManage(input.getSceneId(), options);
 
+
+        List<SceneTaskStartInput.PressureFileInfo> pressureFileInfos = input.getPressureFileInfos();
+        if (CollectionUtils.isNotEmpty(pressureFileInfos)) {
+            Map<String, Boolean> fileMap = pressureFileInfos.stream().collect(Collectors
+                    .toMap(SceneTaskStartInput.PressureFileInfo::getFileName, SceneTaskStartInput.PressureFileInfo::getContinueRead, (k1, k2) -> k1));
+            List<SceneScriptRefOutput> uploadFile = sceneData.getUploadFile();
+            for (SceneScriptRefOutput refOutput : uploadFile) {
+                Boolean continueFlag = fileMap.get(refOutput.getFileName());
+                refOutput.setFileContinueRead(continueFlag);
+            }
+            sceneData.setUploadFile(uploadFile);
+        }
+
         sceneData.setPressureType(PressureSceneEnum.DEFAULT.getCode());
         if (CollectionUtils.isNotEmpty(input.getEnginePlugins())) {
             sceneData.setEnginePlugins(input.getEnginePlugins()

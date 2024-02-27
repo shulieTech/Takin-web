@@ -607,7 +607,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     // 处理每个map的方法
     private static void processMap(Map<String, NodeCompareTargetOut.TopologyNode> currentMap,
-                                   Map<String, NodeCompareTargetOut.TopologyNode> nextMap, int caseIndex,Set<String> allNodeKeys) {
+                                   Map<String, NodeCompareTargetOut.TopologyNode> nextMap, int caseIndex, Set<String> allNodeKeys) {
         for (String key : allNodeKeys) {
             NodeCompareTargetOut.TopologyNode parent = currentMap.get(key);
             NodeCompareTargetOut.TopologyNode child = nextMap.get(key);
@@ -878,15 +878,19 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             ActivityResponse activityResponse = JSON.parseObject(reportBusinessActivityDetailEntity.getReportJson(), ActivityResponse.class);
             return activityResponse;
         }).collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(activityResponses) || Objects.isNull(activityResponses.get(0).getTopology())
+                || CollectionUtils.isEmpty(activityResponses.get(0).getTopology().getNodes())) {
+            return Collections.EMPTY_MAP;
+        }
+
         Map<String, BigDecimal> map = new HashMap<>();
-        if (CollectionUtils.isNotEmpty(activityResponses) && activityResponses.stream().filter(a -> Objects.nonNull(a)).count() > 0) {
-            for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponses.get(0).getTopology().getNodes()) {
-                //非app节点就跳过去
-                if (!node.getNodeType().getType().equalsIgnoreCase("app")) {
-                    continue;
-                }
-                map.put(node.getLabel(), new BigDecimal(Optional.ofNullable(node.getServiceAllTotalTps()).orElse(0D)));
+        for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityResponses.get(0).getTopology().getNodes()) {
+            //非app节点就跳过去
+            if (!node.getNodeType().getType().equalsIgnoreCase("app")) {
+                continue;
             }
+            map.put(node.getLabel(), new BigDecimal(Optional.ofNullable(node.getServiceAllTotalTps()).orElse(0D)));
         }
         return map;
     }
@@ -919,8 +923,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                     ReportApplicationSummary reportApplicationSummary = ReportApplicationSummary.genRepportApplicationSummary(a);
                     return ReportApplicationSummary.genReportAppMapOut(reportApplicationSummary);
                 }
-        ).filter(a -> {
-            if (a.getTps() == null && a.getRt() == null && a.getCount() == null
+        ).filter(a -> {if (a.getTps() == null && a.getRt() == null && a.getCount() == null
                     && a.getXcost() == null && a.getSuccessRate() == null && a.getConcurrent() == null && a.getXtime() == null) {
                 return false;
             }

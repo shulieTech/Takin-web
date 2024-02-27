@@ -1,20 +1,20 @@
 package io.shulie.takin.cloud.biz.output.scene.manage;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
+import io.shulie.takin.adapter.api.model.common.RuleBean;
+import io.shulie.takin.adapter.api.model.common.TimeBean;
 import io.shulie.takin.cloud.common.bean.scenemanage.SceneBusinessActivityRefBean;
 import io.shulie.takin.cloud.ext.content.enginecall.StrategyConfigExt;
 import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
-import io.shulie.takin.adapter.api.model.common.RuleBean;
-import io.shulie.takin.adapter.api.model.common.TimeBean;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author qianshui
@@ -231,6 +231,9 @@ public class SceneManageWrapperOutput extends ContextExt {
 
         @ApiModelProperty(value = "文件MD5值")
         private String fileMd5;
+
+        @ApiModelProperty(value = "是否从上次的位置开始读取文件，true是的，false重头开始")
+        private Boolean fileContinueRead;
     }
 
     @Data

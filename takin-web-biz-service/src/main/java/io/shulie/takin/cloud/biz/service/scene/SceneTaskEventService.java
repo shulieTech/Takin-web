@@ -1,14 +1,5 @@
 package io.shulie.takin.cloud.biz.service.scene;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.cloud.entity.domain.vo.report.SceneTaskNotifyParam;
@@ -38,6 +29,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 莫问
@@ -154,6 +149,7 @@ public class SceneTaskEventService {
                 dataFile.setFileType(fileType);
                 dataFile.setBigFile(file.getIsBigFile() != null && file.getIsBigFile() == 1);
                 dataFile.setFileMd5(file.getFileMd5());
+                dataFile.setFileContinueRead(file.getFileContinueRead());
                 dataFileList.add(dataFile);
             }
         });

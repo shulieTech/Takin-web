@@ -1271,10 +1271,23 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             StatReportDTO data = statReport(jobId, sceneId, reportId, tenantId,
                     reportBusinessActivityDetail.getBindRef());
             if (data == null) {
+                if (areAllTargetsZero(reportBusinessActivityDetail)) {
+                    reportBusinessActivityDetail.setPassFlag(1);
+                    reportBusinessActivityDetail.setAvgConcurrenceNum(new BigDecimal(0));
+                    reportBusinessActivityDetail.setMaxRt(new BigDecimal(0));
+                    reportBusinessActivityDetail.setMaxTps(new BigDecimal(0));
+                    reportBusinessActivityDetail.setMinRt(new BigDecimal(0));
+                    reportBusinessActivityDetail.setTps(new BigDecimal(0));
+                    reportBusinessActivityDetail.setRt(new BigDecimal(0));
+                    reportBusinessActivityDetail.setSa(new BigDecimal(0));
+                    reportBusinessActivityDetail.setRequest(0L);
+                    reportBusinessActivityDetail.setSuccessRate(new BigDecimal(0));
+                    tReportBusinessActivityDetailMapper.updateByPrimaryKeySelective(reportBusinessActivityDetail);
+                    continue;
+                }
                 //如果有一个业务活动没有找到对应的数据，则认为压测不通过
                 totalPassFlag = false;
-                log.warn("没有找到匹配的压测数据：场景ID[{}],报告ID:[{}],业务活动:[{}]", sceneId, reportId,
-                        reportBusinessActivityDetail.getBindRef());
+                log.warn("没有找到匹配的压测数据：场景ID[{}],报告ID:[{}],业务活动:[{}]", sceneId, reportId, reportBusinessActivityDetail.getBindRef());
                 continue;
             }
             //统计RT分布
@@ -1295,6 +1308,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 reportBusinessActivityDetail.setRtDistribute(JSON.toJSONString(rtMap));
             }
             passFlag = isPass(reportBusinessActivityDetail);
+//            if (!passFlag){
+//                log.info("updateReportBusinessActivity passFlag false,{}", JSON.toJSONString(reportBusinessActivityDetail));
+//            }
             reportBusinessActivityDetail.setPassFlag(passFlag ? 1 : 0);
             tReportBusinessActivityDetailMapper.updateByPrimaryKeySelective(reportBusinessActivityDetail);
             if (!passFlag) {

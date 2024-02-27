@@ -1,12 +1,12 @@
 package io.shulie.takin.cloud.ext.content.enginecall;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * @author 莫问
@@ -182,6 +182,11 @@ public class ScheduleStartRequestExt extends ScheduleEventRequestExt {
          * 文件分片信息,key-排序，引擎会用到；value-需要读取的分区数据
          */
         Map<Integer, List<StartEndPosition>> startEndPositions;
+
+        /**
+         * 是否从上次的位置开始读取文件，true是的，false重头开始
+         */
+        private Boolean fileContinueRead = false;
 
     }
 

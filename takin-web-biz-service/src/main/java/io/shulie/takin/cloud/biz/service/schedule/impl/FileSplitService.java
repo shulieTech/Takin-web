@@ -1,18 +1,7 @@
 package io.shulie.takin.cloud.biz.service.schedule.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneFileReadPosition;
 import com.pamirs.takin.cloud.entity.domain.vo.file.FileSliceRequest;
@@ -46,6 +35,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static io.shulie.takin.cloud.common.constants.SceneManageConstant.FILE_SPLIT;
 
@@ -160,6 +154,8 @@ public class FileSplitService extends AbstractIndicators {
                         return;
                     }
                     List<FileSliceInfo> list = JSONObject.parseArray(sliceEntity.getSliceInfo(), FileSliceInfo.class);
+                    //todo 这边需要改成每个文件都要判断是从头开始还是继续压测
+
                     for (int i = 0, size = list.size(); i < size; i++) {
                         StartEndPair pair = new StartEndPair();
                         pair.setEnd(list.get(i).getEnd());

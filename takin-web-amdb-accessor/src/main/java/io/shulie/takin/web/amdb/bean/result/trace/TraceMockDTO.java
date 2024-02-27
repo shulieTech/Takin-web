@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 @Data
 public class TraceMockDTO implements Serializable {
-
+    private String traceId;
     private String appName;
     private String serviceName;
     private String methodName;

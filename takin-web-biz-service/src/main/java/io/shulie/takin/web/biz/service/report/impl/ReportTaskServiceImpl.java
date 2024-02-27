@@ -88,7 +88,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     private DistributedLock distributedLock;
     @Autowired
     private ReportMockService reportMockService;
-    @Value("${report.mock.period:30}")
+    @Value("${report.mock.period:5}")
     private Integer reportMockPeriod;
 
     @Override

@@ -64,6 +64,11 @@ public class ReportMockServiceImpl implements ReportMockService {
         }
         queryDTO.setTenantAppKey(tenantInfoExt.getTenantAppKey());
         queryDTO.setEnvCode(request.getEnvCode());
+        //优化-先判断有无mock，有再执行mock汇总
+        Boolean existMock = traceClient.existTraceMock(queryDTO);
+        if(!existMock) {
+            return;
+        }
         List<TraceMockDTO> traceMockDTOList = traceClient.listTraceMock(queryDTO);
         if(CollectionUtils.isEmpty(traceMockDTOList)) {
             return;

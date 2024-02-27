@@ -55,4 +55,6 @@ public interface TraceClient {
     PagingList<TTrackClickhouseModel> listTraceLog(TraceLogQueryDTO query);
 
     List<TraceMockDTO> listTraceMock(TraceMockQueryDTO query);
+
+    Boolean existTraceMock(TraceMockQueryDTO query);
 }

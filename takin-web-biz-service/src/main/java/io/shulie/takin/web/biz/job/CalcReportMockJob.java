@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2021/7/13 23:10
  */
 @Component
-@ElasticSchedulerJob(jobName = "calcReportMockJob", cron = "*/10 * * * * ?", description = "计算压测报告mock数据")
+@ElasticSchedulerJob(jobName = "calcReportMockJob", cron = "*/15 * * * * ?", description = "计算压测报告mock数据")
 @Slf4j
 public class CalcReportMockJob extends AbstractSceneTask implements SimpleJob {
 

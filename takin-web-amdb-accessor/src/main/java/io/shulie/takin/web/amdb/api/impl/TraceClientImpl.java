@@ -31,6 +31,7 @@ import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,8 @@ public class TraceClientImpl implements TraceClient {
      */
     private static final String ENTRY_TRACE_LOG_PATH = "/amdb/trace/getAllTraceList";
     private static final String TRACE_MOCK_DATA_PATH = "/amdb/trace/getMockDataList";
+
+    private static final String TRACE_MOCK_EXIST_DATA_PATH = "/amdb/trace/existMockData";
 
     @Autowired
     private AmdbClientProperties properties;
@@ -227,6 +230,22 @@ public class TraceClientImpl implements TraceClient {
                     .eventName("查询trace-mock列表")
                     .list(TraceMockDTO.class);
             return response.getData();
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+        }
+    }
+
+    @Override
+    public Boolean existTraceMock(TraceMockQueryDTO query) {
+        String url = properties.getUrl().getAmdb() + TRACE_MOCK_EXIST_DATA_PATH;
+        try {
+            AmdbResult<List<TraceMockDTO>> response = AmdbHelper.builder().url(url)
+                    .httpMethod(HttpMethod.GET)
+                    .param(query)
+                    .exception(TakinWebExceptionEnum.APPLICATION_TRACE_MOCK_ERROR)
+                    .eventName("查询trace-mock列表")
+                    .list(TraceMockDTO.class);
+            return CollectionUtils.isNotEmpty(response.getData());
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
         }

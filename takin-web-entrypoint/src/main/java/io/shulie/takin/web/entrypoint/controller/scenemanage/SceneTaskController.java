@@ -1,15 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSON;
-
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.cloud.entity.domain.vo.scenemanage.FileSplitResultVO;
 import com.pamirs.takin.common.constant.Constants;
@@ -49,17 +41,18 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author 莫问
@@ -68,6 +61,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(ApiUrls.TAKIN_API_URL + "scene/task/")
 @Api(tags = "场景任务", value = "场景任务")
+@Slf4j
 public class SceneTaskController extends AbstractIndicators {
     @Autowired
     private SceneTaskApi sceneTaskApi;
@@ -255,12 +249,13 @@ public class SceneTaskController extends AbstractIndicators {
         return null;
     }
 
-    @GetMapping("preCheck")
+    @PostMapping("preCheck")
     @ApiOperation("前置校验")
-    public ResponseResult<Object> preCheck(SceneActionParam param) {
+    public ResponseResult<Object> preCheck(@RequestBody SceneActionParam param) {
         if (Objects.isNull(param.getMachineId())) {
             return ResponseResult.fail("未选择压力机集群", null);
         }
+
         return ResponseResult.success(sceneTaskService.preCheck(param));
     }
 

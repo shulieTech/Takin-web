@@ -2,18 +2,17 @@ package com.pamirs.takin.entity.domain.vo.report;
 
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
 /**
- * @author 莫问
- * @date 2020-04-21
+ * @author zhangz
+ * Created on 2024/3/4 10:32
+ * Email: zz052831@163.com
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-public class SceneActionParam extends ContextExt {
 
+@Data
+public class SceneActionPreCheckNew extends ContextExt {
     private Long sceneId;
 
     private List<Long> enginePluginIds;
@@ -50,9 +49,9 @@ public class SceneActionParam extends ContextExt {
     private List<PressureFileInfo> pressureFileInfos;
 
     @Data
-    public static class PressureFileInfo{
+    public static class PressureFileInfo {
         private String fileName;
-
-        private Boolean continueRead;
+        private String continueRead;
     }
+
 }

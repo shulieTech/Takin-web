@@ -399,4 +399,14 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             reportApplicationSummaryMapper.insertOrUpdateTargetTps(reportApplicationSummary);
         }
     }
+
+    @Override
+    public void reportBusinessActivitySummary(Long reportId, int cost) {
+        //todo 压测报告-计算业务活动排名
+
+        //todo 业务活动trace节点排名,取前20
+
+        //todo trace快照入库,这里需要注意每个有问题的trace节点存一个trace快照
+
+    }
 }

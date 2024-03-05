@@ -1,5 +1,6 @@
 package com.pamirs.takin.entity.domain.vo.report;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -52,7 +53,7 @@ public class SceneActionParam extends ContextExt {
     @Data
     public static class PressureFileInfo{
         private String fileName;
-
+        @JsonDeserialize(using = CustomBooleanDeserializer.class)
         private Boolean continueRead;
     }
 }

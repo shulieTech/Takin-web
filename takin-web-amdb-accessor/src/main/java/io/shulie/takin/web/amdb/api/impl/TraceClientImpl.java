@@ -29,6 +29,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,8 @@ public class TraceClientImpl implements TraceClient {
 
     private static final String QUERY_TRACE_PATH = "/amdb/trace/getTraceDetail?traceId=@TraceId@";
 
+    private static final String QUERY_REDUCE_TRACE_PATH = "/amdb/trace/getReduceTraceDetail?traceId=@TraceId@";
+
     private static final String ENTRY_TRACE_PATH = "/amdb/trace/getEntryTraceList";
 
     /**
@@ -68,6 +71,9 @@ public class TraceClientImpl implements TraceClient {
 
     @Autowired
     private AmdbClientProperties properties;
+
+    @Value("${report.trace.reduce.limit.cost:100}")
+    private String traceReduceCostLimit;
 
     @Override
     public PagingList<EntryTraceInfoDTO> listEntryTraceByTaskIdV2(QueryLinkDetailDTO dto) {
@@ -195,6 +201,33 @@ public class TraceClientImpl implements TraceClient {
         try {
             String url = properties.getUrl().getAmdb() + QUERY_TRACE_PATH.replace("@TraceId@", traceId);
             url = url + "&tenantAppKey=" + WebPluginUtils.traceTenantAppKey() + "&envCode=" + WebPluginUtils.traceEnvCode();
+            if (times.length == 2) {
+                url += "&startTime=" + times[0] + "&endTime=" + times[1];
+            }
+            AmdbResult<List<RpcBased>> amdbResponse = AmdbHelper.builder().url(url)
+                    .eventName("查询Trace调用栈明细")
+                    .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
+                    .list(RpcBased.class);
+            if (CollectionUtils.isEmpty(amdbResponse.getData())) {
+                return null;
+            }
+            return ProtocolParserFactory.getFactory().parseRpcStackByRpcBase(traceId, amdbResponse.getData());
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 查询精简版的trace
+     * @param traceId
+     * @param times
+     * @return
+     */
+    @Override
+    public RpcStack getReduceTraceDetailById(String traceId, String... times) {
+        try {
+            String url = properties.getUrl().getAmdb() + QUERY_REDUCE_TRACE_PATH.replace("@TraceId@", traceId);
+            url = url + "&tenantAppKey=" + WebPluginUtils.traceTenantAppKey() + "&envCode=" + WebPluginUtils.traceEnvCode() + "&cost=" + traceReduceCostLimit;
             if (times.length == 2) {
                 url += "&startTime=" + times[0] + "&endTime=" + times[1];
             }

@@ -29,5 +29,10 @@ public interface ReportTaskService {
 
     void insertReportApplicationSummaryEntity(Long reportId);
 
-
+    /**
+     *
+     * @param reportId
+     * @param cost
+     */
+    void reportBusinessActivitySummary(Long reportId, int cost);
 }

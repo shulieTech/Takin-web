@@ -1,19 +1,20 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Resource;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Lists;
+import com.pamirs.pradar.log.parser.trace.RpcEntry;
+import com.pamirs.pradar.log.parser.trace.RpcStack;
+import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
+import com.pamirs.pradar.log.parser.utils.TraceIdUtil;
+import com.pamirs.takin.common.util.DateUtils;
+import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
+import com.pamirs.takin.entity.domain.dto.report.ReportTraceDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
+import com.pamirs.takin.entity.domain.entity.linkmanage.figure.RpcType;
 import io.shulie.takin.adapter.api.model.request.report.ScriptNodeTreeQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
 import io.shulie.takin.cloud.common.constants.ReportConstants;
@@ -21,41 +22,31 @@ import io.shulie.takin.cloud.data.dao.report.ReportBusinessActivityDetailDao;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
-import io.shulie.takin.web.diff.api.report.ReportApi;
-import lombok.extern.slf4j.Slf4j;
-
-import com.github.pagehelper.PageInfo;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.Lists;
-import org.springframework.beans.BeanUtils;
-import com.google.common.collect.HashBiMap;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
-import org.apache.commons.collections4.CollectionUtils;
-
-import com.pamirs.takin.common.util.DateUtils;
-import com.pamirs.pradar.log.parser.trace.RpcEntry;
-import com.pamirs.pradar.log.parser.trace.RpcStack;
-import com.pamirs.pradar.log.parser.utils.TraceIdUtil;
-import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceDetailDTO;
-import com.pamirs.takin.entity.domain.entity.linkmanage.figure.RpcType;
-
-import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
-import io.shulie.takin.web.common.enums.trace.TraceNodeAsyncEnum;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
-import io.shulie.takin.web.common.enums.trace.TraceNodeLogTypeEnum;
-import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
-import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
-import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
-import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
-import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
 import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
+import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
+import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
+import io.shulie.takin.web.common.enums.trace.TraceNodeAsyncEnum;
+import io.shulie.takin.web.common.enums.trace.TraceNodeLogTypeEnum;
+import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
+import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
+import io.shulie.takin.web.diff.api.report.ReportApi;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -152,6 +143,51 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         AtomicInteger integer = new AtomicInteger(0);
         List<ReportTraceDetailDTO> dto = this.coverEntryList(0L, Lists.newArrayList(),
             rpcStack.getRpcEntries(), vos, node, -1, integer);
+
+        List<ReportTraceDetailDTO> result = Lists.newArrayList();
+        this.coverResult(dto, amdbReportTraceId, result);
+
+        response.setTraces(result);
+        response.setTotalCost(rpcStack.getTotalCost());
+        return response;
+    }
+
+    /**
+     * 查询精简版的trace明细,只保留有问题的节点和耗时大的节点
+     * @param traceId
+     * @param amdbReportTraceId
+     * @return
+     */
+    @Override
+    public ReportLinkDetailResponse getReduceLinkDetail(String traceId, Integer amdbReportTraceId) {
+        // 时间解析 查询前后30分钟
+        Long time = TraceIdUtil.getTraceIdTime(traceId);
+        RpcStack rpcStack = traceClient.getReduceTraceDetailById(traceId,
+                DateUtils.dateToString(new Date(time - 1000 * 60 * 30), DateUtils.FORMATE_YMDHMS).replace(" ", "%20"),
+                DateUtils.dateToString(new Date(time + 1000 * 60 * 30), DateUtils.FORMATE_YMDHMS).replace(" ", "%20"));
+
+        // 构造响应出参
+        ReportLinkDetailResponse response = new ReportLinkDetailResponse();
+        if (rpcStack == null || CollectionUtils.isEmpty(rpcStack.getRpcEntries())) {
+            log.error("amdb返回的流量明细为空！响应体RpcStack：{}", JSON.toJSONString(rpcStack));
+            response.setTraces(Lists.newArrayList());
+            return response;
+        }
+
+        // 是否是压测流量判断
+        RpcEntry rpcEntry = rpcStack.getRpcEntries().get(0);
+        if (rpcEntry != null) {
+            response.setClusterTest(rpcEntry.isClusterTest());
+        }
+
+        response.setStartTime(rpcStack.getStartTime());
+        response.setEntryHostIp(rpcStack.getRootIp());
+
+        List<ReportTraceDetailDTO> vos = Lists.newArrayList();
+        BiMap<Integer, Integer> node = HashBiMap.create();
+        AtomicInteger integer = new AtomicInteger(0);
+        List<ReportTraceDetailDTO> dto = this.coverEntryList(0L, Lists.newArrayList(),
+                rpcStack.getRpcEntries(), vos, node, -1, integer);
 
         List<ReportTraceDetailDTO> result = Lists.newArrayList();
         this.coverResult(dto, amdbReportTraceId, result);

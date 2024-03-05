@@ -11,6 +11,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "接口: 实况报告")
+@Slf4j
 public class ReportRealTimeController {
 
     @Autowired
@@ -58,4 +60,16 @@ public class ReportRealTimeController {
         return reportRealTimeService.getLinkDetail(traceId, id);
     }
 
+
+    @ApiOperation("|_ 链路详情-精简版")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "traceId", value = "traceId", required = true,
+                    dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "id", value = "amdb 报告踪迹详情的主键id",
+                    dataType = "integer", paramType = "query", defaultValue = "0"),
+    })
+    @GetMapping("/report/link/reduce/detail")
+    private ReportLinkDetailResponse getReduceLinkDetail(@RequestParam String traceId, @RequestParam(defaultValue = "0") Integer id) {
+        return reportRealTimeService.getReduceLinkDetail(traceId, id);
+    }
 }

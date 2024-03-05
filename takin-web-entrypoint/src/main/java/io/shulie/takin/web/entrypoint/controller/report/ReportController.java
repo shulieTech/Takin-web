@@ -31,10 +31,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -241,5 +238,22 @@ public class ReportController {
         return ResponseResult.success();
     }
 
+    @PostMapping("/getBusinessActivityRateListByReportId")
+    @ApiOperation("根据报告id获取报告业务活动排名-根据rt倒叙")
+    public ResponseResult<String> getBusinessActivityRateListByReportId(@RequestParam Long reportId){
+        return  null;
+    }
+
+    @PostMapping("/getBusinessActivityTraceNodeRateListByBinref")
+    @ApiOperation("根据业务活动获取该业务活动下最慢的节点-rt大于100的或者有异常的节点")
+    public ResponseResult<String> getBusinessActivityTraceNodeRateListByBinRef(@RequestParam String binRef){
+        return  null;
+    }
+
+    @PostMapping("/getBusinessActivityTraceSnapshot")
+    @ApiOperation("保存的业务活动的trace快照")
+    public ResponseResult<String> getBusinessActivityTraceSnapshot(@RequestParam String serviceName, @RequestParam Long ReportId) {
+        return  null;
+    }
 
 }

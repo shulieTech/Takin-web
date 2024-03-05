@@ -1,12 +1,12 @@
 package io.shulie.takin.web.biz.service.report;
 
-import java.util.List;
-
 import com.github.pagehelper.PageInfo;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
+
+import java.util.List;
 
 /**
  * @author qianshui
@@ -26,6 +26,8 @@ public interface ReportRealTimeService {
      * @return 报告链路详情
      */
     ReportLinkDetailResponse getLinkDetail(String traceId, Integer amdbReportTraceId);
+
+    ReportLinkDetailResponse getReduceLinkDetail(String traceId, Integer amdbReportTraceId);
 
     List<EntranceRuleDTO> getEntryListByBusinessActivityIds(List<Long> businessActivityIds);
 }

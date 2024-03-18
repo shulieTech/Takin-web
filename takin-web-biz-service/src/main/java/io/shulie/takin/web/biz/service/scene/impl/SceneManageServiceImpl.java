@@ -123,6 +123,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -1669,6 +1670,9 @@ public class SceneManageServiceImpl implements SceneManageService {
                     if (node.getRpcId().equals("0")){
                         node.setTraceSnapshot(null);
                     }
+                    BigDecimal num = Optional.ofNullable(node.getTotalRequest()).orElse(new BigDecimal(0));
+                    BigDecimal total = node.getRt().subtract(node.getBaseRt()).multiply(num);
+                    node.setTotalOptimizableRt(total);
                 }
                 output.setBaseLineProblemNodes(nodeList);
                 outputList.add(output);

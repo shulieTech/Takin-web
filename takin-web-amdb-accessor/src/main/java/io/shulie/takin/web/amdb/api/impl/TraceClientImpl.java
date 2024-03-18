@@ -15,6 +15,7 @@ import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.*;
+import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceAvgCostDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.TraceMetricsAll;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
@@ -68,6 +69,8 @@ public class TraceClientImpl implements TraceClient {
     private static final String DATA_CALIBRATION_PATH = "/amdb/trace/compensate";
 
     private static final String TRACE_METRIC_GET_SQL_STATEMENTS = "/amdb/db/api/traceMetric/getSqlStatements";
+
+    private static final String QUERY_BASE_LINE_TRACE_PATH = "/amdb/trace/getStatisticsTraceList";
 
     @Autowired
     private AmdbClientProperties properties;
@@ -363,6 +366,19 @@ public class TraceClientImpl implements TraceClient {
                 .param(traceMetricsRequest)
                 .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
                 .eventName("应用趋势图查询").list(TraceMetricsAll.class).getData();
+        if (CollectionUtils.isEmpty(traceMetrics)) {
+            return Lists.newArrayList();
+        }
+        return traceMetrics;
+    }
+
+    @Override
+    public List<EntryTraceAvgCostDTO> getStatisticsTraceList(List<TraceStatisticsQueryReq> traceStatisticsQueryReqList) {
+        String url = properties.getUrl().getAmdb() + QUERY_BASE_LINE_TRACE_PATH;
+        List<EntryTraceAvgCostDTO> traceMetrics = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
+                .param(traceStatisticsQueryReqList)
+                .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
+                .eventName("应用趋势图查询").list(EntryTraceAvgCostDTO.class).getData();
         if (CollectionUtils.isEmpty(traceMetrics)) {
             return Lists.newArrayList();
         }

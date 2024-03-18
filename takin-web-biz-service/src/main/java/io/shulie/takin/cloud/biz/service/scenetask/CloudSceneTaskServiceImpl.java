@@ -921,16 +921,10 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
                 output.setHasUnread(false);
                 return output;
             }
-            Collection<FileInfo> fileInfoList = uploadFile.stream().filter(file -> file.getFileType() == 1)
-                    .map(file -> {
-                        if (file.getFileName().endsWith(".csv")) {
-                            FileInfo info = new FileInfo();
-                            info.setFileName(file.getFileName());
-                            info.setSplit(file.getIsSplit() != null && file.getIsSplit() == 1);
-                            return info;
-                        }
-                        return null;
-                    }).collect(Collectors.toList());
+            Collection<FileInfo> fileInfoList = uploadFile.stream()
+                    .filter(file -> file.getFileType() == 1 && file.getFileName().endsWith(".csv"))
+                    .map(file -> SceneTaskStartCheckInput.genFileInfo(file))
+                    .collect(Collectors.toList());
             if (CollectionUtils.isEmpty(fileInfoList)) {
                 output.setHasUnread(false);
                 cleanCachedPosition(sceneId);
@@ -944,27 +938,28 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
                 cleanCachedPosition(sceneId);
                 return output;
             }
-            if (input.getPodNum() > 0) {
-                if (!comparePod(sceneId, input.getPodNum())) {
-                    output.setHasUnread(false);
+            if (input.getPodNum() <= 0) {
+                output.setHasUnread(true);
+                return output;
+            }
+            if (!comparePod(sceneId, input.getPodNum())) {
+                output.setHasUnread(false);
+                cleanCachedPosition(sceneId);
+                return output;
+            }
+            String key = String.format(SceneStartCheckConstants.SCENE_KEY, sceneId);
+            Map<Object, Object> positionMap = redisTemplate.opsForHash().entries(key);
+            if (MapUtils.isEmpty(positionMap)) {
+                cleanCachedPosition(sceneId);
+                output.setHasUnread(false);
+                output.setFileReadInfos(new ArrayList<>());
+                return output;
+            }
+
+            for (FileInfo info : fileInfoList) {
+                comparePosition(output, sceneId, info.getFileName(), input.getPodNum(), info.isSplit(), positionMap);
+                if (!output.getHasUnread()) {
                     cleanCachedPosition(sceneId);
-                    return output;
-                }
-                String key = String.format(SceneStartCheckConstants.SCENE_KEY, sceneId);
-                Map<Object, Object> positionMap = redisTemplate.opsForHash().entries(key);
-                if (MapUtils.isNotEmpty(positionMap)) {
-                    for (FileInfo info : fileInfoList) {
-                        comparePosition(output, sceneId, info.getFileName(), input.getPodNum(), info.isSplit(),
-                                positionMap);
-                        if (!output.getHasUnread()) {
-                            cleanCachedPosition(sceneId);
-                            output.setFileReadInfos(new ArrayList<>());
-                            return output;
-                        }
-                    }
-                } else {
-                    cleanCachedPosition(sceneId);
-                    output.setHasUnread(false);
                     output.setFileReadInfos(new ArrayList<>());
                     return output;
                 }

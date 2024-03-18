@@ -1,15 +1,10 @@
 package io.shulie.takin.cloud.data.model.mysql;
 
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import io.shulie.takin.cloud.data.annocation.EnableSign;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * 压测场景 - 实体类
@@ -122,6 +117,14 @@ public class SceneManageEntity {
     @TableField(value = "is_archive")
     private Integer isArchive;
 
+    @TableField(value = "performance_line_type")
+    private Integer lineTypeEnum;
+    @TableField(value = "base_start_time")
+    private Date baseLineStartTime;
+    @TableField(value = "base_end_time")
+    private Date baseLineEndTime;
+    @TableField(value = "base_line_report_id")
+    private Long baseLineReportId;
 
 }
 

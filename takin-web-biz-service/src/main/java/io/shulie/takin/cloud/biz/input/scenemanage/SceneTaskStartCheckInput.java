@@ -1,8 +1,9 @@
 package io.shulie.takin.cloud.biz.input.scenemanage;
 
-import java.util.List;
-
+import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author xr.l
@@ -18,5 +19,12 @@ public class SceneTaskStartCheckInput {
     public static class FileInfo {
         private String fileName;
         private boolean isSplit;
+    }
+
+    public static FileInfo genFileInfo(SceneManageWrapperOutput.SceneScriptRefOutput file){
+        FileInfo info = new FileInfo();
+        info.setFileName(file.getFileName());
+        info.setSplit(file.getIsSplit() != null && file.getIsSplit() == 1);
+        return info;
     }
 }

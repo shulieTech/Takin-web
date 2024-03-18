@@ -3,9 +3,11 @@ package com.pamirs.takin.cloud.entity.dao.report;
 import java.util.Date;
 import java.util.List;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pamirs.takin.cloud.entity.domain.entity.report.Report;
 import io.shulie.takin.cloud.common.annotation.DataApartInterceptAnnotation;
 import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
+import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.adapter.api.model.request.report.ReportQueryReq;
 import org.apache.ibatis.annotations.Param;
@@ -16,7 +18,7 @@ import org.apache.ibatis.annotations.Param;
  * @author -
  */
 @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
-public interface TReportMapper {
+public interface TReportMapper extends BaseMapper<ReportEntity> {
 
     /**
      * 查询一个运行中的报告

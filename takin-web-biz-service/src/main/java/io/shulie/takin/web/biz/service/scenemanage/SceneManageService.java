@@ -1,7 +1,6 @@
 package io.shulie.takin.web.biz.service.scenemanage;
 
-import java.util.List;
-
+import com.pamirs.takin.entity.domain.dto.report.ReportTraceDetailDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
@@ -14,14 +13,19 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapper
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneBaseLineOutput;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneListForSelectOutput;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.TReportBaseLinkProblemOutput;
+import io.shulie.takin.web.biz.pojo.request.scene.BaseLineQueryReq;
 import io.shulie.takin.web.biz.pojo.request.scene.ListSceneForSelectRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.ListSceneReportRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
 import io.shulie.takin.web.common.domain.WebResponse;
+
+import java.util.List;
 
 /**
  * @author qianshui
@@ -120,5 +124,51 @@ public interface SceneManageService {
     List<SceneReportListOutput> rankReport(ListSceneReportRequest request);
 
     SceneMachineResponse machineClusters(String id, Integer type);
+
+    /**
+     * 根据场景获取基线数据列表
+     * @param sceneId
+     * @return
+     */
+    List<SceneBaseLineOutput> getPerformanceLineResultList(long sceneId);
+
+    /**
+     * 根据时间段获取基线数据并入库
+     * @return
+     */
+    boolean getBaseLineByTimeAndInsert(BaseLineQueryReq baseLineQueryReq);
+
+    /**
+     * 根据报告id获取基线数据并入库
+     * @return
+     */
+    boolean getBaseLineByReportIdAndInsert(long reportId);
+
+    boolean performanceLineCreate(BaseLineQueryReq baseLineQueryReq);
+
+    /**
+     * 获取报告的list，根据场景id
+     * @param sceneId
+     * @return
+     */
+    List<Long> getReportListById(Long sceneId);
+
+    /**
+     * 获取对比的问题列表
+     * @param reportId
+     * @return
+     */
+    List<TReportBaseLinkProblemOutput> getReportProblemList(long reportId);
+
+    /**
+     * 获取trace的快照
+     * @param reportId
+     * @return
+     */
+    List<ReportTraceDetailDTO> getTraceSnapShot(long reportId);
+
+    boolean getBaseLineProblemAndInsert(long reportId);
+
+    long countProblem(long reportId);
 
 }

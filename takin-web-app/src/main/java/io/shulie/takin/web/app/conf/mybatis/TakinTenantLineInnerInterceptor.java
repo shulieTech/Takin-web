@@ -42,178 +42,184 @@ import java.util.List;
 @Slf4j
 public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor {
 
-    private String[] tableArrWithoutTenantId = new String[] {
-        "t_user_third_party",
-        "t_third_party",
-        "t_dictionary_type",
-        "t_tc_sequence",
-        "t_tenant_info",
-        "t_tro_resource",
-        "t_config_server",
-        "t_pradar_zk_config",
-        "t_cache_config_template",
-        "t_connectpool_config_template",
-        "t_mq_config_template",
-        "t_agent_config",
-        "t_agent_version",
-        "t_exception_info",
-        "t_middleware_summary",
-        "t_agent_plugin",
-        "t_middleware_jar",
-        "t_agent_plugin_lib_support",
-        "t_plugin_library",
-        "t_plugin_dependent",
-        "t_plugin_tenant_ref",
-        "t_interface_type_main",
-        "t_interface_type_child",
-        "t_interface_type_config",
-        "t_remote_call_config",
-        "t_middleware_type",
-        "t_tro_version",
-        "t_user_config",
-        // cloud迁移
-        "t_ac_account",
-        "t_ac_account_balance",
-        "t_ac_account_book",
-        "t_engine_plugin_files_ref",
-        "t_engine_plugin_info",
-        "t_engine_plugin_supported_versions",
-        "t_report_business_activity_detail",
-        "t_scene_big_file_slice",
-        "t_scene_business_activity_ref",
-        "t_scene_script_ref",
-        "t_scene_sla_ref",
-        "t_schedule_record",
-        "t_schedule_record_engine_plugins_ref",
-        "t_strategy_config",
-        "t_warn_detail",
-        "t_pressure_task_variety",
-        "t_pressure_task_callback",
-        "t_interface_performance_result"
+    private String[] tableArrWithoutTenantId = new String[]{
+            "t_user_third_party",
+            "t_third_party",
+            "t_dictionary_type",
+            "t_tc_sequence",
+            "t_tenant_info",
+            "t_tro_resource",
+            "t_config_server",
+            "t_pradar_zk_config",
+            "t_cache_config_template",
+            "t_connectpool_config_template",
+            "t_mq_config_template",
+            "t_agent_config",
+            "t_agent_version",
+            "t_exception_info",
+            "t_middleware_summary",
+            "t_agent_plugin",
+            "t_middleware_jar",
+            "t_agent_plugin_lib_support",
+            "t_plugin_library",
+            "t_plugin_dependent",
+            "t_plugin_tenant_ref",
+            "t_interface_type_main",
+            "t_interface_type_child",
+            "t_interface_type_config",
+            "t_remote_call_config",
+            "t_middleware_type",
+            "t_tro_version",
+            "t_user_config",
+            // cloud迁移
+            "t_ac_account",
+            "t_ac_account_balance",
+            "t_ac_account_book",
+            "t_engine_plugin_files_ref",
+            "t_engine_plugin_info",
+            "t_engine_plugin_supported_versions",
+            "t_report_business_activity_detail",
+            "t_scene_big_file_slice",
+            "t_scene_business_activity_ref",
+            "t_scene_script_ref",
+            "t_scene_sla_ref",
+            "t_schedule_record",
+            "t_schedule_record_engine_plugins_ref",
+            "t_strategy_config",
+            "t_warn_detail",
+            "t_pressure_task_variety",
+            "t_pressure_task_callback",
+            "t_scene_base_line",
+            "t_report_base_line_problem",
+            "t_interface_performance_result"
     };
 
-    private String[] tableArrWithoutEnvCode = new String[] {
-        "t_user_third_party",
-        "t_third_party",
-        "t_tro_user",
-        "t_tro_dept",
-        "t_dictionary_type",
-        "t_tro_user_dept_relation",
-        "t_tc_sequence",
-        "t_tenant_info",
-        "t_tro_resource",
-        "t_config_server",
-        "t_pradar_zk_config",
-        "t_cache_config_template",
-        "t_connectpool_config_template",
-        "t_mq_config_template",
-        "t_agent_config",
-        "t_agent_version",
-        "t_exception_info",
-        "t_middleware_summary",
-        "t_agent_plugin",
-        "t_middleware_jar",
-        "t_agent_plugin_lib_support",
-        "t_plugin_library",
-        "t_plugin_dependent",
-        "t_plugin_tenant_ref",
-        "t_tenant_env_ref",
-        "t_interface_type_main",
-        "t_interface_type_child",
-        "t_remote_call_config",
-        "t_interface_type_config",
-        "t_middleware_type",
-        "t_tro_version",
-        "t_user_config",
-        // cloud迁移
-        "t_ac_account",
-        "t_ac_account_balance",
-        "t_ac_account_book",
-        "t_engine_plugin_files_ref",
-        "t_engine_plugin_info",
-        "t_engine_plugin_supported_versions",
-        "t_report_business_activity_detail",
-        "t_scene_big_file_slice",
-        "t_scene_business_activity_ref",
-        "t_scene_script_ref",
-        "t_scene_sla_ref",
-        "t_schedule_record",
-        "t_schedule_record_engine_plugins_ref",
-        "t_strategy_config",
-        "t_warn_detail",
-        "t_pressure_task_variety",
-        "t_pressure_task_callback",
-        "t_interface_performance_result"
+    private String[] tableArrWithoutEnvCode = new String[]{
+            "t_user_third_party",
+            "t_third_party",
+            "t_tro_user",
+            "t_tro_dept",
+            "t_dictionary_type",
+            "t_tro_user_dept_relation",
+            "t_tc_sequence",
+            "t_tenant_info",
+            "t_tro_resource",
+            "t_config_server",
+            "t_pradar_zk_config",
+            "t_cache_config_template",
+            "t_connectpool_config_template",
+            "t_mq_config_template",
+            "t_agent_config",
+            "t_agent_version",
+            "t_exception_info",
+            "t_middleware_summary",
+            "t_agent_plugin",
+            "t_middleware_jar",
+            "t_agent_plugin_lib_support",
+            "t_plugin_library",
+            "t_plugin_dependent",
+            "t_plugin_tenant_ref",
+            "t_tenant_env_ref",
+            "t_interface_type_main",
+            "t_interface_type_child",
+            "t_remote_call_config",
+            "t_interface_type_config",
+            "t_middleware_type",
+            "t_tro_version",
+            "t_user_config",
+            // cloud迁移
+            "t_ac_account",
+            "t_ac_account_balance",
+            "t_ac_account_book",
+            "t_engine_plugin_files_ref",
+            "t_engine_plugin_info",
+            "t_engine_plugin_supported_versions",
+            "t_report_business_activity_detail",
+            "t_scene_big_file_slice",
+            "t_scene_business_activity_ref",
+            "t_scene_script_ref",
+            "t_scene_sla_ref",
+            "t_schedule_record",
+            "t_schedule_record_engine_plugins_ref",
+            "t_strategy_config",
+            "t_warn_detail",
+            "t_pressure_task_variety",
+            "t_pressure_task_callback",
+            "t_interface_performance_result",
+            "t_scene_base_line",
+            "t_report_base_line_problem",
     };
 
-    private String[] tableArrWithoutUserId = new String[] {
-        "t_user_third_party",
-        "t_third_party",
-        "t_tro_user",
-        "t_tro_dept",
-        "t_dictionary_type",
-        "t_config_server",
-        "t_tc_sequence",
-        "t_tenant_info",
-        "t_tro_resource",
-        "t_config_server",
-        "t_pradar_zk_config",
-        "t_cache_config_template",
-        "t_connectpool_config_template",
-        "t_app_remote_call_template_mapping",
-        "t_mq_config_template",
-        "t_agent_config",
-        "t_agent_version",
-        "t_exception_info",
-        "t_middleware_summary",
-        "t_agent_plugin",
-        "t_middleware_jar",
-        "t_agent_plugin_lib_support",
-        "t_plugin_library",
-        "t_plugin_dependent",
-        "t_plugin_tenant_ref",
-        "t_interface_type_main",
-        "t_interface_type_child",
-        "t_interface_type_config",
-        "t_remote_call_config",
-        "t_middleware_type",
-        "t_tro_version",
-        "t_user_config",
-        // cloud迁移
-        "t_ac_account",
-        "t_ac_account_balance",
-        "t_ac_account_book",
-        "t_engine_plugin_files_ref",
-        "t_engine_plugin_info",
-        "t_engine_plugin_supported_versions",
-        "t_report_business_activity_detail",
-        "t_scene_big_file_slice",
-        "t_scene_business_activity_ref",
-        "t_scene_script_ref",
-        "t_scene_sla_ref",
-        "t_schedule_record",
-        "t_schedule_record_engine_plugins_ref",
-        "t_strategy_config",
-        "t_warn_detail",
-        "t_pressure_task_variety",
-        "t_pressure_task_callback",
-        "t_interface_performance_result"
+    private String[] tableArrWithoutUserId = new String[]{
+            "t_user_third_party",
+            "t_third_party",
+            "t_tro_user",
+            "t_tro_dept",
+            "t_dictionary_type",
+            "t_config_server",
+            "t_tc_sequence",
+            "t_tenant_info",
+            "t_tro_resource",
+            "t_config_server",
+            "t_pradar_zk_config",
+            "t_cache_config_template",
+            "t_connectpool_config_template",
+            "t_app_remote_call_template_mapping",
+            "t_mq_config_template",
+            "t_agent_config",
+            "t_agent_version",
+            "t_exception_info",
+            "t_middleware_summary",
+            "t_agent_plugin",
+            "t_middleware_jar",
+            "t_agent_plugin_lib_support",
+            "t_plugin_library",
+            "t_plugin_dependent",
+            "t_plugin_tenant_ref",
+            "t_interface_type_main",
+            "t_interface_type_child",
+            "t_interface_type_config",
+            "t_remote_call_config",
+            "t_middleware_type",
+            "t_tro_version",
+            "t_user_config",
+            // cloud迁移
+            "t_ac_account",
+            "t_ac_account_balance",
+            "t_ac_account_book",
+            "t_engine_plugin_files_ref",
+            "t_engine_plugin_info",
+            "t_engine_plugin_supported_versions",
+            "t_report_business_activity_detail",
+            "t_scene_big_file_slice",
+            "t_scene_business_activity_ref",
+            "t_scene_script_ref",
+            "t_scene_sla_ref",
+            "t_schedule_record",
+            "t_schedule_record_engine_plugins_ref",
+            "t_strategy_config",
+            "t_warn_detail",
+            "t_pressure_task_variety",
+            "t_pressure_task_callback",
+            "t_interface_performance_result",
+            "t_scene_base_line",
+            "t_report_base_line_problem",
     };
 
 
-    private String[] tableArrWithDeptId = new String[] {
-        "t_app_business_table_info",
-        "t_business_link_manage_table",
-        "t_scene_manage",
+    private String[] tableArrWithDeptId = new String[]{
+            "t_app_business_table_info",
+            "t_business_link_manage_table",
+            "t_scene_manage",
 //        "t_report",
 //        "t_application_mnt",
-        "t_scene",
-        "t_script_manage",
-        "t_application_api_manage",
-        "t_fast_debug_config_info",
-        "t_tro_dbresource",
-        "t_interface_performance_config",
-        "t_link_manage_table"
+            "t_scene",
+            "t_script_manage",
+            "t_application_api_manage",
+            "t_fast_debug_config_info",
+            "t_tro_dbresource",
+            "t_interface_performance_config",
+            "t_link_manage_table"
     };
 
     /**
@@ -299,7 +305,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         Expression where = plainSelect.getWhere();
         processWhereSubSelect(where);
         if (fromItem instanceof Table) {
-            Table fromTable = (Table)fromItem;
+            Table fromTable = (Table) fromItem;
             if (!tenantLineHandler.ignoreTable(fromTable.getName())) {
                 //#1186 github
                 plainSelect.setWhere(builderExpression(where, fromTable));
@@ -326,7 +332,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             // 处理 on 表达式
             FromItem fromItem = join.getRightItem();
             if (fromItem instanceof Table) {
-                Table fromTable = (Table)fromItem;
+                Table fromTable = (Table) fromItem;
                 // 获取 join 尾缀的 on 表达式列表
                 Collection<Expression> originOnExpressions = join.getOnExpressions();
                 // 正常 join on 表达式只有一个，立刻处理
@@ -472,7 +478,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         return new Column(column.toString());
     }
 
-    private AndExpression buildTenantExpression(Table table, Expression where,Boolean isNeedDept) {
+    private AndExpression buildTenantExpression(Table table, Expression where, Boolean isNeedDept) {
         // 已经存在
         String tenantIdColumn = tenantLineHandler.getTenantIdColumn();
         String envCodeColumn = tenantLineHandler.getEnvCodeColumn();
@@ -498,16 +504,16 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         Expression deptIdCondition = null;
         if (isNeedDept && !tenantLineHandler.ignoreSearch(where, deptIdColumn) && tableWithDeptId.contains(table.getName())) {
             // 超级管理员
-            if(WebPluginUtils.isProjectAdmin()) {
-                deptIdCondition = new Parenthesis(new OrExpression(new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()),tenantLineHandler.getDeptId()),
-                    new IsNullExpression().withLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()))));
-            }else {
+            if (WebPluginUtils.isProjectAdmin()) {
+                deptIdCondition = new Parenthesis(new OrExpression(new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()), tenantLineHandler.getDeptId()),
+                        new IsNullExpression().withLeftExpression(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()))));
+            } else {
                 // 固定
-                deptIdCondition = new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()),tenantLineHandler.getDeptId());
+                deptIdCondition = new EqualsTo(this.getAliasColumn(table, tenantLineHandler.getDeptIdColumn()), tenantLineHandler.getDeptId());
             }
 
             // 特殊情况，比如定时任务 deptId 没有设置，是设置空 或者 -1 ,就排查deptId条件
-            if(WebPluginUtils.traceDeptId() == null || WebPluginUtils.traceDeptId() == -1) {
+            if (WebPluginUtils.traceDeptId() == null || WebPluginUtils.traceDeptId() == -1) {
                 deptIdCondition = null;
             }
 
@@ -517,7 +523,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
 
         if (tenantIdCondition == null && envCodeCondition == null) {
             // 只有部分有这个数据
-            if(deptIdCondition != null) {
+            if (deptIdCondition != null) {
                 tenantExpression = new AndExpression(equalsTo, deptIdCondition);
             }
             return tenantExpression;
@@ -529,11 +535,11 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         } else if (tenantIdCondition != null) {
             // t_tro_user 只有 tenant_id
             tenantExpression = new AndExpression(equalsTo, tenantIdCondition);
-        }else if(envCodeCondition != null) {
+        } else if (envCodeCondition != null) {
             tenantExpression = new AndExpression(equalsTo, envCodeCondition);
         }
         // 只有部分有这个数据
-        if(deptIdCondition != null) {
+        if (deptIdCondition != null) {
             tenantExpression = new AndExpression(tenantExpression, deptIdCondition);
         }
 

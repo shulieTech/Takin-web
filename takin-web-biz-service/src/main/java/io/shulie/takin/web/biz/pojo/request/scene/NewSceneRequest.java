@@ -1,21 +1,21 @@
 package io.shulie.takin.web.biz.pojo.request.scene;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneBaseLineTypeEnum;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 操作压测场景入参 -新
@@ -80,6 +80,12 @@ public class NewSceneRequest {
         @ApiModelProperty(name = "executeTime", value = "定时执行时间")
         @JsonFormat(pattern = "yyyy-MM-dd hh:mm", timezone = "GMT+8")
         private Date executeTime;
+        @ApiModelProperty(value = "基线类型")
+        private Integer lineTypeEnum;
+        @ApiModelProperty(value = "基线开始时间")
+        private Date baseLineStartTime;
+        @ApiModelProperty(value = "基线结束时间")
+        private Date baseLineEndTime;
     }
 
     @Data

@@ -42,6 +42,7 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopo
 import io.shulie.takin.web.biz.pojo.response.report.ReportApplicationSummary;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.report.*;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
@@ -150,6 +151,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Resource
     private ReportApplicationSummaryMapper reportApplicationSummaryMapper;
+    @Resource
+    private SceneManageService sceneManageService;
 
     static {
         costList.add(new Pair<>(0, 200));
@@ -178,6 +181,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (data == null) {
             return new ReportCountDTO();
         }
+        //todo 新增一个压测风险接口个数的
+        long interfaceNum = sceneManageService.countProblem(reportId);
+        data.setBottleneckInterfaceCount(Math.toIntExact(interfaceNum));
         return convert2ReportCountDTO(data);
     }
 

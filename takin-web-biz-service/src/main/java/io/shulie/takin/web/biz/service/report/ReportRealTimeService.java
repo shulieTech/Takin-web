@@ -28,6 +28,5 @@ public interface ReportRealTimeService {
     ReportLinkDetailResponse getLinkDetail(String traceId, Integer amdbReportTraceId);
 
     ReportLinkDetailResponse getReduceLinkDetail(String traceId, Integer amdbReportTraceId);
-
     List<EntranceRuleDTO> getEntryListByBusinessActivityIds(List<Long> businessActivityIds);
 }

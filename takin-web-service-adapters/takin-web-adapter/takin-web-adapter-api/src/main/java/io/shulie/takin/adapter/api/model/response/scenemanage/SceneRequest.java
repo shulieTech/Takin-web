@@ -1,11 +1,6 @@
 package io.shulie.takin.adapter.api.model.response.scenemanage;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneBaseLineTypeEnum;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
@@ -13,6 +8,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 创建/修改 场景  -  请求
@@ -48,6 +49,8 @@ public class SceneRequest extends ContextExt {
     @NotNull(message = "压测文件不能为空")
     private List<File> file;
 
+
+
     /**
      * 基础信息
      */
@@ -70,6 +73,12 @@ public class SceneRequest extends ContextExt {
         @ApiModelProperty(value = "业务流程主键")
         @NotNull(message = "业务流程主键不能为空")
         private Long businessFlowId;
+        @ApiModelProperty(value = "基线类型")
+        private SceneBaseLineTypeEnum lineTypeEnum;
+        @ApiModelProperty(value = "基线开始时间")
+        private Date baseLineStartTime;
+        @ApiModelProperty(value = "基线结束时间")
+        private Date baseLineEndTime;
     }
 
     /**

@@ -268,11 +268,8 @@ public class SceneController {
     @ApiOperation("获取压测场景详情 - 新")
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<SceneDetailResponse> detail(@RequestParam(required = false) Long sceneId) {
-        SceneManageQueryReq request = new SceneManageQueryReq() {
-            {
-                setSceneId(sceneId);
-            }
-        };
+        SceneManageQueryReq request = new SceneManageQueryReq();
+        request.setSceneId(sceneId);
         WebPluginUtils.fillCloudUserData(request);
         SceneDetailV2Response detailResult = multipleSceneApi.detail(request);
 
@@ -384,12 +381,12 @@ public class SceneController {
         return fileManageDao.selectFileManageByIds(fileIds).stream().map(t -> {
             Map<String, Object> extend = JSONObject.parseObject(t.getFileExtend(), new TypeReference<Map<String, Object>>() {
             });
-            return new SceneRequest.File() {{
-                setName(t.getFileName());
-                setPath(t.getUploadPath());
-                setType(t.getFileType());
-                setExtend(extend);
-            }};
+            SceneRequest.File file = new SceneRequest.File();
+            file.setName(t.getFileName());
+            file.setPath(t.getUploadPath());
+            file.setType(t.getFileType());
+            file.setExtend(extend);
+            return file;
         }).collect(Collectors.toList());
     }
 

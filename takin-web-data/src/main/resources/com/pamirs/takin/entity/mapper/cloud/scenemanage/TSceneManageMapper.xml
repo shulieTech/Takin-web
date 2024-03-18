@@ -9,6 +9,10 @@
         <result column="scene_name" property="sceneName" jdbcType="VARCHAR"/>
         <result column="status" property="status" jdbcType="TINYINT"/>
         <result column="type" property="type" jdbcType="TINYINT"/>
+        <result column="performance_line_type" property="lineTypeEnum" jdbcType="TINYINT"/>
+        <result column="base_start_time" property="baseLineStartTime" jdbcType="TIMESTAMP"/>
+        <result column="base_end_time" property="baseLineEndTime" jdbcType="TIMESTAMP"/>
+        <result column="base_line_report_id" property="baseLineReportId" jdbcType="BIGINT"/>
         <result column="last_pt_time" property="lastPtTime" jdbcType="TIMESTAMP"/>
         <result column="script_type" property="scriptType" jdbcType="TINYINT"/>
         <result column="is_deleted" property="isDeleted" jdbcType="TINYINT"/>
@@ -21,8 +25,8 @@
         <result column="script_analysis_result" property="scriptAnalysisResult" jdbcType="VARCHAR"/>
     </resultMap>
     <sql id="Base_Column_List">
-        `id`, customer_id, scene_name, status, `type`,last_pt_time, script_type, is_deleted, create_time,features, create_name,
-        update_time, update_name, pt_config, dept_id, user_id, script_analysis_result
+ `id`, customer_id, scene_name, status,`base_start_time`,`base_end_time`,`base_line_report_id`, `type`,`performance_line_type`,last_pt_time, script_type, is_deleted, create_time,features, create_name,
+ update_time, update_name, pt_config, dept_id, user_id, script_analysis_result
     </sql>
     <select id="selectAllSceneManageList" resultMap="BaseResultMap">
         select
@@ -85,10 +89,10 @@
     </update>
 
     <update id="updateStatus">
-        update t_scene_manage
-        set status = #{afterStatus}
-        where id = #{sceneId}
-          and status = #{preStatus}
+ update t_scene_manage
+ set status = #{afterStatus}
+ where id = #{sceneId}
+ and status = #{preStatus}
     </update>
 
     <select id="getByIds" resultMap="BaseResultMap">

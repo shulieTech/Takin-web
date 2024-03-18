@@ -1,24 +1,20 @@
 package io.shulie.takin.web.app.conf.mybatis;
 
+import org.apache.ibatis.executor.statement.StatementHandler;
+import org.apache.ibatis.mapping.BoundSql;
+import org.apache.ibatis.mapping.ParameterMapping;
+import org.apache.ibatis.plugin.*;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.defaults.DefaultSqlSession.StrictMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.sql.Statement;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import org.apache.ibatis.executor.statement.StatementHandler;
-import org.apache.ibatis.mapping.BoundSql;
-import org.apache.ibatis.mapping.ParameterMapping;
-import org.apache.ibatis.plugin.Interceptor;
-import org.apache.ibatis.plugin.Intercepts;
-import org.apache.ibatis.plugin.Invocation;
-import org.apache.ibatis.plugin.Plugin;
-import org.apache.ibatis.plugin.Signature;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.defaults.DefaultSqlSession.StrictMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 说明: Sql执行时间记录拦截器
@@ -28,8 +24,8 @@ import org.slf4j.LoggerFactory;
  * @date 2018/10/10 14:19
  */
 @Intercepts({
-    @Signature(type = StatementHandler.class, method = "query", args = {Statement.class, ResultHandler.class}),
-    @Signature(type = StatementHandler.class, method = "update", args = {Statement.class})})
+        @Signature(type = StatementHandler.class, method = "query", args = {Statement.class, ResultHandler.class}),
+        @Signature(type = StatementHandler.class, method = "update", args = {Statement.class})})
 public class SqlCostInterceptor implements Interceptor {
 
     private final Logger LOGGER = LoggerFactory.getLogger(SqlCostInterceptor.class);
@@ -53,8 +49,9 @@ public class SqlCostInterceptor implements Interceptor {
 
             // 格式化Sql语句，去除换行符，替换参数
             sql = formatSql(sql, parameterObject, parameterMappingList);
-
-            LOGGER.info(String.format("执行的SQL语句为: %s,执行耗时为: %s ms", sql, sqlCost));
+            if (sql.contains("t_report_base_line_problem") || sql.contains("t_scene_base_line")) {
+                LOGGER.info(String.format("执行的SQL语句为: %s,执行耗时为: %s ms", sql, sqlCost));
+            }
         }
     }
 

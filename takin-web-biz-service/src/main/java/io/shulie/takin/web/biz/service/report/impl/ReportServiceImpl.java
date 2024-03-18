@@ -280,9 +280,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public Boolean finishReport(Long reportId) {
-        return cloudReportApi.finish(new ReportDetailByIdReq() {{
-            setReportId(reportId);
-        }});
+        ReportDetailByIdReq req =   new ReportDetailByIdReq();
+        req.setReportId(reportId);
+        return cloudReportApi.finish(req);
     }
 
     @Override

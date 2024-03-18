@@ -1,7 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.scene;
 
-import java.util.List;
-
 import io.shulie.takin.web.biz.pojo.output.scene.SceneListForSelectOutput;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
 import io.shulie.takin.web.biz.pojo.request.scene.ListSceneForSelectRequest;
@@ -15,6 +13,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 场景(Probe)表控制层
@@ -47,5 +47,4 @@ public class SceneController {
     public List<SceneReportListOutput> reportRank(@Validated ListSceneReportRequest request) {
         return sceneManageService.rankReport(request);
     }
-
 }

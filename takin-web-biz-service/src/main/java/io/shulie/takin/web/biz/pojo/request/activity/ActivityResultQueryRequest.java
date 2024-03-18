@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 根据条件查询业务活动
@@ -22,4 +23,9 @@ public class ActivityResultQueryRequest implements Serializable {
     @ApiModelProperty("入口entrance")
     @NotNull(message = "入口entrance不能为空")
     private String entrancePath;
+    /**
+     * 业务活动 ids
+     */
+    @ApiModelProperty("业务活动ids")
+    private List<Long> activityIds;
 }

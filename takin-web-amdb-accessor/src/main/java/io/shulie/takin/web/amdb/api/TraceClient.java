@@ -5,10 +5,8 @@ import com.pamirs.pradar.log.parser.trace.RpcStack;
 import io.shulie.surge.data.deploy.pradar.link.model.TTrackClickhouseModel;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.DataCalibrationDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.TraceMetricsRequest;
+import io.shulie.takin.web.amdb.bean.query.trace.*;
+import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceAvgCostDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.TraceMetricsAll;
 
@@ -74,5 +72,7 @@ public interface TraceClient {
     String dataCalibration(DataCalibrationDTO dataCalibration);
 
     List<TraceMetricsAll> getSqlStatements(TraceMetricsRequest traceMetricsRequest);
+
+    List<EntryTraceAvgCostDTO> getStatisticsTraceList(List<TraceStatisticsQueryReq> traceStatisticsQueryReqList);
 
 }

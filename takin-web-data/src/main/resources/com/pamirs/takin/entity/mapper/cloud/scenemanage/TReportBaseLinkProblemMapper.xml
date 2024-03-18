@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.TReportBaseLinkProblemMapper">
+
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.TReportBaseLinkProblem">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="sceneId" column="scene_id" jdbcType="BIGINT"/>
+        <result property="reportId" column="report_id" jdbcType="BIGINT"/>
+        <result property="lineType" column="line_type" jdbcType="TINYINT"/>
+        <result property="rpcId" column="rpc_id" jdbcType="VARCHAR"/>
+        <result property="rpcType" column="rpc_type" jdbcType="VARCHAR"/>
+        <result property="logType" column="log_type" jdbcType="INTEGER"/>
+        <result property="binRef" column="bin_ref" jdbcType="VARCHAR"/>
+        <result property="activityId" column="activity_id" jdbcType="BIGINT"/>
+        <result property="activityName" column="activity_name" jdbcType="VARCHAR"/>
+        <result property="serviceName" column="service_name" jdbcType="VARCHAR"/>
+        <result property="appName" column="app_name" jdbcType="VARCHAR"/>
+        <result property="methodName" column="method_name" jdbcType="VARCHAR"/>
+        <result property="reason" column="reason" jdbcType="VARCHAR"/>
+        <result property="baseRt" column="base_rt" jdbcType="DECIMAL"/>
+        <result property="baseSuccessRate" column="base_success_rate" jdbcType="DECIMAL"/>
+        <result property="totalRequest" column="total_request" jdbcType="DECIMAL"/>
+        <result property="rt" column="rt" jdbcType="DECIMAL"/>
+        <result property="successRate" column="success_rate" jdbcType="DECIMAL"/>
+        <result property="traceSnapshot" column="trace_snapshot" jdbcType="VARCHAR"/>
+        <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
+        <result property="envCode" column="env_code" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createName" column="create_name" jdbcType="VARCHAR"/>
+        <result property="columnName" column="column_name" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="updateName" column="update_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+     id,scene_id,report_id,rpc_id,rpc_type,log_type,
+     line_type,bin_ref,activity_id,activity_name,total_request,
+     service_name,app_name,method_name,reason,base_rt,base_success_rate,
+     rt,success_rate,trace_snapshot,
+     is_delete,env_code,tenant_id,
+     create_time,create_name,column_name,
+     update_time,update_name
+    </sql>
+</mapper>

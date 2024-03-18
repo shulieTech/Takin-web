@@ -1,9 +1,9 @@
 package com.pamirs.takin.cloud.entity.domain.entity.scene.manage;
 
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
-
-import lombok.Data;
 
 @Data
 public class SceneManage implements Serializable {
@@ -50,4 +50,9 @@ public class SceneManage implements Serializable {
      * 租户
      */
     private Long tenantId;
+
+    private Integer lineTypeEnum;
+    private Date baseLineStartTime;
+    private Date baseLineEndTime;
+    private Long baseLineReportId;
 }

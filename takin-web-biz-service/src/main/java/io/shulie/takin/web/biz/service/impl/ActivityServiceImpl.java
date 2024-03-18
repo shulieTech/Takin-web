@@ -79,7 +79,6 @@ import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -952,6 +951,9 @@ public class ActivityServiceImpl implements ActivityService {
         }
         if (StringUtil.isNotEmpty(request.getApplicationName())) {
             queryParam.setApplicationName(request.getApplicationName());
+        }
+        if (CollectionUtils.isNotEmpty(request.getActivityIds())){
+            queryParam.setActivityIds(request.getActivityIds());
         }
 
         List<ActivityListResult> activityList = activityDAO.getActivityList(queryParam);

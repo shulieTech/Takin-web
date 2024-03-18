@@ -98,6 +98,7 @@ import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
 import io.shulie.takin.web.biz.pojo.dto.scene.EnginePressureQuery;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.utils.ParsePressureTimeByModeUtils;
 import io.shulie.takin.web.biz.utils.ReportTimeUtils;
 import io.shulie.takin.web.common.util.RedisClientUtil;
@@ -122,6 +123,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -176,6 +179,13 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
 
     private static final String AMDB_ENGINE_PRESSURE_QUERY_LIST_PATH = "/amdb/db/api/enginePressure/queryListMap";
 
+    ExecutorService baseLineExecutorService  = Executors.newFixedThreadPool(2);
+
+    ExecutorService baseLineProblemExecutorService  = Executors.newFixedThreadPool(2);
+
+
+    @Resource
+    private SceneManageService sceneManageService;
 
     @Override
     public PageInfo<CloudReportDTO> listReport(ReportQueryReq param) {
@@ -307,7 +317,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
     }
 
-    private List<ScriptNodeSummaryBean> getReportNodeDetail(String scriptNodeTree, Long reportId) {
+    public List<ScriptNodeSummaryBean> getReportNodeDetail(String scriptNodeTree, Long reportId) {
         List<ReportBusinessActivityDetail> activities = tReportBusinessActivityDetailMapper
                 .queryReportBusinessActivityDetailByReportId(reportId);
         return getScriptNodeSummaryBeans(reportId, scriptNodeTree, activities);
@@ -788,6 +798,14 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         pressureEnd(reportResult);
         log.info("报告{} finish done", reportId);
 
+        //报告结束的时候讲当前报告的结果作为基线写入基线表
+        baseLineExecutorService.submit(() -> {
+            this.sceneManageService.getBaseLineByReportIdAndInsert(reportId);
+        });
+
+        baseLineProblemExecutorService.submit(() -> {
+            this.sceneManageService.getBaseLineProblemAndInsert(reportId);
+        });
         return true;
     }
 

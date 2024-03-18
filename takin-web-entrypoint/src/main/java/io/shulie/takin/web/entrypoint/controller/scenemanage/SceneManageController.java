@@ -1,15 +1,8 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.validation.Valid;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
+import com.pamirs.takin.entity.domain.dto.report.ReportTraceDetailDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
@@ -21,20 +14,23 @@ import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageDeleteRe
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
-import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse;
-import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
-import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneBaseLineOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.TReportBaseLinkProblemOutput;
+import io.shulie.takin.web.biz.pojo.request.scene.BaseLineQueryReq;
+import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerDeleteRequest;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerDeleteRequest;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -42,16 +38,16 @@ import io.shulie.takin.web.common.util.JsonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -60,6 +56,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/scenemanage")
 @Api(tags = "压测场景管理")
+@Slf4j
 public class SceneManageController {
 
     @Autowired
@@ -391,4 +388,37 @@ public class SceneManageController {
     public WebResponse<SceneMachineResponse> machineClusters(@RequestParam String id, @RequestParam Integer type) {
         return WebResponse.success(sceneManageService.machineClusters(id, type));
     }
+
+    @ApiOperation("设置性能基线")
+    @PostMapping("/performanceLine/create")
+    public ResponseResult<Boolean> performanceLineCrate(@RequestBody BaseLineQueryReq baseLineQueryReq){
+        return ResponseResult.success(this.sceneManageService.performanceLineCreate(baseLineQueryReq));
+    }
+
+    @GetMapping("/getPerformanceLineResultList")
+    @ApiOperation("获取性能基线数据")
+    public ResponseResult<List<SceneBaseLineOutput>> getPerformanceLineResultList(@RequestParam("sceneId") long sceneId) {
+        return ResponseResult.success(sceneManageService.getPerformanceLineResultList(sceneId));
+    }
+
+    @ApiOperation("根据场景id获取报告list")
+    @GetMapping("/getReportListById")
+    public ResponseResult<List<Long>> getReportListById(@RequestParam("id") Long id) {
+        return ResponseResult.success(sceneManageService.getReportListById(id));
+    }
+
+    @ApiOperation("根据报告id获取流量明细快照")
+    @GetMapping("/getTraceSnapShot")
+    public ResponseResult<List<ReportTraceDetailDTO>> getTraceSnapShot(@RequestParam("reportId") long reportId){
+        return ResponseResult.success(this.sceneManageService.getTraceSnapShot(reportId));
+    }
+
+    @ApiOperation("根据报告id获取报告问题列表")
+    @GetMapping("/getReportProblemList")
+    public ResponseResult<List<TReportBaseLinkProblemOutput>> getReportProblemList(@RequestParam("reportId") long reportId){
+        log.info("getReportProblemList param,{}", reportId);
+        return ResponseResult.success(this.sceneManageService.getReportProblemList(reportId));
+    }
+
+
 }

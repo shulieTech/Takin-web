@@ -1873,6 +1873,9 @@ public class LinkTopologyService extends CommonService {
         }
         //if (EdgeTypeGroupEnum.MQ.name().equals(edge.getEagleTypeGroup())) {
         if ((MiddlewareType.TYPE_MQ + "").equals(edge.getRpcType())) {
+            if (Objects.isNull(nodeMap.get(edge.getSourceId())) || nodeMap.get(edge.getSourceId()).getNodeTypeGroup() == null) {
+                return "";
+            }
             // 消费者
             if (nodeMap.get(edge.getSourceId()).getNodeTypeGroup().equals(NodeTypeGroupEnum.MQ.getType())) {
                 return "Topic：" + edge.getService() + "，Group：" + edge.getMethod();

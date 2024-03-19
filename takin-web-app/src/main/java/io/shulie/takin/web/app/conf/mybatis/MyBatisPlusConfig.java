@@ -98,10 +98,10 @@ public class MyBatisPlusConfig {
 //        return new MetaUpdateSignInterceptor();
 //    }
 
-    @Bean
-    public SqlCostInterceptor sqlCostInterceptor(){
-        return new SqlCostInterceptor();
-    }
+//    @Bean
+//    public SqlCostInterceptor sqlCostInterceptor(){
+//        return new SqlCostInterceptor();
+//    }
 
 }
 

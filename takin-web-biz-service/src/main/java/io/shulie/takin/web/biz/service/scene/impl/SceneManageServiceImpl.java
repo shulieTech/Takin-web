@@ -1215,11 +1215,8 @@ public class SceneManageServiceImpl implements SceneManageService {
             List<TSceneBaseLine> sceneBaseLineList = sceneBaseLineMapper.selectList(baseLineLambdaQueryWrapper);
 
             if (CollectionUtils.isEmpty(sceneBaseLineList)) {
-                log.info("getPerformanceLineResultList sceneBaseLineList error,params,{}", JSON.toJSONString(baseLineQueryReq));
                 return Collections.emptyList();
             }
-
-            log.info("getPerformanceLineResultList sceneBaseLineList,params,{}", JSON.toJSONString(baseLineQueryReq));
 
             Map<Long, List<TSceneBaseLine>> baseActivityMap = sceneBaseLineList.stream().collect(Collectors.groupingBy(TSceneBaseLine::getActivityId));
 
@@ -1233,10 +1230,10 @@ public class SceneManageServiceImpl implements SceneManageService {
                 baseLineOutput.setActivityId(k);
                 ActivityResult result = activityDAO.getActivityById(k);
                 baseLineOutput.setActivityName(result.getActivityName());
-                List<TSceneBaseLine> tmpList = v.stream().sorted(Comparator.comparing(TSceneBaseLine::getRpcId).reversed()).collect(Collectors.toList());
+                List<TSceneBaseLine> tmpList = v.stream().sorted(Comparator.comparing(TSceneBaseLine::getRpcId)).collect(Collectors.toList());
                 List<SceneBaseLineOutput.SceneBaseLineNode> nodeList = BeanCopyUtils.copyList(tmpList, SceneBaseLineOutput.SceneBaseLineNode.class);
-                nodeList.stream().sorted(Comparator.comparing(SceneBaseLineOutput.SceneBaseLineNode::getRpcId).reversed());
-                baseLineOutput.setNodeList(nodeList);
+                List<SceneBaseLineOutput.SceneBaseLineNode> sortNodeList = nodeList.stream().sorted(Comparator.comparing(SceneBaseLineOutput.SceneBaseLineNode::getRpcId)).collect(Collectors.toList());
+                baseLineOutput.setNodeList(sortNodeList);
                 baseLineOutputs.add(baseLineOutput);
             });
             return baseLineOutputs;
@@ -1309,7 +1306,6 @@ public class SceneManageServiceImpl implements SceneManageService {
                 return false;
             }
 
-            log.info("baseLineQueryReq baseLineQueryReq={}", JSON.toJSONString(baseLineQueryReq));
             List<SceneBaseLineInsertDto> baseLineList = avgCostDTOList.stream().filter(a -> Objects.nonNull(a)).map(entryTraceAvgCostRes -> {
                 SceneBaseLineInsertDto dto = SceneBaseLineInsertDto.genOb(entryTraceAvgCostRes, baseLineQueryReq);
                 if (StringUtils.isNotBlank(entryTraceAvgCostRes.getTraceId())) {
@@ -1617,7 +1613,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                 baseLineOutput.setActivityId(k);
                 ActivityResult result = activityDAO.getActivityById(k);
                 baseLineOutput.setActivityName(result.getActivityName());
-                List<TSceneBaseLine> tmpList = v.stream().sorted(Comparator.comparing(TSceneBaseLine::getRpcId).reversed()).collect(Collectors.toList());
+                List<TSceneBaseLine> tmpList = v.stream().sorted(Comparator.comparing(TSceneBaseLine::getRpcId)).collect(Collectors.toList());
                 List<SceneBaseLineOutput.SceneBaseLineNode> nodeList = BeanCopyUtils.copyList(tmpList, SceneBaseLineOutput.SceneBaseLineNode.class);
                 baseLineOutput.setNodeList(nodeList);
                 baseLineOutputs.add(baseLineOutput);
@@ -1660,12 +1656,15 @@ public class SceneManageServiceImpl implements SceneManageService {
                     return;
                 }
                 List<TReportBaseLinkProblemOutput.BaseLineProblemNode> nodeList = BeanCopyUtils.copyList(v, TReportBaseLinkProblemOutput.BaseLineProblemNode.class);
-                TReportBaseLinkProblemOutput.BaseLineProblemNode root = nodeList.stream().filter(a -> a.getRpcId().equals("0")).findFirst().get();
+                TReportBaseLinkProblemOutput.BaseLineProblemNode root = nodeList.stream()
+                        .filter(a -> a.getRpcId().equals("0") || a.getRpcId().equals("0.1")).findFirst().orElse(null);
 
                 TReportBaseLinkProblemOutput output = new TReportBaseLinkProblemOutput();
-                output.setTraceSnapshot(root.getTraceSnapshot());
-                output.setActivityName(root.getActivityName());
-                output.setActivityId(root.getActivityId());
+                if (root != null) {
+                    output.setTraceSnapshot(root.getTraceSnapshot());
+                    output.setActivityName(root.getActivityName());
+                    output.setActivityId(root.getActivityId());
+                }
                 for (TReportBaseLinkProblemOutput.BaseLineProblemNode node : nodeList) {
                     if (node.getRpcId().equals("0")){
                         node.setTraceSnapshot(null);
@@ -1674,7 +1673,10 @@ public class SceneManageServiceImpl implements SceneManageService {
                     BigDecimal total = node.getRt().subtract(node.getBaseRt()).multiply(num);
                     node.setTotalOptimizableRt(total);
                 }
-                output.setBaseLineProblemNodes(nodeList);
+                List<TReportBaseLinkProblemOutput.BaseLineProblemNode> sortNodeList = nodeList.stream()
+                        .sorted(Comparator.comparing(TReportBaseLinkProblemOutput.BaseLineProblemNode::getTotalOptimizableRt).reversed())
+                        .collect(Collectors.toList());
+                output.setBaseLineProblemNodes(sortNodeList);
                 outputList.add(output);
             });
 

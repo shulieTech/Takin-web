@@ -1521,8 +1521,8 @@ public class SceneManageServiceImpl implements SceneManageService {
 
             Retryer<List<SceneBaseLineOutput>> retryer = RetryerBuilder.<List<SceneBaseLineOutput>>newBuilder()
                     .retryIfResult(coll -> CollectionUtils.isEmpty(coll))
-                    .withStopStrategy(StopStrategies.stopAfterAttempt(3))
-                    .withWaitStrategy(WaitStrategies.fixedWait(2000, TimeUnit.MILLISECONDS))
+                    .withStopStrategy(StopStrategies.stopAfterAttempt(5))
+                    .withWaitStrategy(WaitStrategies.fixedWait(8000, TimeUnit.MILLISECONDS))
                     .build();
 
             List<SceneBaseLineOutput> currentLineList = retryer.call(() -> getPerformanceLineResultList(currentLineQueryReq));

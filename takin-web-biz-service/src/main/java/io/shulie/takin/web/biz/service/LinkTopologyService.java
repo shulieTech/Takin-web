@@ -1426,11 +1426,13 @@ public class LinkTopologyService extends CommonService {
         return getCallInfo(nodeMap, excludeMqNodeWithEdge, appNodeMap);
     }
 
-    public List<AppCallInfo> getCallInfo(Map<String, LinkNodeDTO> nodeMap,
-                                         Map<String, List<LinkEdgeDTO>> excludeMqNodeWithEdge,
+    public List<AppCallInfo> getCallInfo(Map<String, LinkNodeDTO> nodeMap, Map<String, List<LinkEdgeDTO>> excludeMqNodeWithEdge,
                                          Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         return excludeMqNodeWithEdge.entrySet().stream().map(entry -> {
             LinkNodeDTO linkNodeDTO = nodeMap.get(entry.getKey());
+            if (Objects.isNull(linkNodeDTO)) {
+                return null;
+            }
             AppCallInfo appCallInfo = new AppCallInfo();
             NodeTypeResponseEnum type = StringUtils.isNotBlank(linkNodeDTO.getNodeTypeGroup())
                     ? NodeTypeResponseEnum.getTypeByAmdbType(linkNodeDTO.getNodeTypeGroup()) : NodeTypeResponseEnum.UNKNOWN;
@@ -1438,7 +1440,7 @@ public class LinkTopologyService extends CommonService {
             appCallInfo.setLabel(linkNodeDTO.getNodeType().toUpperCase());
             appCallInfo.setDataSource(convertCallTypeInfo(entry.getValue(), linkNodeDTO, nodeMap, appNodeMap));
             return appCallInfo;
-        }).collect(Collectors.toList());
+        }).filter(a -> Objects.nonNull(a)).collect(Collectors.toList());
     }
 
     private List<AppCallDatasourceInfo> convertCallTypeInfo(List<LinkEdgeDTO> edges,

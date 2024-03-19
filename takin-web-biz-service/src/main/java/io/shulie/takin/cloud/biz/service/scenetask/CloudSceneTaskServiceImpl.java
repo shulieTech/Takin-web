@@ -948,16 +948,16 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
                 return output;
             }
             String key = String.format(SceneStartCheckConstants.SCENE_KEY, sceneId);
-            Map<Object, Object> positionMap = redisTemplate.opsForHash().entries(key);
-            if (MapUtils.isEmpty(positionMap)) {
+            Map<Object, Object> cachePositionMap = redisTemplate.opsForHash().entries(key);
+
+            if (MapUtils.isEmpty(cachePositionMap)) {
                 cleanCachedPosition(sceneId);
                 output.setHasUnread(false);
-                output.setFileReadInfos(new ArrayList<>());
                 return output;
             }
 
             for (FileInfo info : fileInfoList) {
-                comparePosition(output, sceneId, info.getFileName(), input.getPodNum(), info.isSplit(), positionMap);
+                comparePosition(output, sceneId, info.getFileName(), input.getPodNum(), info.isSplit(), cachePositionMap);
                 if (!output.getHasUnread()) {
                     cleanCachedPosition(sceneId);
                     output.setFileReadInfos(new ArrayList<>());
@@ -998,14 +998,12 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
     }
 
     private void comparePosition(SceneTaskStartCheckOutput output, long sceneId, String fileName, int podNum,
-                                 boolean isSplit,
-                                 Map<Object, Object> positionMap) {
+                                 boolean isSplit, Map<Object, Object> cachePositionMap) {
         FileSliceRequest fileSliceRequest = new FileSliceRequest();
         fileSliceRequest.setSceneId(sceneId);
         fileSliceRequest.setFileName(fileName);
         SceneBigFileSliceEntity sliceEntity = fileSliceService.getOneByParam(fileSliceRequest);
-        if (Objects.isNull(sliceEntity) || sliceEntity.getSliceCount() != podNum || StringUtils.isBlank(
-                sliceEntity.getSliceInfo())) {
+        if (Objects.isNull(sliceEntity) || sliceEntity.getSliceCount() != podNum || StringUtils.isBlank(sliceEntity.getSliceInfo())) {
             output.setHasUnread(false);
             return;
         }
@@ -1029,7 +1027,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             long readSize = 0;
             for (int i = 0; i < podNum; i++) {
                 StartEndPair pair = startEndPairs.get(i);
-                Object o = positionMap.get(String.format(SceneStartCheckConstants.FILE_POD_FIELD_KEY, fileName, i + 1));
+                Object o = cachePositionMap.get(String.format(SceneStartCheckConstants.FILE_POD_FIELD_KEY, fileName, i + 1));
                 if (Objects.isNull(o)) {
                     output.setHasUnread(false);
                     return;
@@ -1050,17 +1048,13 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             fileReadInfos.add(info);
             output.setHasUnread(true);
             output.setFileReadInfos(fileReadInfos);
-        }
-        //文件不拆分，取所有pod中读的最多的提示
-        else {
+        } else {//文件不拆分，取所有pod中读的最多的提示
             FileReadInfo info = new FileReadInfo();
             info.setFileName(fileName);
             long readSize = 0;
-            for (Entry<Object, Object> entry : positionMap.entrySet()) {
-                if (!SceneStartCheckConstants.SCRIPT_ID_KEY.equals(entry.getKey().toString())
-                        && entry.getKey().toString().contains(fileName)) {
-                    SceneFileReadPosition readPosition = JSONUtil.toBean(entry.getValue().toString(),
-                            SceneFileReadPosition.class);
+            for (Entry<Object, Object> entry : cachePositionMap.entrySet()) {
+                if (!SceneStartCheckConstants.SCRIPT_ID_KEY.equals(entry.getKey().toString()) && entry.getKey().toString().contains(fileName)) {
+                    SceneFileReadPosition readPosition = JSONUtil.toBean(entry.getValue().toString(), SceneFileReadPosition.class);
                     if (readPosition.getReadPosition() > readSize) {
                         readSize = readPosition.getReadPosition();
                     }

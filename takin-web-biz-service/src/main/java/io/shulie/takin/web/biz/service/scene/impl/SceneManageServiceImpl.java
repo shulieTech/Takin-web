@@ -916,31 +916,28 @@ public class SceneManageServiceImpl implements SceneManageService {
         SceneStartPreCheckReq checkReq = new SceneStartPreCheckReq();
         checkReq.setSceneId(sceneId);
         ResponseResult<SceneStartCheckResp> result = sceneTaskApi.sceneStartPreCheck(checkReq);
-        if (result != null) {
-            if (!result.getSuccess()) {
-                ResponseResult.ErrorInfo error = result.getError();
-                if (error != null) {
-                    throw new TakinWebException(ExceptionCode.SCENE_CHECK_ERROR, "cloud查询位点返回错误！" + error.getMsg());
-                }
+        if (Objects.isNull(result)) {
+            return ResponseResult.success(list);
+        }
+        if (!result.getSuccess()) {
+            ResponseResult.ErrorInfo error = result.getError();
+            if (error != null) {
+                throw new TakinWebException(ExceptionCode.SCENE_CHECK_ERROR, "cloud查询位点返回错误！" + error.getMsg());
             }
-            if (result.getSuccess()) {
-                SceneStartCheckResp resultData = result.getData();
-                if (resultData != null) {
-                    //false = 没有csv文件或位点均为0
-                    //  Boolean hasUnread = resultData.getHasUnread();
-                    List<SceneStartCheckResp.FileReadInfo> infos = resultData.getFileReadInfos();
-                    if (Objects.nonNull(infos)) {
-                        infos.forEach(t -> {
-                            ScenePositionPointResponse response = new ScenePositionPointResponse();
-                            response.setScriptName(t.getFileName());
-                            response.setScriptSize(t.getFileSize());
-                            response.setPressedSize(t.getReadSize());
-                            list.add(response);
-                        });
-                    }
-                    // redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
-                }
-            }
+        }
+        SceneStartCheckResp resultData = result.getData();
+        if (Objects.isNull(resultData)) {
+            return ResponseResult.success(list);
+        }
+        List<SceneStartCheckResp.FileReadInfo> infos = resultData.getFileReadInfos();
+        if (Objects.nonNull(infos)) {
+            infos.forEach(t -> {
+                ScenePositionPointResponse response = new ScenePositionPointResponse();
+                response.setScriptName(t.getFileName());
+                response.setScriptSize(t.getFileSize());
+                response.setPressedSize(t.getReadSize());
+                list.add(response);
+            });
         }
         return ResponseResult.success(list);
     }

@@ -1431,10 +1431,10 @@ public class LinkTopologyService extends CommonService {
                                          Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         return excludeMqNodeWithEdge.entrySet().stream().map(entry -> {
             LinkNodeDTO linkNodeDTO = nodeMap.get(entry.getKey());
-            AppCallInfo appCallInfo
-                    = new AppCallInfo();
-            appCallInfo.setNodeType(NodeTypeResponseEnum
-                    .getTypeByAmdbType(linkNodeDTO.getNodeTypeGroup()));
+            AppCallInfo appCallInfo = new AppCallInfo();
+            NodeTypeResponseEnum type = StringUtils.isNotBlank(linkNodeDTO.getNodeTypeGroup())
+                    ? NodeTypeResponseEnum.getTypeByAmdbType(linkNodeDTO.getNodeTypeGroup()) : NodeTypeResponseEnum.UNKNOWN;
+            appCallInfo.setNodeType(type);
             appCallInfo.setLabel(linkNodeDTO.getNodeType().toUpperCase());
             appCallInfo.setDataSource(convertCallTypeInfo(entry.getValue(), linkNodeDTO, nodeMap, appNodeMap));
             return appCallInfo;

@@ -601,10 +601,11 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request) {
         ActivityResponse activity = getActivityById(request);
-
+        if (Objects.isNull(activity)) {
+            return null;
+        }
         // 非正常业务活动时，直接返回
-        if (!activity.getBusinessType().equals(
-                BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
+        if (!activity.getBusinessType().equals(BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
             return activity;
         }
 
@@ -628,24 +629,19 @@ public class ActivityServiceImpl implements ActivityService {
         //            allTotalCountStartDateTimeUseInInFluxDB = endTimeUseInInFluxDB.minusDays(1);
         LocalDateTime allTotalCountStartDateTimeUseInInFluxDB = startTimeUseInInFluxDB;
 
-        linkTopologyService.fillMetrics(
-                request,
-                activity.getTopology(),
-                startTimeUseInInFluxDB, endTimeUseInInFluxDB,
-                allTotalCountStartDateTimeUseInInFluxDB);
+        linkTopologyService.fillMetrics(request, activity.getTopology(), startTimeUseInInFluxDB, endTimeUseInInFluxDB, allTotalCountStartDateTimeUseInInFluxDB);
 
         return activity;
     }
 
     @Override
-    public ActivityResponse getActivityWithMetricsByIdForReport(Long activityId,
-                                                                LocalDateTime startDateTime,
-                                                                LocalDateTime endDateTime) {
-
+    public ActivityResponse getActivityWithMetricsByIdForReport(Long activityId, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         ActivityInfoQueryRequest activityInfoQueryRequest = new ActivityInfoQueryRequest();
         activityInfoQueryRequest.setActivityId(activityId);
         ActivityResponse activity = getActivityById(activityInfoQueryRequest);
-
+        if (Objects.isNull(activity)) {
+            return null;
+        }
         if (startDateTime == null || endDateTime == null) {
             return activity;
         }
@@ -653,19 +649,16 @@ public class ActivityServiceImpl implements ActivityService {
         ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
         request.setActivityId(activityId);
         request.setFlowTypeEnum(FlowTypeEnum.BLEND);
-
-        linkTopologyService.fillMetrics(
-                request,
-                activity.getTopology(),
-                startDateTime, endDateTime,
-                //默认不区分流量类型，按照混合流量查询
-                startDateTime);
-
+        //默认不区分流量类型，按照混合流量查询
+        linkTopologyService.fillMetrics(request, activity.getTopology(), startDateTime, endDateTime, startDateTime);
         return activity;
     }
 
     @Override
     public ActivityResponse getActivityById(ActivityInfoQueryRequest activityInfoQueryRequest) {
+        if (activityInfoQueryRequest.getActivityId() == 0 || activityInfoQueryRequest.getActivityId() == -1) {
+            return null;
+        }
         ActivityResult result = activityDAO.getActivityById(activityInfoQueryRequest.getActivityId());
         if (result == null) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,

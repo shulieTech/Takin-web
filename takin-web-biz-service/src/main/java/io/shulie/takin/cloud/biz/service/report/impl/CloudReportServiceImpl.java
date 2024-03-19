@@ -1786,7 +1786,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             resultMap.put("sa", new DataBean(statReport.getSa(), detail.getTargetSa()));
             resultMap.put("tps", new DataBean(statReport.getTps(), detail.getTargetTps()));
             resultMap.put("successRate", new DataBean(statReport.getSuccessRate(), detail.getTargetSuccessRate()));
-            resultMap.put("avgConcurrenceNum", statReport.getAvgConcurrenceNum().toString());
+            resultMap.put("avgConcurrenceNum", Optional.ofNullable(statReport.getAvgConcurrenceNum()).orElse(new BigDecimal(0)).toString());
             resultMap.put("totalRequest", statReport.getTotalRequest());
             resultMap.put("tempRequestCount", statReport.getTempRequestCount());
         } else {

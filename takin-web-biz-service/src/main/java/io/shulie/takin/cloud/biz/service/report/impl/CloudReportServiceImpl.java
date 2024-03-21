@@ -803,9 +803,9 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             this.sceneManageService.getBaseLineByReportIdAndInsert(reportId);
         });
 
-        baseLineProblemExecutorService.submit(() -> {
-            this.sceneManageService.getBaseLineProblemAndInsert(reportId);
-        });
+//        baseLineProblemExecutorService.submit(() -> {
+//            this.sceneManageService.getBaseLineProblemAndInsert(reportId);
+//        });
         return true;
     }
 

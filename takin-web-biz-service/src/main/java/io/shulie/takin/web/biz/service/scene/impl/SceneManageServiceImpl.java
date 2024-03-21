@@ -1545,6 +1545,9 @@ public class SceneManageServiceImpl implements SceneManageService {
                 Map<String, SceneBaseLineOutput.SceneBaseLineNode> baseMap = baseNodeList.stream().collect(Collectors.toMap(a -> a.getAppName() + a.getServiceName() + a.getMethodName(), value -> value, (k1, k2) -> k1));
                 List<SceneBaseLineOutput.SceneBaseLineNode> currentNodeList = currentLine.getNodeList();
                 for (SceneBaseLineOutput.SceneBaseLineNode currentSceneBaseLineNode : currentNodeList) {
+                    if (Objects.isNull(currentSceneBaseLineNode)) {
+                        continue;
+                    }
                     String key = currentSceneBaseLineNode.getAppName() + currentSceneBaseLineNode.getServiceName() + currentSceneBaseLineNode.getMethodName();
                     SceneBaseLineOutput.SceneBaseLineNode baseNode = baseMap.get(key);
                     String reason = getProblemReason(baseNode, currentSceneBaseLineNode);
@@ -1557,8 +1560,10 @@ public class SceneManageServiceImpl implements SceneManageService {
                     problem.setActivityName(currentLine.getActivityName());
                     problem.setReportId(currentLineQueryReq.getReportId());
                     problem.setSceneId(currentLineQueryReq.getSceneId());
-                    problem.setBaseRt(baseNode.getRt());
-                    problem.setBaseSuccessRate(baseNode.getSuccessRate());
+                    BigDecimal baseRt = Objects.isNull(baseNode) ? new BigDecimal(0) : baseNode.getRt();
+                    BigDecimal baseSuccessRate = Objects.isNull(baseNode) ? new BigDecimal(0) : baseNode.getSuccessRate();
+                    problem.setBaseRt(baseRt);
+                    problem.setBaseSuccessRate(baseSuccessRate);
                     problem.setRt(currentSceneBaseLineNode.getRt());
                     problem.setSuccessRate(currentSceneBaseLineNode.getSuccessRate());
                     problem.setServiceName(currentSceneBaseLineNode.getServiceName());
@@ -1610,7 +1615,12 @@ public class SceneManageServiceImpl implements SceneManageService {
                 baseLineOutput.setActivityId(k);
                 ActivityResult result = activityDAO.getActivityById(k);
                 baseLineOutput.setActivityName(result.getActivityName());
-                List<TSceneBaseLine> tmpList = v.stream().sorted(Comparator.comparing(TSceneBaseLine::getRpcId)).collect(Collectors.toList());
+                List<TSceneBaseLine> tmpList = v.stream().peek(a -> {
+                    BigDecimal successRate = Optional.ofNullable(a.getSuccessRate()).orElse(new BigDecimal(0));
+                    BigDecimal rt = Optional.ofNullable(a.getRt()).orElse(new BigDecimal(0));
+                    a.setSuccessRate(successRate);
+                    a.setRt(rt);
+                }).sorted(Comparator.comparing(TSceneBaseLine::getRpcId)).collect(Collectors.toList());
                 List<SceneBaseLineOutput.SceneBaseLineNode> nodeList = BeanCopyUtils.copyList(tmpList, SceneBaseLineOutput.SceneBaseLineNode.class);
                 baseLineOutput.setNodeList(nodeList);
                 baseLineOutputs.add(baseLineOutput);
@@ -1626,6 +1636,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         List<String> list = new ArrayList<>();
         if (Objects.isNull(baseNode)) {
             list.add(BaseLinkProblemReasonEnum.NONE_NODE.getReason());
+            return CollectionUtils.isEmpty(list) ? null : JSON.toJSONString(list);
         }
         if (baseNode.getSuccessRate().compareTo(currentSceneBaseLineNode.getSuccessRate()) > 0) {
             list.add(BaseLinkProblemReasonEnum.NODE_SUCCESS_RATE_LOW.getReason());
@@ -1659,7 +1670,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                 }
                 List<TReportBaseLinkProblemOutput.BaseLineProblemNode> nodeList = BeanCopyUtils.copyList(v, TReportBaseLinkProblemOutput.BaseLineProblemNode.class);
                 TReportBaseLinkProblemOutput.BaseLineProblemNode root = nodeList.stream()
-                        .filter(a -> a.getRpcId().equals("0") || a.getRpcId().equals("0.1")).findFirst().orElse(null);
+                        .filter(a -> Objects.nonNull(a)).findFirst().orElse(null);
 
                 TReportBaseLinkProblemOutput output = new TReportBaseLinkProblemOutput();
                 if (root != null) {
@@ -1690,9 +1701,8 @@ public class SceneManageServiceImpl implements SceneManageService {
     }
 
 
-
     @Override
-    public long countProblem(long reportId){
+    public long countProblem(long reportId) {
         LambdaQueryWrapper<TReportBaseLinkProblem> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(TReportBaseLinkProblem::getReportId, reportId);
         lambdaQueryWrapper.eq(TReportBaseLinkProblem::getIsDelete, 0);

@@ -1521,8 +1521,8 @@ public class SceneManageServiceImpl implements SceneManageService {
 
             Retryer<List<SceneBaseLineOutput>> retryer = RetryerBuilder.<List<SceneBaseLineOutput>>newBuilder()
                     .retryIfResult(coll -> CollectionUtils.isEmpty(coll))
-                    .withStopStrategy(StopStrategies.stopAfterAttempt(5))
-                    .withWaitStrategy(WaitStrategies.fixedWait(8000, TimeUnit.MILLISECONDS))
+                    .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                    .withWaitStrategy(WaitStrategies.fixedWait(2000, TimeUnit.MILLISECONDS))
                     .build();
 
             List<SceneBaseLineOutput> currentLineList = retryer.call(() -> getPerformanceLineResultList(currentLineQueryReq));
@@ -1639,6 +1639,11 @@ public class SceneManageServiceImpl implements SceneManageService {
     @Override
     public List<TReportBaseLinkProblemOutput> getReportProblemList(long reportId) {
         try {
+            //如果查询的时候发现没有数据，先去比较一下入库再去查询。
+            if (countProblem(reportId) == 0) {
+                getBaseLineProblemAndInsert(reportId);
+            }
+
             LambdaQueryWrapper<TReportBaseLinkProblem> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(TReportBaseLinkProblem::getReportId, reportId);
             lambdaQueryWrapper.eq(TReportBaseLinkProblem::getIsDelete, 0);
@@ -1663,7 +1668,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                     output.setActivityId(root.getActivityId());
                 }
                 for (TReportBaseLinkProblemOutput.BaseLineProblemNode node : nodeList) {
-                    if (node.getRpcId().equals("0")){
+                    if (node.getRpcId().equals("0")) {
                         node.setTraceSnapshot(null);
                     }
                     BigDecimal num = Optional.ofNullable(node.getTotalRequest()).orElse(new BigDecimal(0));

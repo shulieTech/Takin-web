@@ -1392,6 +1392,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             ReportEntity reportEntity = tReportMapper.selectOne(reportEntityLambdaQueryWrapper);
 
             if (Objects.isNull(reportEntity)) {
+                log.error("getBaseLineByReportIdAndInsert get reportEntity error params:{}", reportId);
                 return false;
             }
             //查询基线数据并入库
@@ -1689,11 +1690,14 @@ public class SceneManageServiceImpl implements SceneManageService {
                 List<TReportBaseLinkProblemOutput.BaseLineProblemNode> sortNodeList = nodeList.stream()
                         .sorted(Comparator.comparing(TReportBaseLinkProblemOutput.BaseLineProblemNode::getTotalOptimizableRt).reversed())
                         .collect(Collectors.toList());
+                BigDecimal maxRt = sortNodeList.stream().findFirst().map(node -> node.getTotalOptimizableRt())
+                        .orElse(BigDecimal.ZERO);
                 output.setBaseLineProblemNodes(sortNodeList);
+                output.setMaxOptimizableRt(maxRt);
                 outputList.add(output);
             });
 
-            return outputList;
+            return outputList.stream().sorted(Comparator.comparing(TReportBaseLinkProblemOutput::getMaxOptimizableRt).reversed()).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("getReportProblemList,error", e);
         }

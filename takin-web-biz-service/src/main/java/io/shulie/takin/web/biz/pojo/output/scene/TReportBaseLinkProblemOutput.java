@@ -18,6 +18,7 @@ public class TReportBaseLinkProblemOutput {
     private String activityName;
     private String traceSnapshot;
     private Integer totalRequest;
+    private BigDecimal maxOptimizableRt;
     private List<BaseLineProblemNode> baseLineProblemNodes;
 
     @Data

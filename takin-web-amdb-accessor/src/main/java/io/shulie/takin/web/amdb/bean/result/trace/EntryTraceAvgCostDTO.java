@@ -16,6 +16,7 @@ public class EntryTraceAvgCostDTO {
     private String appName;
     private String serviceName;
     private String methodName;
+    private String  middlewareName;
     private String rpcId;
     private Integer logType;
     private String rpcType;

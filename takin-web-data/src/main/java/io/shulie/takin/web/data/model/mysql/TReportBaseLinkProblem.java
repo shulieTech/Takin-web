@@ -69,6 +69,8 @@ public class TReportBaseLinkProblem implements Serializable {
      * 节点方法
      */
     private String methodName;
+
+    private String middlewareName;
     /**
      * 节点问题原因
      */
@@ -97,9 +99,16 @@ public class TReportBaseLinkProblem implements Serializable {
     private BigDecimal totalRequest;
 
     /**
+     * trace快照的id
+     */
+    private String traceId;
+
+    /**
      * trace快照
      */
     private String traceSnapshot;
+
+    private Integer samplingInterval;
 
     /**
      * 

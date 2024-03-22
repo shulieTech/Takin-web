@@ -43,6 +43,7 @@ public class SceneBaseLineInsertDto {
     private String appName;
     private String serviceName;
     private String methodName;
+    private String middlewareName;
     /**
      *
      */
@@ -75,10 +76,14 @@ public class SceneBaseLineInsertDto {
 
     private BigDecimal totalRequest;
 
+    private String traceId;
+
     /**
      * trace快照
      */
     private String traceSnapshot;
+
+    private Integer samplingInterval;
 
     /**
      *
@@ -132,6 +137,8 @@ public class SceneBaseLineInsertDto {
         base.setRt(dto.getAvgCost());
         base.setSuccessRate(dto.getSuccessRate());
         base.setTotalRequest(dto.getTotalCount());
+        base.setMiddlewareName(dto.getMiddlewareName());
+        base.setSamplingInterval(dto.getSamplingInterval());
         return base;
     }
 }

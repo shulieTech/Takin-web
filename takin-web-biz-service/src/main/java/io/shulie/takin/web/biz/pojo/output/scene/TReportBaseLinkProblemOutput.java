@@ -16,6 +16,7 @@ import java.util.List;
 public class TReportBaseLinkProblemOutput {
     private Long activityId;
     private String activityName;
+    private String traceId;
     private String traceSnapshot;
     private Integer totalRequest;
     private BigDecimal maxOptimizableRt;
@@ -74,6 +75,8 @@ public class TReportBaseLinkProblemOutput {
          * 节点方法
          */
         private String methodName;
+
+        private String middlewareName;
         /**
          * 节点问题原因
          */
@@ -106,6 +109,10 @@ public class TReportBaseLinkProblemOutput {
          * trace快照
          */
         private String traceSnapshot;
+
+        private String traceId;
+
+        private Integer samplingInterval;
     }
 
 }

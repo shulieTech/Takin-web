@@ -1308,6 +1308,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                 if (StringUtils.isNotBlank(entryTraceAvgCostRes.getTraceId())) {
                     List<ReportTraceDetailDTO> traceDetailDTOS = getTraceSnapShotList(entryTraceAvgCostRes.getTraceId());
                     dto.setTraceSnapshot(JSON.toJSONString(traceDetailDTOS));
+                    dto.setTraceId(entryTraceAvgCostRes.getTraceId());
                 }
                 return dto;
             }).collect(Collectors.toList());
@@ -1576,6 +1577,8 @@ public class SceneManageServiceImpl implements SceneManageService {
                     problem.setLineType(currentLineQueryReq.getLineTypeEnum());
                     problem.setTraceSnapshot(currentSceneBaseLineNode.getTraceSnapshot());
                     problem.setTotalRequest(currentSceneBaseLineNode.getTotalRequest());
+                    problem.setSamplingInterval(currentSceneBaseLineNode.getSamplingInterval());
+                    problem.setMiddlewareName(currentSceneBaseLineNode.getMiddlewareName());
                     list.add(problem);
                 }
             }
@@ -1659,6 +1662,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             LambdaQueryWrapper<TReportBaseLinkProblem> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(TReportBaseLinkProblem::getReportId, reportId);
             lambdaQueryWrapper.eq(TReportBaseLinkProblem::getIsDelete, 0);
+            lambdaQueryWrapper.orderByAsc(TReportBaseLinkProblem::getRpcId);
             List<TReportBaseLinkProblem> list = reportBaseLinkProblemService.list(lambdaQueryWrapper);
 
             Map<Long, List<TReportBaseLinkProblem>> activityMap = list.stream().collect(Collectors.groupingBy(TReportBaseLinkProblem::getActivityId));
@@ -1678,6 +1682,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                     output.setTraceSnapshot(root.getTraceSnapshot());
                     output.setActivityName(root.getActivityName());
                     output.setActivityId(root.getActivityId());
+                    output.setTraceId(root.getTraceId());
                 }
                 for (TReportBaseLinkProblemOutput.BaseLineProblemNode node : nodeList) {
                     if (node.getRpcId().equals("0")) {

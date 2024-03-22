@@ -17,6 +17,7 @@
         <result property="logType" column="log_type" jdbcType="INTEGER"/>
         <result property="appName" column="app_name" jdbcType="VARCHAR"/>
         <result property="methodName" column="method_name" jdbcType="VARCHAR"/>
+        <result property="middlewareName" column="middleware_name" jdbcType="VARCHAR"/>
         <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
         <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
         <result property="binRef" column="bin_ref" jdbcType="VARCHAR"/>
@@ -24,7 +25,9 @@
         <result property="tps" column="tps" jdbcType="DECIMAL"/>
         <result property="successRate" column="success_rate" jdbcType="DECIMAL"/>
         <result property="totalRequest" column="total_request" jdbcType="DECIMAL"/>
+        <result property="traceId" column="trace_id" jdbcType="VARCHAR"/>
         <result property="traceSnapshot" column="trace_snapshot" jdbcType="VARCHAR"/>
+        <result property="samplingInterval" column="sampling_interval" jdbcType="INTEGER"/>
         <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
         <result property="envCode" column="env_code" jdbcType="VARCHAR"/>
         <result property="tenantId" column="tenant_id" jdbcType="BIGINT"/>
@@ -35,9 +38,9 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-         id,activity_id,scene_id,report_id,line_type,rpc_id,rpc_type,log_type,
+         id,activity_id,scene_id,report_id,line_type,rpc_id,rpc_type,log_type,trace_id,
          start_time,end_time,bin_ref,service_name,app_name,method_name,total_request,
-         rt,tps,success_rate,
+         rt,tps,success_rate,middleware_name,sampling_interval,
          trace_snapshot,is_delete,env_code,
          tenant_id,create_time,create_name,
          update_time,update_name

@@ -33,6 +33,7 @@ public class SceneBaseLineOutput {
         private String serviceName;
         private String appName;
         private String methodName;
+        private String middlewareName;
         private String rpcType;
         private Date startTime;
         private Date endTime;
@@ -41,7 +42,9 @@ public class SceneBaseLineOutput {
         private BigDecimal tps;
         private BigDecimal successRate;
         private BigDecimal totalRequest;
+        private String traceId;
         private String traceSnapshot;
+        private Integer samplingInterval;
     }
 
 }

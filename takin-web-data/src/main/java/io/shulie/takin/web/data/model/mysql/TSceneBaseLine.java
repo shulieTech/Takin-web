@@ -38,6 +38,8 @@ public class TSceneBaseLine {
 
     private String methodName;
 
+    private String middlewareName;
+
     private Long sceneId;
 
     private Long reportId;
@@ -80,9 +82,16 @@ public class TSceneBaseLine {
     private BigDecimal totalRequest;
 
     /**
+     * trace快照的id
+     */
+    private String traceId;
+
+    /**
      * trace快照
      */
     private String traceSnapshot;
+
+    private Integer samplingInterval;
 
     /**
      *

@@ -16,6 +16,7 @@ public class EntryTraceAvgCostOutput {
     private String appName;
     private String serviceName;
     private String methodName;
+    private String middlewareName;
     private String rpcId;
     private Integer logType;
     private String rpcType;
@@ -24,4 +25,5 @@ public class EntryTraceAvgCostOutput {
     private BigDecimal successCount;
     private BigDecimal totalCount;
     private BigDecimal successRate;
+    private Integer samplingInterval;
 }

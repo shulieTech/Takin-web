@@ -194,4 +194,5 @@ public interface ReportService {
 
     void modifyLinkDiagrams(ReportLinkDiagramReq reportLinkDiagramReq, List<String> pathMd5List);
 
+    int deleteReportById(long reportId);
 }

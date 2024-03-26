@@ -469,4 +469,12 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
+
+    public int deleteReportById(long reportId) {
+        ReportEntity entity = new ReportEntity();
+        entity.setIsDeleted(1);
+        entity.setId(reportId);
+        return reportMapper.updateById(entity);
+    }
+
 }

@@ -1291,15 +1291,15 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             if (data == null) {
                 if (areAllTargetsZero(reportBusinessActivityDetail)) {
                     reportBusinessActivityDetail.setPassFlag(1);
-                    reportBusinessActivityDetail.setAvgConcurrenceNum(new BigDecimal(0));
-                    reportBusinessActivityDetail.setMaxRt(new BigDecimal(0));
-                    reportBusinessActivityDetail.setMaxTps(new BigDecimal(0));
-                    reportBusinessActivityDetail.setMinRt(new BigDecimal(0));
-                    reportBusinessActivityDetail.setTps(new BigDecimal(0));
-                    reportBusinessActivityDetail.setRt(new BigDecimal(0));
-                    reportBusinessActivityDetail.setSa(new BigDecimal(0));
-                    reportBusinessActivityDetail.setRequest(0L);
-                    reportBusinessActivityDetail.setSuccessRate(new BigDecimal(0));
+//                    reportBusinessActivityDetail.setAvgConcurrenceNum(new BigDecimal(0));
+//                    reportBusinessActivityDetail.setMaxRt(new BigDecimal(0));
+//                    reportBusinessActivityDetail.setMaxTps(new BigDecimal(0));
+//                    reportBusinessActivityDetail.setMinRt(new BigDecimal(0));
+//                    reportBusinessActivityDetail.setTps(new BigDecimal(0));
+//                    reportBusinessActivityDetail.setRt(new BigDecimal(0));
+//                    reportBusinessActivityDetail.setSa(new BigDecimal(0));
+//                    reportBusinessActivityDetail.setRequest(0L);
+//                    reportBusinessActivityDetail.setSuccessRate(new BigDecimal(0));
                     tReportBusinessActivityDetailMapper.updateByPrimaryKeySelective(reportBusinessActivityDetail);
                     continue;
                 }

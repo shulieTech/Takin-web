@@ -1689,7 +1689,8 @@ public class SceneManageServiceImpl implements SceneManageService {
                         node.setTraceSnapshot(null);
                     }
                     BigDecimal num = Optional.ofNullable(node.getTotalRequest()).orElse(new BigDecimal(0));
-                    BigDecimal total = node.getRt().subtract(node.getBaseRt()).multiply(num);
+                    int samplingInterval =  Optional.ofNullable(node.getSamplingInterval()).orElse(1);
+                    BigDecimal total = node.getRt().subtract(node.getBaseRt()).multiply(num).multiply(new BigDecimal(samplingInterval));
                     node.setTotalOptimizableRt(total);
                 }
                 List<TReportBaseLinkProblemOutput.BaseLineProblemNode> sortNodeList = nodeList.stream()

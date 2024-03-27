@@ -43,12 +43,24 @@ public class AppAccessStatusJob implements SimpleJob {
     @Autowired
     private DistributedLock distributedLock;
 
+    private String key = "app_access_status_job_key";
+
     @Override
     public void execute(ShardingContext shardingContext) {
         if (WebPluginUtils.isOpenVersion()) {
-            // 私有化 + 开源
-            applicationService.syncApplicationAccessStatus();
-            return;
+            if (distributedLock.checkLock(key)) {
+                return;
+            }
+            try {
+                boolean tryLock = distributedLock.tryLock(key, 0L, 9L, TimeUnit.SECONDS);
+                if (tryLock) {
+                    // 私有化 + 开源
+                    applicationService.syncApplicationAccessStatus();
+                    return;
+                }
+            } finally {
+                distributedLock.unLockSafely(key);
+            }
         }
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         for (TenantInfoExt ext : tenantInfoExts) {

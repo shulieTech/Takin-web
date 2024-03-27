@@ -1,37 +1,35 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.Map;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ThreadPoolExecutor;
-
-import javax.annotation.Resource;
-
-import lombok.extern.slf4j.Slf4j;
-import com.google.common.collect.Maps;
-import org.apache.commons.compress.utils.Lists;
-import org.springframework.util.AntPathMatcher;
 import cn.hutool.core.collection.CollStreamUtil;
-import org.springframework.stereotype.Component;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.transaction.annotation.Transactional;
-
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
-import io.shulie.takin.web.biz.service.DistributedLock;
+import com.google.common.collect.Maps;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
-import io.shulie.takin.web.common.enums.ContextSourceEnum;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
+import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
-import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
+import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
+import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.compress.utils.Lists;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.AntPathMatcher;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Z
@@ -59,12 +57,25 @@ public class AppRemoteApiFilterJob implements SimpleJob {
     @Resource
     private DistributedLock distributedLock;
 
+    String key = "app_remote_api_filter_job_key";
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void execute(ShardingContext shardingContext) {
         if (WebPluginUtils.isOpenVersion()) {
-            // 私有化 + 开源
-            this.appRemoteApiFilter();
+            if (distributedLock.checkLock(key)) {
+                return;
+            }
+            try {
+                boolean tryLock = distributedLock.tryLock(key, 0L, 1L, TimeUnit.MINUTES);
+                if (!tryLock) {
+                    return;
+                }
+                // 私有化 + 开源
+                this.appRemoteApiFilter();
+            } finally {
+                distributedLock.unLockSafely(key);
+            }
+
         } else {
             List<TenantInfoExt> tenantInfoExtList = WebPluginUtils.getTenantInfoList();
             for (TenantInfoExt ext : tenantInfoExtList) {

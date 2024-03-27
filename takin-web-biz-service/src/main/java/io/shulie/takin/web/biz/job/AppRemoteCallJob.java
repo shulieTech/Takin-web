@@ -1,11 +1,5 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
@@ -24,6 +18,11 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 无涯
@@ -51,15 +50,28 @@ public class AppRemoteCallJob implements SimpleJob {
     @Resource
     private DistributedLock distributedLock;
 
+    private String key = "app_remote_call_job_key";
+
     @Override
     public void execute(ShardingContext shardingContext) {
         if (fixData) {
             return;
         }
         if (WebPluginUtils.isOpenVersion()) {
-            // 私有化 + 开源
-            if (ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REMOTE_CALL_SYNC)) {
-                appRemoteCallService.syncAmdb();
+            if (distributedLock.checkLock(key)) {
+                return;
+            }
+            try {
+                boolean tryLock = distributedLock.tryLock(key, 0L, 1L, TimeUnit.MINUTES);
+                if (!tryLock) {
+                    return;
+                }
+                // 私有化 + 开源
+                if (ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REMOTE_CALL_SYNC)) {
+                    appRemoteCallService.syncAmdb();
+                }
+            } finally {
+                distributedLock.unLockSafely(key);
             }
         } else {
             List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();

@@ -240,8 +240,8 @@ public class ReportController {
 
     @PostMapping("/report/deleteReport")
     @ApiOperation("根据报告id删除报告")
-    public ResponseResult<Integer> deleteReport(@RequestBody Long reportId) {
-        return ResponseResult.success(reportService.deleteReportById(reportId));
+    public ResponseResult<Integer> deleteReport(@RequestBody ReportQueryParam request) {
+        return ResponseResult.success(reportService.deleteReportById(request.getReportId()));
     }
 
 }

@@ -1,11 +1,5 @@
 package io.shulie.takin.web.biz.job;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
@@ -22,6 +16,12 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 无涯
@@ -42,12 +42,25 @@ public class ConfigureJob implements SimpleJob {
     @Autowired
     private DistributedLock distributedLock;
 
+    private String key = "takin_config_job_key";
+
     @Override
     public void execute(ShardingContext shardingContext) {
 
         if (WebPluginUtils.isOpenVersion()) {
-            // 私有化 + 开源
-            applicationService.configureTasks();
+            if (distributedLock.checkLock(key)) {
+                return;
+            }
+            try {
+                boolean tryLock = distributedLock.tryLock(key, 0L, 10L, TimeUnit.SECONDS);
+                if (!tryLock) {
+                    return;
+                }
+                // 私有化 + 开源
+                applicationService.configureTasks();
+            } finally {
+                distributedLock.unLockSafely(key);
+            }
         } else {
             List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             List<CompletableFuture<Void>> futureList = new ArrayList<>(tenantInfoExts.size() << 1);

@@ -1,13 +1,16 @@
 package io.shulie.takin.web.biz.job;
 
-import javax.annotation.Resource;
-
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentReportService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Description agent心跳数据清理任务
@@ -20,9 +23,22 @@ import org.springframework.stereotype.Component;
 public class AgentHeartbeatClearJob implements SimpleJob {
     @Resource
     private AgentReportService agentReportService;
+    @Autowired
+    private DistributedLock distributedLock;
+    String key = "agent_heartbeat_clear_job_key";
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        agentReportService.clearExpiredData();
+        try {
+            if (distributedLock.checkLock(key)) {
+                return;
+            }
+            boolean isLock = distributedLock.tryLock(key, 0L, 5L, TimeUnit.MINUTES);
+            if (isLock){
+                agentReportService.clearExpiredData();
+            }
+        }finally {
+            distributedLock.unLockSafely(key);
+        }
     }
 }

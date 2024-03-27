@@ -1,13 +1,16 @@
 package io.shulie.takin.web.biz.job;
 
-import javax.annotation.Resource;
-
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 无涯
@@ -20,10 +23,25 @@ public class SceneSchedulerJob implements SimpleJob {
     @Resource
     private SceneSchedulerTaskService sceneSchedulerTaskService;
 
+    @Autowired
+    private DistributedLock distributedLock;
 
+    private String key ="takin_scene_scheduler_job_key";
     @Override
     public void execute(ShardingContext shardingContext) {
         // 查询所有
-        sceneSchedulerTaskService.executeSchedulerPressureTask();
+        if (distributedLock.checkLock(key)) {
+            return;
+        }
+        try {
+            boolean tryLock = distributedLock.tryLock(key, 0L, 30L, TimeUnit.SECONDS);
+            if (!tryLock) {
+                return;
+            }
+            // 私有化 + 开源
+            sceneSchedulerTaskService.executeSchedulerPressureTask();
+        } finally {
+            distributedLock.unLockSafely(key);
+        }
     }
 }

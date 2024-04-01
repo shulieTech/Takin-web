@@ -47,8 +47,10 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
          */
         skipPluginsMap.put("io.github.ningyu.jmeter.plugin.dubbo.sample.DubboSample", "dubbo");
         skipPluginsMap.put("io.shulie.jmeter.plugins.rabbit.RabbitPublisherSampler", "rabbitmq");
+        skipPluginsMap.put("io.shulie.jmeter.plugins.kafka.dataset.Sampler", "kafka-data_set");
+        skipPluginsMap.put("io.shulie.jmeter.plugins.kafka.dataset.DataSet", "kafka-data_set");
         skipPluginsMap.put("ShulieKafkaDataSetSampler", "kafka-data_set");
-        skipPluginsMap.put("io.shulie.jmeter.plugins.kafka.dataset.Sampler", "kafka");
+        skipPluginsMap.put("co.signal.kafkameter.KafkaProducerSampler", "kafka");
     }
 
     /**
@@ -108,7 +110,7 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
         //JAVA取样器 jar包
         if(nodeVO.getJavaRequestClass().size() > 0) {
             for(String javaRequestClass : nodeVO.getJavaRequestClass()) {
-                if(!findClassFromJar(javaRequestClass, jarList)) {
+                if(!findClassFromJar(javaRequestClass, jarList) && (skipPluginsMap.containsKey(javaRequestClass) && !pluginTypeList.contains(skipPluginsMap.get(javaRequestClass)))) {
                     errorList.add(String.format("jar包缺失@Java取样器:类%s找不到依赖包", javaRequestClass));
                 }
             }
@@ -116,7 +118,7 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
         //插件取样器
         if(nodeVO.getPluginRequestClass().size() > 0) {
             for(String pluginRequestClass : nodeVO.getPluginRequestClass()) {
-                if(!pluginTypeList.contains(skipPluginsMap.get(pluginRequestClass))) {
+                if(!pluginTypeList.contains(skipPluginsMap.get(pluginRequestClass)) && !findClassFromJar(pluginRequestClass, jarList)) {
                     errorList.add(String.format("插件包缺失:类%s找不到插件包", pluginRequestClass));
                 }
             }

@@ -50,4 +50,10 @@ public class SceneManage implements Serializable {
      * 租户
      */
     private Long tenantId;
+
+
+    private Integer lineTypeEnum;
+    private Date baseLineStartTime;
+    private Date baseLineEndTime;
+    private Long baseLineReportId;
 }

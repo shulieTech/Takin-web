@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import com.pamirs.takin.entity.domain.dto.report.ReportTraceDetailDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
@@ -24,6 +25,10 @@ import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
+import io.shulie.takin.web.biz.pojo.request.scene.BaseLineQueryReq;
+import io.shulie.takin.web.biz.pojo.request.scene.SceneBaseLineOutput;
+import io.shulie.takin.web.biz.pojo.request.scene.SceneBaseLineQueryDTO;
+import io.shulie.takin.web.biz.pojo.request.scene.TReportBaseLinkProblemOutput;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
@@ -390,5 +395,41 @@ public class SceneManageController {
     @GetMapping("/machine")
     public WebResponse<SceneMachineResponse> machineClusters(@RequestParam String id, @RequestParam Integer type) {
         return WebResponse.success(sceneManageService.machineClusters(id, type));
+    }
+
+    @ApiOperation("设置性能基线")
+    @PostMapping("/performanceLine/create")
+    public ResponseResult<Boolean> performanceLineCrate(@RequestBody BaseLineQueryReq baseLineQueryReq){
+        return ResponseResult.success(this.sceneManageService.performanceLineCreate(baseLineQueryReq));
+    }
+
+    @GetMapping("/getPerformanceLineResultList")
+    @ApiOperation("获取性能基线数据")
+    public ResponseResult<List<SceneBaseLineOutput>> getPerformanceLineResultList(@RequestParam("sceneId") long sceneId) {
+        return ResponseResult.success(sceneManageService.getPerformanceLineResultList(sceneId));
+    }
+
+    @ApiOperation("根据场景id获取报告list")
+    @GetMapping("/getReportListById")
+    public ResponseResult<List<Long>> getReportListById(@RequestParam("id") Long id) {
+        return ResponseResult.success(sceneManageService.getReportListById(id));
+    }
+
+    @ApiOperation("根据报告id获取流量明细快照")
+    @GetMapping("/getTraceSnapShot")
+    public ResponseResult<List<ReportTraceDetailDTO>> getTraceSnapShot(@RequestParam("reportId") long reportId){
+        return ResponseResult.success(this.sceneManageService.getTraceSnapShot(reportId));
+    }
+
+    @ApiOperation("根据报告id获取报告问题列表")
+    @GetMapping("/getReportProblemList")
+    public ResponseResult<List<TReportBaseLinkProblemOutput>> getReportProblemList(@RequestParam("reportId") long reportId){
+        return ResponseResult.success(this.sceneManageService.getReportProblemList(reportId));
+    }
+
+    @ApiOperation("根据场景id获取基线状态")
+    @GetMapping("/getSceneBaseLineConfig")
+    public ResponseResult<SceneBaseLineQueryDTO> getSceneBaseLineConfig(@RequestParam("sceneId") long sceneId){
+        return ResponseResult.success(this.sceneManageService.getSceneBaseLineConfig(sceneId));
     }
 }

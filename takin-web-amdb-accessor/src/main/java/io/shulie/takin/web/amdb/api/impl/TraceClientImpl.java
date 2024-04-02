@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.pamirs.pradar.log.parser.ProtocolParserFactory;
 import com.pamirs.pradar.log.parser.trace.RpcBased;
@@ -18,10 +19,8 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.DataCalibrationDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.trace.*;
+import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceAvgCostDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.common.constant.AppConstants;
@@ -64,6 +63,9 @@ public class TraceClientImpl implements TraceClient {
     private static final String ENTRY_TRACE_LOG_PATH = "/amdb/trace/getAllTraceList";
 
     private static final String DATA_CALIBRATION_PATH = "/amdb/trace/compensate";
+
+    private static final String QUERY_BASE_LINE_TRACE_PATH = "/amdb/trace/getStatisticsTraceList";
+
 
     @Autowired
     private AmdbClientProperties properties;
@@ -305,5 +307,18 @@ public class TraceClientImpl implements TraceClient {
         return AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST).param(dataCalibration)
             .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
             .eventName("压测报告数据校准").one(String.class).getData();
+    }
+
+    @Override
+    public List<EntryTraceAvgCostDTO> getStatisticsTraceList(List<TraceStatisticsQueryReq> traceStatisticsQueryReqList) {
+        String url = properties.getUrl().getAmdb() + QUERY_BASE_LINE_TRACE_PATH;
+        List<EntryTraceAvgCostDTO> traceMetrics = AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST)
+                .param(traceStatisticsQueryReqList)
+                .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
+                .eventName("应用趋势图查询").list(EntryTraceAvgCostDTO.class).getData();
+        if (CollectionUtils.isEmpty(traceMetrics)) {
+            return Lists.newArrayList();
+        }
+        return traceMetrics;
     }
 }

@@ -1411,14 +1411,18 @@ public class LinkTopologyService extends CommonService {
                                          Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         return excludeMqNodeWithEdge.entrySet().stream().map(entry -> {
             LinkNodeDTO linkNodeDTO = nodeMap.get(entry.getKey());
+            if (Objects.isNull(linkNodeDTO)) {
+                return null;
+            }
             AppCallInfo appCallInfo
                     = new AppCallInfo();
-            appCallInfo.setNodeType(NodeTypeResponseEnum
-                    .getTypeByAmdbType(linkNodeDTO.getNodeTypeGroup()));
+            NodeTypeResponseEnum type = StringUtils.isNotBlank(linkNodeDTO.getNodeTypeGroup())
+                    ? NodeTypeResponseEnum.getTypeByAmdbType(linkNodeDTO.getNodeTypeGroup()) : NodeTypeResponseEnum.UNKNOWN;
+            appCallInfo.setNodeType(type);
             appCallInfo.setLabel(linkNodeDTO.getNodeType().toUpperCase());
             appCallInfo.setDataSource(convertCallTypeInfo(entry.getValue(), linkNodeDTO, nodeMap, appNodeMap));
             return appCallInfo;
-        }).collect(Collectors.toList());
+        }).filter(o -> Objects.nonNull(o)).collect(Collectors.toList());
     }
 
     private List<AppCallDatasourceInfo> convertCallTypeInfo(List<LinkEdgeDTO> edges,
@@ -1851,6 +1855,9 @@ public class LinkTopologyService extends CommonService {
         }
         //if (EdgeTypeGroupEnum.MQ.name().equals(edge.getEagleTypeGroup())) {
         if ((MiddlewareType.TYPE_MQ + "").equals(edge.getRpcType())) {
+            if (Objects.isNull(nodeMap.get(edge.getSourceId())) || nodeMap.get(edge.getSourceId()).getNodeTypeGroup() == null) {
+                return "";
+            }
             // 消费者
             if (nodeMap.get(edge.getSourceId()).getNodeTypeGroup().equals(NodeTypeGroupEnum.MQ.getType())) {
                 return "Topic：" + edge.getService() + "，Group：" + edge.getMethod();

@@ -27,6 +27,7 @@ import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
 import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
@@ -65,6 +66,9 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Autowired
     private ReportRealTimeService reportRealTimeService;
 
+    @Resource
+    private SceneManageService sceneManageService;
+
     public static void main(String[] args) {
         String data1
                 = "{\"cpu\":[10,11,12],\"io\":[40,30,35],\"loading\":[75,55,70],\"memory\":[40,43,45],\"network\":[20,40,"
@@ -84,6 +88,8 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if (data == null) {
             return new ReportCountDTO();
         }
+        long interfaceNum = sceneManageService.countProblem(reportId);
+        data.setBottleneckInterfaceCount(Math.toIntExact(interfaceNum));
         return convert2ReportCountDTO(data);
     }
 

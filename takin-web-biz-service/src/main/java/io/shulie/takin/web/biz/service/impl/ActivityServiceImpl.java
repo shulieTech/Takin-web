@@ -618,7 +618,9 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request) {
         ActivityResponse activity = getActivityById(request);
-
+        if (Objects.isNull(activity)) {
+            return null;
+        }
         // 非正常业务活动时，直接返回
         if (!activity.getBusinessType().equals(
                 BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
@@ -662,7 +664,9 @@ public class ActivityServiceImpl implements ActivityService {
         ActivityInfoQueryRequest activityInfoQueryRequest = new ActivityInfoQueryRequest();
         activityInfoQueryRequest.setActivityId(activityId);
         ActivityResponse activity = getActivityById(activityInfoQueryRequest);
-
+        if (Objects.isNull(activity)) {
+            return null;
+        }
         if (startDateTime == null || endDateTime == null) {
             return activity;
         }
@@ -683,6 +687,9 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     public ActivityResponse getActivityById(ActivityInfoQueryRequest activityInfoQueryRequest) {
+        if (activityInfoQueryRequest.getActivityId() == 0 || activityInfoQueryRequest.getActivityId() == -1) {
+            return null;
+        }
         ActivityResult result = activityDAO.getActivityById(activityInfoQueryRequest.getActivityId());
         if (result == null) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
@@ -969,7 +976,9 @@ public class ActivityServiceImpl implements ActivityService {
         if (StringUtil.isNotEmpty(request.getApplicationName())) {
             queryParam.setApplicationName(request.getApplicationName());
         }
-
+        if (CollectionUtils.isNotEmpty(request.getActivityIds())){
+            queryParam.setActivityIds(request.getActivityIds());
+        }
         List<ActivityListResult> activityList = activityDAO.getActivityList(queryParam);
         return ActivityServiceConvert.INSTANCE.ofActivityList(activityList);
     }

@@ -3,16 +3,8 @@ package io.shulie.takin.cloud.biz.service.scene.impl;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -115,6 +107,8 @@ import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.utils.FileEncoder;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -378,22 +372,32 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         if (CollectionUtils.isEmpty(queryList)) {
             return new PageInfo<>(Lists.newArrayList());
         }
-        List<SceneManageListOutput> resultList = queryList.stream().map(t -> new SceneManageListOutput() {{
-            setStatus(t.getStatus());
-            setFeatures(t.getFeatures());
-            setId(t.getId());
-            setLastPtTime(DateUtil.formatDateTime(t.getLastPtTime()));
-            setSceneName(t.getSceneName());
-            setEstimateFlow(null);
-            setHasReport(false);
-            setThreadNum(null);
-            setType(t.getType());
-            setEnvCode(t.getEnvCode());
-            setTenantId(t.getTenantId());
-            setUserId(t.getUserId());
-            setUserName(null);
-            setScriptAnalysisResult(t.getScriptAnalysisResult());
-        }}).collect(Collectors.toList());
+        List<SceneManageListOutput> resultList = queryList.stream().map(t -> {
+            SceneManageListOutput sceneManageListOutput = new SceneManageListOutput();
+            sceneManageListOutput.setStatus(t.getStatus());
+            sceneManageListOutput.setFeatures(t.getFeatures());
+            sceneManageListOutput.setId(t.getId());
+            sceneManageListOutput.setLastPtTime(DateUtil.formatDateTime(t.getLastPtTime()));
+            sceneManageListOutput.setSceneName(t.getSceneName());
+            sceneManageListOutput.setEstimateFlow(null);
+            sceneManageListOutput.setHasReport(false);
+            sceneManageListOutput.setThreadNum(null);
+            sceneManageListOutput.setType(t.getType());
+            sceneManageListOutput.setEnvCode(t.getEnvCode());
+            sceneManageListOutput.setTenantId(t.getTenantId());
+            sceneManageListOutput.setUserId(t.getUserId());
+            sceneManageListOutput.setUserName(null);
+            sceneManageListOutput.setBaseLineStartTime(t.getBaseLineStartTime());
+            sceneManageListOutput.setBaseLineEndTime(t.getBaseLineEndTime());
+            sceneManageListOutput.setBaseReportId(t.getBaseLineReportId());
+            sceneManageListOutput.setLineType(t.getLineTypeEnum());
+            UserExt userExt = WebPluginUtils.getUserExtByUserId(t.getUserId());
+            if (Objects.nonNull(userExt)) {
+                sceneManageListOutput.setNickName(Optional.ofNullable(userExt.getNick()).orElse(""));
+            }
+            sceneManageListOutput.setScriptAnalysisResult(t.getScriptAnalysisResult());
+            return sceneManageListOutput;
+        }).collect(Collectors.toList());
         Map<Long, Integer> threadNum = new HashMap<>(1);
         for (SceneManageEntity sceneManage : queryList) {
             if (sceneManage.getPtConfig() == null) {

@@ -1,14 +1,13 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -19,15 +18,23 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.pamirs.takin.cloud.entity.dao.report.TReportMapper;
 import com.pamirs.takin.common.constant.SceneManageConstant;
 import com.pamirs.takin.common.constant.TimeUnitEnum;
 import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.ListHelper;
 import com.pamirs.takin.common.util.parse.UrlUtil;
+import com.pamirs.takin.entity.domain.dto.report.ReportTraceDetailDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
@@ -55,21 +62,33 @@ import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptCheckAndUpdat
 import io.shulie.takin.adapter.api.model.request.scenetask.SceneStartCheckResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageListResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
 import io.shulie.takin.adapter.api.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
 import io.shulie.takin.adapter.api.model.response.watchman.WatchmanNode;
+import io.shulie.takin.cloud.biz.service.scene.CloudSceneService;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
+import io.shulie.takin.cloud.data.mapper.mysql.ReportBusinessActivityDetailMapper;
+import io.shulie.takin.cloud.data.mapper.mysql.SceneManageMapper;
+import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
+import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
+import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
 import io.shulie.takin.cloud.ext.content.script.ScriptVerityExt.FileVerifyItem;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.amdb.api.TraceClient;
+import io.shulie.takin.web.amdb.bean.query.trace.TraceStatisticsQueryReq;
+import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceAvgCostDTO;
+import io.shulie.takin.web.biz.constant.BaseLinkProblemReasonEnum;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneListForSelectOutput;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
 import io.shulie.takin.web.biz.pojo.request.filemanage.ScriptAndActivityVerifyRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.ListSceneForSelectRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.ListSceneReportRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.*;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
+import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneMachineResponse.SceneMachineCluster;
@@ -80,8 +99,12 @@ import io.shulie.takin.web.biz.pojo.response.scenemanage.WatchmanClusterResponse
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
+import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.web.biz.service.scene.TReportBaseLinkProblemService;
+import io.shulie.takin.web.biz.service.scene.TSceneBaseLineService;
 import io.shulie.takin.web.biz.service.scenemanage.EngineClusterService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
@@ -98,14 +121,21 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
+import io.shulie.takin.web.common.util.BeanCopyUtils;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.common.InfluxDatabaseWriter;
 import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
+import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigSceneRelateShipMapper;
+import io.shulie.takin.web.data.mapper.mysql.TReportBaseLinkProblemMapper;
+import io.shulie.takin.web.data.mapper.mysql.TSceneBaseLineMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
+import io.shulie.takin.web.data.model.mysql.TReportBaseLinkProblem;
+import io.shulie.takin.web.data.model.mysql.TSceneBaseLine;
 import io.shulie.takin.web.data.param.CreateSceneExcludedApplicationParam;
+import io.shulie.takin.web.data.result.activity.ActivityResult;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
@@ -115,6 +145,7 @@ import io.shulie.takin.web.ext.entity.tenant.EngineType;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,6 +190,34 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     @Resource
     private EngineClusterService engineClusterService;
+
+    @Resource
+    private TSceneBaseLineMapper sceneBaseLineMapper;
+    @Resource
+    private TReportBaseLinkProblemMapper reportBaseLinkProblemMapper;
+
+    @Resource
+    private TReportBaseLinkProblemService reportBaseLinkProblemService;
+    @Resource
+    private SceneManageMapper sceneManageMapper;
+    @Resource
+    private ActivityDAO activityDAO;
+    @Resource
+    private CloudSceneService cloudSceneService;
+    @Resource
+    private ActivityService activityService;
+    @Resource
+    private TSceneBaseLineService baseLineService;
+    @Resource
+    private TraceClient traceClient;
+    @Resource
+    private ReportBusinessActivityDetailMapper detailMapper;
+    @Resource
+    private TReportMapper tReportMapper;
+
+    @Resource
+    private ReportRealTimeService reportRealTimeService;
+
 
     @Override
     public SceneDetailResponse getById(Long sceneId) {
@@ -1142,5 +1201,548 @@ public class SceneManageServiceImpl implements SceneManageService {
                 }
             }
         }
+    }
+
+    /**
+     * 获取性能基线指标列表
+     *
+     * @param sceneId
+     * @return
+     */
+    @Override
+    public List<SceneBaseLineOutput> getPerformanceLineResultList(long sceneId) {
+        try {
+            BaseLineQueryReq baseLineQueryReq = getBaseLineQueryReq(sceneId);
+            log.info("getPerformanceLineResultList param={}", JSON.toJSONString(baseLineQueryReq));
+            if (Objects.isNull(baseLineQueryReq)) {
+                return Collections.emptyList();
+            }
+            LambdaQueryWrapper<TSceneBaseLine> baseLineLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            baseLineLambdaQueryWrapper.eq(TSceneBaseLine::getSceneId, baseLineQueryReq.getSceneId());
+            if (baseLineQueryReq.getLineTypeEnum() == SceneBaseLineTypeEnum.REPORT.getType()) {
+                baseLineLambdaQueryWrapper.eq(TSceneBaseLine::getReportId, baseLineQueryReq.getReportId());
+            }
+
+            Timestamp start = new Timestamp(baseLineQueryReq.getBaseLineStartTime());
+            Timestamp end = new Timestamp(baseLineQueryReq.getBaseLineEndTime());
+
+            baseLineLambdaQueryWrapper.eq(TSceneBaseLine::getStartTime, start);
+            baseLineLambdaQueryWrapper.eq(TSceneBaseLine::getEndTime, end);
+            baseLineLambdaQueryWrapper.eq(TSceneBaseLine::getLineType, baseLineQueryReq.getLineTypeEnum());
+            List<TSceneBaseLine> sceneBaseLineList = sceneBaseLineMapper.selectList(baseLineLambdaQueryWrapper);
+
+            if (CollectionUtils.isEmpty(sceneBaseLineList)) {
+                return Collections.emptyList();
+            }
+
+            Map<Long, List<TSceneBaseLine>> baseActivityMap = sceneBaseLineList.stream().collect(Collectors.groupingBy(TSceneBaseLine::getActivityId));
+
+            List<SceneBaseLineOutput> baseLineOutputs = new ArrayList<>();
+
+            baseActivityMap.forEach((k, v) -> {
+                if (CollectionUtils.isEmpty(v)) {
+                    return;
+                }
+                SceneBaseLineOutput baseLineOutput = new SceneBaseLineOutput();
+                baseLineOutput.setActivityId(k);
+                ActivityResult result = activityDAO.getActivityById(k);
+                baseLineOutput.setActivityName(result.getActivityName());
+                List<TSceneBaseLine> tmpList = v.stream().sorted(Comparator.comparing(TSceneBaseLine::getRpcId)).collect(Collectors.toList());
+                List<SceneBaseLineOutput.SceneBaseLineNode> nodeList = BeanCopyUtils.copyList(tmpList, SceneBaseLineOutput.SceneBaseLineNode.class);
+                List<SceneBaseLineOutput.SceneBaseLineNode> sortNodeList = nodeList.stream().sorted(Comparator.comparing(SceneBaseLineOutput.SceneBaseLineNode::getRpcId)).collect(Collectors.toList());
+                baseLineOutput.setNodeList(sortNodeList);
+                baseLineOutputs.add(baseLineOutput);
+            });
+            return baseLineOutputs;
+        } catch (Exception e) {
+            log.error("getPerformanceLineResultList error", e);
+        }
+        return Collections.emptyList();
+    }
+
+    private BaseLineQueryReq getBaseLineQueryReq(long sceneId) {
+        try {
+            LambdaQueryWrapper<SceneManageEntity> entityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            entityLambdaQueryWrapper.eq(SceneManageEntity::getId, sceneId);
+            entityLambdaQueryWrapper.select(SceneManageEntity::getBaseLineReportId, SceneManageEntity::getBaseLineStartTime, SceneManageEntity::getBaseLineEndTime, SceneManageEntity::getLineTypeEnum, SceneManageEntity::getId);
+            SceneManageEntity sceneManageEntity = this.sceneManageMapper.selectOne(entityLambdaQueryWrapper);
+            if (Objects.isNull(sceneManageEntity)) {
+                return null;
+            }
+            return BaseLineQueryReq.genReqBySceneManageEntity(sceneManageEntity);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    /**
+     * 根据时间段获取基线数据并入库
+     *
+     * @param baseLineQueryReq
+     * @return
+     */
+    @Override
+    public boolean getBaseLineByTimeAndInsert(BaseLineQueryReq baseLineQueryReq) {
+        try {
+            //这边只能根据sceneId获取业务活动的列表
+            Map<String, SceneRequest.Content> contentMap = cloudSceneService.getContent(baseLineQueryReq.getSceneId());
+            if (MapUtils.isEmpty(contentMap)) {
+                return false;
+            }
+            List<SceneRequest.Content> contentList = new ArrayList<>(contentMap.values());
+            List<Long> activityIds = contentList.stream().filter(a -> a.getBusinessActivityId() > 0)
+                    .map(SceneRequest.Content::getBusinessActivityId).collect(Collectors.toList());
+            return getBaseLineAndInsert(activityIds, baseLineQueryReq);
+        } catch (Exception e) {
+            log.error("getBaseLineByTimeAndInsert error", e);
+        }
+        return false;
+    }
+
+    private boolean getBaseLineAndInsert(List<Long> activityIds, BaseLineQueryReq baseLineQueryReq) {
+        try {
+            if (CollectionUtils.isEmpty(activityIds)) {
+                throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "业务活动id不能为空");
+            }
+            if (baseLineQueryReq.getLineTypeEnum() == SceneBaseLineTypeEnum.TIME.getType()) {
+                LambdaQueryWrapper<TSceneBaseLine> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(TSceneBaseLine::getSceneId, baseLineQueryReq.getSceneId());
+                lambdaQueryWrapper.eq(TSceneBaseLine::getLineType, baseLineQueryReq.getLineTypeEnum());
+                lambdaQueryWrapper.eq(TSceneBaseLine::getStartTime, new Timestamp(baseLineQueryReq.getBaseLineStartTime()));
+                lambdaQueryWrapper.eq(TSceneBaseLine::getEndTime, new Timestamp(baseLineQueryReq.getBaseLineEndTime()));
+                this.sceneBaseLineMapper.delete(lambdaQueryWrapper);
+            }
+            List<ActivityResponse> responses = new ArrayList<>();
+            for (Long activityId : activityIds) {
+                ActivityResponse response = activityService.getActivityByIdWithoutTopology(activityId);
+                responses.add(response);
+            }
+            //去ck库获取基线数据
+            List<EntryTraceAvgCostOutput> avgCostDTOList = getStatisticsTraceList(responses, baseLineQueryReq.getBaseLineStartTime(), baseLineQueryReq.getBaseLineEndTime());
+            if (CollectionUtils.isEmpty(avgCostDTOList)) {
+                return false;
+            }
+
+            List<SceneBaseLineInsertDto> baseLineList = avgCostDTOList.stream().filter(a -> Objects.nonNull(a)).map(entryTraceAvgCostRes -> {
+                SceneBaseLineInsertDto dto = SceneBaseLineInsertDto.genOb(entryTraceAvgCostRes, baseLineQueryReq);
+                if (StringUtils.isNotBlank(entryTraceAvgCostRes.getTraceId())) {
+                    List<ReportTraceDetailDTO> traceDetailDTOS = getTraceSnapShotList(entryTraceAvgCostRes.getTraceId());
+                    dto.setTraceSnapshot(JSON.toJSONString(traceDetailDTOS));
+                    dto.setTraceId(entryTraceAvgCostRes.getTraceId());
+                }
+                return dto;
+            }).collect(Collectors.toList());
+
+            if (CollectionUtils.isEmpty(baseLineList)) {
+                return false;
+            }
+            List<TSceneBaseLine> baseLines = BeanCopyUtils.copyList(baseLineList, TSceneBaseLine.class);
+            return baseLineService.saveBatch(baseLines, 100);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    /**
+     * 查询ck库获取基线数据
+     *
+     * @param responses
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    private List<EntryTraceAvgCostOutput> getStatisticsTraceList(List<ActivityResponse> responses, long startTime, long endTime) {
+        try {
+            List<EntryTraceAvgCostOutput> traceStatisticsQueryReqList = new ArrayList<>();
+            for (ActivityResponse response : responses) {
+                TraceStatisticsQueryReq req = new TraceStatisticsQueryReq();
+                req.setServiceName(response.getServiceName());
+                req.setMethodName(response.getMethod());
+                req.setAppName(response.getApplicationName());
+                req.setStartTime(getTimeStr(startTime));
+                req.setEndTime(getTimeStr(endTime));
+                req.setTenantAppKey(WebPluginUtils.traceTenantCommonExt().getTenantAppKey());
+                req.setEnvCode(WebPluginUtils.traceTenantCommonExt().getEnvCode());
+                List<EntryTraceAvgCostDTO> tempList = traceClient.getStatisticsTraceList(Arrays.asList(req));
+                if (CollectionUtils.isEmpty(tempList)) {
+                    continue;
+                }
+                List<EntryTraceAvgCostOutput> list = BeanCopyUtils.copyList(tempList, EntryTraceAvgCostOutput.class);
+                for (EntryTraceAvgCostOutput avgCostRes : list) {
+                    avgCostRes.setActivityId(response.getActivityId());
+                }
+                traceStatisticsQueryReqList.addAll(list);
+            }
+            return traceStatisticsQueryReqList;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    private static String getTimeStr(long time) {
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return dateTime.format(formatter);
+    }
+
+    /**
+     * 根据报告id获取基线数据并入库
+     *
+     * @param reportId
+     * @return
+     */
+    @Override
+    public boolean getBaseLineByReportIdAndInsert(long reportId) {
+        try {
+            //获取所有的业务活动和对应的指标
+            LambdaQueryWrapper<ReportBusinessActivityDetailEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
+            lambdaQueryWrapper.eq(ReportBusinessActivityDetailEntity::getIsDeleted, 0);
+            List<ReportBusinessActivityDetailEntity> reportBusinessActivityDetailList = detailMapper.selectList(lambdaQueryWrapper);
+            if (CollectionUtils.isEmpty(reportBusinessActivityDetailList)) {
+                return false;
+            }
+            List<Long> activityIdList = reportBusinessActivityDetailList.stream()
+                    .filter(a -> a.getBusinessActivityId() > 0)
+                    .map(ReportBusinessActivityDetailEntity::getBusinessActivityId).collect(Collectors.toList());
+
+            LambdaQueryWrapper<ReportEntity> reportEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            reportEntityLambdaQueryWrapper.eq(ReportEntity::getId, reportId);
+            reportEntityLambdaQueryWrapper.eq(ReportEntity::getIsDeleted, 0);
+            reportEntityLambdaQueryWrapper.select(ReportEntity::getStartTime, ReportEntity::getEndTime, ReportEntity::getSceneId);
+            ReportEntity reportEntity = tReportMapper.selectOne(reportEntityLambdaQueryWrapper);
+
+            if (Objects.isNull(reportEntity)) {
+                log.error("getBaseLineByReportIdAndInsert get reportEntity error params:{}", reportId);
+                return false;
+            }
+            //查询基线数据并入库
+            BaseLineQueryReq req = new BaseLineQueryReq();
+            req.setReportId(reportId);
+            req.setSceneId(reportEntity.getSceneId());
+            req.setBaseLineStartTime(reportEntity.getStartTime().getTime());
+            req.setBaseLineEndTime(reportEntity.getEndTime().getTime());
+            req.setLineTypeEnum(SceneBaseLineTypeEnum.REPORT.getType());
+            return getBaseLineAndInsert(activityIdList, req);
+        } catch (Exception e) {
+            log.error("getBaseLineByReportIdAndInsert error", e);
+        }
+        return false;
+    }
+
+    /**
+     * 只用来设置自定义时间区间的性能基线,选择过去报告的性能基线的时候才去查询ck，报告基线压测结束自动生成。
+     *
+     * @param baseLineQueryReq
+     * @return
+     */
+    @Override
+    public boolean performanceLineCreate(BaseLineQueryReq baseLineQueryReq) {
+        //先设置压测场景
+        updateSceneManageBaseLineSet(baseLineQueryReq);
+        if (baseLineQueryReq.getLineTypeEnum() == SceneBaseLineTypeEnum.TIME.getType()) {
+            return getBaseLineByTimeAndInsert(baseLineQueryReq);
+        }
+        return true;
+    }
+
+    private int updateSceneManageBaseLineSet(BaseLineQueryReq baseLineQueryReq) {
+        Date start = null;
+        Date end = null;
+        try {
+            if (baseLineQueryReq.getLineTypeEnum() == 2) {
+                LambdaQueryWrapper<ReportEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(ReportEntity::getId, baseLineQueryReq.getReportId());
+                lambdaQueryWrapper.select(ReportEntity::getStartTime, ReportEntity::getEndTime);
+                ReportEntity reportEntity = this.tReportMapper.selectOne(lambdaQueryWrapper);
+                start = reportEntity.getStartTime();
+                end = reportEntity.getEndTime();
+            } else if (baseLineQueryReq.getLineTypeEnum() == 1) {
+                start = new Date(baseLineQueryReq.getBaseLineStartTime());
+                end = new Date(baseLineQueryReq.getBaseLineEndTime());
+            }
+            LambdaUpdateWrapper<SceneManageEntity> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            lambdaUpdateWrapper.eq(SceneManageEntity::getId, baseLineQueryReq.getSceneId());
+            lambdaUpdateWrapper.set(SceneManageEntity::getBaseLineReportId, baseLineQueryReq.getReportId());
+            lambdaUpdateWrapper.set(SceneManageEntity::getBaseLineStartTime, start);
+            lambdaUpdateWrapper.set(SceneManageEntity::getBaseLineEndTime, end);
+            lambdaUpdateWrapper.set(SceneManageEntity::getLineTypeEnum, baseLineQueryReq.getLineTypeEnum());
+            return this.sceneManageMapper.update(null, lambdaUpdateWrapper);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public List<Long> getReportListById(Long sceneId) {
+        try {
+            LambdaQueryWrapper<ReportEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(ReportEntity::getSceneId, sceneId);
+            lambdaQueryWrapper.eq(ReportEntity::getIsDeleted, 0);
+            lambdaQueryWrapper.select(ReportEntity::getId);
+            List<ReportEntity> reportEntityList = tReportMapper.selectList(lambdaQueryWrapper);
+            if (CollectionUtils.isEmpty(reportEntityList)) {
+                return Collections.emptyList();
+            }
+            return reportEntityList.stream().map(ReportEntity::getId).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("getReportListById error", e);
+        }
+        return Collections.emptyList();
+    }
+
+    private List<ReportTraceDetailDTO> getTraceSnapShotList(String traceId) {
+        ReportLinkDetailResponse response = reportRealTimeService.getLinkDetail(traceId, 0);
+        return response.getTraces();
+    }
+
+
+    public SceneBaseLineQueryDTO getSceneBaseLineConfig(long sceneId) {
+        LambdaQueryWrapper<SceneManageEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(SceneManageEntity::getId, sceneId);
+        lambdaQueryWrapper.select(SceneManageEntity::getId, SceneManageEntity::getBaseLineReportId, SceneManageEntity::getBaseLineStartTime, SceneManageEntity::getBaseLineEndTime, SceneManageEntity::getLineTypeEnum);
+        return SceneBaseLineQueryDTO.getInstance(this.sceneManageMapper.selectOne(lambdaQueryWrapper));
+    }
+
+    @Override
+    public List<ReportTraceDetailDTO> getTraceSnapShot(long reportId) {
+        try {
+            LambdaQueryWrapper<TReportBaseLinkProblem> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(TReportBaseLinkProblem::getReportId, reportId);
+            lambdaQueryWrapper.select(TReportBaseLinkProblem::getTraceSnapshot);
+            TReportBaseLinkProblem reportBaseLinkProblem = this.reportBaseLinkProblemMapper.selectOne(lambdaQueryWrapper);
+            if (Objects.isNull(reportBaseLinkProblem) || StringUtils.isBlank(reportBaseLinkProblem.getTraceSnapshot())) {
+                return Collections.emptyList();
+            }
+            return JSON.parseArray(reportBaseLinkProblem.getTraceSnapshot(), ReportTraceDetailDTO.class);
+        } catch (Exception e) {
+            log.error("getTraceSnapShot error", e);
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean getBaseLineProblemAndInsert(long reportId) {
+        try {
+            LambdaQueryWrapper<ReportEntity> reportEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            reportEntityLambdaQueryWrapper.eq(ReportEntity::getId, reportId);
+            reportEntityLambdaQueryWrapper.select(ReportEntity::getSceneId, ReportEntity::getStartTime, ReportEntity::getEndTime, ReportEntity::getId);
+            ReportEntity report = this.tReportMapper.selectOne(reportEntityLambdaQueryWrapper);
+            if (Objects.isNull(report)) {
+                log.info("getBaseLineProblemAndInsert report is null,params={}", reportId);
+                return false;
+            }
+
+            LambdaQueryWrapper<SceneManageEntity> sceneEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            sceneEntityLambdaQueryWrapper.eq(SceneManageEntity::getId, report.getSceneId());
+            sceneEntityLambdaQueryWrapper.select(SceneManageEntity::getLineTypeEnum, SceneManageEntity::getBaseLineReportId, SceneManageEntity::getBaseLineStartTime, SceneManageEntity::getBaseLineEndTime, SceneManageEntity::getId);
+            SceneManageEntity sceneManageEntity = this.sceneManageMapper.selectOne(sceneEntityLambdaQueryWrapper);
+            if (sceneManageEntity.getLineTypeEnum() == SceneBaseLineTypeEnum.NONE.getType()) {
+                log.info("getBaseLineProblemAndInsert scene ={}", JSON.toJSONString(sceneManageEntity));
+                return false;
+            }
+            //基线性能数据查询
+            BaseLineQueryReq baseLineQueryReq = BaseLineQueryReq.getBaseLineReq(sceneManageEntity);
+            List<SceneBaseLineOutput> baseLineList = getPerformanceLineResultList(baseLineQueryReq);
+            Map<Long, SceneBaseLineOutput> baseLineOutputMap = baseLineList.stream().collect(Collectors.toMap(SceneBaseLineOutput::getActivityId, value -> value, (k1, k2) -> k1));
+            //当前报告性能查询
+            BaseLineQueryReq currentLineQueryReq = BaseLineQueryReq.getCurrentLineReq(sceneManageEntity, report);
+
+            Retryer<List<SceneBaseLineOutput>> retryer = RetryerBuilder.<List<SceneBaseLineOutput>>newBuilder()
+                    .retryIfResult(coll -> CollectionUtils.isEmpty(coll))
+                    .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                    .withWaitStrategy(WaitStrategies.fixedWait(2000, TimeUnit.MILLISECONDS))
+                    .build();
+
+            List<SceneBaseLineOutput> currentLineList = retryer.call(() -> getPerformanceLineResultList(currentLineQueryReq));
+
+            if (CollectionUtils.isEmpty(baseLineList)) {
+                log.info("基线数据为空,params={}", JSON.toJSONString(baseLineQueryReq));
+                return false;
+            }
+
+            //比较数据放在这里
+            List<TReportBaseLinkProblem> list = new ArrayList<>();
+
+            for (SceneBaseLineOutput currentLine : currentLineList) {
+                SceneBaseLineOutput baseline = baseLineOutputMap.get(currentLine.getActivityId());
+                if (Objects.isNull(baseline)) {
+                    continue;
+                }
+                List<SceneBaseLineOutput.SceneBaseLineNode> baseNodeList = baseline.getNodeList();
+
+                Map<String, SceneBaseLineOutput.SceneBaseLineNode> baseMap = baseNodeList.stream().collect(Collectors.toMap(a -> a.getAppName() + a.getServiceName() + a.getMethodName(), value -> value, (k1, k2) -> k1));
+                List<SceneBaseLineOutput.SceneBaseLineNode> currentNodeList = currentLine.getNodeList();
+                for (SceneBaseLineOutput.SceneBaseLineNode currentSceneBaseLineNode : currentNodeList) {
+                    if (Objects.isNull(currentSceneBaseLineNode)) {
+                        continue;
+                    }
+                    String key = currentSceneBaseLineNode.getAppName() + currentSceneBaseLineNode.getServiceName() + currentSceneBaseLineNode.getMethodName();
+                    SceneBaseLineOutput.SceneBaseLineNode baseNode = baseMap.get(key);
+                    String reason = getProblemReason(baseNode, currentSceneBaseLineNode);
+                    if (StringUtils.isBlank(reason)) {
+                        continue;
+                    }
+                    TReportBaseLinkProblem problem = BeanCopyUtils.copyObject(currentSceneBaseLineNode, TReportBaseLinkProblem.class);
+                    problem.setReason(reason);
+                    problem.setActivityId(currentLine.getActivityId());
+                    problem.setActivityName(currentLine.getActivityName());
+                    problem.setReportId(currentLineQueryReq.getReportId());
+                    problem.setSceneId(currentLineQueryReq.getSceneId());
+                    BigDecimal baseRt = Objects.isNull(baseNode) ? new BigDecimal(0) : baseNode.getRt();
+                    BigDecimal baseSuccessRate = Objects.isNull(baseNode) ? new BigDecimal(0) : baseNode.getSuccessRate();
+                    problem.setBaseRt(baseRt);
+                    problem.setBaseSuccessRate(baseSuccessRate);
+                    problem.setRt(currentSceneBaseLineNode.getRt());
+                    problem.setSuccessRate(currentSceneBaseLineNode.getSuccessRate());
+                    problem.setServiceName(currentSceneBaseLineNode.getServiceName());
+                    problem.setMethodName(currentSceneBaseLineNode.getMethodName());
+                    problem.setAppName(currentSceneBaseLineNode.getAppName());
+                    problem.setRpcId(currentSceneBaseLineNode.getRpcId());
+                    problem.setRpcType(currentSceneBaseLineNode.getRpcType());
+                    problem.setLogType(currentSceneBaseLineNode.getLogType());
+                    problem.setLineType(currentLineQueryReq.getLineTypeEnum());
+                    problem.setTraceSnapshot(currentSceneBaseLineNode.getTraceSnapshot());
+                    problem.setTotalRequest(currentSceneBaseLineNode.getTotalRequest());
+                    problem.setSamplingInterval(currentSceneBaseLineNode.getSamplingInterval());
+                    problem.setMiddlewareName(currentSceneBaseLineNode.getMiddlewareName());
+                    list.add(problem);
+                }
+            }
+
+            if (CollectionUtils.isEmpty(list)) {
+                log.info("没有问题节点,params={}", JSON.toJSONString(currentLineQueryReq));
+                return false;
+            }
+            return this.reportBaseLinkProblemService.saveBatch(list, 100);
+        } catch (Exception e) {
+            log.error("getBaseLineProblemAndInsert error", e);
+        }
+        return false;
+    }
+
+
+    private List<SceneBaseLineOutput> getPerformanceLineResultList(BaseLineQueryReq baseLineQueryReq) {
+        try {
+            LambdaQueryWrapper<TSceneBaseLine> baseLineLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            baseLineLambdaQueryWrapper.eq(TSceneBaseLine::getSceneId, baseLineQueryReq.getSceneId());
+            baseLineLambdaQueryWrapper.eq(TSceneBaseLine::getIsDelete, 0);
+            baseLineLambdaQueryWrapper.eq(TSceneBaseLine::getStartTime, new Timestamp(baseLineQueryReq.getBaseLineStartTime()));
+            baseLineLambdaQueryWrapper.eq(TSceneBaseLine::getEndTime, new Timestamp(baseLineQueryReq.getBaseLineEndTime()));
+            if (Objects.nonNull(baseLineQueryReq.getReportId())) {
+                baseLineLambdaQueryWrapper.eq(TSceneBaseLine::getReportId, baseLineQueryReq.getReportId());
+            }
+            List<TSceneBaseLine> sceneBaseLineList = sceneBaseLineMapper.selectList(baseLineLambdaQueryWrapper);
+
+            Map<Long, List<TSceneBaseLine>> baseActivityMap = sceneBaseLineList.stream().collect(Collectors.groupingBy(TSceneBaseLine::getActivityId));
+
+            List<SceneBaseLineOutput> baseLineOutputs = new ArrayList<>();
+
+            baseActivityMap.forEach((k, v) -> {
+                if (CollectionUtils.isEmpty(v)) {
+                    return;
+                }
+                SceneBaseLineOutput baseLineOutput = new SceneBaseLineOutput();
+                baseLineOutput.setActivityId(k);
+                ActivityResult result = activityDAO.getActivityById(k);
+                baseLineOutput.setActivityName(result.getActivityName());
+                List<TSceneBaseLine> tmpList = v.stream().peek(a -> {
+                    BigDecimal successRate = Optional.ofNullable(a.getSuccessRate()).orElse(new BigDecimal(0));
+                    BigDecimal rt = Optional.ofNullable(a.getRt()).orElse(new BigDecimal(0));
+                    a.setSuccessRate(successRate);
+                    a.setRt(rt);
+                }).sorted(Comparator.comparing(TSceneBaseLine::getRpcId)).collect(Collectors.toList());
+                List<SceneBaseLineOutput.SceneBaseLineNode> nodeList = BeanCopyUtils.copyList(tmpList, SceneBaseLineOutput.SceneBaseLineNode.class);
+                baseLineOutput.setNodeList(nodeList);
+                baseLineOutputs.add(baseLineOutput);
+            });
+            return baseLineOutputs;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+
+    private static String getProblemReason(SceneBaseLineOutput.SceneBaseLineNode baseNode, SceneBaseLineOutput.SceneBaseLineNode currentSceneBaseLineNode) {
+        List<String> list = new ArrayList<>();
+        if (Objects.isNull(baseNode)) {
+            list.add(BaseLinkProblemReasonEnum.NONE_NODE.getReason());
+            return CollectionUtils.isEmpty(list) ? null : JSON.toJSONString(list);
+        }
+        if (baseNode.getSuccessRate().compareTo(currentSceneBaseLineNode.getSuccessRate()) > 0) {
+            list.add(BaseLinkProblemReasonEnum.NODE_SUCCESS_RATE_LOW.getReason());
+        }
+        if (baseNode.getRt().compareTo(currentSceneBaseLineNode.getRt()) < 0) {
+            list.add(BaseLinkProblemReasonEnum.NODE_RT_HIGH.getReason());
+        }
+        return CollectionUtils.isEmpty(list) ? null : JSON.toJSONString(list);
+    }
+
+    @Override
+    public List<TReportBaseLinkProblemOutput> getReportProblemList(long reportId) {
+        try {
+            //如果查询的时候发现没有数据，先去比较一下入库再去查询。
+            if (countProblem(reportId) == 0) {
+                getBaseLineProblemAndInsert(reportId);
+            }
+
+            LambdaQueryWrapper<TReportBaseLinkProblem> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(TReportBaseLinkProblem::getReportId, reportId);
+            lambdaQueryWrapper.eq(TReportBaseLinkProblem::getIsDelete, 0);
+            lambdaQueryWrapper.orderByAsc(TReportBaseLinkProblem::getRpcId);
+            List<TReportBaseLinkProblem> list = reportBaseLinkProblemService.list(lambdaQueryWrapper);
+
+            Map<Long, List<TReportBaseLinkProblem>> activityMap = list.stream().collect(Collectors.groupingBy(TReportBaseLinkProblem::getActivityId));
+
+            List<TReportBaseLinkProblemOutput> outputList = new ArrayList<>();
+
+            activityMap.forEach((k, v) -> {
+                if (CollectionUtils.isEmpty(v)) {
+                    return;
+                }
+                List<TReportBaseLinkProblemOutput.BaseLineProblemNode> nodeList = BeanCopyUtils.copyList(v, TReportBaseLinkProblemOutput.BaseLineProblemNode.class);
+                TReportBaseLinkProblemOutput.BaseLineProblemNode root = nodeList.stream()
+                        .filter(a -> Objects.nonNull(a)).findFirst().orElse(null);
+
+                TReportBaseLinkProblemOutput output = new TReportBaseLinkProblemOutput();
+                if (root != null) {
+                    output.setTraceSnapshot(root.getTraceSnapshot());
+                    output.setActivityName(root.getActivityName());
+                    output.setActivityId(root.getActivityId());
+                    output.setTraceId(root.getTraceId());
+                }
+                for (TReportBaseLinkProblemOutput.BaseLineProblemNode node : nodeList) {
+                    if (node.getRpcId().equals("0")) {
+                        node.setTraceSnapshot(null);
+                    }
+                    BigDecimal num = Optional.ofNullable(node.getTotalRequest()).orElse(new BigDecimal(0));
+                    int samplingInterval =  Optional.ofNullable(node.getSamplingInterval()).orElse(1);
+                    BigDecimal total = node.getRt().subtract(node.getBaseRt()).multiply(num).multiply(new BigDecimal(samplingInterval));
+                    node.setTotalOptimizableRt(total);
+                }
+                List<TReportBaseLinkProblemOutput.BaseLineProblemNode> sortNodeList = nodeList.stream()
+                        .sorted(Comparator.comparing(TReportBaseLinkProblemOutput.BaseLineProblemNode::getTotalOptimizableRt).reversed())
+                        .collect(Collectors.toList());
+                BigDecimal maxRt = sortNodeList.stream().findFirst().map(node -> node.getTotalOptimizableRt())
+                        .orElse(BigDecimal.ZERO);
+                output.setBaseLineProblemNodes(sortNodeList);
+                output.setMaxOptimizableRt(maxRt);
+                outputList.add(output);
+            });
+
+            return outputList.stream().sorted(Comparator.comparing(TReportBaseLinkProblemOutput::getMaxOptimizableRt).reversed()).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("getReportProblemList,error", e);
+        }
+        return Collections.emptyList();
+    }
+
+
+    @Override
+    public long countProblem(long reportId) {
+        LambdaQueryWrapper<TReportBaseLinkProblem> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(TReportBaseLinkProblem::getReportId, reportId);
+        lambdaQueryWrapper.eq(TReportBaseLinkProblem::getIsDelete, 0);
+        return reportBaseLinkProblemService.count(lambdaQueryWrapper);
     }
 }

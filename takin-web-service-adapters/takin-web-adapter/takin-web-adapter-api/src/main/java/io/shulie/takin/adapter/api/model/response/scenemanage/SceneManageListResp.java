@@ -1,6 +1,7 @@
 package io.shulie.takin.adapter.api.model.response.scenemanage;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.swagger.annotations.ApiModel;
@@ -43,5 +44,16 @@ public class SceneManageListResp extends ContextExt {
 
     @ApiModelProperty(value = "是否存在脚本解析结果")
     private Boolean hasAnalysisResult;
+
+
+    @ApiModelProperty("基线报告id")
+    private Long baseReportId;
+    @ApiModelProperty("基线开始时间")
+    private Date BaseLineStartTime;
+    @ApiModelProperty("基线结束时间")
+    private Date BaseLineEndTime;
+    @ApiModelProperty("基线类型0：没有基线；1：基于时间区间；2：基于报告")
+    private int lineType;
+
 
 }

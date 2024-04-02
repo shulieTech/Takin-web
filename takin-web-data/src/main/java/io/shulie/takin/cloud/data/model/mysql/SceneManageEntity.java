@@ -122,6 +122,15 @@ public class SceneManageEntity {
     @TableField(value = "is_archive")
     private Integer isArchive;
 
+    @TableField(value = "performance_line_type")
+    private Integer lineTypeEnum;
+    @TableField(value = "base_start_time")
+    private Date baseLineStartTime;
+    @TableField(value = "base_end_time")
+    private Date baseLineEndTime;
+    @TableField(value = "base_line_report_id")
+    private Long baseLineReportId;
+
 
 }
 

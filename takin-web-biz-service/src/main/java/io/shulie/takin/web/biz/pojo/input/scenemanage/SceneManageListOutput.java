@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.pojo.input.scenemanage;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
@@ -52,5 +53,14 @@ public class SceneManageListOutput extends AuthQueryResponseCommonExt {
 
     @ApiModelProperty(value = "单接口压测主键")
     private Long configId;
+
+    @ApiModelProperty("基线报告id")
+    private Long baseReportId;
+    @ApiModelProperty("基线开始时间")
+    private Date BaseLineStartTime;
+    @ApiModelProperty("基线结束时间")
+    private Date BaseLineEndTime;
+    @ApiModelProperty("基线类型0：没有基线；1：基于时间区间；2：基于报告")
+    private int lineType;
 
 }

@@ -19,10 +19,14 @@
         <result column="update_name" property="updateName" jdbcType="VARCHAR"/>
         <result column="pt_config" property="ptConfig" jdbcType="LONGVARCHAR"/>
         <result column="script_analysis_result" property="scriptAnalysisResult" jdbcType="VARCHAR"/>
+        <result column="performance_line_type" property="lineTypeEnum" jdbcType="TINYINT"/>
+        <result column="base_start_time" property="baseLineStartTime" jdbcType="TIMESTAMP"/>
+        <result column="base_end_time" property="baseLineEndTime" jdbcType="TIMESTAMP"/>
+        <result column="base_line_report_id" property="baseLineReportId" jdbcType="BIGINT"/>
     </resultMap>
     <sql id="Base_Column_List">
         `id`, customer_id, scene_name, status, `type`,last_pt_time, script_type, is_deleted, create_time,features, create_name,
-        update_time, update_name, pt_config, dept_id, user_id, script_analysis_result
+        update_time, update_name, pt_config, dept_id, user_id, script_analysis_result,`base_start_time`,`base_end_time`,`base_line_report_id`, `type`,`performance_line_type`
     </sql>
     <select id="selectAllSceneManageList" resultMap="BaseResultMap">
         select

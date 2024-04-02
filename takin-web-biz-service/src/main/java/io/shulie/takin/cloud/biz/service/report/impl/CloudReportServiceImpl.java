@@ -94,6 +94,7 @@ import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import jodd.util.Bits;
 import lombok.extern.slf4j.Slf4j;
@@ -113,6 +114,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -165,6 +168,15 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     private String pressureEngineLogPath;
 
     public static final String COMPARE = "<=";
+
+
+    ExecutorService baseLineExecutorService  = Executors.newFixedThreadPool(2);
+
+    ExecutorService baseLineProblemExecutorService  = Executors.newFixedThreadPool(2);
+
+
+    @Resource
+    private SceneManageService sceneManageService;
 
     @Override
     public PageInfo<CloudReportDTO> listReport(ReportQueryReq param) {
@@ -712,6 +724,12 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         reportDao.finishReport(reportId);
         doneReport(reportResult);
         pressureEnd(reportResult);
+
+        //报告结束的时候讲当前报告的结果作为基线写入基线表
+        baseLineExecutorService.submit(() -> {
+            this.sceneManageService.getBaseLineByReportIdAndInsert(reportId);
+        });
+
         log.info("报告{} finish done", reportId);
 
         return true;
@@ -1197,6 +1215,11 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             StatReportDTO data = statReport(jobId, sceneId, reportId, tenantId,
                     reportBusinessActivityDetail.getBindRef());
             if (data == null) {
+                if (areAllTargetsZero(reportBusinessActivityDetail)) {
+                    reportBusinessActivityDetail.setPassFlag(1);
+                    tReportBusinessActivityDetailMapper.updateByPrimaryKeySelective(reportBusinessActivityDetail);
+                    continue;
+                }
                 //如果有一个业务活动没有找到对应的数据，则认为压测不通过
                 totalPassFlag = false;
                 log.warn("没有找到匹配的压测数据：场景ID[{}],报告ID:[{}],业务活动:[{}]", sceneId, reportId,
@@ -1228,6 +1251,14 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             }
         }
         return totalPassFlag;
+    }
+
+    // 检查目标值是否全部为0
+    private static boolean areAllTargetsZero(ReportBusinessActivityDetail detail) {
+        return detail.getTargetSuccessRate().compareTo(BigDecimal.ZERO) <= 0
+                && detail.getTargetSa().compareTo(BigDecimal.ZERO) <= 0
+                && detail.getTargetRt().compareTo(BigDecimal.ZERO) <= 0
+                && detail.getTargetTps().compareTo(BigDecimal.ZERO) <= 0;
     }
 
     @Override
@@ -1467,7 +1498,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             resultMap.put("sa", new DataBean(statReport.getSa(), detail.getTargetSa()));
             resultMap.put("tps", new DataBean(statReport.getTps(), detail.getTargetTps()));
             resultMap.put("successRate", new DataBean(statReport.getSuccessRate(), detail.getTargetSuccessRate()));
-            resultMap.put("avgConcurrenceNum", statReport.getAvgConcurrenceNum().toString());
+            resultMap.put("avgConcurrenceNum", Optional.ofNullable(statReport.getAvgConcurrenceNum()).orElse(new BigDecimal(0)).toString());
             resultMap.put("totalRequest", statReport.getTotalRequest());
             resultMap.put("tempRequestCount", statReport.getTempRequestCount());
         } else {

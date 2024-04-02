@@ -13,6 +13,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.AgentConfigClient;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.query.fastagentaccess.AgentConfigQueryDTO;
+import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -57,12 +59,10 @@ public class AgentConfigClientImpl implements AgentConfigClient {
 
         try {
             //添加请求头参数
-            String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)));
-            if (StringUtils.isEmpty(responseEntity)) {
-                return null;
-            }
-            AmdbResult<AgentStatInfoDTO> amdbResponse = JSONUtil.toBean(responseEntity,
-                new cn.hutool.core.lang.TypeReference<AmdbResult<AgentStatInfoDTO>>() {}, true);
+            AmdbResult<AgentStatInfoDTO> amdbResponse = AmdbHelper.builder().url(url).param(queryDTO).httpMethod(HttpMethod.POST)
+                    .eventName("查询Trace调用栈明细")
+                    .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
+                    .one(AgentStatInfoDTO.class);
             if (amdbResponse == null || !amdbResponse.getSuccess()) {
                 log.error("前往amdb查询配置状态统计返回异常,响应信息：{}", JSONUtil.toJsonStr(amdbResponse));
                 return null;
@@ -84,12 +84,11 @@ public class AgentConfigClientImpl implements AgentConfigClient {
             //设置租户表示和环境编码
             queryDTO.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             queryDTO.setEnvCode(WebPluginUtils.traceEnvCode());
-            String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)));
-            if (StringUtils.isEmpty(responseEntity)) {
-                return PagingList.empty();
-            }
-            AmdbResult<List<AgentConfigDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
-                new cn.hutool.core.lang.TypeReference<AmdbResult<List<AgentConfigDTO>>>() {}, true);
+
+            AmdbResult<List<AgentConfigDTO>> amdbResponse = AmdbHelper.builder().url(url).param(queryDTO).httpMethod(HttpMethod.POST)
+                    .eventName("查询Trace调用栈明细")
+                    .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
+                    .list(AgentConfigDTO.class);
             if (amdbResponse == null || !amdbResponse.getSuccess()) {
                 log.error("前往amdb查询配置生效列表返回异常,响应信息：{}", JSONUtil.toJsonStr(amdbResponse));
                 return PagingList.empty();

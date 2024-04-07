@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.utils;
 
-import java.io.File;
 import java.util.jar.JarFile;
 
 public class JarUtils {

@@ -40,6 +40,8 @@ public interface ReportService {
      */
     ReportDetailOutput getReportByReportId(Long reportId);
 
+    ReportDetailOutput getSimpleReportByReportId(Long reportId);
+
     /**
      * 查询报告趋势
      *

@@ -218,39 +218,6 @@ public class TraceClientImpl implements TraceClient {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
         }
     }
-
-    @Override
-    public List<TraceMockDTO> listTraceMock(TraceMockQueryDTO query) {
-        String url = properties.getUrl().getAmdb() + TRACE_MOCK_DATA_PATH;
-        try {
-            AmdbResult<List<TraceMockDTO>> response = AmdbHelper.builder().url(url)
-                    .httpMethod(HttpMethod.GET)
-                    .param(query)
-                    .exception(TakinWebExceptionEnum.APPLICATION_TRACE_MOCK_ERROR)
-                    .eventName("查询trace-mock列表")
-                    .list(TraceMockDTO.class);
-            return response.getData();
-        } catch (Exception e) {
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
-        }
-    }
-
-    @Override
-    public Boolean existTraceMock(TraceMockQueryDTO query) {
-        String url = properties.getUrl().getAmdb() + TRACE_MOCK_EXIST_DATA_PATH;
-        try {
-            AmdbResult<List<TraceMockDTO>> response = AmdbHelper.builder().url(url)
-                    .httpMethod(HttpMethod.GET)
-                    .param(query)
-                    .exception(TakinWebExceptionEnum.APPLICATION_TRACE_MOCK_ERROR)
-                    .eventName("查询trace-mock-exist列表")
-                    .list(TraceMockDTO.class);
-            return CollectionUtils.isNotEmpty(response.getData());
-        } catch (Exception e) {
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
-        }
-    }
-
     /**
      * entryList 转换一下
      *

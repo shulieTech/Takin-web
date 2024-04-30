@@ -136,6 +136,17 @@ public class ReportServiceImpl implements ReportService {
 
     }
 
+    @Override
+    public ReportDetailOutput getSimpleReportByReportId(Long reportId) {
+        ReportDetailByIdReq idReq = new ReportDetailByIdReq();
+        idReq.setReportId(reportId);
+        ReportDetailResp resp = reportApi.getSimpleReportByReportId(idReq);
+        if(resp != null) {
+            return BeanUtil.copyProperties(resp, ReportDetailOutput.class);
+        }
+        return null;
+    }
+
     private void fillExecuteMan(ReportDetailOutput output) {
         if (output == null) {return;}
         // 获取用户信息

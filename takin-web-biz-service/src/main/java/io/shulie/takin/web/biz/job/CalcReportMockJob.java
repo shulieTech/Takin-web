@@ -26,16 +26,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 @ElasticSchedulerJob(jobName = "calcReportMockJob", cron = "*/15 * * * * ?", description = "计算压测报告mock数据")
 @Slf4j
 public class CalcReportMockJob extends AbstractSceneTask implements SimpleJob {
-
     @Autowired
     private ReportTaskService reportTaskService;
-
-    @Autowired
-    private ThreadPoolUtil threadPoolUtil;
-
     private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
     private static AtomicInteger EMPTY = new AtomicInteger();
-
     @Override
     public void execute(ShardingContext shardingContext) {
         try {
@@ -81,7 +75,7 @@ public class CalcReportMockJob extends AbstractSceneTask implements SimpleJob {
     @Override
     protected void runTaskInTenantIfNecessary(SceneTaskDto tenantTask, Long reportId) {
         //将任务放入线程池
-        threadPoolUtil.getReportMockThreadPool().execute(() -> {
+        ThreadPoolUtil.getReportMockThreadPool().execute(() -> {
             try {
                 WebPluginUtils.setTraceTenantContext(tenantTask);
                 reportTaskService.calcMockSummary(tenantTask.getReportId(), tenantTask.getStartTime(), tenantTask.getTenantId(), tenantTask.getEnvCode());

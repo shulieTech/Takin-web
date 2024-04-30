@@ -2,14 +2,12 @@ package io.shulie.takin.web.biz.service.report.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.common.constant.Constants;
-import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.ListHelper;
-import io.shulie.takin.web.amdb.api.TraceClient;
-import io.shulie.takin.web.amdb.bean.query.trace.TraceMockQueryDTO;
-import io.shulie.takin.web.amdb.bean.result.trace.TraceMockDTO;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.biz.pojo.request.agent.AgentMockDataResponse;
 import io.shulie.takin.web.biz.pojo.request.report.ReportMockRequest;
 import io.shulie.takin.web.biz.pojo.request.report.ReportMockResponse;
+import io.shulie.takin.web.biz.service.agent.AgentMockDataService;
 import io.shulie.takin.web.biz.service.report.ReportMockService;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -17,11 +15,8 @@ import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
 import io.shulie.takin.web.data.dao.report.ReportMockDAO;
 import io.shulie.takin.web.data.param.report.ReportMockCreateParam;
 import io.shulie.takin.web.data.result.application.AppMockCallResult;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -47,35 +42,18 @@ public class ReportMockServiceImpl implements ReportMockService {
     @Resource
     private LinkGuardDAO linkGuardDAO;
     @Resource
-    private TraceClient traceClient;
+    private AgentMockDataService agentMockDataService;
 
     @Autowired
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
     @Override
     public void saveReportMockData(ReportMockRequest request) {
-        TraceMockQueryDTO queryDTO = new TraceMockQueryDTO();
-        queryDTO.setStartTime(DateUtils.strToDate(request.getStartTime(), null).getTime());
-        queryDTO.setEndTime(DateUtils.strToDate(request.getEndTime(), null).getTime());
-        queryDTO.setTaskId(String.valueOf(request.getReportId()));
-        TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(request.getTenantId());
-        if(tenantInfoExt == null) {
-            log.error("找不到租户信息:id={}", request.getTenantId());
-            queryDTO.setTenantAppKey("-1");
-        } else {
-            queryDTO.setTenantAppKey(tenantInfoExt.getTenantAppKey());
-        }
-        queryDTO.setEnvCode(request.getEnvCode());
-        //优化-先判断有无mock，有再执行mock汇总
-        Boolean existMock = traceClient.existTraceMock(queryDTO);
-        if(!existMock) {
+        List<AgentMockDataResponse> mockDTOList = agentMockDataService.getListByReportId(request.getReportId());
+        if(CollectionUtils.isEmpty(mockDTOList)) {
             return;
         }
-        List<TraceMockDTO> traceMockDTOList = traceClient.listTraceMock(queryDTO);
-        if(CollectionUtils.isEmpty(traceMockDTOList)) {
-            return;
-        }
-        List<ReportMockResponse> responseList = convert2ReportMockResponseList(traceMockDTOList);
+        List<ReportMockResponse> responseList = convert2ReportMockResponseList(mockDTOList);
         //查询mock列表原数据
         List<String> appNameList = responseList.stream().map(ReportMockResponse::getAppName).distinct().collect(Collectors.toList());
         List<AppMockCallResult> mockList = new ArrayList<>();
@@ -180,9 +158,9 @@ public class ReportMockServiceImpl implements ReportMockService {
         redisTemplate.opsForValue().set(key, JSON.toJSONString(resultList), 5L, TimeUnit.MINUTES);
         return resultList;
     }
-    private List<ReportMockResponse> convert2ReportMockResponseList(List<TraceMockDTO> dtoList) {
+    private List<ReportMockResponse> convert2ReportMockResponseList(List<AgentMockDataResponse> dtoList) {
         List<ReportMockResponse> responseList = new ArrayList<>();
-        Map<String, List<TraceMockDTO>> dtoMap = ListHelper.transferToListMap(dtoList, data -> data.getAppName()+Constants.SPLIT_COMMA+data.getServiceName()+Constants.SPLIT_COMMA+data.getMethodName(), data -> data);
+        Map<String, List<AgentMockDataResponse>> dtoMap = ListHelper.transferToListMap(dtoList, data -> data.getAppName()+Constants.SPLIT_COMMA+data.getMockService()+Constants.SPLIT_COMMA+data.getMockMethod(), data -> data);
         dtoMap.forEach((key, value) -> {
             String[] keys = key.split(Constants.SPLIT_COMMA);
             String appName = keys[0];
@@ -192,12 +170,9 @@ public class ReportMockServiceImpl implements ReportMockService {
             Long failureCount = 0L;
             Double totalCost = 0.0;
             ReportMockResponse response = new ReportMockResponse();
-            for(TraceMockDTO mockDTO : value) {
-                if(StringUtils.equalsAny(mockDTO.getResultCode(), "00", "200")) {
-                    successCount += mockDTO.getCount();
-                } else {
-                    failureCount += mockDTO.getCount();
-                }
+            for(AgentMockDataResponse mockDTO : value) {
+                successCount += mockDTO.getSuccessCount();
+                failureCount += mockDTO.getFailureCount();
                 totalCost += mockDTO.getTotalCost();
             }
             response.setAppName(appName);
@@ -205,7 +180,8 @@ public class ReportMockServiceImpl implements ReportMockService {
             response.setMethodName(methodName);
             response.setSuccessCount(successCount);
             response.setFailureCount(failureCount);
-            response.setAvgRt(new BigDecimal(totalCost).divide(new BigDecimal(successCount + failureCount), 2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            //ns转ms
+            response.setAvgRt(new BigDecimal(totalCost).divide(new BigDecimal("1000000")).divide(new BigDecimal(successCount + failureCount), 2, BigDecimal.ROUND_HALF_UP).doubleValue());
             responseList.add(response);
         });
         return  responseList;

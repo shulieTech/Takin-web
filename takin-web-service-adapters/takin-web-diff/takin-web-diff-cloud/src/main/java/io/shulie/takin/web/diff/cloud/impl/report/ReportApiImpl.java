@@ -1,5 +1,6 @@
 package io.shulie.takin.web.diff.cloud.impl.report;
 
+import com.alibaba.fastjson.JSON;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
@@ -86,6 +87,23 @@ public class ReportApiImpl implements ReportApi {
         return (ReportDetailResp) cloudReportCache.get(key);
     }
 
+    @Override
+    public ReportDetailResp getSimpleReportByReportId(ReportDetailByIdReq idReq) {
+        String key = String.format("ReportApi#getSimpleReportByReportId:%d", idReq.getReportId());
+        Object value = redisTemplate.opsForValue().get(key);
+        if (value != null) {
+            return JSON.parseObject(value.toString(), ReportDetailResp.class);
+        }
+        ReportDetailByIdReq req = new ReportDetailByIdReq();
+        req.setReportId(idReq.getReportId());
+        try {
+            ReportDetailResp resp = cloudReportApi.getSimpleReportByReportId(req);
+            redisTemplate.opsForValue().set(key, JSON.toJSONString(resp), 5, TimeUnit.MINUTES);
+            return resp;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     @Override
     public List<ScriptNodeTreeResp> scriptNodeTree(ScriptNodeTreeQueryReq req) {

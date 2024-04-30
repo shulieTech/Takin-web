@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--suppress ALL -->
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.AgentMockDataMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.AgentMockDataEntity">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="report_id" jdbcType="BIGINT" property="reportId"/>
+        <result column="collect_start_time" jdbcType="TIMESTAMP" property="collectStartTime"/>
+        <result column="collect_end_time" jdbcType="TIMESTAMP" property="collectEndTime"/>
+        <result column="app_name" jdbcType="VARCHAR" property="appName"/>
+        <result column="agent_id" jdbcType="VARCHAR" property="agentId"/>
+        <result column="mock_service" jdbcType="VARCHAR" property="mockService"/>
+        <result column="mock_method" jdbcType="VARCHAR" property="mockMethod"/>
+        <result column="failure_count" jdbcType="BIGINT" property="failureCount"/>
+        <result column="success_count" jdbcType="BIGINT" property="successCount"/>
+        <result column="total_cost" jdbcType="BIGINT" property="totalCost"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+    <insert id="insertData">
+        INSERT INTO t_agent_mock_data (report_id, collect_start_time, collect_end_time, app_name, agent_id, mock_service, mock_method, failure_count, success_count, total_cost, create_time, tenant_id, env_code)
+        VALUES (#{reportId}, #{collectStartTime}, #{collectEndTime}, #{appName}, #{agentId}, #{mockService}, #{mockMethod}, #{failureCount}, #{successCount}, #{totalCost}, #{createTime}, #{tenantId}, #{envCode})
+    </insert>
+
+    <select id="selectListByReportId" resultMap="BaseResultMap">
+        SELECT *
+        FROM t_agent_mock_data
+        WHERE report_id = #{reportId}
+    </select>
+</mapper>

@@ -155,4 +155,9 @@ public class AgentUrls {
      * agent 上报应用配置
      */
     public static final String AGENT_PUSH_APPLICATION_CONFIG = "/agent/push/application/config";
+
+    /**
+     * agent 上报mock数据
+     */
+    public static final String AGENT_PUSH_MOCK_DATA = "/agent/push/mock/data";
 }

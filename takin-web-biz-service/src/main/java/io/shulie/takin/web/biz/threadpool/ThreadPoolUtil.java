@@ -46,12 +46,14 @@ public class ThreadPoolUtil implements ApplicationContextAware {
     List<String> collectDataList =
             Arrays.asList("collectDataThreadPool",
                     "collectDataThreadPool_one",
-                    "collectDataThreadPool_two",
-                    "collectDataThreadPool_three");
+                    "collectDataThreadPool_two");
     List<String> reportMockList =
             Arrays.asList("reportMockThreadPool",
-                    "reportMockThreadPool_one",
-                    "reportMockThreadPool_two");
+                    "reportMockThreadPool_one");
+
+    List<String> agentMockDataList =
+            Arrays.asList("agentMockDataThreadPool",
+                    "agentMockDataThreadPool_one");
 
     private static AtomicLong atomicMachine = new AtomicLong(0);
     private static AtomicLong atomicTps = new AtomicLong(0);
@@ -60,12 +62,15 @@ public class ThreadPoolUtil implements ApplicationContextAware {
     private static AtomicLong atomicCollectData = new AtomicLong(0);
     private static AtomicLong atomicReportMock = new AtomicLong(0);
 
+    private static AtomicLong atomicAgentMockData = new AtomicLong(0);
+
     static List<ThreadPoolExecutor> syncMachineDataJobThreadPools = new ArrayList<>();
     static List<ThreadPoolExecutor> reportTpsThreadPools = new ArrayList<>();
     static List<ThreadPoolExecutor> reportSummaryThreadPools = new ArrayList<>();
     static List<ThreadPoolExecutor> reportFinishThreadPools = new ArrayList<>();
     static List<ThreadPoolExecutor> collectDataThreadPools = new ArrayList<>();
     static List<ThreadPoolExecutor> reportMockThreadPools = new ArrayList<>();
+    static List<ThreadPoolExecutor> agentMockDataThreadPools = new ArrayList<>();
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -97,6 +102,9 @@ public class ThreadPoolUtil implements ApplicationContextAware {
         reportMockList.stream().forEach(pool -> {
             reportMockThreadPools.add(applicationContext.getBean(pool, ThreadPoolExecutor.class));
         });
+        agentMockDataList.stream().forEach(pool -> {
+            agentMockDataThreadPools.add(applicationContext.getBean(pool, ThreadPoolExecutor.class));
+        });
     }
 
     public static ThreadPoolExecutor getSyncMachinePool() {
@@ -121,5 +129,8 @@ public class ThreadPoolUtil implements ApplicationContextAware {
 
     public static ThreadPoolExecutor getReportMockThreadPool() {
         return reportMockThreadPools.get((int) Math.abs(atomicReportMock.getAndIncrement() % reportMockThreadPools.size()));
+    }
+    public static ThreadPoolExecutor getAgentMockDataThreadPool() {
+        return agentMockDataThreadPools.get((int) Math.abs(atomicAgentMockData.getAndIncrement() % agentMockDataThreadPools.size()));
     }
 }

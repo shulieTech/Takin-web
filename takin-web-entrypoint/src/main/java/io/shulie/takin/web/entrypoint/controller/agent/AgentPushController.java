@@ -1,52 +1,49 @@
 package io.shulie.takin.web.entrypoint.controller.agent;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-
-import com.pamirs.takin.common.ResponseOk;
 import com.pamirs.takin.common.ResponseError;
-import com.pamirs.takin.entity.domain.vo.JarVersionVo;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import com.pamirs.takin.entity.domain.vo.TUploadNeedVo;
-import com.pamirs.takin.entity.domain.vo.TUploadInterfaceVo;
+import com.pamirs.takin.common.ResponseOk;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.vo.JarVersionVo;
+import com.pamirs.takin.entity.domain.vo.TUploadInterfaceVo;
+import com.pamirs.takin.entity.domain.vo.TUploadNeedVo;
 import io.shulie.takin.channel.bean.CommandPacket;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.request.agent.AgentMockDataRequest;
+import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.biz.service.ConfCenterService;
+import io.shulie.takin.web.biz.service.UploadInterfaceService;
+import io.shulie.takin.web.biz.service.agent.AgentMockDataService;
+import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
+import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
+import io.shulie.takin.web.biz.service.perfomanceanaly.TraceManageService;
+import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
+import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
 import io.shulie.takin.web.biz.utils.XmlUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.AgentUrls;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.biz.service.ConfCenterService;
-import io.shulie.takin.web.common.exception.ExceptionCode;
-import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.biz.service.UploadInterfaceService;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
-import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
+import io.shulie.takin.web.common.exception.ExceptionCode;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
-import io.shulie.takin.web.biz.service.perfomanceanaly.TraceManageService;
-import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
-import lombok.extern.slf4j.Slf4j;
 import io.swagger.annotations.Api;
-import org.springframework.http.MediaType;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author TODO
@@ -71,6 +68,8 @@ public class AgentPushController {
     private TraceManageService traceManageService;
     @Resource
     private ReportDetailService reportDetailService;
+    @Resource
+    private AgentMockDataService agentMockDataService;
 
     @ApiOperation("|_ agent注册api")
     @PostMapping(value = AgentUrls.REGISTER_URL)
@@ -225,5 +224,28 @@ public class AgentPushController {
     @ApiOperation(value = "agent上传配置信息")
     public void uploadConfigInfo(@Validated @RequestBody ConfigReportInputParam inputParam) {
         reportDetailService.uploadConfigInfo(inputParam);
+    }
+
+    /**
+     * agent上传mock信息
+     * @param requestList
+     */
+    @PostMapping(value = AgentUrls.AGENT_PUSH_MOCK_DATA)
+    @ApiOperation(value = "agent上传mock信息")
+    public void uploadMockData(@RequestBody List<AgentMockDataRequest> requestList) {
+        if(CollectionUtils.isEmpty(requestList)) {
+            return;
+        }
+        requestList = requestList.stream().filter(data -> data.getReportId() != null && data.getTotalCount() != null).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(requestList)) {
+            return;
+        }
+        //按报告id进行分组
+        Map<Long, List<AgentMockDataRequest>> requestMap = requestList.stream().collect(Collectors.groupingBy(AgentMockDataRequest::getReportId));
+        requestMap.forEach((reportId, dataList) -> {
+            ThreadPoolUtil.getAgentMockDataThreadPool().execute(() -> {
+                agentMockDataService.saveAgentMockData(dataList);
+            });
+        });
     }
 }

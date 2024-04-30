@@ -78,4 +78,6 @@ public interface ReportApi {
 
     ReportDetailResp getReportByReportId(ReportDetailByIdReq reportDetailByIdReq);
 
+    ReportDetailResp getSimpleReportByReportId(ReportDetailByIdReq reportDetailByIdReq);
+
 }

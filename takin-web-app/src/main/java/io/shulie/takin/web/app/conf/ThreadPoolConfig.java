@@ -101,31 +101,31 @@ public class ThreadPoolConfig {
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
-    @Bean(name = "collectDataThreadPool_three")
-    public ThreadPoolExecutor collectDataThreadPool_three() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-three-%d").build();
-        return new ThreadPoolExecutor(10, 50, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
-                new ThreadPoolExecutor.AbortPolicy());
-    }
-
     @Bean(name = "reportMockThreadPool")
     public ThreadPoolExecutor reportMockThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("report-mock-data-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+        return new ThreadPoolExecutor(10, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "reportMockThreadPool_one")
     public ThreadPoolExecutor reportMockThreadPool_one() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("report-mock-data-one-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+        return new ThreadPoolExecutor(10, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
-    @Bean(name = "reportMockThreadPool_two")
-    public ThreadPoolExecutor reportMockThreadPool_two() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("report-mock-data-two-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+    @Bean(name = "agentMockDataThreadPool")
+    public ThreadPoolExecutor agentMockDataThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("agent-mock-data-%d").build();
+        return new ThreadPoolExecutor(10, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    @Bean(name = "agentMockDataThreadPool_one")
+    public ThreadPoolExecutor agentMockDataThreadPool_one() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("agent-mock-data-one-%d").build();
+        return new ThreadPoolExecutor(10, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
@@ -164,13 +164,6 @@ public class ThreadPoolConfig {
     @Bean(name = "reportSummaryThreadPool_two")
     public ThreadPoolExecutor reportSummaryThreadPool_two() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-summary_two-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
-                new ThreadPoolExecutor.AbortPolicy());
-    }
-
-    @Bean(name = "reportSummaryThreadPool_three")
-    public ThreadPoolExecutor reportSummaryThreadPool_three() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-summary_three-%d").build();
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }

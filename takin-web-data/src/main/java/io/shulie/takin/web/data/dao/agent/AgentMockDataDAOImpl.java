@@ -10,6 +10,7 @@ import io.shulie.takin.web.data.util.MPUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -27,5 +28,10 @@ public class AgentMockDataDAOImpl extends ServiceImpl<AgentMockDataMapper, Agent
     public List<AgentMockDataResult> getMockDataListByReportId(Long reportId) {
         List<AgentMockDataEntity> list = this.baseMapper.selectListByReportId(reportId);
         return DataTransformUtil.list2list(list, AgentMockDataResult.class);
+    }
+
+    @Override
+    public void clearExpireData(Date beforeDate) {
+        this.baseMapper.clearExpireData(beforeDate);
     }
 }

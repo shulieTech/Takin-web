@@ -74,4 +74,9 @@ public class AgentMockDataServiceImpl implements AgentMockDataService {
         List<AgentMockDataResult> list = agentMockDataDAO.getMockDataListByReportId(reportId);
         return DataTransformUtil.list2list(list, AgentMockDataResponse.class);
     }
+
+    @Override
+    public void clearExpireData(Date beforeDate) {
+        agentMockDataDAO.clearExpireData(beforeDate);
+    }
 }

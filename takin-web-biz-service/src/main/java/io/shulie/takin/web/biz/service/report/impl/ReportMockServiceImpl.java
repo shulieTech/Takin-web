@@ -74,7 +74,10 @@ public class ReportMockServiceImpl implements ReportMockService {
             for (ReportMockCreateParam mockEntity : mockEntityList) {
                 reportMockDAO.insertOrUpdate(mockEntity);
             }
+            mockEntityList.clear();
         }
+        mockDTOList.clear();
+        responseList.clear();
     }
 
     private List<ReportMockCreateParam> buildReportMockEntityList(ReportMockRequest request, List<ReportMockResponse> responseList, List<AppMockCallResult> mockList) {

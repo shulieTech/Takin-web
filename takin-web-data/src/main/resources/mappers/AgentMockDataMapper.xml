@@ -26,4 +26,9 @@
         FROM t_agent_mock_data
         WHERE report_id = #{reportId}
     </select>
+
+    <delete id="clearExpireData">
+        DELETE FROM t_agent_mock_data
+        WHERE collect_end_time &lt;= #{beforeDate}
+    </delete>
 </mapper>

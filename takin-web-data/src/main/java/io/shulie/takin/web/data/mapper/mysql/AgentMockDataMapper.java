@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.shulie.takin.web.data.model.mysql.AgentMockDataEntity;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 public interface AgentMockDataMapper extends BaseMapper<AgentMockDataEntity> {
@@ -13,4 +14,7 @@ public interface AgentMockDataMapper extends BaseMapper<AgentMockDataEntity> {
 
     @InterceptorIgnore(tenantLine = "true")
     List<AgentMockDataEntity> selectListByReportId(@Param("reportId") Long reportId);
+
+    @InterceptorIgnore(tenantLine = "true")
+    void clearExpireData(@Param("beforeDate") Date beforeDate);
 }

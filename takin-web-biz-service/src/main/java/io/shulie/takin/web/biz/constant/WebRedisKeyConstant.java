@@ -54,4 +54,7 @@ public class WebRedisKeyConstant {
      * 本地mock数据缓存key 应用ID 租户 环境
      */
     public final static String LOCAL_MOCK_CACHE_KEY = "takin:local:mock@%s:%s:%s";
+
+
+    public final static String REPORT_MOCK_CALC_FALLBACK = "takin:report:mock:calc:fallback";
 }

@@ -107,7 +107,7 @@ public class ReportApiImpl implements ReportApi {
             redisTemplate.opsForValue().set(key, JSON.toJSONString(resp), 5, TimeUnit.MINUTES);
             return resp;
         } catch (Exception e) {
-            redisTemplate.opsForValue().set(key, "null", 5, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set(key, "null", 30, TimeUnit.SECONDS);
             log.warn("查询报告{}异常", idReq.getReportId(), e.getMessage());
             return null;
         }

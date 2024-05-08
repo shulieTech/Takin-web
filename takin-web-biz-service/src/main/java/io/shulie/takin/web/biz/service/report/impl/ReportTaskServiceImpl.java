@@ -15,6 +15,7 @@ import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
 import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.common.Separator;
+import io.shulie.takin.web.common.pojo.bo.agent.ReportMockBO;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
@@ -25,6 +26,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -174,6 +176,11 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 //                    log.info("修改压测报告的结果:[{}]", JSON.toJSONString(responseResult));
 //                }
                 reportDataCache.clearDataCache(reportId);
+                //report_mock的数据定时上报，还需要延迟1min统计下
+                ReportMockBO mockBO = new ReportMockBO();
+                mockBO.setReportId(reportId);
+                BeanUtils.copyProperties(commonExt, mockBO);
+                redisClientUtils.zAdd(WebRedisKeyConstant.REPORT_MOCK_CALC_FALLBACK, JSON.toJSONString(mockBO), System.currentTimeMillis() + 60 * 1000);
                 log.info("报告id={}汇总成功，花费时间={}", reportId, (System.currentTimeMillis() - startTime));
             } catch (Throwable e) {
                 // log.error("客户端生成报告id={}数据异常:{}", reportId, e.getMessage(), e);

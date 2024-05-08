@@ -1,8 +1,11 @@
 package io.shulie.takin.web.app.service;
 
+import com.alibaba.fastjson.JSON;
 import io.shulie.takin.web.app.Application;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportMockRequest;
 import io.shulie.takin.web.biz.service.report.ReportMockService;
+import io.shulie.takin.web.biz.service.report.ReportService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class ReportMockServiceTest {
     @Autowired
     private ReportMockService reportMockService;
+    @Autowired
+    private ReportService reportService;
     @Test
     public void testSaveReportMockData() {
         ReportMockRequest mockRequest = new ReportMockRequest();
@@ -25,5 +30,10 @@ public class ReportMockServiceTest {
         mockRequest.setTenantId(6L);
         mockRequest.setEnvCode("test");
         reportMockService.saveReportMockData(mockRequest);
+    }
+
+    public void testGetSimpleReportId() {
+        ReportDetailOutput output = reportService.getSimpleReportByReportId(38193L);
+        System.out.println(JSON.toJSONString(output));
     }
 }

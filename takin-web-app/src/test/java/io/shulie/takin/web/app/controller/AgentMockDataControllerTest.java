@@ -1,12 +1,8 @@
 package io.shulie.takin.web.app.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.pamirs.takin.entity.domain.dto.report.ReportMockDTO;
 import io.shulie.takin.web.app.Application;
 import io.shulie.takin.web.biz.pojo.request.agent.AgentMockDataRequest;
-import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.entrypoint.controller.agent.AgentPushController;
-import io.shulie.takin.web.entrypoint.controller.report.ReportLocalController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +30,7 @@ public class AgentMockDataControllerTest {
     public void test01() {
         List<AgentMockDataRequest> requestList = new ArrayList<>();
         AgentMockDataRequest request01 = new AgentMockDataRequest();
-        request01.setReportId(38174L);
+        request01.setReportId("38174");
         request01.setAppName("demo1");
         request01.setAgentId("127.0.0.1-8081");
         request01.setService("com.AClass");
@@ -46,7 +42,7 @@ public class AgentMockDataControllerTest {
         request01.setStartTime(1639700000000L);
         request01.setEndTime(1639800000000L);
         AgentMockDataRequest request02 = new AgentMockDataRequest();
-        request02.setReportId(38174L);
+        request02.setReportId("38174");
         request02.setAppName("demo1");
         request02.setAgentId("127.0.0.2-8081");
         request02.setService("com.AClass");

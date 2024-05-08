@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 @Data
 public class AgentMockDataRequest implements Serializable {
-    private Long reportId;
+    private String reportId;
     private Long totalCount;
     private Long successCount;
     private Long failCount;

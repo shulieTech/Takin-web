@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.agent.impl;
 
+import cn.hutool.core.date.DateUtil;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.request.agent.AgentMockDataRequest;
 import io.shulie.takin.web.biz.pojo.request.agent.AgentMockDataResponse;
@@ -25,14 +26,29 @@ public class AgentMockDataServiceImpl implements AgentMockDataService {
     private ReportService reportService;
     @Override
     public void saveAgentMockData(List<AgentMockDataRequest> requestList) {
-        ReportDetailOutput output = reportService.getSimpleReportByReportId(requestList.get(0).getReportId());
+        String taskId = requestList.get(0).getReportId();
+        int pos = taskId.indexOf("z");
+        if(pos == -1) {
+            return;
+        }
+        Long reportId = 0L;
+        try {
+            reportId = Long.parseLong(taskId.substring(0, pos), 16);
+        } catch (Exception e) {
+            return;
+        }
+        ReportDetailOutput output = reportService.getSimpleReportByReportId(reportId);
         if(output == null) {
+            return;
+        }
+        //开始时间12小时内
+        if(DateUtil.parseDateTime(output.getStartTime()).getTime() + 12 * 60 * 60 * 1000 < System.currentTimeMillis()) {
             return;
         }
         for(AgentMockDataRequest request : requestList) {
             AgentMockDataCreateParam param = new AgentMockDataCreateParam();
             try {
-                param.setReportId(request.getReportId());
+                param.setReportId(reportId);
                 param.setAppName(request.getAppName());
                 param.setAgentId(request.getAgentId());
                 param.setMockService(request.getService());

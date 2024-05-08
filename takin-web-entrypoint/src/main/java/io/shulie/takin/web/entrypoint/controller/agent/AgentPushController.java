@@ -236,12 +236,12 @@ public class AgentPushController {
         if(CollectionUtils.isEmpty(requestList)) {
             return;
         }
-        requestList = requestList.stream().filter(data -> data.getReportId() != null && data.getTotalCount() != null).collect(Collectors.toList());
+        requestList = requestList.stream().filter(data -> data.getReportId() != null && data.getReportId().endsWith("z") && data.getTotalCount() != null).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(requestList)) {
             return;
         }
         //按报告id进行分组
-        Map<Long, List<AgentMockDataRequest>> requestMap = requestList.stream().collect(Collectors.groupingBy(AgentMockDataRequest::getReportId));
+        Map<String, List<AgentMockDataRequest>> requestMap = requestList.stream().collect(Collectors.groupingBy(AgentMockDataRequest::getReportId));
         requestMap.forEach((reportId, dataList) -> {
             ThreadPoolUtil.getAgentMockDataThreadPool().execute(() -> {
                 agentMockDataService.saveAgentMockData(dataList);

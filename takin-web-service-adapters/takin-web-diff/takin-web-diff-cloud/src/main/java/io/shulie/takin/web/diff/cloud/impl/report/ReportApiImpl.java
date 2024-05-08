@@ -14,6 +14,7 @@ import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2020/12/17 1:10 下午
  */
 @Service
+@Slf4j
 public class ReportApiImpl implements ReportApi {
 
     @Resource(type = CloudReportApi.class)
@@ -92,6 +94,10 @@ public class ReportApiImpl implements ReportApi {
         String key = String.format("ReportApi#getSimpleReportByReportId:%d", idReq.getReportId());
         Object value = redisTemplate.opsForValue().get(key);
         if (value != null) {
+            //找不到的报告，也缓存5min，缓存值null
+            if("null".equals(value)) {
+                return null;
+            }
             return JSON.parseObject(value.toString(), ReportDetailResp.class);
         }
         ReportDetailByIdReq req = new ReportDetailByIdReq();
@@ -101,6 +107,8 @@ public class ReportApiImpl implements ReportApi {
             redisTemplate.opsForValue().set(key, JSON.toJSONString(resp), 5, TimeUnit.MINUTES);
             return resp;
         } catch (Exception e) {
+            redisTemplate.opsForValue().set(key, "null", 5, TimeUnit.MINUTES);
+            log.warn("查询报告{}异常", idReq.getReportId(), e.getMessage());
             return null;
         }
     }

@@ -17,6 +17,8 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface BusinessLinkManageDAO {
 
+    BusinessLinkResult selectOneVirtualBusinessLink();
+
     BusinessLinkResult selectBussinessLinkById(@Param("id") Long id);
 
     List<BusinessLinkResult> selectBussinessLinkByIdList(@Param("ids") List<Long> ids);

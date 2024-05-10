@@ -1,13 +1,7 @@
 package io.shulie.takin.web.data.dao.linkmanage;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import com.alibaba.excel.util.StringUtils;
-
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.excel.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
@@ -29,6 +23,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 
 /**
  * @author fanxx
@@ -45,6 +44,17 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<
 
     @Autowired
     private SceneLinkRelateDAO sceneLinkRelateDAO;
+
+    @Override
+    public BusinessLinkResult selectOneVirtualBusinessLink() {
+        BusinessLinkManageTableEntity entity = businessLinkManageTableMapper.selectOneVirtualBusinessLink();
+        if(entity == null) {
+            return null;
+        }
+        BusinessLinkResult result = new BusinessLinkResult();
+        BeanUtils.copyProperties(entity, result);
+        return result;
+    }
 
     @Override
     public BusinessLinkResult selectBussinessLinkById(Long id) {

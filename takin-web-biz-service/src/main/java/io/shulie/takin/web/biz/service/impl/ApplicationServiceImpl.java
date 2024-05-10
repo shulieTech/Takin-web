@@ -17,6 +17,7 @@ import com.pamirs.takin.common.constant.AppConfigSheetEnum;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.common.enums.ds.DbTypeEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
+import com.pamirs.takin.common.util.MD5Util;
 import com.pamirs.takin.entity.dao.simplify.TAppMiddlewareInfoMapper;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
@@ -145,6 +146,7 @@ import java.util.stream.Collectors;
 @EnableScheduling
 public class ApplicationServiceImpl implements ApplicationService, WhiteListConstants {
     public static final String PRADAR_SEPERATE_FLAG = "_NEW_PRADAR_";
+    public static final String PRADAR_ERROR_MESSAGE_MD5 = "PRADAR_ERROR_MESSAGE_MD5";
     public static final String PRADARNODE_SEPERATE_FLAG = "_PRADARNODE_";
     public static final String PRADARNODE_KEYSET = "_PRADARNODE_KEYSET";
     private static final String FALSE_CORE = "0";
@@ -204,7 +206,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Value("${application.ds.config.is.new.version: false}")
     private Boolean isNewVersion;
 
-    @Value("${application.error.num: 20}")
+    @Value("${application.error.num: 10}")
     private Integer appErrorNum;
 
     @Autowired
@@ -643,7 +645,30 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             throw new TakinWebException(TakinWebExceptionEnum.AGENT_PUSH_APPLICATION_STATUS_VALIDATE_ERROR,
                     "节点唯一key|应用名称 不能为空");
         }
-
+        //不同agentId，上报同样的异常时，做1min去重
+        if(param.getSwitchErrorMap() == null || param.getSwitchErrorMap().isEmpty()) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        param.getSwitchErrorMap().forEach((key, value) -> {
+            String message = String.valueOf(value);
+            if (message.contains("errorCode")) {
+                ExceptionInfo exceptionInfo = null;
+                try {
+                    exceptionInfo = JSONObject.parseObject(message, ExceptionInfo.class);
+                    sb.append(exceptionInfo.toString());
+                } catch (Exception e) {
+                    log.error("异常转换失败：错误信息: {},异常内容{}", message, e.getMessage());
+                }
+            }
+        });
+        if(sb.length() == 0) {
+            return;
+        }
+        String md5Key = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, param.getApplicationName(), PRADAR_ERROR_MESSAGE_MD5, MD5Util.getMD5(sb.toString()));
+        if(!redisTemplate.opsForValue().setIfAbsent(md5Key, "1", 1, TimeUnit.MINUTES)) {
+            return;
+        }
         String tenantAppKey = WebPluginUtils.traceTenantAppKey();
 
         Long applicationId = this.queryApplicationIdByAppName(param.getApplicationName());
@@ -664,14 +689,14 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 String nodeSetKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, tenantAppKey, envCode,
                         applicationId + PRADARNODE_KEYSET);
                 redisTemplate.opsForSet().add(nodeSetKey, key);
-                redisTemplate.expire(nodeSetKey, 1, TimeUnit.DAYS);
+                redisTemplate.expire(nodeSetKey, 6, TimeUnit.HOURS);
                 //节点异常信息列表
                 redisTemplate.opsForList().leftPush(key, JSONObject.toJSONString(param));
-                redisTemplate.expire(key, 1, TimeUnit.DAYS);
+                redisTemplate.expire(key, 6, TimeUnit.HOURS);
             } else {
                 // 大于 appErrorNum 个数 进行截取
                 redisTemplate.opsForList().leftPush(key, JSONObject.toJSONString(param));
-                redisTemplate.opsForList().trim(key, 0, 19);
+                redisTemplate.opsForList().trim(key, 0, appErrorNum - 1);
             }
         }
     }

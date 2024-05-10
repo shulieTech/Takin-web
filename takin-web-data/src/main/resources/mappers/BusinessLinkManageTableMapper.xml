@@ -47,4 +47,8 @@
             ENTRACE = #{param.entrace}
         WHERE LINK_ID = #{param.linkId}
     </update>
+
+    <select id="selectOneVirtualBusinessLink" resultType="io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity">
+        select * from t_business_link_manage_table where `type` = 1 and is_deleted = 0 limit 1
+    </select>
 </mapper>

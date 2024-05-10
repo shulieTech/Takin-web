@@ -29,6 +29,9 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import io.shulie.amdb.common.enums.RpcType;
 import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
@@ -142,6 +145,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
 
     @Value("${file.upload.script.path:/nfs/takin/script/}")
     private String scriptFilePath;
+
+    @Value("${script.debug.allow.unmatch:true}")
+    private Boolean scriptDebugAllowUnmatch;
 
     @Resource
     private LeakSqlService leakSqlService;
@@ -351,6 +357,23 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }
     }
 
+    private ScriptNode parseAnyScriptNode(String script) {
+        try {
+            List<ScriptNode> nodes = JSON.parseArray(script, ScriptNode.class);
+            List<ScriptNode> https = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, nodes);
+            if(CollectionUtils.isNotEmpty(https)) {
+                return https.get(0);
+            }
+            List<ScriptNode> kafkas = JmxUtil.getScriptNodeByType(NodeTypeEnum.KAKFK, nodes);
+            if(CollectionUtils.isNotEmpty(kafkas)) {
+                return kafkas.get(0);
+            }
+        } catch (Exception e) {
+
+        }
+        return null;
+    }
+
     private void pushTaskToRedis(Long reportId) {
         if (reportId != null) {
             //兜底，默认调试1小时
@@ -371,7 +394,17 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         // 根据脚本发布实例类型, 查询业务活动或者业务流程下的业务活动
         // 判断业务流程是否存在, 判断活动是否存在
         List<Long> businessActivityIds = this.listBusinessActivityIdsByScriptDeploy(scriptDeploy);
-        ScriptDebugExceptionUtil.isDebugError(businessActivityIds.isEmpty(), "脚本对应的业务活动不存在!");
+        if(scriptDebugAllowUnmatch) {
+            BusinessLinkResult linkResult = businessLinkManageDAO.selectOneVirtualBusinessLink();
+            if (linkResult == null) {
+                ScriptDebugExceptionUtil.isDebugError(CollectionUtils.isEmpty(businessActivityIds), "脚本对应的业务活动不存在，请先创建一个虚拟业务活动!");
+            } else {
+                businessActivityIds = new ArrayList<>();
+                businessActivityIds.add(linkResult.getLinkId());
+            }
+        } else {
+            ScriptDebugExceptionUtil.isDebugError(CollectionUtils.isEmpty(businessActivityIds), "脚本对应的业务活动不存在!");
+        }
 
         // 查出所有的业务活动
         // 根据业务活动ids, 获得业务活动
@@ -403,7 +436,27 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         SceneResult scene = sceneService.getScene(flowId);
         // 1. 获取业务流程关联的业务活动
         List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(flowId);
-        ScriptDebugExceptionUtil.isDebugError(CollectionUtils.isEmpty(links), "脚本对应的业务活动不存在!");
+        //无业务活动，绑定第一个虚拟的
+        if (CollectionUtils.isEmpty(links)) {
+            if(scriptDebugAllowUnmatch) {
+                BusinessLinkResult linkResult = businessLinkManageDAO.selectOneVirtualBusinessLink();
+                if (linkResult == null) {
+                    ScriptDebugExceptionUtil.isDebugError(CollectionUtils.isEmpty(links), "脚本对应的业务活动不存在，请先创建一个虚拟业务活动!");
+                } else {
+                    links = new ArrayList<>();
+                    SceneLinkRelateResult relateResult = new SceneLinkRelateResult();
+                    relateResult.setBusinessLinkId(String.valueOf(linkResult.getLinkId()));
+                    ScriptNode scriptNode = parseAnyScriptNode(scene.getScriptJmxNode());
+                    if(scriptNode == null) {
+                        ScriptDebugExceptionUtil.isDebugError(CollectionUtils.isEmpty(links), "脚本对应的业务活动不存在，请先创建一个虚拟业务活动!");
+                    }
+                    relateResult.setScriptXpathMd5(scriptNode.getXpathMd5());
+                    links.add(relateResult);
+                }
+            } else {
+                ScriptDebugExceptionUtil.isDebugError(CollectionUtils.isEmpty(links), "脚本对应的业务活动不存在!");
+            }
+        }
         // 2. 转换业务活动为压测你日工
         List<Long> activityIds = links.stream().filter(Objects::nonNull).map(SceneLinkRelateResult::getBusinessLinkId).filter(StringUtils::isNotBlank).map(NumberUtils::toLong).distinct().collect(Collectors.toList());
         List<BusinessLinkManageTableEntity> businessActivities = businessLinkManageDAO.listByIds(activityIds);
@@ -789,7 +842,17 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      */
     private List<Long> checkAndListBusinessActivityIds(ScriptManageDeployResult scriptDeploy) {
         List<Long> businessActivityIds = this.listBusinessActivityIdsByScriptDeploy(scriptDeploy);
-        ScriptDebugExceptionUtil.isDebugError(businessActivityIds.isEmpty(), "脚本对应的业务活动不存在!");
+        if(scriptDebugAllowUnmatch) {
+            BusinessLinkResult linkResult = businessLinkManageDAO.selectOneVirtualBusinessLink();
+            if (linkResult == null) {
+                ScriptDebugExceptionUtil.isDebugError(CollectionUtils.isEmpty(businessActivityIds), "脚本对应的业务活动不存在，请先创建一个虚拟业务活动!");
+            } else {
+                businessActivityIds = new ArrayList<>();
+                businessActivityIds.add(linkResult.getLinkId());
+            }
+        } else {
+            ScriptDebugExceptionUtil.isDebugError(CollectionUtils.isEmpty(businessActivityIds), "脚本对应的业务活动不存在!");
+        }
         return businessActivityIds;
     }
 

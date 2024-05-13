@@ -655,6 +655,7 @@ public class SceneServiceImpl implements SceneService {
     public PagingList<BusinessFlowListResponse> getBusinessFlowList(BusinessFlowPageQueryRequest queryRequest) {
         ScenePageQueryParam queryParam = new ScenePageQueryParam();
         final String flowName = queryRequest.getBusinessFlowName();
+        queryParam.setId(queryRequest.getId());
         queryParam.setSceneName(flowName == null ? null : flowName.replace("%", "\\%").replace("-", "\\-").replace("_", "\\_"));
         queryParam.setCurrent(queryRequest.getCurrent());
         queryParam.setPageSize(queryRequest.getPageSize());

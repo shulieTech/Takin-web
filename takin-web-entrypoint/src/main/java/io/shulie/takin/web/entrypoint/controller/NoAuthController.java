@@ -5,14 +5,13 @@ import java.util.Map;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 无需权限的访问
@@ -26,6 +25,8 @@ public class NoAuthController {
 
     @Autowired
     private RedisClientUtils redisClientUtils;
+    @Autowired
+    private ReportService reportService;
 
     @PutMapping("/resume/scenetask")
     public ResponseResult resumeSceneTask(@RequestBody Map<String, Object> paramMap) {
@@ -38,5 +39,14 @@ public class NoAuthController {
             String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
         redisClientUtils.del(redisKey);
         return ResponseResult.success("resume success");
+    }
+
+    @GetMapping("/report/refId")
+    public ResponseResult resumeSceneTask(@RequestParam("reportId") Long reportId) {
+        ReportDetailOutput detailOutput = reportService.getSimpleReportByReportId(reportId);
+        if(detailOutput == null) {
+            return ResponseResult.success("-1");
+        }
+        return ResponseResult.success(String.valueOf(detailOutput.getSceneId()));
     }
 }

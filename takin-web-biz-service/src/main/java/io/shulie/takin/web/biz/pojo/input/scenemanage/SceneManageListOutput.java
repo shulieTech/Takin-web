@@ -23,6 +23,9 @@ public class SceneManageListOutput extends AuthQueryResponseCommonExt {
     @ApiModelProperty(value = "状态")
     private Integer status;
 
+    @ApiModelProperty(value = "类型")
+    private Integer type;
+
     @ApiModelProperty(value = "最新压测时间")
     private String lastPtTime;
 

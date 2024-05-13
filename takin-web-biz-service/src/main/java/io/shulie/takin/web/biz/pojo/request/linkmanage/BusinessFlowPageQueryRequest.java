@@ -11,4 +11,6 @@ public class BusinessFlowPageQueryRequest extends PagingDevice {
 
     @ApiModelProperty("业务流程名称")
     private String businessFlowName;
+
+    private Long id;
 }

@@ -143,6 +143,9 @@ public class SceneDAOImpl implements SceneDAO {
         page.setSize(param.getPageSize());
 
         LambdaQueryWrapper<SceneEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if(param.getId() != null) {
+            lambdaQueryWrapper.eq(SceneEntity::getId, param.getId());
+        }
         if (!StringUtils.isEmpty(param.getSceneName())) {
             lambdaQueryWrapper.like(SceneEntity::getSceneName, "\\" + param.getSceneName());
         }

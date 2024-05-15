@@ -649,30 +649,30 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if(param.getSwitchErrorMap() == null || param.getSwitchErrorMap().isEmpty()) {
             return;
         }
-        StringBuilder sb = new StringBuilder();
+        //如果某个错误已经存在，则移除
+        Set<String> delKey = new HashSet<>();
         param.getSwitchErrorMap().forEach((key, value) -> {
             String message = String.valueOf(value);
             if (message.contains("errorCode")) {
                 ExceptionInfo exceptionInfo = null;
                 try {
                     exceptionInfo = JSONObject.parseObject(message, ExceptionInfo.class);
-                    sb.append(exceptionInfo.toString());
+                    String md5Key = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, param.getApplicationName(), PRADAR_ERROR_MESSAGE_MD5, MD5Util.getMD5(exceptionInfo.toString()));
+                    if(!redisTemplate.opsForValue().setIfAbsent(md5Key, "1", 1, TimeUnit.MINUTES)) {
+                        delKey.add(key);
+                    }
                 } catch (Exception e) {
                     log.error("异常转换失败：错误信息: {},异常内容{}", message, e.getMessage());
+                    delKey.add(key);
                 }
             }
         });
-        if(sb.length() == 0) {
-            return;
-        }
-        String md5Key = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, param.getApplicationName(), PRADAR_ERROR_MESSAGE_MD5, MD5Util.getMD5(sb.toString()));
-        if(!redisTemplate.opsForValue().setIfAbsent(md5Key, "1", 1, TimeUnit.MINUTES)) {
+        delKey.stream().forEach(key -> param.getSwitchErrorMap().remove(key));
+        if(param.getSwitchErrorMap().isEmpty()) {
             return;
         }
         String tenantAppKey = WebPluginUtils.traceTenantAppKey();
-
         Long applicationId = this.queryApplicationIdByAppName(param.getApplicationName());
-
         if (applicationId == null) {
             log.error("查询不到应用【{}】,请先上报应用！", param.getApplicationName());
             return;

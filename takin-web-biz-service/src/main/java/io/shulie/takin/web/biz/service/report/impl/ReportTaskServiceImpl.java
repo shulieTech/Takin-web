@@ -113,8 +113,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             String lockKey = JobRedisUtils.getRedisJobReport(WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), reportId);
             if (!distributedLock.checkLock(lockKey)) {
                 try {
+                    ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
                     // 收集数据 单独线程收集
-                    ThreadPoolUtil.getCollectDataThreadPool().execute(() -> collectData(reportId, commonExt, lockKey));
+                    ThreadPoolUtil.getCollectDataThreadPool().execute(() -> collectData(reportDetailDTO, reportId, commonExt, lockKey));
                 } catch (Throwable e) {
                     // TODO 如果线程池满了，继续走下面的逻辑,否则任务有问题
                     log.error("提交线程池任务异常," + ExceptionUtils.getStackTrace(e));
@@ -236,7 +237,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
      * @param reportId 报告 id
      * @return 可运行
      */
-    private void collectData(Long reportId, TenantCommonExt commonExt, String lockKey) {
+    private void collectData(ReportDetailDTO reportDetailDTO, Long reportId, TenantCommonExt commonExt, String lockKey) {
         // 有锁,证明任务在处理,不需要等太久,后续会有任务继续处理
         boolean tryLock = distributedLock.tryLock(lockKey, 5L, 60L, TimeUnit.SECONDS);
         try {
@@ -258,8 +259,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 //            }
             try {
                 // mock信息
-                ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
-                if (reportDetailDTO != null && reportDetailDTO.getEndTime() != null) {
+                if (reportDetailDTO != null && reportDetailDTO.getStartTime() != null) {
                     ReportMockRequest mockRequest = new ReportMockRequest();
                     mockRequest.setReportId(reportId);
                     mockRequest.setStartTime(reportDetailDTO.getStartTime());
@@ -271,6 +271,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                     mockRequest.setTenantId(reportDetailDTO.getTenantId());
                     mockRequest.setEnvCode(reportDetailDTO.getEnvCode());
                     reportMockService.saveReportMockData(mockRequest);
+                } else {
+                    log.warn("reportId = {}: ReportMock handling, data is null= {}", reportId);
                 }
             } catch (Exception e) {
                 log.error("reportId = {}: ReportMock handling,errorMsg= {} ", reportId, e.getMessage());

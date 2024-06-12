@@ -10,6 +10,7 @@ import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
+import io.shulie.takin.web.biz.service.report.impl.SummaryService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.pojo.bo.agent.ReportMockBO;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @Description agent心跳数据清理任务
+ * @Description agent上报mock数据时，存在滞后的情况，这里做个兜底，延迟1min再汇总一次
  * @Author ocean_wll
  * @Date 2021/11/18 2:30 下午
  */
@@ -39,6 +40,8 @@ public class CalcReportMockFallbackJob implements SimpleJob {
     private ReportTaskService reportTaskService;
     @Autowired
     private ReportService reportService;
+    @Autowired
+    private SummaryService summaryService;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -60,6 +63,8 @@ public class CalcReportMockFallbackJob implements SimpleJob {
                     return;
                 }
                 reportTaskService.calcMockSummary(mockBO.getReportId(), DateUtil.parseDateTime(detailOutput.getStartTime()), detailOutput.getTenantId(), detailOutput.getEnvCode());
+                //更新mock汇总数据
+                summaryService.calcReportSummay(mockBO.getReportId());
             } catch (Exception e) {
 
             }

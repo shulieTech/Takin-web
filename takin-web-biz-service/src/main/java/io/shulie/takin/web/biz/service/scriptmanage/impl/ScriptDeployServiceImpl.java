@@ -143,7 +143,13 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
             return;
         }
         for(ScriptNode scriptNode : nodeList) {
-            nodeVO.getCsvFileSet().addAll(scriptNode.getCsvSet());
+            if(CollectionUtils.isEmpty(scriptNode.getCsvSet())) {
+                for(String string : scriptNode.getCsvSet()) {
+                    if(StringUtils.isNotBlank(string)) {
+                        nodeVO.getCsvFileSet().add(fetchFileNameByFilePath(string));
+                    }
+                }
+            }
             nodeVO.getJdbcRequestClass().addAll(scriptNode.getDriverSet());
             if(StringUtils.equalsAny(scriptNode.getName(), "JavaSampler")) {
                 nodeVO.getJavaRequestClass().add(scriptNode.getProps().get("classname"));
@@ -152,5 +158,11 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
             }
             checkScriptNode(scriptNode.getChildren(), nodeVO);
         }
+    }
+
+    private static String fetchFileNameByFilePath(String filePath) {
+        String fileName = filePath.substring(filePath.lastIndexOf("/")+1);
+        fileName = fileName.substring(fileName.lastIndexOf("\\")+1);
+        return fileName;
     }
 }

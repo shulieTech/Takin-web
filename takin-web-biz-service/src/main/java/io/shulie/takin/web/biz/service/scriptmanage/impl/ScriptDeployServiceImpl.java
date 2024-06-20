@@ -143,7 +143,7 @@ public class ScriptDeployServiceImpl implements ScriptDeployService {
             return;
         }
         for(ScriptNode scriptNode : nodeList) {
-            if(CollectionUtils.isEmpty(scriptNode.getCsvSet())) {
+            if(CollectionUtils.isNotEmpty(scriptNode.getCsvSet())) {
                 for(String string : scriptNode.getCsvSet()) {
                     if(StringUtils.isNotBlank(string)) {
                         nodeVO.getCsvFileSet().add(fetchFileNameByFilePath(string));

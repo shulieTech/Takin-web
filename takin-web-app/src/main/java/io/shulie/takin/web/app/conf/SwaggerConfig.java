@@ -58,7 +58,7 @@ public class SwaggerConfig {
     @Value("${server.servlet.context-path:}")
     private String servletContextPath;
 
-    @Value("${swagger.enable:true}")
+    @Value("${swagger.enable:false}")
     private Boolean swaggerEnable;
     // 定义分隔符
     private static final String SPLITOR = ";";
@@ -485,7 +485,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -510,7 +510,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
     /**
@@ -527,7 +527,7 @@ public class SwaggerConfig {
                 .build()
                 .directModelSubstitute(LocalDate.class, String.class)
                 .useDefaultResponseMessages(false)
-                .apiInfo(apiInfo())
+                .apiInfo(apiInfo()).enable(swaggerEnable)
                 ;
     }
 
@@ -541,7 +541,7 @@ public class SwaggerConfig {
                 .build()
                 .directModelSubstitute(LocalDate.class, String.class)
                 .useDefaultResponseMessages(false)
-                .apiInfo(apiInfo())
+                .apiInfo(apiInfo()).enable(swaggerEnable)
                 ;
     }
 

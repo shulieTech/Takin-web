@@ -27,6 +27,7 @@ import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -138,6 +139,10 @@ public class JmxUtil {
             return null;
         }
         String testName = element.attributeValue("testname");
+        int pos = StringUtils.indexOf(testName, "?");
+        if(pos > 0) {
+            testName = StringUtils.substring(testName, 0, pos);
+        }
         ScriptNode node = new ScriptNode();
         node.setName(name);
         node.setTestName(testName);

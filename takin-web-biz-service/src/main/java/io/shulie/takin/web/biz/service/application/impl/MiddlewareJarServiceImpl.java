@@ -93,6 +93,9 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
     @Value("${takin.data.path}")
     private String dataPath;
 
+    @Value("${maven.pull.job.enable:true}")
+    private boolean mavenenable;
+
     @Resource(type = MiddlewareSummaryService.class)
     private MiddlewareSummaryService middlewareSummaryService;
 
@@ -835,8 +838,11 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
         if (StringUtils.isNotBlank(middlewareJarResult.getGroupId())) {
             return;
         }
-        String groupId = searchGroupIdFromAliYun(middlewareJarResult.getArtifactId(),
-            middlewareJarResult.getVersion());
+        String groupId = "unknow";
+        if(mavenenable) {
+            groupId = searchGroupIdFromAliYun(middlewareJarResult.getArtifactId(),
+                    middlewareJarResult.getVersion());
+        }
         //if (StrUtil.isBlank(groupId)) {
         //    groupId = searchGroupIdFromOrg(middlewareJarResult.getArtifactId(), middlewareJarResult.getVersion());
         //}

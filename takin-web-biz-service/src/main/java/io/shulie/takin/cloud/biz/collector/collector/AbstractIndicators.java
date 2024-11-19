@@ -123,7 +123,7 @@ public abstract class AbstractIndicators {
     private DefaultRedisScript<Void> maxRedisScript;
     private DefaultRedisScript<Void> unlockRedisScript;
 
-    private static final int REDIS_KEY_TIMEOUT = 60;
+    private static final int REDIS_KEY_TIMEOUT = 600;
 
     private final Expiration expiration = Expiration.seconds(REDIS_KEY_TIMEOUT);
 

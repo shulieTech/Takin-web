@@ -124,13 +124,17 @@ public class PushWindowDataScheduled extends AbstractIndicators {
     private Long getWorkingPressureMinTimeWindow(Long jobId, Long sceneId, Long reportId, Long customerId) {
         Long timeWindow = null;
         try {
+            long lastTime = TimeUnit.NANOSECONDS.convert(CollectorUtil.getTimeWindowTime(System.currentTimeMillis() - 1000 * 60 * 3), TimeUnit.MILLISECONDS);
+            //获取最小数据的时候，不要获取3分钟之前的数据
             String measurement = InfluxUtil.getMeasurement(jobId, sceneId, reportId, customerId);
             SQL sql = new SQL().SELECT("*").FROM(measurement).WHERE("status = 0")
-                    .ORDER_BY("time asc").LIMIT(1);
+                    .WHERE("time >= " + lastTime)
+                .ORDER_BY("time asc").LIMIT(1);
             PressureOutput pressure = influxWriter.querySingle(sql.toString(), PressureOutput.class);
             if (null != pressure) {
                 timeWindow = pressure.getTime();
             }
+            log.info("获取状态为0的最早时间的数据，不包括3分钟之前的数据，sql为:{},结果为:{}", sql, timeWindow);
         } catch (Throwable e) {
             log.error("查询失败", e);
         }

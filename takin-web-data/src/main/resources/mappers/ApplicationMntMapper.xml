@@ -371,7 +371,7 @@
     <select id="selectApplicationPageByParam"
             resultType="io.shulie.takin.web.data.result.application.ApplicationListResult">
         SELECT a.APPLICATION_ID application_id, a.APPLICATION_NAME application_name,
-               a.UPDATE_TIME update_time, a.ACCESS_STATUS access_status, u.`name` user_name
+               a.UPDATE_TIME update_time, a.ACCESS_STATUS access_status,a.NODE_NUM,a.USER_ID, u.`name` user_name
         FROM t_application_mnt a LEFT JOIN t_tro_user u ON u.id = a.USER_ID
 
         WHERE a.tenant_id = #{param.tenantId} AND a.env_code = #{param.envCode}

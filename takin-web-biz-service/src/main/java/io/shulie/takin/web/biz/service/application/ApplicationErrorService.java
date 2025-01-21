@@ -1,10 +1,13 @@
 package io.shulie.takin.web.biz.service.application;
 
-import java.util.List;
-
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import io.shulie.takin.web.biz.pojo.input.application.ApplicationErrorQueryInput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationErrorOutput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationExceptionOutput;
-import io.shulie.takin.web.biz.pojo.input.application.ApplicationErrorQueryInput;
+import io.shulie.takin.web.data.result.application.ApplicationListResult;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author shiyajian
@@ -24,4 +27,5 @@ public interface ApplicationErrorService {
      */
     List<ApplicationExceptionOutput> getAppException(List<String> appNames);
 
+    Map<Long, ApplicationVo> batchGetApplicationStatus(List<ApplicationListResult> records);
 }

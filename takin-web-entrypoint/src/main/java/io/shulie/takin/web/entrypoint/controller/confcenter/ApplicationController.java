@@ -1,63 +1,45 @@
 package io.shulie.takin.web.entrypoint.controller.confcenter;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.List;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
+import com.github.pagehelper.util.StringUtil;
+import com.pamirs.takin.entity.domain.vo.AppOperateAgentCheckVO;
+import com.pamirs.takin.entity.domain.vo.AppUninstallAgentVO;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationQueryRequestV2;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntrancesResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationListResponseV2;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
+import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.common.util.MD5Tool;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
-import com.github.pagehelper.util.StringUtil;
-
-import com.pamirs.takin.entity.domain.vo.AppOperateAgentCheckVO;
-import io.shulie.takin.web.common.util.MD5Tool;
-import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.web.common.constant.ApiUrls;
-import io.shulie.takin.web.common.util.ActivityUtil;
-import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.service.ActivityService;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.biz.service.ApplicationService;
-import com.pamirs.takin.entity.domain.vo.AppUninstallAgentVO;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
-import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.application.ApplicationQueryRequestV2;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationListResponseV2;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntrancesResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
-import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
@@ -86,7 +68,8 @@ public class ApplicationController {
         needAuth = ActionTypeEnum.QUERY
     )
     public PagingList<ApplicationListResponseV2> pageApplicationWithAuth(ApplicationQueryRequestV2 request) {
-        return applicationService.pageApplication(request);
+//        return applicationService.pageApplication(request);
+        return applicationService.pageApplicationNew(request);
     }
 
     @GetMapping("/application/center/list/dictionary")

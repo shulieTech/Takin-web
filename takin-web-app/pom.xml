@@ -398,11 +398,22 @@
     <build>
         <finalName>${project.version}</finalName>
         <resources>
+            <!-- 需要过滤的资源 -->
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
+                <!-- 排除字体文件 -->
+                <excludes>
+                    <exclude>fonts/*.ttf</exclude>
+                </excludes>
+            </resource>
+            <!-- 不需要过滤的资源 -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <!-- 仅包含字体文件 -->
                 <includes>
-                    <include>**/*</include>
+                    <include>fonts/*.ttf</include>
                 </includes>
             </resource>
         </resources>

@@ -39,19 +39,6 @@ import org.dom4j.io.SAXReader;
  */
 @Slf4j
 public class JmxUtil {
-
-    public static void main(String[] args) {
-        List<ScriptNode> nodeList = buildNodeTree("/Users/xiaoshu/Desktop/报账单据0727.jmx");
-        Map<String, List<String>> dataMap = new HashMap<>();
-        putData(dataMap, nodeList);
-        for(Map.Entry<String, List<String>> entry : dataMap.entrySet()) {
-            System.out.println(entry.getKey());
-            for(String s : entry.getValue()) {
-                System.out.println("   " + s);
-            }
-        }
-    }
-
     private static void putData(Map<String, List<String>> dataMap, List<ScriptNode> nodeList) {
         if(CollectionUtils.isEmpty(nodeList)) {
             return;
@@ -82,6 +69,11 @@ public class JmxUtil {
             return null;
         }
         return buildNodeTree(f);
+    }
+
+    public static void main(String[] args) {
+        List<ScriptNode> nodes = buildNodeTree("/Users/xiaoshu/Desktop/task.jmx");
+        System.out.println(JSONObject.toJSONString(nodes));
     }
 
     /**

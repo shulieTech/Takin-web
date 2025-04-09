@@ -175,9 +175,8 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
             return AgentReportStatusEnum.BEGIN;
         }
 
-        // 判断是否异常 agent状态异常 或 simulator状态不是安装成功
-        if (AgentStatusEnum.INSTALL_FAILED.getCode().equals(agentHeartBeatBO.getAgentStatus())
-            || !ProbeStatusEnum.INSTALLED.getCode().equals(agentHeartBeatBO.getSimulatorStatus())) {
+        // 判断是否异常 agent状态异常 或 simulator状态不是安装成功 || !ProbeStatusEnum.INSTALLED.getCode().equals(agentHeartBeatBO.getSimulatorStatus())
+        if (AgentStatusEnum.INSTALL_FAILED.getCode().equals(agentHeartBeatBO.getAgentStatus())) {
             return AgentReportStatusEnum.ERROR;
         }
 

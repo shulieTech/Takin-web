@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class LinkDataCalcUtil {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LinkDataCalcUtil.class);
+
     private final static Integer KEEP_SCALE = 8;
 
     private static final BigDecimal ZERO = new BigDecimal("0");
@@ -77,6 +79,9 @@ public class LinkDataCalcUtil {
             data.setNodeCount(count);
             if (data.getRealWeight().compareTo(avg) >= 0) {
                 bottleneckList.add(data);
+                logger.info("瓶颈接口:报告ID={}，服务={}，计算权重={}，平均权重={}", data.getReportId(), data.getServiceName(), data.getRealWeight(), avg);
+            } else {
+                logger.info("非瓶颈接口:报告ID={}，服务={}，计算权重={}，平均权重={}", data.getReportId(), data.getServiceName(), data.getRealWeight(), avg);
             }
             getBottleneckInterfaces(data.getSubLink(), count, avg, bottleneckList);
         }

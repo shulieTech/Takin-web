@@ -319,6 +319,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         List<LinkDataResult> bottleneckList = Lists.newArrayList();
         dto.getBusinessActivity().stream().forEach(ba -> {
             List<LinkDataResult> linkDataResultList = processLinkDataById(ba.getBusinessActivityId(), sTime, eTime);
+            logger.info("报告ID={},业务活动ID={},有{}条链路数据", reportId, ba.getBusinessActivityId(), linkDataResultList != null ? linkDataResultList.size() : 0);
             if (CollectionUtils.isNotEmpty(linkDataResultList)) {
                 //计算瓶颈权重
                 LinkCount linkCount = new LinkCount();

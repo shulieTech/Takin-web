@@ -188,6 +188,7 @@ public class SummaryService {
                     // 增加租户
                     " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                     " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
+                log.info("metric search base sql：{}", searchBaseSql);
                 Collection<BaseServerResult> bases = influxDatabaseManager.query(BaseServerResult.class, searchBaseSql);
                 TpsTargetArray array = calcTpsTarget(metrics, bases);
                 if (array == null) {
@@ -230,15 +231,15 @@ public class SummaryService {
                 }
                 if (currentIndex < j) {
                     List<BaseServerResult> subList = bases.subList(currentIndex, j);
-                    double cpu = subList.stream().filter(data -> data.getCpuRate() != null)
+                    double cpu = subList.stream().filter(data -> data.getCpuRate() != null && data.getCpuRate() > 0D)
                         .mapToDouble(BaseServerResult::getCpuRate).average().orElse(0D);
-                    double loading = subList.stream().filter(data -> data.getCpuLoad() != null)
+                    double loading = subList.stream().filter(data -> data.getCpuLoad() != null && data.getCpuLoad() > 0D)
                         .mapToDouble(BaseServerResult::getCpuLoad).average().orElse(0D);
-                    double memory = subList.stream().filter(data -> data.getMemRate() != null)
+                    double memory = subList.stream().filter(data -> data.getMemRate() != null && data.getMemRate() > 0D)
                         .mapToDouble(BaseServerResult::getMemRate).average().orElse(0D);
-                    double io = subList.stream().filter(data -> data.getIoWait() != null)
+                    double io = subList.stream().filter(data -> data.getIoWait() != null && data.getIoWait() > 0D)
                         .mapToDouble(BaseServerResult::getIoWait).average().orElse(0D);
-                    double mbps = subList.stream().filter(data -> data.getNetBandWidthRate() != null)
+                    double mbps = subList.stream().filter(data -> data.getNetBandWidthRate() != null && data.getNetBandWidthRate() > 0D)
                             .mapToDouble(BaseServerResult::getNetBandWidthRate).average().orElse(0D);
                     double youngGcCount = subList.stream().filter(data -> data.getYoungGcCount() != null)
                             .mapToDouble(BaseServerResult::getYoungGcCount).sum();

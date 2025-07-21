@@ -89,6 +89,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
@@ -121,6 +122,8 @@ public class LinkTopologyService extends CommonService {
     private ActivityService activityService;
 
     private static String pradarDatabase = "pradar";
+    @Value("${check.app.middleware: false}")
+    public Boolean checkAppMiddleware;
 
     public static final double INIT = 0.0; // db 没有数据的初始值
 
@@ -1793,8 +1796,10 @@ public class LinkTopologyService extends CommonService {
                 }).collect(Collectors.toList());
 
         // 应用的中间件异常
-        List<ExceptionListResponse> middlewareExceptions = this.getMiddlewareExceptionList(nodes);
-        unknownExceptions.addAll(middlewareExceptions);
+        if(checkAppMiddleware) {
+            List<ExceptionListResponse> middlewareExceptions = this.getMiddlewareExceptionList(nodes);
+            unknownExceptions.addAll(middlewareExceptions);
+        }
         return unknownExceptions;
     }
 

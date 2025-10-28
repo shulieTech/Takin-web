@@ -1,7 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.report;
 
-import java.util.List;
-
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
@@ -15,6 +13,8 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
+import io.shulie.takin.web.biz.pojo.request.report.ReportTrendQueryReq;
+import io.shulie.takin.web.biz.pojo.request.report.ReportTrendResp;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * @author 莫问
@@ -74,7 +76,7 @@ public class ReportController {
 
     @GetMapping("report/queryReportTrend")
     @ApiOperation("报告链路趋势")
-    public TrendResponse queryReportTrend(TrendRequest reportTrendQuery) {
+    public ReportTrendResp queryReportTrend(ReportTrendQueryReq reportTrendQuery) {
         return reportService.queryReportTrend(reportTrendQuery);
     }
 

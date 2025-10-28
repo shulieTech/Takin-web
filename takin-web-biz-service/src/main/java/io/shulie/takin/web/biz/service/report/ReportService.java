@@ -1,10 +1,6 @@
 package io.shulie.takin.web.biz.service.report;
 
-import java.util.List;
-import java.util.Map;
-
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
-import io.shulie.takin.common.beans.response.ResponseResult;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
 import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
@@ -13,8 +9,14 @@ import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
 import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
 import io.shulie.takin.cloud.sdk.model.response.report.TrendResponse;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
+import io.shulie.takin.web.biz.pojo.request.report.ReportTrendQueryReq;
+import io.shulie.takin.web.biz.pojo.request.report.ReportTrendResp;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author qianshui
@@ -73,5 +75,8 @@ public interface ReportService {
     Boolean unLockReport(Long reportId);
 
     Boolean finishReport(Long reportId);
+
+    ReportTrendResp queryReportTrend(ReportTrendQueryReq param);
+
 
 }

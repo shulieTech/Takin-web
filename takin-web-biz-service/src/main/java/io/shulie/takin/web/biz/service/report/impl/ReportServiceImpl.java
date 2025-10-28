@@ -1,39 +1,27 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
+import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
 import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
 import io.shulie.takin.cloud.sdk.model.request.common.CloudCommonInfoWrapperReq;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdReq;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailBySceneIdReq;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportQueryReq;
-import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
-import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
-import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
-import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
-import io.shulie.takin.cloud.sdk.model.response.report.ReportDetailResp;
-import io.shulie.takin.cloud.sdk.model.response.report.ReportResp;
-import io.shulie.takin.cloud.sdk.model.response.report.TrendResponse;
+import io.shulie.takin.cloud.sdk.model.request.report.*;
+import io.shulie.takin.cloud.sdk.model.response.report.*;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.report.ReportTrendQueryReq;
+import io.shulie.takin.web.biz.pojo.request.report.ReportTrendResp;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.report.ReportService;
@@ -50,9 +38,15 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -71,6 +65,10 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private ActivityDAO activityDAO;
+
+
+    @Resource
+    private InfluxWriter influxWriter;
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -300,6 +298,101 @@ public class ReportServiceImpl implements ReportService {
         return cloudReportApi.finish(new ReportDetailByIdReq() {{
             setReportId(reportId);
         }});
+    }
+
+    @Override
+    public ReportTrendResp queryReportTrend(ReportTrendQueryReq param) {
+        return trend(param);
+    }
+
+    private ReportTrendResp trend(ReportTrendQueryReq req) {
+        String key = "report_trend:" + req.getReportId() + ":" + req.getXpathMd5();
+        try {
+            ReportTrendResp data;
+
+            data = queryReportTrend(req, false);
+
+            return data;
+        } catch (Exception e) {
+            log.error("获取报告趋势数据异常", e);
+            return new ReportTrendResp();
+        }
+    }
+
+    private ReportTrendResp queryReportTrend(ReportTrendQueryReq reportTrendQuery, boolean isTempReport) {
+        long start = System.currentTimeMillis();
+        ReportTrendResp reportTrend = new ReportTrendResp();
+        try {
+
+
+
+            StringBuilder influxDbSql = new StringBuilder();
+            influxDbSql.append("select");
+            influxDbSql.append(
+                    " sum(count) as tempRequestCount, sum(fail_count) as failRequest, mean(avg_tps) as tps , sum(sum_rt)/sum"
+                            + "(count) as "
+                            + "avgRt, sum(sa_count) as saCount, count(avg_rt) as recordCount ,mean(active_threads) as "
+                            + "avgConcurrenceNum ");
+            influxDbSql.append(" from ");
+            influxDbSql.append(" pressure ");
+            influxDbSql.append(" where ");
+            influxDbSql.append(" transaction = ").append("'").append("transaction").append("'");
+
+            if (reportTrendQuery.getStartTime() != null) {
+                influxDbSql.append(" and time >= ").append(reportTrendQuery.getStartTime().getTime() * 1_000_000L);
+            }
+            if (reportTrendQuery.getEndTime() != null){
+                influxDbSql.append(" and time <= ").append(DateUtils.addMinutes(reportTrendQuery.getEndTime(), 5).getTime() * 1_000_000L);
+            }
+
+            //按配置中的时间间隔分组
+            influxDbSql.append(" group by time(").append(60).append(")");
+
+            List<Object> list = Lists.newArrayList();
+
+            list = influxWriter.query(influxDbSql.toString(), Object.class);
+
+
+            if (CollectionUtils.isEmpty(list)) {
+                log.info("查询SQL：{}", influxDbSql);
+                log.info("实时监测链路趋势：queryReportTrend-运行时间：{}", System.currentTimeMillis() - start);
+                return new ReportTrendResp();
+            }
+
+            //influxdb 空数据也会返回,需要过滤空数据
+            //前端要求的格式
+            List<String> time = Lists.newLinkedList();
+            List<String> sa = Lists.newLinkedList();
+            List<String> avgRt = Lists.newLinkedList();
+            List<String> tps = Lists.newLinkedList();
+            List<String> successRate = Lists.newLinkedList();
+            List<String> concurrent = Lists.newLinkedList();
+
+//            list.stream()
+//                    .filter(Objects::nonNull)
+//                    .filter(data -> data.getTps() != null)
+//                    .filter(data -> StringUtils.isNotBlank(data.getTime()))
+//                    .forEach(data -> {
+//                        time.add(getTime(data.getTime()));
+//                        sa.add(NumberUtil.decimalToString(data.getSa()));
+//                        avgRt.add(NumberUtil.decimalToString(data.getAvgRt()));
+//                        tps.add(NumberUtil.decimalToString(data.getTps()));
+//                        successRate.add(NumberUtil.decimalToString(data.getSuccessRate()));
+//                        concurrent.add(NumberUtil.decimalToString(data.getAvgConcurrenceNum()));
+//                    });
+            //链路趋势
+            reportTrend.setTps(tps);
+            reportTrend.setSa(sa);
+            reportTrend.setSuccessRate(successRate);
+            reportTrend.setRt(avgRt);
+            reportTrend.setTime(time);
+            reportTrend.setConcurrent(concurrent);
+
+            return reportTrend;
+        } catch (Exception e) {
+            log.error("queryReportTrend error:", e);
+        }
+        return null;
     }
 
 }

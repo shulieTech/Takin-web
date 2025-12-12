@@ -76,9 +76,19 @@ public class CloudResourcesServiceImpl implements CloudResourcesService {
                         Date s1 = sdf.parse(r1.getStartTime());
                         Date s2 = sdf.parse(r2.getStartTime());
                         if (StringUtils.equals("asc", sortType)) {
-                            return s1.before(s2) ? -1 : 1;
+                            if (s1.before(s2)) {
+                                return -1;
+                            } else if(s1.after(s2)) {
+                                return 1;
+                            }
+                            return 0;
                         } else {
-                            return s1.before(s2) ? 1 : -1;
+                            if (s1.before(s2)) {
+                                return 1;
+                            } else if(s1.after(s2)) {
+                                return -1;
+                            }
+                            return 0;
                         }
                     } catch (ParseException e) {
                         //Ignore
@@ -89,9 +99,19 @@ public class CloudResourcesServiceImpl implements CloudResourcesService {
                         Date s1 = sdf.parse(r1.getStopTime());
                         Date s2 = sdf.parse(r2.getStopTime());
                         if (StringUtils.equals("asc", sortType)) {
-                            return s1.before(s2) ? -1 : 1;
+                            if (s1.before(s2)) {
+                                return -1;
+                            } else if(s1.after(s2)) {
+                                return 1;
+                            }
+                            return 0;
                         } else {
-                            return s1.before(s2) ? 1 : -1;
+                            if (s1.before(s2)) {
+                                return 1;
+                            } else if(s1.after(s2)) {
+                                return -1;
+                            }
+                            return 0;
                         }
                     } catch (ParseException e) {
                         //Ignore
@@ -109,7 +129,7 @@ public class CloudResourcesServiceImpl implements CloudResourcesService {
                     if (StringUtils.equals("asc", sortType)) {
                         return h1.compareTo(h2);
                     } else {
-                        return h1.compareTo(h2) == 1 ? -1 : 1;
+                        return h2.compareTo(h1);
                     }
                 case "status":
                     Integer s1 = cache.get(r1.getStatus());
@@ -128,7 +148,7 @@ public class CloudResourcesServiceImpl implements CloudResourcesService {
                         } else if (s1 < s2) {
                             return 1;
                         } else {
-                            return host1.compareTo(host2) == 1 ? -1 : 1;
+                            return host2.compareTo(host1);
                         }
                     } else {
                         if (s1 > s2) {

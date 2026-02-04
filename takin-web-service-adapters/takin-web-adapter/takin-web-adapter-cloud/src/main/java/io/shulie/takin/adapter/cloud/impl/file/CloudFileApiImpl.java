@@ -121,8 +121,12 @@ public class CloudFileApiImpl implements CloudFileApi {
                 boolean mkdirResult = targetDir.mkdirs();
                 log.debug("io.shulie.takin.adapter.cloud.impl.file.CloudFileApiImpl.upload:{}", mkdirResult);
             }
+            String fileName = t.getOriginalFilename();
+            if (fileName.contains(SceneManageConstant.FILE_SPLIT)) {
+                fileName = fileName.substring(fileName.lastIndexOf(SceneManageConstant.FILE_SPLIT) + 1);
+            }
             File targetFile = new File(tempPath + SceneManageConstant.FILE_SPLIT
-                    + uploadId + SceneManageConstant.FILE_SPLIT + t.getOriginalFilename());
+                    + uploadId + SceneManageConstant.FILE_SPLIT + fileName);
             UploadResponse dto = new UploadResponse();
             try {
                 if (StrUtil.isBlank(t.getOriginalFilename())) {

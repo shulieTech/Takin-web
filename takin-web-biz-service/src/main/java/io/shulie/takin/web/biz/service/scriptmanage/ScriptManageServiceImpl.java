@@ -213,6 +213,12 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     @Resource
     private PluginManager pluginManager;
 
+    /**
+     * 上传文件的路径
+     */
+    @Value("${takin.data.path}")
+    private String uploadPath;
+
     @PostConstruct
     public void init() {
         fileUploadUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_URL);
@@ -865,9 +871,43 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
     @Override
     public String explainScriptFile(String scriptFileUploadPath) {
+        if (!this.filePathValidate(scriptFileUploadPath)) {
+            log.error("非法下载路径文件，禁止下载：{}", scriptFileUploadPath);
+            return "";
+        }
         FileContentParamReq req = new FileContentParamReq();
         req.setPaths(Collections.singletonList(scriptFileUploadPath));
         return fileApi.getFileManageContextPath(req);
+    }
+
+    /**
+     * 文件路径是否管理策略
+     *
+     * @param filePath 文件路径
+     * @return 是/否
+     */
+    private boolean filePathValidate(String filePath) {
+        File file = new File(filePath);
+        if (!file.exists())
+        {
+            return false;
+        }
+        String path = file.getAbsolutePath();
+        return this.pathInit().stream().anyMatch(path::startsWith);
+    }
+
+    /**
+     * 文件路径初始化
+     *
+     * @return 文件路径列表
+     */
+    private List<String> pathInit() {
+        List<String> arrayList = new ArrayList<>();
+        arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR));
+        arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH));
+        arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH));
+        arrayList.add(uploadPath);
+        return arrayList;
     }
 
     @Override

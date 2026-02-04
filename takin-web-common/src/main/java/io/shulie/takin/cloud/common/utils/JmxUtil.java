@@ -72,7 +72,7 @@ public class JmxUtil {
     }
 
     public static void main(String[] args) {
-        List<ScriptNode> nodes = buildNodeTree("/Users/xiaoshu/Desktop/task.jmx");
+        List<ScriptNode> nodes = buildNodeTree("/Users/xiaoshu/Downloads/3000-jm.jmx");
         System.out.println(JSONObject.toJSONString(nodes));
     }
 
@@ -150,7 +150,11 @@ public class JmxUtil {
         if (null == element) {
             return true;
         }
-        return !Boolean.parseBoolean(element.attributeValue("enabled"));
+        String enabled = element.attributeValue("enabled");
+        if (null == enabled) {
+            return false;
+        }
+        return !Boolean.parseBoolean(enabled);
     }
 
     /**

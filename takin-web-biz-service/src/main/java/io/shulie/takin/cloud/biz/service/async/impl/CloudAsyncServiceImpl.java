@@ -90,12 +90,13 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
         if (Objects.isNull(totalPodNumber)) {
             return;
         }
-        String podNumber = String.valueOf(totalPodNumber);
+        Long podNumber = Long.valueOf(String.valueOf(totalPodNumber));
+        Long startedPod = 0L;
         while (currentTime <= pressurePodStartExpireTime
             && !redisClientUtil.hasLockKey(PressureStartCache.getStopFlag(resourceId))) {
-            Long startedPod = redisClientUtil.getSetSize(PressureStartCache.getResourcePodSuccessKey(resourceId));
+            startedPod = redisClientUtil.getSetSize(PressureStartCache.getResourcePodSuccessKey(resourceId));
             try {
-                if (Long.parseLong(podNumber) == startedPod) {
+                if (podNumber == startedPod) {
                     checkPass = true;
                     log.info("后台检查到pod全部启动成功.....");
                     break;
@@ -111,7 +112,7 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
             currentTime += CHECK_INTERVAL_TIME;
         }
         //压力pod没有在设定时间内启动完毕，停止检测
-        markResourceStatus(checkPass, context);
+        markResourceStatus(checkPass, podNumber, startedPod, context);
     }
 
     @Async("checkStartedJmeterPool")
@@ -257,7 +258,7 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
         }
     }
 
-    private void markResourceStatus(boolean success, StartConditionCheckerContext context) {
+    private void markResourceStatus(boolean success, Long podNumber, Long startedPod, StartConditionCheckerContext context) {
         String resourceId = context.getResourceId();
         ResourceContext resourceContext = getResourceContext(resourceId);
         resourceContext.setUniqueKey(context.getUniqueKey());
@@ -267,9 +268,9 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
             event.setExt(resourceContext);
             eventCenterTemplate.doEvents(event);
         } else {
-            log.info("调度任务{}-{}-{},压力节点 没有在设定时间{}s内启动，停止压测,",
-                context.getSceneId(), context.getReportId(), context.getTenantId(), pressurePodStartExpireTime);
-            resourceContext.setMessage("压力机资源不足");
+            log.error("调度任务{}-{}-{},压力节点{}/{}没有在设定时间{}s内启动完毕",
+                context.getSceneId(), context.getReportId(), context.getTenantId(),startedPod, podNumber, pressurePodStartExpireTime);
+            resourceContext.setMessage("压力机启动失败"+startedPod+"/"+podNumber+"检查pod日志");
             Event event = new Event();
             event.setEventName(PressureStartCache.CHECK_FAIL_EVENT);
             event.setExt(resourceContext);

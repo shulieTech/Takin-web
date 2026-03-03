@@ -1,0 +1,22 @@
+package io.shulie.takin.web.app.leqi;
+
+import java.io.UnsupportedEncodingException;
+
+public class Main {
+    public static void main(String[] args) {
+        byte[] bytes = "{\"httpStatusCode\":200}".getBytes();
+        try {
+            System.out.println(new String(bytes, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+
+        String str1 = "{\"body\":\"{\\\"Response\\\":{\\\"RequestId\\\":\\\"e0c4ae4cfb5ccb11\\\",\\\"Data\\\":\\\"eTbsnzzI7lxD9TjmKFYy9DM00aW7vzMyeX8uU2RKZRUr4K6HJMsqHklB1/367WS5Es/9i5/VPQfMtmCxGqs97nXgD+5px6HA1l+6Vitmm2Huhd44h5Gy7WzJJdm96wy0y/+U2r9tSI4XnUdRBTtTpxdXE7mrm+m4Iqbko8EdrUb5/19MS56TGU1lvFvJTK8H32gdm0JsZQISkYhWAhn8tZn+4eGV98dcwqhSahG1Sxpa/nWZixinWE8wDdEC8bCrogm69T/860aFiWzPjXb/7Y6zw/9sWy4arCW2VqLJldNv4cndkcGeIU9lhN5x4+moitI4un7gXCaZ01CSB7/vqovc9fQ27Wa1XesseYSngTtTohGTnShRs/o01B2/qLWHjIR3gaOlD8V7K2SKJ3/OblUs3r1qkCzffiNSXt33eqZDoNeZYbsAV6XIo/qTti3e6BOGRKSUfV0v65wIUngJizQ3E7sK/8m3unF/HwWyNJeGD1zoPDCNEf/y1/wA1t6j3Now20xpfYldGxnF5fBf9fP4T7S+a9fn349NYA044ERwCykd0rD/HLECgularJr5H5QLcy9+8ppdGl4GiKZLFcWGO0O2xkzHEJaC2Za0kskppmUVRXEZOqB6LH+nt4ybGo2BSnASkEvjh+x2BC+WLyAXx1mRNHHHrKysoqgUMAc1bt2i3krqj+qazXb96aVsa/FsCGf9WilLFL8yJuT2XzR0GOkhosX5/e4PBcuYPx+UHZmFcZb/3/ydn17s6tldgz7Pjxtu7qoWhxLyksGXm8h8cgt9Ap874+XvzSzoaMmqBXRQLAlEVU+a4eYg7oCfeCcBnC8LTAsG6liZQ+tBCC9Pe9UaTxRwJpqOdxfn+3fT2PSW07xYG6aYfvjY1dBmdkRZ0sO8WoK61ULrwUQPVEZgSCT6uBGkjhAqKBQ9+fehfZZsxfBbEU2Bnk2MEmNjiIuAzsmve11iHf0/4U78SnL7/w9LKz9cH6uUUfkzejPuiI3MC/5FQjSDBK/ivAns3O6/Iex6Amsy4EYzhW+7L6j00rbJREqO2x4oLYiBaCyXksKa/GB314nJmJYsrbuWFNdQFrbCCnSfny2I5I3lWUZN6xdNdtd82lmI90soPnJ4T87gLzrQm9gtlsZ65LqyqzvyRYpR6mFbVfhtRSnkJ8CGeKQQP3R6m3OLbVtnZr3/BMRHQ+e/lD+NK/ePw+Lfqy+9rdj4miEtLb/VNexaulLPTLxPSaCfL+DuytrJzix19v4+t4x7MKbBvUdq0yhdOeHmyL2KS/vp9F6T4Noh5yybWoCOlGTurf6yCBJyoR1fWN1q0vD0yA4zVfCPTEtwvonJQHBaGMQgfDUlFTShsaB9xmkr+gkd5/tSJqCRfY/DXlbuHyCdDI0Pamdp2rVPBk92W0TepTOnBbJZJP4aTuKhHqsBq/wAJWSfM+rZGwo=\\\"}}\",\"httpStatusCode\":\"200\"}";
+
+        String str2 = "{\"httpStatusCode\":200,\"body\":\"{\\\"Response\\\":{\\\"RequestId\\\":\\\"641bdbb741da3c57\\\",\\\"Data\\\":\\\"eTbsnzzI7lxD9TjmKFYy9DM00aW7vzMyeX8uU2RKZRUpfrPmMYEHE6alipiQBOlMlUd1xsJA8S7Q0as2Rzw04/bv3CaiXT5IovfFDaN4YR8GVw0M+014f8sTIarS8RY4\\\"}}\"}";
+
+        String str3 = "{\"body\":\"{\\\"Response\\\":{\\\"RequestId\\\":\\\"e0c4ae4cfb5ccb11\\\",\\\"Data\\\":\\\"eTbsnzzI7lxD9TjmKFYy9DM00aW7vzMyeX8uU2RKZRWjwyqpffIo01moYZi208/CSDth3RCBAQLye/YBPSrQPeskW4JjUuiSw5PZUwdjn6lrhj3ot+pXWkgrCAO93x3F1JRnblXh0+OWg3xJfFUiasHtn17yYXsAG+dZoGsqElOADz8SHOW6YbiJ6Aq7rO5uN7z5jxaxQtAUjD+3OmoG90FLUdstn8JLT1m190ZTkR4CHrhrjTNsaDNJDUW6Bw1b+mnbYituRJIKPDF+7paU3OVagrODTEXQxXOjpaYihkdyhKQp4Go1H00NoUAeWOSV6jptDpAlj1zCP36rXt+RuZhfAglUukuB+Brim5czqLL6zE5pHI96XylaAJSdc3byKqroQkKDu8Gs/UxyeDmBlh//oArIHvXE0bqlGvWIQFDqaGDN8sDl2Cq1eqpB8ehXX4mZ97rcQNkhA15PDSdA3MJonDGoRUQllG/27V9Yb8lbc+G4Fm3TC3pRnfARbBYWFNSd6cKKpveT2lyikZ88ENOcNVEDlj27ajJky+pLjMOWdGOALYecPnr1KAl+zeW3sozGxlIrr30KirVQ314LqcyZ9uqTBvBSnvdV2uqMLmaws1P1Wv7bVJMyVmMzaE7poNmeK7sgQovFtYhouOUAR3z4e02ONoik10r2yoqYKtQnashyrltt2TE9NRjobSPCaBU9Bgnt/t37xKQadU+NIiJ+qo9lw0Fh8mJEaelK5rkMF8OjZ7FVDFOcB2S33A170TVJ7DVxnHYboLOJxOwCoV510zRQjAQu6XzVqtASCz11SMO3yfcvxnDxp5hRqdycoeF4p/mxxtXMJ9atbeN887JQeRh1Y7fCb7QNtCsEaEu8xK9eJ5LTXYNsDPVqLJVcCzFKno0BKXscW4uu2+kWMRO5bEQyeRr7j5Tzi5pLV+buxq0S/Eq5QmJl2ZOj3Ql86YDkdqFb0iwznLDqhh6fZVPVF5KFoHbB418TqzYElqpTHN1RM/QKwuFKC9JaabTrdaGYyYtiyzf1nzd7afr0N+bOKuwt2pb11CvOKxnYgIoDIf4SdSdxx+RxEPUlyrbTv3I2uQXCDT/jZH4Knk0+ISuwg6SxM/ewcyVXCt/i6oe8J5OpHInVsg5LWP3g3qpDvmae2h5Tb5aJoBYdSg16QufqElOruTF+UJcc7K1VFxoJEdh+aMjvCFk3wLClzEsG8+lg6G6fZuS3JGhfCJ33ZBjVF+rQsIU1hclv4JjB/4DYP8u86lxoS404irrTkYV96sKonr7sigQnkATcJhdnyx/N92QxVuNVfYmpbNoxj6dncvESRkOzjwLRpdsJaAM2rxKQNHeJ7fLfQagHFzumjue0C0vHBeyjoA1C+v34X4Nk5H6ZuhObHVnoCjWRKW3sM93pOUzl4NiCToobtVCOrQH4wSGcSOSCmZgf1/inZs8OEzWPxs5mxcEWtbRoaIeIIPqRivDtD5UJwfncK4yBb/NGBUXTvQM+XkopI4z2eEWgX7crihbS1AqPBSlEmFbtN631MaR0K5hdaHBN7LkN0EpXrWYcqXpNUK/YgdYfLJgjPfCFlNLkEKcbzBGOfBYc6yRbgmNS6JLDk9lTB2OfqWuGPei36ldaSCsIA73fHcU/YqSNYiLE6CKATEbNVd2Bwe2fXvJhewAb51mgayoSU4APPxIc5bphuInoCrus7m43vPmPFrFC0BSMP7c6agb3QUtR2y2fwktPWbX3RlORHj+6qR7D3iVjkB2yla9lbor6adtiK25Ekgo8MX7ulpTc5VqCs4NMRdDFc6OlpiKGR3KEpCngajUfTQ2hQB5Y5JUNu16kHoAwSCskRkxzlWnEmF8CCVS6S4H4GuKblzOosvrMTmkcj3pfKVoAlJ1zdvIqquhCQoO7waz9THJ4OYGWCys3Ln6S3Sreh7HgQRiwhVL969JgXkNFupHSo6XF5LaJVrMAH3IhmSTTwOAJAU/6\\\"}}\",\"httpStatusCode\":\"200\"}";
+
+
+    }
+}

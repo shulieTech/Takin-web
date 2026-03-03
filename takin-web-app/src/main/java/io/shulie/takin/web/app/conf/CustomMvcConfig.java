@@ -59,6 +59,9 @@ public class CustomMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(abstractInterceptor).addPathPatterns("/**");
+        registry.addInterceptor(abstractInterceptor)
+            .addPathPatterns("/**")
+            // OAuth 2.0 授权登录相关接口无需登录认证
+            .excludePathPatterns("/api/oauth/**");
     }
 }
